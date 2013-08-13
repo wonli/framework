@@ -1,5 +1,4 @@
 <?php
-//词库
 class MongoBase
 {
 	public $db;

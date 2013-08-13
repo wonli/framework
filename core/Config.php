@@ -1,40 +1,165 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
-interface ConfigInterface
+/**
+ * @Auth wonli <wonli@live.com>
+ * Class Config
+ */
+class Config
 {
-    function put();
-    function get($config, $name=null);
-    function set($config, $name=null);
-}
+    /**
+     * @var array 默认追加的系统配置项
+     */
+    protected $sys;
 
-class ConfigBase implements ConfigInterface
-{
-    private $sys;
-    private $init;
-    private $appname;
-    private $userInit;
-    private static $interface;
+    /**
+     * @var app名称
+     */
+    protected $appname;
 
-    private function __construct($appname)
+    /**
+     * @var string 配置资源文件地址
+     */
+    protected $res_file;
+
+    /**
+     * @var string 基础路径
+     */
+    protected $base_path;
+
+    /**
+     * @var 避免重复加载
+     */
+    static protected $loaded;
+
+    /**
+     * @var 所有配置
+     */
+    protected $init;
+
+    function __construct( $appname, $res_file )
     {
-        $this->appname = $appname;
-        if(!$this->sys) {
+        $this->appname = $appname ? $appname : APP_NAME;
+        $this->base_path = APP_PATH_DIR.DS.$this->appname.DS;
+        $this->res_file = $this->base_path.$res_file;
+    }
+
+    /**
+     * 实例化配置类
+     *
+     * @param $appname
+     * @param string $file
+     * @return Config
+     */
+    static function load( $appname = null, $file="init.php" )
+    {
+        return new Config( $appname, $file );
+    }
+
+    /**
+     * 解析配置文件和自定义参数
+     *
+     * @param null $user_config 用户自定义参数
+     * @param bool $apped_sys 是否附加系统默认参数
+     * @return $this
+     */
+    function parse($user_config = null, $apped_sys = true)
+    {
+        $config_data = $this->readConfigFile();
+
+        if(true === $apped_sys)
+        {
             $this->sys = $this->getSysSet();
+
+            if(isset($config_data ['sys']))
+            {
+                $config_data ['sys'] = array_merge($this->sys, array_filter($config_data ['sys']));
+            } else {
+                $config_data ['sys'] = $this->sys;
+            }
         }
 
-        if(!$this->userInit) {
-            $initfile = APP_PATH_DIR.DS.$this->appname.DS.'init.php';
-            $this->userInit = $this->getInitFile($initfile);
+        if(null !== $user_config)
+        {
+            if(!is_array($user_config) && is_file($user_config))
+            {
+                $configset = require $configset;
+                $this->setData($user_config);
+                return $this;
+            }
+            else if(! empty($user_config) && is_array($user_config) )
+            {
+                foreach($user_config as $key=>$_config)
+                {
+                    if(is_array($_config)) {
+                        foreach($_config as $_config_key=>$_config_value) {
+                            if($_config_value) {
+                                $config_data [$key] [$_config_key] = $_config_value;
+                            }
+                        }
+                    } else {
+                        $config_data [$key] = $_config;
+                    }
+                }
+            }
         }
+
+        $this->setData($config_data);
+        return $this;
     }
 
-    public static function getInstance($appname)
+    /**
+     * 保存配置参数
+     *
+     * @param $init 配置文件
+     * @return array
+     */
+    function setData($init)
     {
-        if(! self::$interface) {
-            self::$interface = new ConfigBase($appname);
-        }
-        return self::$interface;
+        $this->init = $init;
     }
 
+    /**
+     * 从文件读取配置文件 支持PHP / JSON
+     *
+     * @return mixed
+     * @throws CoreException
+     */
+    function readConfigFile()
+    {
+        $key = crc32($this->res_file);
+
+        if( isset(self::$loaded [$key]) )
+        {
+            return self::$loaded [$key];
+        }
+
+        if(file_exists($this->res_file))
+        {
+            $ext = Helper::getExt($this->res_file);
+            switch($ext)
+            {
+                case 'php' :
+                    $data = require $this->res_file;
+                    self::$loaded [$key] = $data;
+                    return $data;
+
+                case 'json' :
+                    $data = json_decode( file_get_contents($this->res_file), true);
+                    self::$loaded [$key] = $data;
+                    return $data;
+
+                default :
+                    throw new CoreException("不支持的解析格式");
+            }
+        } else {
+            throw new CoreException("配置文件未找到");
+        }
+    }
+
+    /**
+     * 设置默认追加的系统参数
+     *
+     * @return array
+     */
     private function getSysSet()
     {
         $_sys = array();
@@ -112,84 +237,15 @@ class ConfigBase implements ConfigInterface
         foreach($values as $k=>$v) {
             $this->init[$name][$k] = $v;
         }
-        print_r($this->init);
     }
 
     /**
-     * 设置配置文件
-     *
-     * @param $init 配置文件
-     * @return array
-     */
-    function setInit($init)
-    {
-        $this->init = $init;
-    }
-
-    /**
-     * 读取APP目录下的配置文件
-     *
-     * @return array;
-     */
-    function getInitFile($initfile)
-    {
-        if(is_file($initfile)) {
-            return require $initfile;
-        }
-        else
-        throw new CoreException("配置文件未找到");
-    }
-
-    /**
-     * 初始化配置文件
-     *
-     * @param $configset 框架运行时指定的配置
-     * @return Object Config
-     */
-    function init($configset=null)
-    {
-        if($this->userInit && is_array($this->userInit)) {
-            if(isset($this->userInit["sys"])) {
-                $this->userInit["sys"] = array_merge($this->sys, array_filter($this->userInit["sys"]));
-            } else {
-                $this->userInit["sys"] = $this->sys;
-            }
-        } else {
-            throw new CoreException("读取配置文件异常");
-        }
-
-        if($configset)
-        {
-            if(!is_array($configset) && is_file($configset)) {
-                $this->setInit($configset);
-                return $this;
-            } else if(! empty($configset) && is_array($configset) ) {
-
-                foreach($configset as $key=>$_config) {
-                    if(is_array($_config)) {
-                        foreach($_config as $_config_key=>$_config_value) {
-                            if($_config_value) {
-                                $this->userInit[$key][$_config_key] = $_config_value;
-                            }
-                        }
-                    } else {
-                        throw new CoreException("不能识别的运行时配置参数");
-                    }
-                }
-            }
-        }
-        $this->setInit($this->userInit);
-
-        return $this;
-    }
-
-    /**
-     * 取得配置文件
+     * 返回全部配置
      *
      * @param   $obj 是否返回对象
      * @return array/object
      */
-    function getInit($obj = false)
+    function getAll($obj = false)
     {
         if($obj) {
             return $this->arrayToObject($this->init);
@@ -197,6 +253,12 @@ class ConfigBase implements ConfigInterface
         return $this->init;
     }
 
+    /**
+     * 数组转对象
+     *
+     * @param $d
+     * @return object
+     */
     function arrayToObject($d) {
         if (is_array($d)) {
             return (object) array_map(array($this, __FUNCTION__), $d);
@@ -205,14 +267,4 @@ class ConfigBase implements ConfigInterface
             return $d;
         }
     }
-
-    function put()
-    {
-
-    }
-}
-
-class Config extends ConfigBase
-{
-
 }

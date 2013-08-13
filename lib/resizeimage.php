@@ -1,33 +1,52 @@
 <?php
-class resizeimage {	
-	//图片类型  
-	private $type;
+class ReSizeImage
+{
+    /**
+     * @var 图片类型
+     */
+    private $type;
+
+    /**
+     * @var int 实际宽度
+     */
+    private $width;
 	
-	//实际宽度  
-	private $width;
+    /**
+     * @var int 实际高度
+     */
+    private $height;
 	
-	//实际高度  
-	private $height;
+    /**
+     * @var 改变后的宽度
+     */
+    private $resize_width;
 	
-	//改变后的宽度  
-	private $resize_width;
+    /**
+     * @var 改变后的高度
+     */
+    private $resize_height;
 	
-	//改变后的高度  
-	private $resize_height;
+    /**
+     * @var 是否裁图
+     */
+    private $cut;
+
+    /**
+     * @var 源图象
+     */
+    private $srcimg;
+
+    /**
+     * @var 目标图象地址
+     */
+    private $dstimg;
 	
-	//是否裁图  
-	private $cut;
+    /**
+     * @var 临时创建的图象
+     */
+    private $im;
 	
-	//源图象  
-	private $srcimg;
-	
-	//目标图象地址  
-	private $dstimg;
-	
-	//临时创建的图象  
-	private $im;
-	
-	function resizeimage($img, $wid, $hei, $c, $dstpath) {
+	function __contruct($img, $wid, $hei, $c, $dstpath) {
         #原图片信息
         $arr_img=getimagesize($img);
         #元图片
@@ -55,8 +74,12 @@ class resizeimage {
 		$this->newimg ();
 		ImageDestroy ( $this->im );
 	}
-	
-	function newimg() {
+
+    /**
+     * 生成图象
+     */
+    function newimg()
+    {
 		//改变后的图象的比例  
 		if(!empty($this->resize_height)) {
 			$resize_ratio = ($this->resize_width) / ($this->resize_height);
@@ -66,7 +89,6 @@ class resizeimage {
 
 		//实际图象的比例 
 		$ratio = ($this->width) / ($this->height);
-
 
 		if (($this->cut) == "1") //裁图  
 		{
@@ -83,7 +105,9 @@ class resizeimage {
 				ImageJpeg ( $newimg, $this->dstimg,100);
 			}
 
-		} else { //不裁图 
+		}
+        else
+        {
 
 			if ($ratio >= $resize_ratio) {
 				$newimg = imagecreatetruecolor ( $this->resize_width, ($this->resize_width) / $ratio );
@@ -98,8 +122,10 @@ class resizeimage {
 		}
 	}
 	
-	//初始化图象  
-	function initi_img() {
+    /**
+     * 创建临时图象
+     */
+    function initi_img() {
 		if ($this->type == "image/jpeg") {
 			$this->im = imagecreatefromjpeg ( $this->srcimg );
 		}
@@ -110,15 +136,17 @@ class resizeimage {
 			$this->im = imagecreatefrompng ( $this->srcimg );
 		}
 	}
-	
-	//图象目标地址  
-	function dst_img($dstpath) {
+
+    /**
+     * 图象目标地址
+     *
+     * @param $dstpath
+     */
+    function dst_img($dstpath) {
 		$full_length = strlen ( $this->srcimg );
 		$type_length = strlen ( $this->type );
 		$name_length = $full_length - $type_length;
 		$name = substr ( $this->srcimg, 0, $name_length - 1 );
 		$this->dstimg = $dstpath;
-	
-		//echo '111'.$this->dstimg;  exit;
 	}
 }

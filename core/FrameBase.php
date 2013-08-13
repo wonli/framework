@@ -4,93 +4,210 @@
  */
 class FrameBase
 {
-    protected $name;
-    
-    protected $model;
-    
+
+    /**
+     * @var 参数
+     */
+    protected $params;
+
+    /**
+     * @var action 名称
+     */
+    protected $action;
+
+    /**
+     * @var module
+     */
     protected $module;
-    
+
+    /**
+     * @var 用户配置
+     */
     protected $config;
-    
-    protected $cache_config;
-    
-    public function setControllerName($controller_name)
+
+    /**
+     * @var 控制器名称
+     */
+    protected $controller;
+
+    public function __construct()
     {
-        $this->name = $controller_name;
+        $this->app_init();
     }
 
+    /**
+     * 为初始化准备参数
+     */
+    function app_init()
+    {
+        if(! $this->config) {
+            $this->setConfig( Dispatcher::$appConfig );
+        }
+
+        if(! $this->controller) {
+            $this->setControllerName( Dispatcher::$controller );
+        }
+
+        if(! $this->action) {
+            $this->setActionName( Dispatcher::$action );
+        }
+
+        if(! $this->params) {
+            $this->setParams( Dispatcher::$params );
+        }        
+    }
+
+    /**
+     * 设置控制器名称
+     *
+     * @param $controller_name
+     */
+    public function setControllerName($controller_name)
+    {
+        $this->controller = $controller_name;
+    }
+
+    /**
+     * 取得控制器名称
+     *
+     * @return mixed
+     */
+    public function getControllerName() {
+        return $this->controller;
+    }
+
+    /**
+     * 设置Action
+     *
+     * @param $action_name
+     */
     public function setActionName($action_name)
     {
         $this->action = $action_name;
     }
 
+    /**
+     * 取得action
+     *
+     * @return action
+     */
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    /**
+     * 设置params
+     *
+     * @param $params
+     */
     public function setParams($params)
     {
-        // $this->params = Helper::strip_selected_tags($params);
-        // $this->params = $params;
+        $this->params = $params;
     }
 
+    /**
+     * 取得url参数列表
+     *
+     * @param bool $strip 是否过滤html标签
+     * @return action|mixed
+     */
+    public function getParams( $strip = false )
+    {
+        if(true === $strip)
+        {
+            return Helper::strip_selected_tags($this->params);
+        }
+
+        return $this->params;
+    }
+
+    /**
+     * 设置全局配置
+     *
+     * @param $config
+     */
     public function setConfig($config)
     {
-        $this->config = $config;
+         $this->config = $config;
     }
 
+    /**
+     * 返回配置
+     *
+     * @return mixed
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * 设置缓存配置
+     *
+     * @param $cache_config
+     */
     public function setCacheConfig($cache_config)
     {
         $this->cache_config = $cache_config;
     }
 
-    public function init()
-    {       
-        //$this->module = $this->initModule();
-        //$this->model = $this->initModel();
-        //$this->view  = $this->initView();
+    /**
+     * 返回缓存配置
+     *
+     * @return mixed
+     */
+    public function getCacheConfig()
+    {
+       return $this->cache_config;
     }
 
+    /**
+     * 加密会话 sys=>auth中指定是cookie/session
+     *
+     * @param $key key
+     * @param $value 值
+     * @param int $exp 过期时间
+     * @return bool
+     */
     function setAuth($key, $value, $exp=86400)
     {
         $auth_type = Cross::Config()->get("sys", "auth");
         return HttpAuth::factory( $auth_type )->set($key, $value, $exp);
     }
 
+    /**
+     * 解密会话
+     *
+     * @param $key
+     * @param bool $de
+     * @return bool|mixed|string
+     */
     function getAuth($key, $de = false)
     {
         $auth_type = Cross::Config()->get("sys", "auth");
         return HttpAuth::factory( $auth_type )->get($key, $de);
     }
 
-    function encode_params($tex,$key,$type="encode")
+    /**
+     * 参数加密
+     *
+     * @param $tex
+     * @param $key
+     * @param string $type
+     * @return bool|string
+     */
+    function encode_params($tex, $key, $type="encode")
     {
-        if($type=="decode"){
-            if(strlen($tex)<5)return false;
-            $verity_str=substr($tex, 0,3);
-            $tex=substr($tex, 3);
-            if($verity_str!=substr(md5($tex),0,3)){
-                //完整性验证失败
-                return false;
-            }
-        }
-        $rand_key=md5($key);
-
-        if($type == "decode") {
-            $tex = base64_decode($tex);
-        } else {
-            $tex = strval($tex);
-        }
-
-        $texlen=strlen($tex);
-        $reslutstr="";
-        for($i=0;$i<$texlen;$i++){
-            $reslutstr.=$tex{$i}^$rand_key{$i%32};
-        }
-
-        if($type!="decode"){
-            $reslutstr=trim(base64_encode($reslutstr),"==");
-            $reslutstr=substr(md5($reslutstr), 0,3).$reslutstr;
-        }
-        return $reslutstr;
+        return Helper::encode_params($tex, $key, $type);
     }
 
+    /**
+     * 参数解密
+     *
+     * @param null $params
+     * @return bool|string
+     */
     protected function sparams( $params=null )
     {
         if(! $params) {
@@ -99,6 +216,12 @@ class FrameBase
         return $this->encode_params($params, "crossphp", "decode");
     }
 
+    /**
+     * mcrypt加密
+     *
+     * @param $params
+     * @return mixed
+     */
     protected function mcryptEncode($params)
     {
         $mcrypt = new Mcrypt;
@@ -106,6 +229,12 @@ class FrameBase
         return $_params[1];
     }
 
+    /**
+     * mcrypt 解密
+     *
+     * @param $params
+     * @return string
+     */
     protected function mcryptDecode($params)
     {
         $mcrypt = new Mcrypt;
@@ -114,72 +243,151 @@ class FrameBase
     }
 
     /**
-     * 初始化model
-     * @return object model类实例
+     * 加载module
+     *
+     * @param $module_name
+     * @return mixed
      */
-    public function initModel($controller_name = null)
+    protected function loadModule( $module_name, $db_type = '' )
     {
-        if(! $controller_name) {
-            $modelname = $this->name.'Model';
-        } else {
-            $modelname = $controller_name.'Model';
+        if( false !== strpos( $module_name, "/") )
+        {
+            list($_, $module_name) = explode("/", $module_name);
+            Loader::import("::modules/{$module_name}Module");
         }
-        return new $modelname($this->name);
+
+        $_module = ucfirst($module_name.'Module');
+        return new $_module( );
     }
 
     /**
-     * 初始化module
-     * @return object model类实例
+     * 加载视图
+     *
+     * @param null $action
+     * @param null $controller_name
+     * @return mixed
      */
-    public function initModule($controller_name = null)
+    public function loadView($controller_name = null, $action = null)
     {
-        if(! $controller_name) {
-            $modulename = $this->name.'Module';
-        } else {
-            $modulename = $controller_name.'Module';
+        if(null == $controller_name)
+        {
+            $controller_name = $this->controller;
         }
 
-        $modulename = ucfirst($modulename);
+        $view_class_name = "{$controller_name}View";
+        $view = new $view_class_name;
 
-        return new $modulename($this->name);
+        if(null !== $action)
+        {
+            return $view->$action();
+        }
+
+        return $view;
     }
 
     /**
-     * 初始化view
-     * @return object view类实例
+     * 运行app TODO 检查是否有页面缓存
+     *
+     * @param $act
+     * @param $params
      */
-    public function initView($action = null, $controller_name = null)
+    function run($act , $params)
     {
-        if(! $controller_name) {
-            $controller_name = Dispatcher::$controller;
-            $viewname = Dispatcher::$controller.'View';
-        } else {
-            $viewname = $controller_name.'View';
+        /**
+            $_key_dot = self::$appConfig->get("url", "dot");
+            $_app_name = self::$appConfig->get("sys", "app_name");
+
+            //简单文件缓存
+            if(empty(self::$params)) {
+            $_key_params = 'index';
+            } else {
+            if(is_array(self::$params)) {
+            $_key_params = implode($_key_dot, self::$params);
+            } else {
+            $_key_params = self::$params;
+            }
+            }
+            $_cache_key = self::$controller.$_key_dot.self::$action.$_key_dot.$_key_params;
+            $this_controller_config = self::$appConfig->get("controller", strtolower(self::$controller));
+
+            $_cacheConfig = null;
+            if(isset($this_controller_config["cache"]) && $this_controller_config["cache"][0] === true) {
+            list($_isCache, $_cacheConfig) = $this_controller_config["cache"];
+            $_ex = false;
+
+            if(true === $_isCache)
+            {
+            $cache=Cache::create( $_cacheConfig, $_cache_key );
+            $_ex = $cache->getExtime();
+            }
+
+            if(true === $_isCache && $_ex) {
+            return $cache->get();
+            }
+            }
+            self::$cache_config = $_cacheConfig;
+         */
+
+        $mr = new ReflectionClass($this);
+
+        $_before = "{$act}_before";
+        $_after = "{$act}_after";
+
+        if( $mr->hasMethod($_before) )
+        {
+            $this->$_before();
         }
 
-        if(! $action) {
-            $action = Dispatcher::$action;
-        }
+        $this->$act( $params );
 
-        return new $viewname($action, $controller_name, Dispatcher::$params, Dispatcher::$cache_config);
+        if( $mr->hasMethod($_after) )
+        {
+            $this->$_after();
+        }
     }
-    
-    function __get($name)
-    {    
-        if($name == "view") {
-            return $this->view = $this->initView();
+
+    /**
+     * 输出结果
+     *
+     * @param string $ok
+     * @param string $msg
+     * @param string $type
+     * @return array|string
+     */
+    function result($ok = "1", $msg = "ok", $type="")
+    {
+        $result = array();
+
+        $result["status"] = $ok;
+        $result["message"] = $msg;
+
+        if($type == "JSON") {
+            $result = json_encode($result);
         }
-        
-        if($name == "action") {
-            return $this->action = Dispatcher::$action;
-        }
-        
-        if($name == "params") {
-            return $this->params = Dispatcher::$params;
-        }
-        
-        if($name == "controller") {
-            return $this->controller = Dispatcher::$controller;
+        return $result;
+    }
+
+    /**
+     * request,response,view 重载
+     *
+     * @param $property
+     * @return action|mixed
+     */
+    function __get( $property )
+    {
+        switch( $property )
+        {
+            case 'request' :
+                return $this->request = Request::getInstance();
+
+            case 'response' :
+                return $this->response = Response::getInstance();
+
+            case 'view' :
+                return $this->view = $this->loadView();
+
+            default :
+                break;
         }
     }
 }

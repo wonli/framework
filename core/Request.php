@@ -4,11 +4,29 @@
  */
 class Request
 {
+    /**
+     * @var
+     */
     private $_scriptUrl;
+
+    /**
+     * @var
+     */
     private $_baseUrl;
+
+    /**
+     * @var
+     */
     private $_hostInfo;
+
+    /**
+     * @var
+     */
     private $_indexName;
-    
+
+    /**
+     * @var
+     */
     static $instance;
 
     private function __construct()
@@ -18,6 +36,7 @@ class Request
 
     /**
      * 实例化类
+     *
      * @return object SimpleHttpRequest() 类的实例
      */
     public static function getInstance()
@@ -31,6 +50,7 @@ class Request
 
     /**
      * 设置scripturl
+     *
      * @return null
      */
     private function _initScriptUrl() {
@@ -55,6 +75,7 @@ class Request
 
     /**
      * 取得$_SERVER全局变量的值
+     *
      * @param string $name $_SERVER的名称
      */
     private function _SERVER($name)
@@ -64,6 +85,7 @@ class Request
 
     /**
      * 取得script的URL
+     *
      * @return null
      */
     public function getScriptUrl() {
@@ -73,6 +95,7 @@ class Request
     
 	/**
 	 * 设置基础路径
+     *
 	 * @param  string $url 设置基础路径
 	 */
     public function setBaseUrl($url) {
@@ -81,6 +104,7 @@ class Request
     
 	/**
 	 * 返回baseurl
+     *
 	 * @param  boolean $absolute 是否返回带HOST的绝对路径
 	 * @return string 当前请求的url
 	 */
@@ -91,18 +115,28 @@ class Request
 
 	/**
 	 * 返回当前脚本文件名
+     *
 	 * @return string 当前请求的脚本名
 	 */
     public function getScriptName() {
-        return end( explode("/", $this->_SERVER('SCRIPT_NAME')) );
+        $s = explode("/", $this->_SERVER('SCRIPT_NAME'));
+        return end( $s );
     }
-    
+
+    /**
+     * 当前执行的脚本名
+     *
+     * @return string
+     */
     public function getIndexName()
     {
         if($this->_indexName === null) return $this->getScriptName();
         return $this->_indexName;
     }
-    
+
+    /**
+     * @param $indexname
+     */
     public function setIndexName($indexname)
     {
         $this->_indexName = $indexname;
@@ -110,6 +144,7 @@ class Request
     
 	/**
 	 * 取得Host信息
+     *
 	 * @return null
 	 */
 	public function getHostInfo() {
@@ -119,6 +154,7 @@ class Request
 
     /**
      * 设置Host信息
+     *
      * @return null
      */
 	private function _initHostInfo() {
@@ -138,6 +174,7 @@ class Request
 
     /**
      * 取得服务器端口
+     *
      * @return int 当前服务器端口号
      */
 	public function getServerPort() {
@@ -147,6 +184,7 @@ class Request
 
     /**
      * 当前scriptfile的路径
+     *
      * @return string
      */
     public function getScriptFilePath()
@@ -157,60 +195,109 @@ class Request
         return realpath(dirname($scriptName));
     }
 
-	public function getUserHost()
+    /**
+     * @return string
+     */
+    public function getUserHost()
 	{
 		return $this->_SERVER('REMOTE_HOST');
 	}
 
+    /**
+     * 按type返回url请求
+     *
+     * @param int $type
+     * @return string
+     */
     public function getUrlRequest($type = 1)
     {
         if($type == 2) {
             return $this->_SERVER('PATH_INFO');
         }
-        return $this->_SERVER('QUERY_STRING');
+        else
+        {
+            return $this->_SERVER('QUERY_STRING');
+        }
     }
-    
-	public function getQueryString()
+
+    /**
+     * @return string
+     */
+    public function getQueryString()
 	{
 		return $this->_SERVER('QUERY_STRING');
 	}
 
-	public function getIsPutRequest()
+    /**
+     * 是否是PUT请求
+     *
+     * @return bool
+     */
+    public function isPutRequest()
 	{
 		return ( $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'),'PUT') ) || $this->getIsPutViaPostRequest();
 	}
 
-	protected function getIsPutViaPostRequest()
+    /**
+     * 是否是通过POST的PUT请求
+     *
+     * @return bool
+     */
+    protected function isPutViaPostRequest()
 	{
 		return isset($_POST['_method']) && !strcasecmp($_POST['_method'],'PUT');
 	}
 
-	public function getIsAjaxRequest()
+    /**
+     * 是否是ajax请求
+     *
+     * @return bool
+     */
+    public function isAjaxRequest()
 	{
 		return $this->_SERVER('HTTP_X_REQUESTED_WITH')==='XMLHttpRequest';
 	}
 
-	public function getIsFlashRequest()
+    /**
+     * 是否是flash请求
+     *
+     * @return bool
+     */
+    public function isFlashRequest()
 	{
 		return  stripos($this->_SERVER('HTTP_USER_AGENT'),'Shockwave')!==false || stripos($this->_SERVER('HTTP_USER_AGENT'),'Flash')!==false;
 	}
 
-	public function getUrlReferrer()
+    /**
+     * HTTP_REFERER;
+     *
+     * @return string
+     */
+    public function getUrlReferrer()
 	{
 		return $this->_SERVER('HTTP_REFERER');
 	}
 
-	public function getUserAgent()
+    /**
+     * @return string userAgent
+     */
+    public function getUserAgent()
 	{
 		return $this->_SERVER('HTTP_USER_AGENT');
 	}
 
-	public function getUserHostAddress()
+    /**
+     * @return string userIP
+     */
+    public function getUserHostAddress()
 	{
 		return $this->_SERVER('REMOTE_ADDR') !== ''?$this->_SERVER('REMOTE_ADDR'):'127.0.0.1';
 	}
 
-	public function getAcceptTypes()
+    /**
+     * @return string ACCEPT TYPE
+     */
+    public function getAcceptTypes()
 	{
 		return $this->_SERVER('HTTP_ACCEPT');
 	}

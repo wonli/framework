@@ -51,6 +51,8 @@ class Uploader
     {
         $this->_allowed_file_size = $size;
     }
+
+
     function _get_uploaded_info($file)
     {
         $pathinfo = pathinfo($file['name']);
@@ -71,6 +73,7 @@ class Uploader
 
         return $file;
     }
+
     function _is_allowd_type($type)
     {
         if (!$this->_allowed_file_type)
@@ -79,6 +82,7 @@ class Uploader
         }
         return in_array(strtolower($type), $this->_allowed_file_type);
     }
+
     function _is_allowd_size($size)
     {
         if (!$this->_allowed_file_size)

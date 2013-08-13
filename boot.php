@@ -1,6 +1,6 @@
 <?php 
 /**
- * @Author:       wonli
+ * @Author:  wonli <wonli@live.com>
  */
 defined('DS')or define('DS', DIRECTORY_SEPARATOR);
 define('CROSSPHP_PATH', realpath(dirname(__FILE__)).DS);

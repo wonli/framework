@@ -1,4 +1,8 @@
 <?php
+/**
+ * 图片上次类
+ * Class AImages
+ */
 class AImages{
 	var $inputName;                 //控件名
 	var $allowType = array(

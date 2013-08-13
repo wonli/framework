@@ -1,9 +1,6 @@
 <?php
 /**
-* Author:       wonli
-* Contact:      wonli@live.com
-* Date:         2011.08
-* Description:  date access
+* @Author: wonli <wonli@live.com>
 */
 class DataAccess
 {

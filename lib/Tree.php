@@ -1,14 +1,45 @@
 <?php
-
+/**
+ * Class Tree
+ * crossphp 优化返回数据
+ */
 class Tree 
 {
-    var $data   = array();
-    var $child  = array(-1 => array());//父亲节点与孩子节点的关系映射
-    var $layer  = array(0 => 0);//初始节点为0
-    var $parent = array();//非叶子节点的节点，也就是有孩子节点的节点
-    var $id_field = '';//子节点的名称
-    var $value_field = '';//一般是分类名称
-	var $parent_field = '';//父节点的名称
+    /**
+     * @var array 数据
+     */
+    public $data   = array();
+
+    /**
+     * @var array 父亲节点与孩子节点的关系映射
+     */
+    public $child  = array(-1 => array());
+
+    /**
+     * @var array 初始节点为0
+     */
+    public $layer  = array(0 => 0);
+
+    /**
+     * @var array 非叶子节点的节点，也就是有孩子节点的节点
+     */
+    public $parent = array();
+
+    /**
+     * @var string 子节点的名称
+     */
+    public $id_field = '';
+
+    /**
+     * @var string 一般是分类名称
+     */
+    public $value_field = '';
+
+    /**
+     * @var string 父节点的名称
+     */
+    public $parent_field = '';
+
     /**
      * 构造函数
      *
@@ -124,16 +155,35 @@ class Tree
         }
     }
 
+    /**
+     * 数据id的值
+     *
+     * @param $id
+     * @return mixed
+     */
     function getValue($id)
     {
         return $this->data[$id][$this->value_field];
     }
 
+    /**
+     * 对应关系
+     *
+     * @param $id
+     * @param bool $space
+     * @return string
+     */
     function getLayer($id, $space = false)
     {
         return $space ? str_repeat($space, $this->layer[$id]) : $this->layer[$id];
     }
 
+    /**
+     * 获取父节点
+     *
+     * @param $id
+     * @return mixed
+     */
     function getParent($id)
     {
         return $this->parent[$id];
@@ -158,6 +208,12 @@ class Tree
         return $parent;
     }
 
+    /**
+     * 获取子节点
+     *
+     * @param $id
+     * @return mixed
+     */
     function getChild($id)
     {
         return $this->child[$id];
@@ -186,7 +242,7 @@ class Tree
      *     ))
      * )
      */
-    function getArrayList($root = 0 , $layer = NULL)
+    function getArrayList($root = 0 , $layer = NULL, $clear = false)
     {
         $data = array();
         foreach ($this->child[$root] as $id)
@@ -195,8 +251,16 @@ class Tree
             {
                 continue;
             }
-            $data[] = array($this->id_field  => $id,$this->value_field=> $this->getValue($id), 'children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array());
-           // $data[] = array('id' => $id, 'value' => $this->getValue($id), 'children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array());
+            
+            if(true === $clear) {
+                $data[] = array(
+                        $this->id_field  => $id,
+                        $this->value_field=> $this->getValue($id), 
+                        'children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()
+                    );
+            } else {
+                $data[] = array_merge( $this->data[$id], array('children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()));           
+            }
         }
         return $data;
     }

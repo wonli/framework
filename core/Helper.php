@@ -1,15 +1,24 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author:       wonli
+ * @Author:  wonli<wonli@live.com>
  */
 class Helper
 {
     const AUTH_KEY = "crossphp";
-    public static $su = array(1=>'白羊座',2=>'金牛座',3=>'双子座',4=>'巨蟹座',5=>'狮子座',6=>'处女座',7=>'天枰座',8=>'天蝎座',9=>'射手座',10=>'摩羯座',11=>'水瓶座',12=>'双鱼座');
+
+    /**
+     * @var array 星座
+     */
+    public static $su = array(1=>'白羊座',2=>'金牛座',3=>'双子座',4=>'巨蟹座',5=>'狮子座',
+        6=>'处女座',7=>'天枰座',8=>'天蝎座',9=>'射手座',10=>'摩羯座',11=>'水瓶座',12=>'双鱼座');
+
+    /**
+     * @var array 性别类型
+     */
     public static $gender = array(1=>'女', 2=>'男', 3=>'女偏男', 4=>'男偏女', 5=>'中性', 6=>'由女变成男', 7=>'由男变成女');
 
     /**
-     * 友好时间
+     * 显示友好时间格式
      *
      * @param $time 时间戳
      * @return mixd
@@ -38,9 +47,16 @@ class Helper
                 }
             }
         }
-    } 
-    
-    //如果UTF8字符串超过指定长度则返回指定长度的字符串
+    }
+
+    /**
+     * 截取字符串
+     *
+     * @param $str 要截取的字符串参数
+     * @param $len 截取的长度
+     * @param string $enc 字符串编码
+     * @return string
+     */
     public static function subStr($str, $len, $enc = 'utf8')
     {
         if(self::strLen($str) > $len) {
@@ -50,13 +66,19 @@ class Helper
         }
     }
 
-    public static function strLen($str, $enc = 'utf8')
+    /**
+     * 计算字符串长度
+     * @param $str
+     * @param string $enc 默认utf8编码
+     * @return int
+     */
+    public static function strLen($str, $enc = 'gb2312')
     {
-        return mb_strlen($str, $enc);
+        return min( array(mb_strlen($str,$enc), mb_strlen($str,'utf-8')) );
     }
 
     /**
-    * 将汉字字符串分割为数组
+    * 将指定编码的字符串分割为数组
     *
     * @param string $str
     * @param string $charset 字符编码 默认utf-8
@@ -100,18 +122,35 @@ class Helper
         
         return $array;
     }
-    
+
+    /**
+     * 返回一个10位的md5编码后的str
+     *
+     * @param string $str
+     * @return string
+     */
     static function md10($str='')
     {
         return substr(md5($str),10,10);
     }
 
+    /**
+     * 取得文件扩展名
+     *
+     * @param $file 文件名
+     * @return mixed
+     */
     static function getExt($file)
     {
         $_info = pathinfo($file);
         return $_info['extension'];
     }
 
+    /**
+     * 创建文件夹
+     *
+     * @param $path
+     */
     static function createFolders($path)
     {
         if (!file_exists($path))
@@ -121,13 +160,12 @@ class Helper
         }
     }
 
-    static function hview($text)
-    {
-        $text = stripslashes($text);
-        $text = nl2br($text);
-        return $text;
-    }
-
+    /**
+     * 验证电子邮件格式
+     *
+     * @param $email
+     * @return bool
+     */
     static function valid_email($email)
     {
         if (!@ereg("^[^@]{1,64}@[^@]{1,255}$",$email))
@@ -163,22 +201,13 @@ class Helper
         return true;
     }
 
-    static function getIp()
-    {
-        if(getenv('HTTP_CLIENT_IP') &&strcasecmp(getenv('HTTP_CLIENT_IP'),'unknown')) {
-            $PHP_IP = getenv('HTTP_CLIENT_IP');
-        } elseif(getenv('HTTP_X_FORWARDED_FOR') &&strcasecmp(getenv('HTTP_X_FORWARDED_FOR'),'unknown')) {
-            $PHP_IP = getenv('HTTP_X_FORWARDED_FOR');
-        } elseif(getenv('REMOTE_ADDR') &&strcasecmp(getenv('REMOTE_ADDR'),'unknown')) {
-            $PHP_IP = getenv('REMOTE_ADDR');
-        } elseif(isset($_SERVER['REMOTE_ADDR']) &&$_SERVER['REMOTE_ADDR'] &&strcasecmp($_SERVER['REMOTE_ADDR'],'unknown')) {
-            $PHP_IP = $_SERVER['REMOTE_ADDR'];
-        }
-        preg_match("/[\d\.]{7,15}/",$PHP_IP,$ipmatches);
-        $PHP_IP = $ipmatches[0] ?$ipmatches[0] : 'unknown';
-        return $PHP_IP;
-    }
-
+    /**
+     * 返回一个指定长度的随机数
+     *
+     * @param $length
+     * @param int $numeric
+     * @return string
+     */
     static function random($length,$numeric = 0)
     {
         PHP_VERSION <'4.2.0'? mt_srand((double)microtime() * 1000000) : mt_srand();
@@ -193,48 +222,62 @@ class Helper
         return $hash;
     }
 
-    static function url2Path($url)
-    {
-        return str_replace('/',DS,$url);
-    }
-
-	/**
-	 * 过滤非法标签
-	 * */
+    /**
+     * 过滤非法标签
+     *
+     * @param $str
+     * @param string $disallowable
+     * @return mixed
+     */
     static function strip_selected_tags($str,$disallowable="<script><iframe><style><link>")
 	{
 		$disallowable	= trim(str_replace(array(">","<"),array("","|"),$disallowable),'|');
 		$str			= str_replace(array('&lt;', '&gt;'),array('<', '>'),$str);
 		$str			= preg_replace("~<({$disallowable})[^>]*>(.*?<\s*\/(\\1)[^>]*>)?~is",'$2',$str);
-		
+
 		return $str;
 	}
-	/**
-	 * 替换或转义标签
-	 * */
-	static function convert_tags($str)
-	{
 
+    /**
+     * 转换html实体编码
+     *
+     * @param $str
+     * @return mixed
+     */
+    static function convert_tags($str)
+	{
 		if($str) {
             $str = str_replace(array('<', '>',"'",'"'),array('&lt;', '&gt;','&#039;','&quot;'),$str);
         }
 	 	return $str;
-	}    
-    
+	}
+
+    /**
+     * 字符串加密解密算法
+     *
+     * @param $string
+     * @param string $operation
+     * @param string $key
+     * @param int $expiry
+     * @return string
+     */
     static function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 
         $ckey_length = 4;
-
         $key = md5($key ? $key : self::AUTH_KEY);
 
         $keya = md5(substr($key, 0, 16));
         $keyb = md5(substr($key, 16, 16));
-        $keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length): substr(md5(microtime()), -$ckey_length)) : '';
+        $keyc = $ckey_length ?
+            ($operation == 'DECODE' ? substr($string, 0, $ckey_length): substr(md5(microtime()), -$ckey_length)) : '';
 
         $cryptkey = $keya.md5($keya.$keyc);
         $key_length = strlen($cryptkey);
 
-        $string = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry ? $expiry + time() : 0).substr(md5($string.$keyb), 0, 16).$string;
+        $string = $operation == 'DECODE'
+            ? base64_decode(substr($string, $ckey_length)) :
+            sprintf('%010d', $expiry ? $expiry + time() : 0).substr(md5($string.$keyb), 0, 16).$string;
+
         $string_length = strlen($string);
 
         $result = '';
@@ -262,7 +305,8 @@ class Helper
         }
 
         if($operation == 'DECODE') {
-            if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26).$keyb), 0, 16)) {
+            if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0)
+                && substr($result, 10, 16) == substr(md5(substr($result, 26).$keyb), 0, 16)) {
                 return substr($result, 26);
             } else {
                 return '';
@@ -272,13 +316,62 @@ class Helper
         }
     }
 
-    public static function getRandomStr( $type=3, $length=4 ){
-        //定义一个空字符串，向他赋值，并且得到值后，待会返回这个字符串的值，这样即得到验证码
+    /**
+     * 简单字符串加解密
+     *
+     * @param $tex
+     * @param $key
+     * @param string $type
+     * @return bool|string
+     */
+    static function encode_params($tex, $key, $type="encode")
+    {
+        if($type=="decode") {
+            if( strlen($tex) < 5 )return false;
+            $verity_str=substr($tex, 0, 3);
+            $tex=substr($tex, 3);
+            if($verity_str!=substr(md5($tex), 0, 3)){
+                //完整性验证失败
+                return false;
+            }
+        }
+        $rand_key=md5($key);
+
+        if($type == "decode") {
+            $tex = base64_decode($tex);
+        } else {
+            $tex = strval($tex);
+        }
+
+        $texlen=strlen($tex);
+        $reslutstr="";
+        for($i=0;$i<$texlen;$i++){
+            $reslutstr.=$tex{$i}^$rand_key{$i%32};
+        }
+
+        if($type!="decode"){
+            $reslutstr=trim(base64_encode($reslutstr),"==");
+            $reslutstr=substr(md5($reslutstr), 0,3).$reslutstr;
+        }
+        return $reslutstr;
+    }
+    
+    /**
+     * 按类型和长度生成随机字符串
+     *
+     * @param int $type <pre>
+     * [1] 纯数字
+     * [2] 英文字符
+     * [3] 过滤掉0,O,i,I,1,L这些后的英文字符
+     * [4] 中文字符
+     * </pre>
+     * @param int $length
+     * @return string
+     */
+    public static function getRandomStr( $type=3, $length=4 ) {
         $string='';
 
-        //判断type
         switch($type){
-
             case 1:
                 $string=join('',array_rand(range(0,9),$length));
                 break;
@@ -299,19 +392,15 @@ class Helper
 
         return $string;
     }
-    
-    public static function get_avatar($uid) {
-        $uid = strval(abs($uid)); //UID取整数绝对值
-        $uid = str_pad(strval($uid), 9, "0", STR_PAD_LEFT);//前边加0补齐9位，例如UID为31的用户变成 000000031
-        $dir1 = substr($uid, 0, 3);  //取左边3位，即 000
-        $dir2 = substr($uid, 3, 2);  //取4-5位，即00
-        $dir3 = substr($uid, 5, 2);  //取6-7位，即00
-        // 下面拼成用户头像路径，即000/00/00/31
-        return $dir1.'/'.$dir2.'/'.$dir3.'/'.substr($uid, -2).".jpg";
-    }    
-    
-    static function get_path($path_name, $id) {
 
+    /**
+     * 生成四层深度的路径
+     *
+     * @param $id
+     * @param string $path_name
+     * @return string
+     */
+    static function get_path($id, $path_name='') {
         $id = strval(abs($id)); //ID取整数绝对值
         $id = str_pad(strval($id), 9, "0", STR_PAD_LEFT);//前边加0补齐9位，例如ID31变成 000000031
         $dir1 = substr($id, 0, 3);  //取左边3位，即 000
@@ -323,6 +412,7 @@ class Helper
     
 	/**
 	 * 发送一个http请求
+     *
 	 * @param  $url    请求链接
 	 * @param  $method 请求方式
 	 * @param array $vars 请求参数
@@ -360,7 +450,7 @@ class Helper
 		{
 			$result = trim($result);
 		}
-		else 
+		else
 		{
 			$result = '[error：1]';
 		}
@@ -369,42 +459,75 @@ class Helper
 		return $result;
 	}  
 
-	/**
-	 * 递归方式的对变量中的特殊字符进行转义以及过滤标签
-	 */
-	static function addslashes_deep($value)
+    /**
+     * 递归方式的对变量中的特殊字符进行转义以及过滤标签
+     *
+     * @param $value
+     * @return array|string
+     */
+    static function addslashes_deep($value)
 	{
 		if (empty($value))return $value;
-		//Huige 过滤html标签,防止sql注入
 		return is_array($value) ? array_map('addslashes_deep', $value) : strip_tags(addslashes($value));
-	} 
+	}
 
+    /**
+     * 反引用一个字符串引用项
+     *
+     * @param $value
+     * @return array|string
+     */
     static function stripslashes_deep($value)
 	{
 		if (empty($value))return $value;
 		return is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value);
 	}
 
-	static function escape($str,  $quote_style = ENT_COMPAT )
+    /**
+     * htmlspecialchars 函数包装
+     *
+     * @param $str
+     * @param int $quote_style
+     * @return string
+     */
+    static function escape($str,  $quote_style = ENT_COMPAT )
 	{
 		return htmlspecialchars($str, $quote_style);
 	}
 
-	static function isChinese($string)
+    /**
+     * 判断是否是中文字符串
+     *
+     * @param $string
+     * @return bool
+     */
+    static function isChinese($string)
 	{
 		if(preg_match("/^[\x{4e00}-\x{9fa5}]+$/u",$string))
 			return true;
 		return false;
 	}
 
-	static function isMobile($mobile)
+    /**
+     * 验证是否是一个正确的手机号
+     *
+     * @param $mobile
+     * @return bool
+     */
+    static function isMobile($mobile)
 	{
 		if(preg_match("/^1[345689]\d{9}$/", $mobile))
 			return true;
 		return false;
 	}
 
-	static function dayToWeek($time=null)
+    /**
+     * 取得当前日期星期几
+     *
+     * @param null $time
+     * @return mixed
+     */
+    static function dayToWeek($time=null)
 	{
 		$time = empty($time) ? time() : $time;
 		$date[0] = '周日';
@@ -417,6 +540,13 @@ class Helper
 		return $date[Date('w',$time)];
 	}
 
+    /**
+     * encrypt 加密解密
+     *
+     * @param $crypt
+     * @param string $mode
+     * @return mixed|string
+     */
     static function encrypt($crypt,$mode='DECODE')
     {
         $key = '!@#6<>?*';//任意8位字符串
@@ -434,24 +564,35 @@ class Helper
         return $str;
     }
 
-    static function get_client_ip() {
-	    $ip = NULL;
-	    if ($ip !== NULL) return $ip;
-	    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-	        $arr = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-	        $pos =  array_search('unknown',$arr);
-	        if(false !== $pos) unset($arr[$pos]);
-	        $ip   =  trim($arr[0]);
-	    }elseif (isset($_SERVER['HTTP_CLIENT_IP'])) {
-	        $ip = $_SERVER['HTTP_CLIENT_IP'];
-	    }elseif (isset($_SERVER['REMOTE_ADDR'])) {
-	        $ip = $_SERVER['REMOTE_ADDR'];
-	    }
-	    // IP地址合法验证
-	    $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
-	    return $ip;
-	}
-    
+    /**
+     * 取得用户真实ip
+     *
+     * @return string
+     */
+    static function getIp()
+    {
+        $ip = null;
+        if(getenv('HTTP_CLIENT_IP') &&strcasecmp(getenv('HTTP_CLIENT_IP'),'unknown')) {
+            $ip = getenv('HTTP_CLIENT_IP');
+        } elseif(getenv('HTTP_X_FORWARDED_FOR') &&strcasecmp(getenv('HTTP_X_FORWARDED_FOR'),'unknown')) {
+            $ip = getenv('HTTP_X_FORWARDED_FOR');
+        } elseif(getenv('REMOTE_ADDR') &&strcasecmp(getenv('REMOTE_ADDR'),'unknown')) {
+            $ip = getenv('REMOTE_ADDR');
+        } elseif(isset($_SERVER['REMOTE_ADDR']) &&$_SERVER['REMOTE_ADDR'] &&strcasecmp($_SERVER['REMOTE_ADDR'],'unknown')) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
+        //是否是一个合法的ip地址
+        $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
+        return $ip;
+    }
+
+    /**
+     * 格式化数据大小(单位byte)
+     *
+     * @param $size
+     * @return string
+     */
     static function convert($size) { 
         $unit=array('b','kb','mb','gb','tb','pb'); 
         return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i]; 

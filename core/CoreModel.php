@@ -1,18 +1,42 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author: wangli
+ * @Author: wonli <wonli@live.com>
  */
 class CoreModel extends FrameBase
 {
+    /**
+     * @var 数据库类型
+     */
     private $dbtype;
-	protected $link;
 
-	function __construct($controller = null)
+    /**
+     * @var bool|Mongo|PdoDataAccess
+     */
+    protected $link;
+
+    /**
+     * @var 缓存key
+     */
+    protected static $cache_key;
+
+    /**
+     * 构造函数连接数据库
+     *
+     * @param null $controller
+     */
+    function __construct($controller = null)
     {
+        parent::__construct();
         $this->controller = $controller;
-        $this->link = $this->dbcontent();
+        $this->link = $this->db = $this->dbcontent();
+        $this->dbconfig = $this->_config();
     }
 
+    /**
+     * 建立与数据库的连接
+     * @return bool|Mongo|PdoDataAccess
+     * @throws CoreException
+     */
     private function dbcontent()
     {
         $db = $this->getDBConfig();        
@@ -22,19 +46,43 @@ class CoreModel extends FrameBase
             return false;
         }
 
-        if($dbtype == 'mongodb') {
-            if($db["dsn"]) {
+        switch($dbtype)
+        {
+            case 'mysql' :
+                return PdoAccess::getInstance($db["dsn"], $db["user"], $db["pass"]);
+
+            case 'mongodb' :
                 return  new Mongo($db["dsn"]);
-            } else throw new CoreException("建立数据库连接失败!");
-        } else if($dbtype == 'mysql') {
-            if($db) {
-                return PdoDataAccess::getInstance($db["dsn"], $db["user"], $db["pass"]);
-            } else throw new CoreException("建立数据库连接失败!");
-        } else {
-            throw new CoreException("不支持的数据库类型!请自行扩展");
+
+            default :
+                throw new CoreException("不支持的数据库类型!请自行扩展");
         }
     }
 
+    /**
+     * 读取数据库配置
+     *
+     * @return array
+     */
+    function _config($type='all')
+    {
+        $config = Config::load( APP_NAME, "config/db.config.php")->parse('', false)->getAll();
+
+        if($type == 'all')
+        {
+            return $config;
+        } else {
+            if(isset( $config [$type] )) {
+                return $config [$type];
+            }
+            throw new CoreException("未发现 {$type} 配置项");
+        }
+    }
+
+    /**
+     * 设置数据库类型
+     * @param $type
+     */
     private function setDBType($type)
     {
         if(! $this->dbtype) {
@@ -42,55 +90,113 @@ class CoreModel extends FrameBase
         }
     }
 
+    /**
+     * 取得数据库类型
+     * @return mixed
+     */
     private function getDBType()
     {
         return $this->dbtype;
     }
 
-    private function getDBConfig()
+    /**
+     * 读取数据库配置
+     *
+     * @return bool
+     * @throws CoreException
+     */
+    private function getDBConfig( $type='CONTROLLER' )
     {
-        $db_config_file = Cross::config()->get("sys", "app_path").DS.'config'.DS."db.config.php";
-        
-        if( is_file($db_config_file) ) {
+        $dbconfig = $this->_config( );
+        $controller_config = $this->config->get("controller", strtolower($this->controller));
 
-            $controller_config = Cross::config()->get("controller", strtolower($this->controller));
-            $dbconfig = include $db_config_file;
 
-            if(isset( $controller_config["db"] )) {
-                if($controller_config["db"]) {
-                    list($use, $type, $num) = $controller_config["db"];
-                    if($use) {
-                        if($type) {
-                            $this->setDBType($type);
-                        }
+        if(isset( $controller_config ['db']))
+        {
+            list($type, $config_num) = explode(":", $controller_config ["db"]);
 
-                        if(isset($dbconfig[$type][$num])) {
-                            return $dbconfig[$type][$num];
-                        } else {
-                            throw new CoreException("数据库配置错误: ".$type.'-'.$num);
-                        }
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
+            if($type) {
+                $this->setDBType($type);
+            }
+
+            if( isset( $dbconfig[$type] [$config_num] ) )
+            {
+                return $dbconfig[$type] [$config_num];
             } else {
-                if($dbconfig["mysql"]["db"]) {
-                    $this->setDBType("mysql");
-                    return $dbconfig["mysql"]["db"];
-                } else {
-                    throw new CoreException("未找到数据库默认配置");
-                }
+                throw new CoreException("指定的数据库连接未配置: ".$type.'-'.$num);
             }
         }
         else
-        throw new CoreException("unread db config");
+        {
+            if($dbconfig["mysql"]["db"]) {
+                $this->setDBType("mysql");
+                return $dbconfig["mysql"]["db"];
+            } else {
+                throw new CoreException("未找到数据库默认配置");
+            }
+        }
     }
 
+    /**
+     * 加载其他module
+     * @param $module_name 要加载的module的全名
+     * @return object
+     */
     final function load($module_name)
     {
         $name = substr($module_name, 0, -6);
         return $this->initModule($name);
     }
+
+    /**
+     * 加载缓存
+     *
+     * @param string $type
+     * @return stdClass
+     * @throws CoreException
+     */
+    function get_cache($type = 'redis')
+    {
+        $cache_config = $this->_config( $type );
+        $obj = new stdClass();
+
+        if(! empty($cache_config))
+        {
+            if(is_array($cache_config))
+            {
+                foreach($cache_config as $_cache_name => $_cache_config)
+                {
+                    $obj->$_cache_name = Cache::factory($type, $_cache_config);
+                }
+            }
+
+            return $obj;
+        } else {
+            throw new CoreException("未配置的缓存类型 {$type}");
+        }
+    }
+
+    /**
+     * 取缓存key
+     *
+     * @param $key_name
+     * @return mixed
+     * @throws FrontException
+     */
+    static function cache_key($key_name, $key_value)
+    {
+        if( empty(self::$cache_key) ) {
+            self::$cache_key = Config::load(APP_NAME, "config/cachekey.php")->parse("",false)->getAll();
+        }
+
+        if(isset(self::$cache_key [$key_name]))
+        {
+            return self::$cache_key [$key_name].":{$key_value}";
+        }
+        else
+        {
+            throw new FrontException("缓存key {$key_name} 未定义");
+        }
+    }
+
 }

@@ -15,17 +15,26 @@ class CoreController extends FrameBase
         return strtolower($_SERVER['REQUEST_METHOD']) == 'post';
  	}
 
+    /**
+     * 判断请求类型是否为get
+     * @return bool
+     */
     protected function is_get()
     {
         return strtolower($_SERVER['REQUEST_METHOD']) == 'get';
     }
-    
+
+    /**
+     * 是否是cli方式
+     * @return bool
+     */
     protected function is_cli()
     {
         define('IS_CLI', PHP_SAPI === 'cli');
         if(IS_CLI) return true;
         return false;    	
     }
+
     /**
 	 * 判断是否为一个ajax请求
 	 * @return boolean
@@ -38,7 +47,7 @@ class CoreController extends FrameBase
     /**
      * 取得通过POST传递的参数
      *
-     * @param $p 是否打印
+     * @param $p 调试参数
      * @return
      */
     protected function getArgs($p=false)
@@ -51,7 +60,11 @@ class CoreController extends FrameBase
         $args = array();
         if( count($_POST) > 0 ) {
             foreach($_POST as $k=>$v) {
-                $args[$k] = addslashes(trim($v));
+                if(! empty($v) && is_string($v)) {
+                    $args[$k] = addslashes(trim($v));
+                } else {
+                    $args[$k] = $v;
+                }
             }
         }
         unset($_POST);
@@ -60,9 +73,10 @@ class CoreController extends FrameBase
 
     /**
      * 返回执行的前一页
+     *
      * @return
      */
-    protected function reload()
+    protected function return_referer()
     {
         return header('location:'.$_SERVER['HTTP_REFERER']);
     }
@@ -73,13 +87,19 @@ class CoreController extends FrameBase
      * @param $url 要跳转的路径
      * @return javascript
      */
-    protected function to($_controller, $params=null, $sec=false)
+    protected function to($_controller=null, $params=null, $sec=false)
     {
-        $view = new CoreView();
-        $url = $view->link($_controller, $params, $sec);
+        $url = $this->view->link($_controller, $params, $sec);
         return header("location:{$url}");
     }
 
+    /**
+     * 加载缓存的文件
+     *
+     * @param $cachename
+     * @return mixed
+     * @throws CoreException
+     */
     protected function loadCache($cachename)
     {
         if( file_exists($datafile = APP_PATH.DS.'cache'.DS.$cachename.'.php') ){
@@ -95,9 +115,10 @@ class CoreController extends FrameBase
      *
      * @param $params 格式 "controller:action"
      * @param $args controller:action 的参数
+     * @param $cache 是否缓存输出
      * @return mixed
      */
-    protected function load($params, $args = null)
+    protected function load($params, $args = null, $cache = true)
     {
         if(false !== strpos($params, ":"))
         {
@@ -108,29 +129,45 @@ class CoreController extends FrameBase
         }
 
         $load_controller = new $controller_name;
-        $load_controller->module = $this->initModule($controller_name);
-        $load_controller->view = $this->initView($action, $controller_name);
+        $load_controller->view = $this->loadView($action, $controller_name);
 
-        ob_start();
-        $load_controller->$action($args);
-        return ob_get_clean();
+        if($cache) {
+            ob_start();
+            $load_controller->$action($args);
+            return ob_get_clean();
+        }
+        
+        return $load_controller->$action($args);
     }
 
-    protected function loadModule( $module_name )
+    /**
+     * view->display 的连接
+     *
+     * @param null $date
+     * @param null $method
+     * @return mixed
+     */
+    protected function display($date=null, $method = null)
     {
-        $model_class_name = ucfirst($module_name.'Module');
-        return new $model_class_name($module_name);
+        return $this->view->display( $date, $method );
     }
 
+    /**
+     * 设置参数
+     *
+     * @param $debug
+     */
     protected function setArgs($debug)
     {
+        echo 1111;exit;
         $this->args = $this->getArgs($debug);
     }
 
     /**
-     * 取得from提交的参数
-     * @param  boolean $obj 是否返回数组
-     * @return mixed       from提交的参数
+     * 来自app的参数
+     *
+     * @param bool $obj
+     * @return stdClass
      */
     protected function args($obj=false)
     {
@@ -144,11 +181,22 @@ class CoreController extends FrameBase
         return $this->args;
     }
 
+    /**
+     * $_GET
+     *
+     * @return mixed
+     */
     protected function _GET()
     {
         return $_GET;
     }
 
+    /**
+     * $_POST
+     *
+     * @param bool $debug
+     * @return bool
+     */
     protected function _POST($debug=false)
     {
         if($this->is_post()) {
@@ -158,6 +206,10 @@ class CoreController extends FrameBase
         return false;
     }
 
+    /**
+     * $_FILE
+     * @return mixed
+     */
     protected function _FILE()
     {
         return $_FILE;

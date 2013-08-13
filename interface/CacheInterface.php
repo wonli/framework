@@ -1,7 +1,19 @@
 <?php
-//Cross缓存接口
+/**
+ * @Auth wonli <wonli@live.com>
+ *
+ * Class CacheInterface
+ */
+
 interface CacheInterface
 {
-    function get();
-    function set();
+    /**
+     * @return mixed get cache
+     */
+    function get( $key );
+
+    /**
+     * @return mixed set
+     */
+    function set( $key, $value );
 }

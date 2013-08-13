@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 
 /**
- * @Author:       wonli
+ * @Author: wonli <wonli@live.com>
  */
 
 interface iHttpAuth {
@@ -9,15 +9,36 @@ interface iHttpAuth {
     public function get($key, $de = false);
 }
 
+/**
+ * cookie保存登录状态
+ * Class CookieAuth
+ */
 class CookieAuth implements iHttpAuth
 {
+    /**
+     * @var string 加解密key
+     */
     private $key = "!wl<@>c(r#%o*s&s";
 
+    /**
+     * 生成密钥 用户ip+浏览器AGENT+key+params
+     *
+     * @param $params 值
+     * @return string md5 字符串
+     */
     function cookieKey($params)
     {
         return md5(Helper::getIp().$_SERVER ["HTTP_USER_AGENT"].$this->key.$params);
     }
 
+    /**
+     * 生成加密后的cookie
+     *
+     * @param $name cookie的key
+     * @param $params cookie的值
+     * @param int $exp 过期时间
+     * @return bool
+     */
     function set($name, $params, $exp = 86400)
     {
         $key = $this->cookieKey($name);
@@ -44,6 +65,13 @@ class CookieAuth implements iHttpAuth
         else return false;
     }
 
+    /**
+     * 从已加密的cookie中取出值
+     *
+     * @param $params cookie的key
+     * @param bool $de
+     * @return bool|mixed|string
+     */
     function get($params, $de = false)
     {
         $dejson = false;
@@ -76,8 +104,11 @@ class CookieAuth implements iHttpAuth
 }
 
 
-
-
+/**
+ * session保存登录状态
+ *
+ * Class SessionAuth
+ */
 class SessionAuth implements iHttpAuth
 {
     function __construct()
@@ -115,16 +146,16 @@ class HttpAuth
         switch($type)
         {
             case 'COOKIE' :
-            self::$obj = new CookieAuth();
-            break;
+                self::$obj = new CookieAuth();
+                break;
 
             case 'SESSION' :
-            self::$obj = new SessionAuth();
-            break;
+                self::$obj = new SessionAuth();
+                break;
 
             default:
-            self::$obj = new CookieAuth();
-            break;
+                self::$obj = new CookieAuth();
+                break;
         }
 
         return self::$obj;

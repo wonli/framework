@@ -3,15 +3,13 @@ class FrontException extends CrossException
 {
     function error_handler (exception $e)
     {
-        $message = $e->getMessage();
+        $cp_error = $this->cp_exception_source($e);
         $code = $e->getCode() ? $e->getCode() : 200;
-        $line = $e->getLine();
-        // $e->getTraceAsString ();
-        $trace = $e->getTrace();
-        $class = $trace[0]["class"];
-        $notes = $message.' '.$class.' '.$line;
- 
-        $tpl = CROSSPHP_PATH.'exception/_tpl/fronterror.php';      
-        return Response::message( $code, $notes, $tpl );
+        $tpl = CROSSPHP_PATH.'exception/_tpl/fronterror.php';
+        return Response::getInstance()->display( $code, $cp_error, $tpl );
     }
 }
+
+
+
+

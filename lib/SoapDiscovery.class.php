@@ -31,7 +31,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  *
- * @version $Id: SoapDiscovery.class.php 66 2013-04-10 07:12:21Z ideaa $
+ * @version $Id: SoapDiscovery.class.php 92 2013-07-30 06:06:22Z ideaa $
  * @copyright 2005 
  */
 
@@ -41,7 +41,7 @@
  * @package SoapDiscovery
  * @author Braulio Jos?Solano Rojas
  * @copyright Copyright (c) 2005 Braulio Jos?Solano Rojas
- * @version $Id: SoapDiscovery.class.php 66 2013-04-10 07:12:21Z ideaa $
+ * @version $Id: SoapDiscovery.class.php 92 2013-07-30 06:06:22Z ideaa $
  * @access public
  * */
 class SoapDiscovery {
@@ -120,7 +120,4 @@ class SoapDiscovery {
     public function getDiscovery() {
         return "<?xml version=\"1.0\" ?>\n<disco:discovery xmlns:disco=\"http://schemas.xmlsoap.org/disco/\" xmlns:scl=\"http://schemas.xmlsoap.org/disco/scl/\">\n<scl:contractRef ref=\"http://" . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER['PHP_SELF'] . "?wsdl\" />\n</disco:discovery>";
     }
-
 }
-
-?>

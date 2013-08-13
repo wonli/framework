@@ -1,25 +1,28 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @version: $Id: Cross.php 77 2013-05-23 13:54:54Z ideaa $
+ * @version: $Id: Cross.php 96 2013-08-01 05:34:03Z ideaa $
  */
-class Cross {
+class Cross
+{
+    public static $app_name;
 
-    public  static $appname;
+    /**
+     * @var App配置 init.php
+     */
+    private static $app_config;
 
+    /**
+     * @var 运行时配置 (高于配置文件)
+     */
     private static $runtime_config;
 
-    private static $appset;
-
-    private static $instance;
-
-    private static $loaded;
-    
-    public static $config;
-
-    private function __construct( $appname, $runtime_config )
+    /**
+     * 初始化框架 参见self::loadApp
+     */
+    private function __construct( $app_name, $runtime_config )
     {
-        self::$appname = $appname;
+        self::$app_name = $app_name;
         self::$runtime_config = $runtime_config;
         $this->appInit( );
     }
@@ -40,64 +43,60 @@ class Cross {
      * @param $runtime_config 运行时加载的设置
      * @return mixed
      */
-    static function loadApp($appname, $runtime_config = null)
+    static function loadApp($app_name, $runtime_config = null)
     {
-        if(! self::$instance)
-        {
-            self::$instance = new Cross( $appname, $runtime_config );
-        }
-        return self::$instance;
+        return new Cross( $app_name, $runtime_config );
     }
 
     /**
      * 返回配置类对象
+     *
      * @return config Object
      */
     static function config( )
     {
-        // if(! self::$config) {
-            // self::$config = Config::getInstance( self::$appname )->init( self::$runtime_config );
-        // }
-        // return self::$config;
-        
-        return Config::getInstance( self::$appname )->init( self::$runtime_config );
+        return Config::load( self::$app_name )->parse( self::$runtime_config );
     }
 
     /**
      * 取得所有自定义配置
+     *
      * @return array 配置数组
      */
-    static function getAppset()
+    static function get_app_config()
     {
-        return self::config()->getInit();
-    }
-
-    /*
-     *url路由
-     */
-    static function router()
-    {
-        return Router::getInstance()->set( self::$appset )->getRouter();
+        return self::config()->getAll();
     }
 
     /**
-     * 初始化框架
+     * 路由规则初始化
+     *
+     * @return mixed
+     */
+    static function router()
+    {
+        return Router::getInstance(self::$app_config)->getRouter();
+    }
+
+    /**
+     * 初始化配置参数,定义常量
      */
     private function appInit( )
     {
-        self::$appset = self::getAppset();
+        self::$app_config = self::get_app_config();
 
         $this->definer(array(
-            'BASEURL'       => self::$appset["sys"]["site_url"],
-            'APP_PATH'      => self::$appset["sys"]["app_path"],
-            'SITE_URL'      => self::$appset["sys"]["site_url"],
-            'STATIC_URL'    => self::$appset["sys"]["static_url"],
-            'STATIC_PATH'   => self::$appset["sys"]["static_path"]
+            'APP_NAME'      => self::$app_config["sys"]["app_name"],
+            'SITE_URL'      => self::$app_config["sys"]["site_url"],
+            'STATIC_URL'    => self::$app_config["sys"]["static_url"],
+            'STATIC_PATH'   => self::$app_config["sys"]["static_path"],
+            'APP_PATH'      => self::$app_config["sys"]["app_path"],
         ));
     }
 
     /**
-     * 定义常用常量
+     * 常量定义
+     *
      * @param   $define 要定义的常量名
      * @param   $args   常量的值
      */
@@ -114,11 +113,23 @@ class Cross {
 
     /**
      * Dispatcher解析执行Cross路由,加载缓存
+     *
      * @param   $args 指定运行时参数
      */
     public function run( $args = null )
     {
-        Dispatcher::getInstance( self::config() )->run( self::router(), $args );
+        Dispatcher::init( self::config() )->run( self::router(), $args );
+    }
+
+    /**
+     * 自定义router
+     *
+     * @param RouterInterface $router
+     * @param $args
+     */
+    public function rrun( RouterInterface $router, $args )
+    {
+        Dispatcher::init( self::config() )->run( $router, $args );
     }
 
     /**
@@ -129,39 +140,20 @@ class Cross {
      */
     public function get( $controller, $args = null )
     {
-        Dispatcher::getInstance( self::config() )->run( $controller, $args );
+        Dispatcher::init( self::config() )->run( $controller, $args );
     }
 
     /**
-     * 载入核心类
+     * ob缓存结果
      *
-     * @param $class 类名称 如果含有.则载入APP中类
+     * @param $controller
+     * @param null $args
+     * @return string
      */
-    static public function import($class)
+    public function cget( $controller, $args = null )
     {
-        if(isset(self::$loaded[$class])) {
-            return ;
-        }
-
-        if( false !== strpos($class, ".") ) {
-            $_path = str_replace(".", DS, $class);
-            $_class_real_path = APP_PATH.DS.$_path.".php";
-            if( file_exists($_class_real_path) ) {
-
-                self::$loaded[$class] = $_class_real_path;
-                require $_class_real_path;
-
-            } else throw new CoreException("没有找到该文件");
-        } else {
-            if(is_array($class)) {
-                foreach($class as $class_key) {
-                    self::$loaded[$class_key] = $class_key;
-                    require CORE_PATH.DS.$class_key.'.php';
-                }
-            } else {
-                self::$loaded[$class] = $class;
-                require CORE_PATH.DS.$class.'.php';
-            }
-        }
+        ob_start();
+            Cross::get($controller, $args);
+        return ob_get_clean();
     }
 }
