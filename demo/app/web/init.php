@@ -25,7 +25,7 @@ return array(
          * response输出方式
          * 支持 JSON HTML XML 默认是HTML
          */
-        'display' => 'JSON'
+        'display' => 'HTML'
     ),
 
 
