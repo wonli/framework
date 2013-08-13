@@ -4,7 +4,7 @@
 */
 define("__DEBUG__", true);
 require '../../crossboot.php';
-//自定义路由
+//解析请求
 $controller = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : '';
 if( $controller )
 {
