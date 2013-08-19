@@ -1,8 +1,8 @@
 <?php
 /**
  * 文件上传辅助类
- * @author    Garbin
- * Class Uploader crossphp 整理
+ * @author wonli <wonli@live.com>
+ * Class Uploader
  */
 class Uploader
 {

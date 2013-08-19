@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version: $Id: Loader.php 117 2013-08-18 13:08:34Z ideaa $
+ * @Version: $Id: Loader.php 121 2013-08-19 01:57:25Z ideaa $
  */
 class Loader
 {
@@ -96,7 +96,7 @@ class Loader
             'MySql'         => 'lib/pdo_mysql.php',
             'MongoBase'     => 'lib/MongoBase.php',
             'DataAccess'    => 'lib/DataAccess.php',
-            'resizeimage'   => 'lib/resizeimage.php', //图片剪裁
+            'ReSizeImage'   => 'lib/ReSizeImage.php', //图片剪裁
             'PdoAccess'     => 'lib/PdoAccess.php',
             'Captcha'       => 'lib/Captcha.php', //头像
             'AImages'       => 'lib/AImages.php', //图片上传
