@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version: $Id: CoreModule.php 106 2013-08-09 08:26:21Z ideaa $
+ * @Version: $Id: CoreModule.php 116 2013-08-17 08:48:35Z ideaa $
  */
 class CoreModule extends FrameBase
 {
@@ -40,26 +40,25 @@ class CoreModule extends FrameBase
      */
     function getLink( $params = null )
     {
-        $db_config = $this->_config( );
+        $db_config = $this->db_config( );
         $controller_config = null;
 
         if( $params )
         {
             list($link_type, $link_config) = explode(":", $params);
+            $link_params = $db_config->get($link_type, $link_config);
 
-            if( isset( $db_config [$link_type] [$link_config] ) )
+            if( empty($link_params) )
             {
-                $link_params = $db_config [$link_type] [$link_config];
-            } else {
                 throw new CoreException("未配置的数据库: {$link_type}:{$link_config}");
             }
         }
         else
         {
-            if( $db_config ["mysql"] ["db"] )
+            if($db_config->get("mysql", "db"))
             {
                 $link_type = 'mysql';
-                $link_params = $db_config ["mysql"] ["db"];
+                $link_params = $db_config->get("mysql", "db");
             } else {
                 throw new CoreException("未找到数据库默认配置");
             }
@@ -73,38 +72,9 @@ class CoreModule extends FrameBase
      *
      * @return array
      */
-    function _config( $type='all' )
+    function db_config( $type='all' )
     {
-        $config = Config::load( APP_NAME, "config/db.config.php")->parse('', false)->getAll();
-
-        if($type == 'all' || null == $type )
-        {
-            return $config;
-        }
-        else
-        {
-            $_type = $type;
-            $_conf = null;
-
-            if(false !== strpos($type, ":"))
-            {
-                list($_type, $_conf) = explode(":", $type);
-            }
-
-            if( isset($config [$_type]) )
-            {
-                if(null != $_conf)
-                {
-                    if( isset($config [$_type] [$_conf]) )
-                    {
-                        return $config [$_type] [$_conf];
-                    }
-                    throw new CoreException("未发现 {$_type}->{$_conf} 配置项");
-                }
-                return $config [$_type];
-            }
-            throw new CoreException("未发现 {$_type} 配置项");
-        }
+        return $config = CrossArray::init( Loader::import("::config/db.config.php", true) );
     }
 
     /**
@@ -117,12 +87,24 @@ class CoreModule extends FrameBase
     static function cache_key($key_name, $key_value)
     {
         if( empty(self::$cache_key) ) {
-            self::$cache_key = Config::load(APP_NAME, "config/cachekey.php")->parse("",false)->getAll();
+            self::$cache_key = Loader::import("::config/cachekey.php", true);
         }
 
-        if(isset(self::$cache_key [$key_name]))
+        $cache_key_object = CrossArray::init(self::$cache_key);
+
+        if(is_array($key_name))
         {
-            return self::$cache_key [$key_name].":{$key_value}";
+            list($key_name, $child_name) = $key_name;
+            $cache_key = $cache_key_object->get($key_name, $child_name);
+        }
+        else
+        {
+            $cache_key = $cache_key_object->get($key_name);
+        }
+
+        if(! empty($cache_key))
+        {
+            return "{$cache_key}:{$key_value}";
         }
         else
         {

@@ -32,9 +32,9 @@ class Main extends CoreController
 	
 	function d()
 	{
-		//调用module
+		//调用module 
 		$TEST = $this->loadModule('Test');
-		
+		echo $TEST->get_text();
 	}
 }
 

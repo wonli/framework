@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version: $Id: Loader.php 111 2013-08-12 09:02:03Z ideaa $
+ * @Version: $Id: Loader.php 117 2013-08-18 13:08:34Z ideaa $
  */
 class Loader
 {
@@ -100,6 +100,7 @@ class Loader
             'PdoAccess'     => 'lib/PdoAccess.php',
             'Captcha'       => 'lib/Captcha.php', //头像
             'AImages'       => 'lib/AImages.php', //图片上传
+            'ImagesThumb'   => 'lib/ImagesThumb.php', //图片剪裁
             'Tree'          => 'lib/Tree.php', //格式化树
             'Crumb'         => 'lib/Crumb.php', //验证字符串
             'CacheRedis'	=> 'lib/CacheRedis.php',

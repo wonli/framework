@@ -560,8 +560,9 @@ class MysqlModel implements SqlInterface
         return $this->pdo->lastInsertId();
     }
 
-    /*
-     *取得上一步INSERT产生的ID
+    /**
+     * @see insertid()
+     * @return string
      */
     function insert_id(){
         return $this->insertid();

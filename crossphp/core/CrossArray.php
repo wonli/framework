@@ -5,12 +5,12 @@ class CrossArray Extends ArrayIterator
     /**
      * @var array 数据
      */
-    protected $init;
+    protected $data;
 
     function __construct( $data )
     {
         parent::__construct();
-        $this->init = $data;
+        $this->data = $data;
     }
 
     /**
@@ -35,15 +35,15 @@ class CrossArray Extends ArrayIterator
     {
         if(is_string($config))
         {
-            if(isset($this->init[$config])) {
+            if(isset($this->data[$config])) {
                 if($name) {
-                    if(isset($this->init[$config][$name])) {
-                        return $this->init[$config][$name];
+                    if(isset($this->data[$config][$name])) {
+                        return $this->data[$config][$name];
                     } else {
                         return false;
                     }
                 }
-                return $this->init[$config];
+                return $this->data[$config];
             }
         }
 
@@ -51,16 +51,16 @@ class CrossArray Extends ArrayIterator
 
             if($name === true) {
                 foreach($config as $item) {
-                    if(isset($this->init[$item])) {
-                        unset($this->init[$item]);
+                    if(isset($this->data[$item])) {
+                        unset($this->data[$item]);
                     }
                 }
-                return $this->init;
+                return $this->data;
             } else {
                 $_returnArr = array();
                 foreach($config as $item) {
-                    if(isset($this->init[$item])) {
-                        $_returnArr[$item] = $this->init[$item];
+                    if(isset($this->data[$item])) {
+                        $_returnArr[$item] = $this->data[$item];
                     }
                 }
             }
@@ -77,9 +77,9 @@ class CrossArray Extends ArrayIterator
     function getAll($obj = false)
     {
         if($obj) {
-            return $this->arrayToObject($this->init);
+            return $this->arrayToObject($this->data);
         }
-        return $this->init;
+        return $this->data;
     }
 
     /**

@@ -38,8 +38,7 @@ class Config
     function __construct( $appname, $res_file )
     {
         $this->appname = $appname ? $appname : APP_NAME;
-        $this->base_path = APP_PATH_DIR.DS.$this->appname.DS;
-        $this->res_file = $this->base_path.$res_file;
+        $this->res_file = rtrim(APP_PATH_DIR, DS).DS.$this->appname.DS.$res_file;
     }
 
     /**
@@ -151,7 +150,7 @@ class Config
                     throw new CoreException("不支持的解析格式");
             }
         } else {
-            throw new CoreException("配置文件未找到");
+            throw new CoreException("配置文件 {$this->res_file} 未找到");
         }
     }
 
@@ -190,39 +189,7 @@ class Config
      */
     function get($config, $name=null)
     {
-        if(is_string($config))
-        {
-            if(isset($this->init[$config])) {
-                if($name) {
-                    if(isset($this->init[$config][$name])) {
-                        return $this->init[$config][$name];
-                    } else {
-                        return false;
-                    }
-                }
-                return $this->init[$config];
-            }
-        }
-
-        if(is_array($config)) {
-
-            if($name === true) {
-                foreach($config as $item) {
-                    if(isset($this->init[$item])) {
-                        unset($this->init[$item]);
-                    }
-                }
-                return $this->init;
-            } else {
-                $_returnArr = array();
-                foreach($config as $item) {
-                    if(isset($this->init[$item])) {
-                        $_returnArr[$item] = $this->init[$item];
-                    }
-                }
-            }
-            return $_returnArr;
-        }
+        return CrossArray::init($this->init)->get($config, $name);
     }
 
     /**
@@ -247,24 +214,6 @@ class Config
      */
     function getAll($obj = false)
     {
-        if($obj) {
-            return $this->arrayToObject($this->init);
-        }
-        return $this->init;
-    }
-
-    /**
-     * 数组转对象
-     *
-     * @param $d
-     * @return object
-     */
-    function arrayToObject($d) {
-        if (is_array($d)) {
-            return (object) array_map(array($this, __FUNCTION__), $d);
-        }
-        else {
-            return $d;
-        }
+        return CrossArray::init($this->init)->getAll($obj);
     }
 }

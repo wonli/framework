@@ -19,7 +19,7 @@ return array(
         /**
          * 默认的template路径
          */
-        'default_tpl' => 'api',
+        'default_tpl' => 'web',
 
         /**
          * response输出方式
