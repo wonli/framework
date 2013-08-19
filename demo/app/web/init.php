@@ -41,7 +41,7 @@ return array(
          * 1 QUERY_STRING
          * 2 PATH_INFO
          */
-        'type'=>2,
+        'type'=>1,
 
         /**
          * 是否使用rewrite
