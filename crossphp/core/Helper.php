@@ -84,7 +84,7 @@ class Helper
     * @param string $charset 字符编码 默认utf-8
     * @return Array
     */
-    static function str_split($str,$charset='utf-8') 
+    static function str_split($str,$charset='utf-8')
     {
         if($charset != 'utf-8') {
             $str = iconv($charset,'utf-8',$str);
@@ -92,13 +92,13 @@ class Helper
 
         $split=1;
         $array = array();
-        
+
         for ( $i=0; $i < strlen( $str ); )
         {
             $value = ord($str[$i]);
             if($value > 127)
             {
-                if($value >= 192 && $value <= 223) 
+                if($value >= 192 && $value <= 223)
                 $split=2;
                 elseif($value >= 224 && $value <= 239)
                 $split=3;
@@ -119,7 +119,7 @@ class Helper
                 $array[$key] = iconv('utf-8',$charset,$value);
             }
         }
-        
+
         return $array;
     }
 
@@ -355,7 +355,7 @@ class Helper
         }
         return $reslutstr;
     }
-    
+
     /**
      * 按类型和长度生成随机字符串
      *
@@ -408,8 +408,8 @@ class Helper
         $dir3 = substr($id, 5, 2);  //取6-7位，即00
         // 下面拼成路径，即000/00/00/31
         return  $path_name.'/'.$dir1.'/'.$dir2.'/'.$dir3.'/'.substr($id, -2).'/';
-    }     
-    
+    }
+
 	/**
 	 * 发送一个http请求
      *
@@ -433,18 +433,18 @@ class Helper
 				$url = $url . '&' . http_build_query($vars);
             }
 		}
-		
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	
-		if ($method == 'post') 
+
+		if ($method == 'post')
 		{
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
-		}	
+		}
 		$result = curl_exec($ch);
 		if(!curl_errno($ch))
 		{
@@ -454,10 +454,10 @@ class Helper
 		{
 			$result = '[error：1]';
 		}
-		
+
 		curl_close($ch);
 		return $result;
-	}  
+	}
 
     /**
      * 递归方式的对变量中的特殊字符进行转义以及过滤标签
@@ -495,6 +495,32 @@ class Helper
 		return htmlspecialchars($str, $quote_style);
 	}
 
+    /**
+     * 求概率 返回key
+     * <pre>
+     * array(
+     *  'a' => 60
+     *  'b' => 30
+     *  'c' => 10
+     * );
+     * </pre>
+     * @param array $array
+     * @return int|string
+     */
+    static function array_random_rate(array $array)
+    {
+        $max = array_sum($array);
+        foreach($array as $a_key => $a_value)
+        {
+            $rand = rand(0, $max);
+
+            if($rand <= $a_value) {
+                return $a_key;
+            } else {
+                $max -= $a_value;
+            }
+        }
+    }
     /**
      * 判断是否是中文字符串
      *
@@ -553,12 +579,12 @@ class Helper
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_DES,MCRYPT_MODE_ECB),MCRYPT_RAND);
 
         if( 'ENCODE' == $mode )
-        {   
+        {
             $passcrypt = mcrypt_encrypt(MCRYPT_DES ,$key, $crypt, MCRYPT_MODE_ECB, $iv);
             $str =  str_replace( array('=','/','+'), array('','-','_'), base64_encode($passcrypt) );
         }else{
            $decoded = base64_decode( str_replace(array('-','_'), array('/','+'), $crypt ) );
-           $str = mcrypt_decrypt(MCRYPT_DES ,$key, $decoded, MCRYPT_MODE_ECB, $iv); 
+           $str = mcrypt_decrypt(MCRYPT_DES ,$key, $decoded, MCRYPT_MODE_ECB, $iv);
         }
 
         return $str;
@@ -593,8 +619,8 @@ class Helper
      * @param $size
      * @return string
      */
-    static function convert($size) { 
-        $unit=array('b','kb','mb','gb','tb','pb'); 
-        return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i]; 
-    }  
+    static function convert($size) {
+        $unit=array('b','kb','mb','gb','tb','pb');
+        return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
+    }
 }

@@ -1,12 +1,14 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version: $Id: CoreModule.php 116 2013-08-17 08:48:35Z ideaa $
+ * @Version: $Id: CoreModule.php 137 2013-09-09 03:09:28Z ideaa $
  */
 class CoreModule extends FrameBase
 {
     /**
-     * @var db_type
+     * database type name
+     *
+     * @var string
      */
     protected $db_type;
 
@@ -16,7 +18,16 @@ class CoreModule extends FrameBase
     protected $link;
 
     /**
-     * @var 缓存key
+     * 数据库配置
+     *
+     * @var object
+     */
+    protected static $db_config;
+
+    /**
+     * 缓存key
+     *
+     * @var object
      */
     protected static $cache_key;
 
@@ -74,7 +85,11 @@ class CoreModule extends FrameBase
      */
     function db_config( $type='all' )
     {
-        return $config = CrossArray::init( Loader::import("::config/db.config.php", true) );
+        if(! self::$db_config)
+        {
+            self::$db_config = CrossArray::init( Loader::import("::config/db.config.php", true) );
+        }
+        return self::$db_config;
     }
 
     /**
@@ -84,9 +99,9 @@ class CoreModule extends FrameBase
      * @return mixed
      * @throws FrontException
      */
-    static function cache_key($key_name, $key_value)
+    static function cache_key($key_name, $key_value=null)
     {
-        if( empty(self::$cache_key) ) {
+        if( ! self::$cache_key) {
             self::$cache_key = Loader::import("::config/cachekey.php", true);
         }
 
@@ -104,7 +119,12 @@ class CoreModule extends FrameBase
 
         if(! empty($cache_key))
         {
-            return "{$cache_key}:{$key_value}";
+            if(null !== $key_value)
+            {
+                return "{$cache_key}:{$key_value}";
+            }
+
+            return $cache_key;
         }
         else
         {

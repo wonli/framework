@@ -146,14 +146,14 @@ class Uploader
      * @param bool $mkdir 是否创建路径
      * @return bool
      */
-    function save($dir, $name, $mkdir = true)
+    function save($dir, $name=null, $mkdir = true)
     {
-        if (!$this->_file)
+        if (! $this->_file)
         {
             return false;
         }
 
-        if (!$name)
+        if (! $name)
         {
             $name = $this->_file['filename'];
         }
@@ -177,7 +177,7 @@ class Uploader
     function move_uploaded_file($src, $target)
     {
         $abs_path = $this->_root_dir ? trim( $this->_root_dir . '/' ) . $target : $target;
-        $dirname = dirname($target);
+        $dirname = dirname($abs_path);
 
         if(! file_exists($dirname))
         {

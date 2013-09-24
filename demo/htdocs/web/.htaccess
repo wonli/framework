@@ -1,4 +1,3 @@
-#ȡ��PHP.INI�е�����
 php_value auto_append_file none
 php_value auto_prepend_file none
 php_value include_path "."
@@ -9,7 +8,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !\.(css|js|txt|mp3|zip|png|gif|jpe?g|exe|rmvb|rm|avi)$
 
-RewriteRule (.*) /cp/htdocs/admin/index.php?$1 [L]
+RewriteRule (.*) /demo/htdocs/web/index.php?$1 [L]
 </IfModule>
 
 

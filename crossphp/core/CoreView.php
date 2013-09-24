@@ -1,48 +1,55 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: CoreView.php 106 2013-08-09 08:26:21Z ideaa $
+ * @Version $Id: CoreView.php 141 2013-09-24 06:43:12Z ideaa $
  */
 class CoreView extends FrameBase
 {
 
     /**
-     * @var 模板数据
+     * 模板数据
+     *
+     * @var array
      */
     protected $data;
 
     /**
-     * @var layer字面量
+     * layer字面量
+     *
+     * @var array
      */
     protected $set;
 
     /**
-     * @var string url配置
+     * url配置
+     *
+     * @var array
      */
     protected $urlconfig;
 
     /**
-     * @var 资源链表
+     * 资源配置
+     *
+     * @var array
      */
     protected $res_list;
 
     /**
-     * @var 默认连接
+     * 默认连接
+     *
+     * @var string
      */
     protected $link_base;
-    
+
     /**
-     * @var 静态资源路径
-     */
-    protected $static_url;    
-    
-    /**
-     * 初始化模板
+     * 静态资源路径
      *
-     * @param null $action
-     * @param null $controller
-     * @param null $params
-     * @param null $cacheConfig
+     * @var string
+     */
+    protected $static_url;
+
+    /**
+     * 初始化视图
      */
     function __construct( )
     {
@@ -51,7 +58,7 @@ class CoreView extends FrameBase
         $this->urlconfig  = $this->config->get("url");
         $this->link_base  = $this->config->get("sys", "site_url");
         $this->static_url = $this->config->get("sys", "static_url");
-        
+
         $this->set("static_url", $this->static_url);
     }
 
@@ -151,7 +158,7 @@ class CoreView extends FrameBase
     {
         $_linkurl = '';
         if(false !== strpos($_controller, ":")){
-            list($controller,$action) = explode(":", $_controller);
+            list($controller, $action) = explode(":", $_controller);
         } else {
             $controller = $_controller;
         }
@@ -161,11 +168,11 @@ class CoreView extends FrameBase
         }else{
             $index = $this->urlconfig ["index"];
             $_dot = "?";
-            
-            if($index == 'index.php') {                
+
+            if($index == 'index.php') {
                 if($this->urlconfig ["type"] == 2) {
-                	$_dot = $index;	
-                }                
+                	$_dot = $index;
+                }
                 $_linkurl .= '/'.$_dot.'/'.$controller;
             } else {
                 $_linkurl .= '/'.$index.$_dot.$controller;
@@ -189,8 +196,8 @@ class CoreView extends FrameBase
     private function makeParams($params, $sec = false)
     {
         $_params = '';
-        
-        if($params) {            
+
+        if($params) {
             $_piex = '';
             if($this->urlconfig ["type"] == 1)
             {
@@ -202,12 +209,12 @@ class CoreView extends FrameBase
             } else {
                 $_piex = '?';
                 if(is_array($params)) {
-                    $_params = http_build_query($params);                    
+                    $_params = http_build_query($params);
                 } else {
                     $_params = $params;
-                }            
+                }
             }
-            
+
             if(true === $sec) {
                 $_params = $this->encode_params($_params, "crossphp");
             }
@@ -218,7 +225,7 @@ class CoreView extends FrameBase
 
     /**
      * 带生成静态页面的_display方法
-     * 
+     *
      * @param $date 要渲染的数据
      * @param $method 调用的方法
      * @return HTML
@@ -328,13 +335,13 @@ class CoreView extends FrameBase
             return 'mobile';
         }
         */
-        
+
         $tpl_path = 'web';
-        if( $this->config->get("sys", "default_tpl") ) 
+        if( $this->config->get("sys", "default_tpl") )
         {
             $tpl_path = $this->config->get("sys", "default_tpl");
         }
-        
+
         return $tpl_path;
     }
 
@@ -376,15 +383,7 @@ class CoreView extends FrameBase
      */
     function is_mobile()
     {
-        //正则表达式,匹配不同手机浏览器UA关键词。
-        $regex_match ="/(nokia|iphone|android|motorola|^mot\-|softbank|foma|docomo|kddi|up\.browser|up\.link|";
-        $regex_match.="htc|dopod|blazer|netfront|helio|hosin|huawei|novarra|CoolPad|webos|techfaith|palmsource|";
-        $regex_match.="blackberry|alcatel|amoi|ktouch|nexian|samsung|^sam\-|s[cg]h|^lge|ericsson|philips|sagem|wellcom|bunjalloo|maui|";
-        $regex_match.="symbian|smartphone|midp|wap|phone|windows ce|iemobile|^spice|^bird|^zte\-|longcos|pantech|gionee|^sie\-|portalmmm|";
-        $regex_match.="jig\s browser|hiptop|^ucweb|^benq|haier|^lct|opera\s*mobi|opera\*mini|320x320|240x320|176x220";
-        $regex_match.=")/i";
-
-        return isset($_SERVER['HTTP_X_WAP_PROFILE']) or isset($_SERVER['HTTP_PROFILE']) or preg_match($regex_match, strtolower($_SERVER['HTTP_USER_AGENT']));
+        return stristr($_SERVER['HTTP_VIA'],"wap") ? true : false;
     }
 
     /**
@@ -471,7 +470,7 @@ class CoreView extends FrameBase
         $this->set(
             array("layer"=>"json")
         );
-        
+
         return Response::getInstance("json")->output(200, json_encode($data));
     }
 
@@ -512,8 +511,8 @@ class CoreView extends FrameBase
             else if(is_numeric($key))
             {
                 $xml_res->addChild("_{$key}_", $value);
-            } 
-            else 
+            }
+            else
             {
                 $xml_res->addChild($key, $value);
             }
@@ -535,19 +534,19 @@ class CoreView extends FrameBase
         $_realpath = $this->getTplPath();
         $controller_config = $this->config->get("controller", strtolower($this->controller));
 
-        //运行时高于配置 配置高于默认
+        //运行时>配置>默认
         if( isset($layer) ) {
-            $layer = $_realpath.$layer.'.layer.php';
+            $layer_file = $_realpath.$layer.'.layer.php';
         } else if( $controller_config && isset($controller_config["layer"]) ) {
-            $layer = $_realpath.$controller_config["layer"].'.layer.php';
+            $layer_file = $_realpath.$controller_config["layer"].'.layer.php';
         } else {
-            $layer = $_realpath.'default.layer.php';
+            $layer_file = $_realpath.'default.layer.php';
         }
 
-        if( file_exists($layer) ) include $layer;
-        else throw new CoreException($layer.' layer Not found!');
+        if( file_exists($layer_file) ) include $layer_file;
+        else throw new CoreException($layer_file.' layer Not found!');
     }
-    
+
     /**
      * 访问未定义的方法时 通过__call 抛出异常
      *

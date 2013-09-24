@@ -1,17 +1,19 @@
 <?php defined('DOCROOT')or die('Access Denied');
 /**
-* @Author: wonli <wonli@live.com>
-*/
+ * @Auth: wonli <wonli@live.com>
+ * Class MainView
+ */
 class MainView extends CoreView
-{   
-    function index( $data )
-    {
-        include $this->tpl("main/index");
+{
+    function index($data)
+    {        
+        $article = $data["article"];
+
+        //用于SEO
+        $this->set(array(
+            "title"=>'首页'
+        ));
+
+        include $this->tpl('main/index');
     }
- 
-	function test2()
-	{
-		echo 'hi, 我是view输出的内容';
-	}
- 
 }

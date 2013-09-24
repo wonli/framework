@@ -4,7 +4,6 @@
  */
 class FrameBase
 {
-
     /**
      * @var 参数
      */
@@ -41,20 +40,20 @@ class FrameBase
     function app_init()
     {
         if(! $this->config) {
-            $this->setConfig( Dispatcher::$appConfig );
+            $this->setConfig( Dispatcher::getConfig() );
         }
 
         if(! $this->controller) {
-            $this->setControllerName( Dispatcher::$controller );
+            $this->setControllerName( Dispatcher::getController() );
         }
 
         if(! $this->action) {
-            $this->setActionName( Dispatcher::$action );
+            $this->setActionName( Dispatcher::getAction() );
         }
 
         if(! $this->params) {
-            $this->setParams( Dispatcher::$params );
-        }        
+            $this->setParams( Dispatcher::getParams() );
+        }
     }
 
     /**
@@ -170,9 +169,9 @@ class FrameBase
      * @param int $exp 过期时间
      * @return bool
      */
-    function setAuth($key, $value, $exp=86400)
+    protected function setAuth($key, $value, $exp=86400)
     {
-        $auth_type = Cross::Config()->get("sys", "auth");
+        $auth_type = $this->config->get("sys", "auth");
         return HttpAuth::factory( $auth_type )->set($key, $value, $exp);
     }
 
@@ -183,9 +182,9 @@ class FrameBase
      * @param bool $de
      * @return bool|mixed|string
      */
-    function getAuth($key, $de = false)
+    protected function getAuth($key, $de = false)
     {
-        $auth_type = Cross::Config()->get("sys", "auth");
+        $auth_type = $this->config->get("sys", "auth");
         return HttpAuth::factory( $auth_type )->get($key, $de);
     }
 
@@ -197,7 +196,7 @@ class FrameBase
      * @param string $type
      * @return bool|string
      */
-    function encode_params($tex, $key, $type="encode")
+    protected function encode_params($tex, $key, $type="encode")
     {
         return Helper::encode_params($tex, $key, $type);
     }
@@ -243,6 +242,23 @@ class FrameBase
     }
 
     /**
+     * 加载其他控制器
+     *
+     * @param $controller_name
+     * @param $params
+     * @param $run_action 是否只返回controller的实例
+     * <pre>
+     *  如果$run_action=true
+     *      $controller_name 支持 控制器:方法 的形式调用
+     * </pre>
+     * @return array|mixed|string
+     */
+    protected function loadController($controller_name, $params=array(), $run_action=false)
+    {
+        return Dispatcher::init( APP_NAME, $this->config )->run( $controller_name, $params, $run_action );
+    }
+
+    /**
      * 加载module
      *
      * @param $module_name
@@ -267,7 +283,7 @@ class FrameBase
      * @param null $controller_name
      * @return mixed
      */
-    public function loadView($controller_name = null, $action = null)
+    protected function loadView($controller_name = null, $action = null)
     {
         if(null == $controller_name)
         {
@@ -333,15 +349,13 @@ class FrameBase
         $_before = "{$act}_before";
         $_after = "{$act}_after";
 
-        if( $mr->hasMethod($_before) )
-        {
+        if( $mr->hasMethod($_before) ) {
             $this->$_before();
         }
 
         $this->$act( $params );
 
-        if( $mr->hasMethod($_after) )
-        {
+        if( $mr->hasMethod($_after) ) {
             $this->$_after();
         }
     }

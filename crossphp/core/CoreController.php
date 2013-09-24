@@ -32,7 +32,7 @@ class CoreController extends FrameBase
     {
         define('IS_CLI', PHP_SAPI === 'cli');
         if(IS_CLI) return true;
-        return false;    	
+        return false;
     }
 
     /**
@@ -111,36 +111,6 @@ class CoreController extends FrameBase
     }
 
     /**
-     * 加载其他控制器
-     *
-     * @param $params 格式 "controller:action"
-     * @param $args controller:action 的参数
-     * @param $cache 是否缓存输出
-     * @return mixed
-     */
-    protected function load($params, $args = null, $cache = true)
-    {
-        if(false !== strpos($params, ":"))
-        {
-            list($controller_name, $action) = explode(":", $params);
-        } else {
-            $controller_name = $params;
-            $action = 'index';
-        }
-
-        $load_controller = new $controller_name;
-        $load_controller->view = $this->loadView($action, $controller_name);
-
-        if($cache) {
-            ob_start();
-            $load_controller->$action($args);
-            return ob_get_clean();
-        }
-        
-        return $load_controller->$action($args);
-    }
-
-    /**
      * view->display 的连接
      *
      * @param null $date
@@ -159,8 +129,18 @@ class CoreController extends FrameBase
      */
     protected function setArgs($debug)
     {
-        echo 1111;exit;
         $this->args = $this->getArgs($debug);
+    }
+
+    /**
+     * 重设视图action名称
+     *
+     * @param $action_name
+     */
+    function setAction( $action_name )
+    {
+        $this->view->action = $action_name;
+        return $this;
     }
 
     /**
@@ -212,7 +192,7 @@ class CoreController extends FrameBase
      */
     protected function _FILE()
     {
-        return $_FILE;
+        return $_FILES;
     }
 }
 

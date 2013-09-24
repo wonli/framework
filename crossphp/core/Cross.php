@@ -1,29 +1,52 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author:       wonli
- * @version: $Id: Cross.php 96 2013-08-01 05:34:03Z ideaa $
+ * @Author:  wonli <wonli@live.com>
+ * @version: $Id: Cross.php 141 2013-09-24 06:43:12Z ideaa $
  */
 class Cross
 {
-    public static $app_name;
-
     /**
-     * @var App配置 init.php
+     * app 名称
+     *
+     * @var
      */
-    private static $app_config;
+    public $app_name;
 
     /**
-     * @var 运行时配置 (高于配置文件)
+     * 设置允许的请求列表
+     *
+     * @var array
      */
-    private static $runtime_config;
+    public static $map;
 
     /**
-     * 初始化框架 参见self::loadApp
+     * 运行时配置 (高于配置文件)
+     *
+     * @var array
+     */
+    private $runtime_config;
+
+    /**
+     * app配置 init.php
+     *
+     * @var array
+     */
+    public $app_config;
+
+    /**
+     * cross instance
+     *
+     * @var object
+     */
+    public static $instance;
+
+    /**
+     * 初始化框架
      */
     private function __construct( $app_name, $runtime_config )
     {
-        self::$app_name = $app_name;
-        self::$runtime_config = $runtime_config;
+        $this->app_name = $app_name;
+        $this->runtime_config = $runtime_config;
         $this->appInit( );
     }
 
@@ -45,7 +68,13 @@ class Cross
      */
     static function loadApp($app_name, $runtime_config = null)
     {
-        return new Cross( $app_name, $runtime_config );
+        Loader::init( $app_name );
+        if(! isset(self::$instance [$app_name]))
+        {
+            self::$instance [$app_name] = new Cross( $app_name, $runtime_config );
+        }
+
+        return self::$instance [$app_name];
     }
 
     /**
@@ -53,29 +82,25 @@ class Cross
      *
      * @return config Object
      */
-    static function config( )
+    function config( $app_name = null )
     {
-        return Config::load( self::$app_name )->parse( self::$runtime_config );
+        if(null === $app_name)
+        {
+            $app_name = $this->app_name;
+        }
+
+        return Config::load( $app_name )->parse( $this->runtime_config );
     }
 
     /**
-     * 取得所有自定义配置
+     * 解析请求
      *
-     * @return array 配置数组
+     * @param null $params 参见router->initParams();
+     * @return $this
      */
-    static function get_app_config()
+    function router( $params=null )
     {
-        return self::config()->getAll();
-    }
-
-    /**
-     * 路由规则初始化
-     *
-     * @return mixed
-     */
-    static function router()
-    {
-        return Router::getInstance(self::$app_config)->getRouter();
+        return Router::init( $this->config() )->set_router_params( $params )->getRouter();
     }
 
     /**
@@ -83,14 +108,14 @@ class Cross
      */
     private function appInit( )
     {
-        self::$app_config = self::get_app_config();
+        $sys_config = $this->config()->get("sys");
 
         $this->definer(array(
-            'APP_NAME'      => self::$app_config["sys"]["app_name"],
-            'SITE_URL'      => self::$app_config["sys"]["site_url"],
-            'STATIC_URL'    => self::$app_config["sys"]["static_url"],
-            'STATIC_PATH'   => self::$app_config["sys"]["static_path"],
-            'APP_PATH'      => self::$app_config["sys"]["app_path"],
+            'APP_NAME'      => $sys_config["app_name"],
+            'SITE_URL'      => $sys_config["site_url"],
+            'STATIC_URL'    => $sys_config["static_url"],
+            'STATIC_PATH'   => $sys_config["static_path"],
+            'APP_PATH'      => $sys_config["app_path"],
         ));
     }
 
@@ -102,58 +127,94 @@ class Cross
      */
     private function definer($define, $args=null)
     {
-        if(is_array($define)) {
-            foreach($define as $def=>$value) {
+        if(is_array($define))
+        {
+            foreach($define as $def=>$value)
+            {
                 defined($def)or define($def, $value);
             }
-        } else {
+        }
+        else
+        {
             defined($define)or define($define, $args);
         }
     }
 
     /**
-     * Dispatcher解析执行Cross路由,加载缓存
+     * 配置uri 参见mrun()
      *
-     * @param   $args 指定运行时参数
+     * @param $uri 指定uri
+     * @param null $controller "控制器:方法"
      */
-    public function run( $args = null )
+    public function map($uri, $controller = null)
     {
-        Dispatcher::init( self::config() )->run( self::router(), $args );
+        self::$map [ $uri ] = $controller;
     }
 
     /**
-     * 自定义router
+     * 在控制器中以插件方式调用其他app中的控制器
      *
-     * @param RouterInterface $router
-     * @param $args
+     * @param $app_name
+     * @param array $runtime_config
+     * @return Widget
      */
-    public function rrun( RouterInterface $router, $args )
+    public static function widget($app_name, $runtime_config=array())
     {
-        Dispatcher::init( self::config() )->run( $router, $args );
+        return Widget::init($app_name, $runtime_config);
     }
 
     /**
-     * 直接调用App的控制器
+     * 直接调用控制器类中的方法 忽略解析和alias配置
      *
      * @param $controller "控制器:方法"
      * @param $args 参数
      */
     public function get( $controller, $args = null )
     {
-        Dispatcher::init( self::config() )->run( $controller, $args );
+        Dispatcher::init( $this->app_name, $this->config() )->run( $controller, $args );
     }
 
     /**
-     * ob缓存结果
+     * 根据配置解析请求
      *
-     * @param $controller
-     * @param null $args
-     * @return string
+     * @param $params = null 用于自定义url请求内容
+     * @param $args 参数
      */
-    public function cget( $controller, $args = null )
+    public function run( $params = null, $args = null )
     {
-        ob_start();
-            Cross::get($controller, $args);
-        return ob_get_clean();
+        Dispatcher::init( $this->app_name, $this->config() )->run( $this->router( $params ), $args );
+    }
+
+    /**
+     * 自定义router运行
+     *
+     * @param RouterInterface $router RouterInterface的实现
+     * @param $args 参数
+     */
+    public function rrun( RouterInterface $router, $args )
+    {
+        Dispatcher::init( $this->app_name, $this->config() )->run( $router, $args );
+    }
+
+    /**
+     * 按map配置运行
+     *
+     * @param null $args 参数
+     * @throws CoreException
+     */
+    public function mrun( $args = null )
+    {
+        $url_type = self::config()->get('url', 'type');
+        $r = Request::getInstance()->getUrlRequest( $url_type );
+
+        if(isset( self::$map [ $r ] ))
+        {
+            $controller = self::$map [ $r ];
+            Cross::get( $controller, $args );
+        }
+        else
+        {
+            throw new CoreException("Not Specified Uri");
+        }
     }
 }

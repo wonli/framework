@@ -25,9 +25,8 @@ return array(
          * response输出方式
          * 支持 JSON HTML XML 默认是HTML
          */
-        'display' => 'HTML'
+        'display' => 'AUTO'
     ),
-
 
     'url' => array(
 
@@ -51,7 +50,7 @@ return array(
         /**
          * url请求中的连接字符
          */
-        'dot'=>'/',
+        'dot'=>'-',
 
         /**
          * 请求扩展
@@ -84,6 +83,13 @@ return array(
              */
             'alias'=>'main:index',
         ),
+		
+		'tag'=>array(
+            /**
+             * tag 实际指向的是tag->index() 方法
+             */
+            'alias' => 'tag:index',
+		),
     )
 );
 

@@ -28,7 +28,10 @@ class MysqlModel implements SqlInterface
     private function __construct( $dsn, $user, $password )
     {
         try{
-            $this->pdo = new PDO($dsn, $user, $password, array(PDO::ATTR_PERSISTENT => true));
+            $this->pdo = new PDO($dsn, $user, $password, array(
+                PDO::ATTR_PERSISTENT => false,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            ));
             $this->pdo->query('set names utf8;');
         } catch(Exception $e) {
             throw new CoreException($e->getMessage().' line:'.$e->getLine().' '.$e->getFile());
@@ -255,7 +258,7 @@ class MysqlModel implements SqlInterface
         $params = array();
 
         $field_str = $this->parse_fields($fields);
-		$where_str = $this->parse_where($where, $params);        
+		$where_str = $this->parse_where($where, $params);
 
         $sql = sprintf($one_sql, $field_str, $where_str);
         $result = $this->prepare( $sql )->exec($params)->stmt_fetch();
@@ -297,7 +300,7 @@ class MysqlModel implements SqlInterface
             }
 
             $sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
-            
+
             $stmt = $this->prepare($sql);
             foreach($data ['values'] as $data_array) {
                 $stmt->exec($data_array);
@@ -342,7 +345,7 @@ class MysqlModel implements SqlInterface
 
         $total = $this->prepare_getone($table, 'COUNT(*) as total', $where);
 
-        $page['result_count'] = $total ['total'];
+        $page['result_count'] = intval($total ['total']);
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
         $page['p'] = max(1, min( $page['p'], $page['total_page']));
         $p = ($page['p'] - 1) * $page['limit'];
@@ -370,7 +373,7 @@ class MysqlModel implements SqlInterface
         $where_str = $this->parse_where($where, $params);
 		$order_str = $this->parse_order($order);
 		$group_str = $this->parse_group($groupby);
-		
+
         $sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);
         $result = $this->prepare($sql)->exec( $params )->stmt_fetch(true);
         return $result;
@@ -399,7 +402,7 @@ class MysqlModel implements SqlInterface
 
         $where_params = array();
         $where_str = $this->parse_where($where, $where_params);
-        
+
         foreach($where_params as $wp)
         {
         	$params [] = $wp;
@@ -423,7 +426,7 @@ class MysqlModel implements SqlInterface
 
         $params = array();
         $where_str = $this->parse_where($where, $params);
-        
+
         $sql = sprintf($del_sql, $table, $where_str);
         $this->prepare( $sql )->exec( $params );
         return true;
@@ -434,7 +437,7 @@ class MysqlModel implements SqlInterface
      *
      * @param $fields
      * @return string
-     */    
+     */
     function parse_fields( $fields )
     {
     	if(empty($fields)) {
@@ -446,10 +449,10 @@ class MysqlModel implements SqlInterface
     			$field_str = $fields;
     		}
     	}
-    	
+
     	return $field_str;
     }
-    
+
     /**
      * 解析where
      *
@@ -511,20 +514,20 @@ class MysqlModel implements SqlInterface
      *
      * @param $order
      * @return int|string
-     */    
+     */
     function parse_group($groupby)
     {
     	if(! empty($group))
     	{
     		$group_str = $group;
-    	} 
+    	}
     	else
     	{
     		$group_str = 1;
-    	} 
+    	}
     	return $group_str;
     }
-    
+
     /**
      * 开启事务
      *

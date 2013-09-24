@@ -9,7 +9,14 @@ class CoreModel
         switch( strtolower($link_type) )
         {
             case 'mysql' :
-                return MysqlModel::getInstance($link_params["dsn"], $link_params["user"], $link_params["pass"]);
+
+                $host = $link_params['host'];
+                $name = $link_params['name'];
+                $port = isset($link_params['port'])?$link_params['port']:3306;
+                $char_set = isset($link_params['chatset'])?$link_params['chatset']:'utf8';
+
+                $dsn = "mysql:host={$host};dbname={$name};port={$port};charset={$char_set}";
+                return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"]);
 
             case 'mongodb':
                 return true;
@@ -21,5 +28,4 @@ class CoreModel
                 throw new CoreException("不支持的数据库类型!");
         }
     }
-
 }

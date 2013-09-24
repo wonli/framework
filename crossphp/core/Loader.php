@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author:       wonli
- * @Version: $Id: Loader.php 121 2013-08-19 01:57:25Z ideaa $
+ * @Author:  wonli <wonli@live.com>
+ * @Version: $Id: Loader.php 140 2013-09-23 11:23:30Z ideaa $
  */
 class Loader
 {
@@ -25,8 +25,12 @@ class Loader
      */
     static private $coreClass;
 
-    private function __construct( )
+    /**
+     * 初始化Loader
+     */
+    private function __construct( $app_name )
     {
+        $this->app_name = $app_name;
         self::$coreClass = self::getCoreClass();
         spl_autoload_register(array("Loader","autoLoad"));
     }
@@ -36,12 +40,12 @@ class Loader
      *
      * @return Loader
      */
-    public static function init( )
+    public static function init( $app_name )
     {
-        if(! self::$instance) {
-            self::$instance = new Loader( );
+        if(! isset(self::$instance [$app_name])) {
+            self::$instance [$app_name] = new Loader( $app_name );
         }
-        return self::$instance;
+        return self::$instance [$app_name];
     }
 
     /**
@@ -57,8 +61,10 @@ class Loader
             'CacheInterface'    => 'interface/CacheInterface.php',
             'SqlInterface'      => 'interface/SqlInterface.php',
 
+            'Widget'          => 'core/Widget.php',
             'Loader'          => 'core/Loader.php',
             'Dispatcher'      => 'core/Dispatcher.php',
+            'CoreWidget'      => 'core/CoreWidget.php',
             'FrameBase'       => 'core/FrameBase.php',
             'Config'          => 'core/Config.php',
 
@@ -82,7 +88,7 @@ class Loader
             'DEcode'          => 'core/DEcode.php',
             'HexCrypt'        => 'core/HexCrypt.php',
 
-            'Cache'           => 'cache/Cache.php',
+            'CoreCache'       => 'cache/CoreCache.php',
             'ControllerCache' => 'cache/ControllerCache.php',
             'FileCache'       => 'cache/FileCache.php',
             'RedisCache'      => 'cache/RedisCache.php',
@@ -165,7 +171,7 @@ class Loader
         $files = $list = array();
         $_defines = array (
             'app' => APP_PATH,
-            'core' => CORE_PATH,
+            'core' => CP_CORE_PATH,
             'project' => DOCROOT
         );
 
@@ -213,7 +219,7 @@ class Loader
      * @param $classname
      * @return bool
      */
-    static function autoLoad($classname)
+    function autoLoad($classname)
     {
         if( isset(self::$coreClass [$classname]) )
         {
@@ -236,17 +242,17 @@ class Loader
 
             if(! isset($file_real_path) && $_filetype)
             {
-                $_filepath = Cross::config()->get("sys", "app_path").DS.$_filetype.DS;
+                $_filepath = APP_PATH_DIR.DS.$this->app_name.DS.$_filetype.DS;
                 $file_real_path = $_filepath.$classname.'.php';
             }
-            
+
             if( ! is_file($file_real_path) )
             {
                 return false;
             }
         }
 
-        require $file_real_path;        
+        require $file_real_path;
     }
 
     /**

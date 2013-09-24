@@ -1,37 +1,56 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Auth wonli <wonli@live.com>
- * Class Config
+ * Class Config 读取app配置
  */
 class Config
 {
     /**
-     * @var array 默认追加的系统配置项
+     * 默认追加的系统配置项
+     *
+     * @var array
      */
     protected $sys;
 
     /**
-     * @var app名称
+     * app名称
+     *
+     * @var string
      */
     protected $appname;
 
     /**
-     * @var string 配置资源文件地址
+     * 配置资源文件地址
+     *
+     * @var string
      */
     protected $res_file;
 
     /**
-     * @var string 基础路径
+     * 基础路径
+     *
+     * @var string
      */
     protected $base_path;
 
     /**
-     * @var 避免重复加载
+     * 避免重复加载
+     *
+     * @var array
      */
     static protected $loaded;
 
     /**
-     * @var 所有配置
+     * 单例模式
+     *
+     * @var object
+     */
+    static protected $instance;
+
+    /**
+     * 所有配置
+     *
+     * @var array
      */
     protected $init;
 
@@ -50,7 +69,11 @@ class Config
      */
     static function load( $appname = null, $file="init.php" )
     {
-        return new Config( $appname, $file );
+        if(! isset(self::$instance [ $appname ]))
+        {
+            self::$instance [ $appname ] = new Config( $appname, $file );
+        }
+        return self::$instance [ $appname ];
     }
 
     /**
@@ -162,18 +185,18 @@ class Config
     private function getSysSet()
     {
         $_sys = array();
-        $_sys["host"] = Request::getInstance()->getHostInfo();
+        $_sys['host'] = Request::getInstance()->getHostInfo();
 
-        $_sys["base_url"] = Request::getInstance()->getBaseUrl();
-        $_sys["site_url"] = $_sys["host"].$_sys["base_url"];
+        $_sys['base_url'] = Request::getInstance()->getBaseUrl();
+        $_sys['site_url'] = $_sys['host'].$_sys['base_url'];
 
-        $_sys["app_name"] = $this->appname;
-        $_sys["app_path"] = APP_PATH_DIR.DS.$this->appname;
+        $_sys['app_name'] = $this->appname;
+        $_sys['app_path'] = APP_PATH_DIR.DS.$this->appname;
 
-        $_sys["static_url"] = $_sys["site_url"].'/static/';
-        $_sys["static_path"] = Request::getInstance()->getScriptFilePath().DS.'static'.DS;
+        $_sys['static_url'] = $_sys["site_url"].'/static/';
+        $_sys['static_path'] = Request::getInstance()->getScriptFilePath().DS.'static'.DS;
 
-        $_sys["cache_path"] = $_sys["app_path"].DS.'cache'.DS;
+        $_sys['cache_path'] = $_sys["app_path"].DS.'cache'.DS;
 
         return $_sys;
     }
