@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: CoreView.php 141 2013-09-24 06:43:12Z ideaa $
+ * @Version $Id: CoreView.php 145 2013-09-29 02:40:28Z ideaa $
  */
 class CoreView extends FrameBase
 {
@@ -68,9 +68,16 @@ class CoreView extends FrameBase
      * @param $tplname
      * @return string
      */
-    function tpl($tplname)
+    function tpl($tplname, $get_content=false)
     {
-        return $this->getTplPath().$tplname.'.tpl.php';
+        $file_path = $this->getTplPath().$tplname.'.tpl.php';
+
+        if(true === $get_content)
+        {
+            return file_get_contents($file_path, true);
+        }
+
+        return $file_path;
     }
 
     /**
@@ -446,18 +453,6 @@ class CoreView extends FrameBase
             return sprintf($tpl, $res_link);
         }
         return null;
-    }
-
-    /**
-     * 加载其他视图
-     *
-     * @param $controller_name
-     * @param null $action
-     * @return mixed
-     */
-    function load($controller_name, $action=null)
-    {
-        return $this->loadView( $controller_name, $action );
     }
 
     /**

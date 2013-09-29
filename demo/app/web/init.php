@@ -90,6 +90,12 @@ return array(
              */
             'alias' => 'tag:index',
 		),
+        
+        'article' => array(
+            'alias' =>  array(
+                'page' => 'index'
+            ),
+        ),
     )
 );
 

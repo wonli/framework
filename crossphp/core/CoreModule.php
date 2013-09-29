@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version: $Id: CoreModule.php 137 2013-09-09 03:09:28Z ideaa $
+ * @Version: $Id: CoreModule.php 146 2013-09-29 03:21:24Z ideaa $
  */
 class CoreModule extends FrameBase
 {
@@ -25,11 +25,11 @@ class CoreModule extends FrameBase
     protected static $db_config;
 
     /**
-     * 缓存key
+     * 缓存文件
      *
      * @var object
      */
-    protected static $cache_key;
+    protected static $cache_file;
 
     /**
      * 调用moduel
@@ -87,7 +87,7 @@ class CoreModule extends FrameBase
     {
         if(! self::$db_config)
         {
-            self::$db_config = CrossArray::init( Loader::import("::config/db.config.php", true) );
+            self::$db_config = CrossArray::init( Loader::read("::config/db.config.php") );
         }
         return self::$db_config;
     }
@@ -101,11 +101,10 @@ class CoreModule extends FrameBase
      */
     static function cache_key($key_name, $key_value=null)
     {
-        if( ! self::$cache_key) {
-            self::$cache_key = Loader::import("::config/cachekey.php", true);
+        if( ! self::$cache_file) {
+            self::$cache_file = Loader::read("::config/cachekey.php");
         }
-
-        $cache_key_object = CrossArray::init(self::$cache_key);
+        $cache_key_object = CrossArray::init(self::$cache_file);
 
         if(is_array($key_name))
         {

@@ -52,16 +52,17 @@ class User extends CoreController
     function post()
     {
         if(! $_SESSION["u"]) return $this->to("user:login");
-        if($this->is_post()) {
-            $title = $this->args["title"];
-            $istop = isset($this->args["istop"]) ? 1 : 0;
-            $cid = isset($this->args["cid"]) ? 1 : 0;
-            $desc = $this->args["desc"];
-            $content = $this->args["content"];
-            $status = $this->args["status"] ? 1 : 0;
-            $id = $this->args["id"];
+        if($this->is_post()) {       
+            $args = $this->getArgs();        
+            $title = $args["title"];
+            $istop = isset($args["istop"]) ? 1 : 0;
+            $cid = isset($args["cid"]) ? 1 : 0;
+            $desc = $args["desc"];
+            $content = $args["content"];
+            $status = $args["status"] ? 1 : 0;
+            $id = $args["id"];
 
-            $tags = $this->args["tag"];
+            $tags = $args["tag"];
 
             if(! empty($tags)) {
                 $tags_id = $this->parse_tags($tags);

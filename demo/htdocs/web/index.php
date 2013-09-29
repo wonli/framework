@@ -2,11 +2,11 @@
 /**
 * @Author:       wonli
 */
+
 session_start();
 require '../../crossboot.php';
 
 Cross::loadApp( 'web' )->run();
-
 /*
 	其他调用方式及应该用场景
 
@@ -51,9 +51,10 @@ Cross::loadApp( 'web' )->run();
 
 	4.计划任务的时候解析args argv
         参考 htdocs 下 cron.php
-
+    
 自定义路由 $r = new r(); $r要实现router接口
 	Cross::loadApp( 'web' )->rrun($r);
+    
 */
 
 

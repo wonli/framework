@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:  wonli <wonli@live.com>
- * @Version: $Id: Loader.php 140 2013-09-23 11:23:30Z ideaa $
+ * @Version: $Id: Loader.php 146 2013-09-29 03:21:24Z ideaa $
  */
 class Loader
 {
@@ -115,23 +115,15 @@ class Loader
     }
 
     /**
-     * 载入其他类
+     * 载入文件(支持多文件载入)
      *
-     * @param $class 类名称 <pre>
-     *  用法如下:
-     *
-     *  1 file_name 直接指定文件路径
-     *  2 ::[path/]file_name 从当前项目根目录查找
-     *  3 app::[path/]file_name 当前app路径
-     *  4 core::[path/]file_name 核心目录
-     * </pre>
-     * @param bool $return
+     * @param $files 参见Loader::parseFileRealPath()
      * @return mixed
      * @throws CoreException
      */
-    static public function import( $class, $return = false )
+    static public function import( $files )
     {
-        $list = Loader::getFileRealPath($class);
+        $list = Loader::parseFileRealPath($files);
 
         foreach($list as $file)
         {
@@ -142,14 +134,58 @@ class Loader
 
             if(file_exists($file))
             {
-                if(true === $return) {
-                    return require $file;
-                } else {
-                    require $file;
-                }
                 self::$loaded [$cache_key] = 1; //标识已载入
+                require $file;
             } else throw new CoreException("未找到要载入的文件:{$file}");
         }
+    }
+
+    /**
+     * 读取指定的单一文件
+     *
+     * @param $file 参见Loader::getFileRealPath()
+     * @param bool $parse_file 是否解析文件路径
+     * @return mixed
+     * @throws CoreException
+     */
+    static public function read( $file, $parse_file = true )
+    {
+        if(true === $parse_file)
+        {
+            $parse_path = Loader::parseFileRealPath( $file, '' );
+            $file_path = current( $parse_path );
+        }
+        else
+        {
+            $file_path = $file;
+        }
+
+        $key = crc32($file_path);
+        if( isset(self::$loaded [ $key ]) )
+        {
+            return self::$loaded [ $key ];
+        }
+
+        if( file_exists($file_path) )
+        {
+            $ext = Helper::getExt($file_path);
+            switch($ext)
+            {
+                case 'php' :
+                    $data = require $file_path;
+                    self::$loaded [$key] = $data;
+                    return $data;
+
+                case 'json' :
+                    $data = json_decode( file_get_contents($file_path), true);
+                    self::$loaded [$key] = $data;
+                    return $data;
+
+                default :
+                    throw new CoreException("不支持的解析格式");
+            }
+        }
+        else throw new CoreException("未找到要载入的文件:{$file}");
     }
 
     /**
@@ -166,7 +202,7 @@ class Loader
      * @param $class
      * @return array
      */
-    static function getFileRealPath( $class )
+    static function parseFileRealPath( $class, $append_file_ext=".php" )
     {
         $files = $list = array();
         $_defines = array (
@@ -202,7 +238,7 @@ class Loader
                     $path = "project";
                 }
 
-                $list [] = rtrim( $_defines[strtolower($path)].DS.str_replace("/", DS, $file_info), '.php').'.php';
+                $list [] = rtrim( rtrim($_defines[strtolower($path)], DS).DS.str_replace("/", DS, $file_info), $append_file_ext).$append_file_ext;
             }
             else
             {

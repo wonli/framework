@@ -34,7 +34,6 @@ $redis_link = array(
 #默认数据库配置
 $db = array();
 $db = $mysql_link;
-$db['dsn'] = "mysql:host=".$db["host"].";dbname=".$db["name"].";port=".$db["port"].";charset=".$db["charset"];
 
 /*mongodb*/
 $db5["dsn"] = "mongodb://192.168.1.100:27017";

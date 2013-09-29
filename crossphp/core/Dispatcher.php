@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: Dispatcher.php 141 2013-09-24 06:43:12Z ideaa $
+ * @Version $Id: Dispatcher.php 147 2013-09-29 06:27:50Z ideaa $
  */
 class Dispatcher
 {
@@ -42,7 +42,7 @@ class Dispatcher
 
     private function __construct($app_config)
     {
-        $this->init_config( $app_config );
+
     }
 
     /**
@@ -161,7 +161,7 @@ class Dispatcher
                 {
                     $is_callable = new ReflectionMethod($controller, $_action);
                 } else {
-                    throw new CoreException('未指定的方法'.$controller.'->'.$action);
+                    throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
                 }
             }
 
@@ -187,16 +187,20 @@ class Dispatcher
     {
         if(! empty($params))
         {
-            if(! isset($params[1]))
+            if( self::$appConfig->get('url', 'type') == 1 )
             {
-                if( isset($params[0]))
+                if(! isset($params [1]))
                 {
-                    $this->setParams( $params[0] );
+                    $this->setParams( $params [0] );
                 }
                 else
                 {
                     $this->setParams( $params );
                 }
+            }
+            else
+            {
+                $this->setParams( $params );
             }
         }
         else
@@ -210,7 +214,7 @@ class Dispatcher
      *
      * @param $config
      */
-    private function init_config( $config )
+    private static function init_config( $config )
     {
         self::setConfig( $config );
     }

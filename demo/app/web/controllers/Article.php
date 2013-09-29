@@ -9,9 +9,9 @@ class Article extends CoreController
     {
         $page = array(
             'p' =>  $this->params?intval($this->params):0,
-            'limit' => 10,
+            'limit' => 20,
             'half' => 3,
-            'link' => array("article:detail"),
+            'link' => array("article:page"),
         );
 
         $result['data'] = $this->loadModule('Article')->getArticle( $page );
@@ -20,21 +20,7 @@ class Article extends CoreController
         $this->view->display($result);
     }
 
-    function page()
-    {
-    	$pn = $this->params?intval($this->params)-1:0;
-    	$pre = 10;
-    	$limit = $pre*$pn;
-    	$_total = $this->model->getTotal();
-    	$total = ceil($_total/$pre);
-
-        $result["page"] = new Page($pn+1, $total, $this->view->link("article:page", "<:pn:>") );
-        $result["data"] = $this->model->getArticle($limit, $pre);
-
-        $this->view->display($result, "index");
-    }
-
-    function detail()
+    function detail($q)
     {
         $p = is_array($this->params) ? intval($this->params[0]) : intval($this->params);
 

@@ -147,34 +147,7 @@ class Config
      */
     function readConfigFile()
     {
-        $key = crc32($this->res_file);
-
-        if( isset(self::$loaded [$key]) )
-        {
-            return self::$loaded [$key];
-        }
-
-        if(file_exists($this->res_file))
-        {
-            $ext = Helper::getExt($this->res_file);
-            switch($ext)
-            {
-                case 'php' :
-                    $data = require $this->res_file;
-                    self::$loaded [$key] = $data;
-                    return $data;
-
-                case 'json' :
-                    $data = json_decode( file_get_contents($this->res_file), true);
-                    self::$loaded [$key] = $data;
-                    return $data;
-
-                default :
-                    throw new CoreException("不支持的解析格式");
-            }
-        } else {
-            throw new CoreException("配置文件 {$this->res_file} 未找到");
-        }
+        return Loader::read($this->res_file, false);
     }
 
     /**

@@ -25,12 +25,16 @@ class ArticleModule extends CoreModule
      * @internal param int $pre
      * @return mixed
      */
-    function getArticle( & $p = array("p"=>1, "limit"=>10) )
+    function getArticle( & $p = array("p"=>1, "limit"=>20) )
     {
         $data = $this->link->find("article", "*", "id > 0", "date DESC", $p);
-
+        
         foreach($data as & $a) {
-            $a ['tag'] = $this->link->getAll("article_tags a LEFT JOIN tags t ON a.tid=t.id", "a.tid as id, t.name as name", array('aid'=>$a['id']));
+            $a ['tag'] = $this->link->getAll(
+                "article_tags a LEFT JOIN tags t ON a.tid=t.id", 
+                "a.tid as id, t.name as name", 
+                array('aid'=>$a['id'])
+            );
         }
 
         return $data;
