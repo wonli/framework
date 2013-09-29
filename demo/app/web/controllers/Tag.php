@@ -8,15 +8,15 @@ class Tag extends CoreController
 
     );
 
+    function t()
+    {
+        echo 1;
+    }
+    
+    
     function index()
     {
-
-
-        //var_dump($this->view);
-
         @list($tid, $tname, $p) = $this->params;
-
-
         if(! $tid) return $this->to("article");;
 
         $page = array(
