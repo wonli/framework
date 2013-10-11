@@ -366,15 +366,23 @@ class MysqlModel implements SqlInterface
      */
     function prepare_getall($table, $fields, $where = null, $order = 1, $groupby=1)
     {
-        $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
         $params = array();
-
         $field_str = $this->parse_fields($fields);
         $where_str = $this->parse_where($where, $params);
-		$order_str = $this->parse_order($order);
-		$group_str = $this->parse_group($groupby);
+        $order_str = $this->parse_order($order);
+        $group_str = $this->parse_group($groupby);
 
-        $sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);
+        if($groupby !== 1)
+        {
+            $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
+            $sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);
+        }
+        else
+        {
+            $all_sql = "SELECT %s FROM {$table} WHERE %s ORDER BY %s";
+            $sql = sprintf($all_sql, $field_str, $where_str, $order_str);
+        }
+
         $result = $this->prepare($sql)->exec( $params )->stmt_fetch(true);
         return $result;
     }

@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:  wonli <wonli@live.com>
- * @Version: $Id: Loader.php 146 2013-09-29 03:21:24Z ideaa $
+ * @Version: $Id: Loader.php 155 2013-10-09 12:12:01Z ideaa $
  */
 class Loader
 {
@@ -32,7 +32,7 @@ class Loader
     {
         $this->app_name = $app_name;
         self::$coreClass = self::getCoreClass();
-        spl_autoload_register(array("Loader","autoLoad"));
+        spl_autoload_register(array($this, "autoLoad"));
     }
 
     /**
@@ -83,10 +83,7 @@ class Loader
             'Helper'          => 'core/Helper.php',
             'HttpAuth'        => 'core/HttpAuth.php',
             'CrossArray'      => 'core/CrossArray.php',
-
-            'Mcrypt'          => 'core/Mcrypt.php',
-            'DEcode'          => 'core/DEcode.php',
-            'HexCrypt'        => 'core/HexCrypt.php',
+            'ArrayMap'        => 'core/ArrayMap.php',
 
             'CoreCache'       => 'cache/CoreCache.php',
             'ControllerCache' => 'cache/ControllerCache.php',
@@ -111,6 +108,9 @@ class Loader
             'Crumb'         => 'lib/Crumb.php', //验证字符串
             'CacheRedis'	=> 'lib/CacheRedis.php',
             'Uploader'	    => 'lib/Uploader.php',
+            'Mcrypt'        => 'lib/Mcrypt.php',
+            'DEcode'        => 'lib/DEcode.php',
+            'HexCrypt'      => 'lib/HexCrypt.php',
         );
     }
 
@@ -206,7 +206,7 @@ class Loader
     {
         $files = $list = array();
         $_defines = array (
-            'app' => APP_PATH,
+            'app' => defined("APP_PATH")?APP_PATH:'',
             'core' => CP_CORE_PATH,
             'project' => DOCROOT
         );

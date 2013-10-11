@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: CoreView.php 145 2013-09-29 02:40:28Z ideaa $
+ * @Version $Id: CoreView.php 156 2013-10-10 01:37:58Z ideaa $
  */
 class CoreView extends FrameBase
 {
@@ -66,11 +66,13 @@ class CoreView extends FrameBase
      * 模板的绝对路径
      *
      * @param $tplname
+     * @param $get_content 是否读取模板内容
+     * @param $file_ext_name 模板文件扩展名
      * @return string
      */
-    function tpl($tplname, $get_content=false)
+    function tpl($tplname, $get_content=false, $file_ext_name='.tpl.php')
     {
-        $file_path = $this->getTplPath().$tplname.'.tpl.php';
+        $file_path = $this->getTplPath().$tplname.$file_ext_name;
 
         if(true === $get_content)
         {
@@ -518,24 +520,30 @@ class CoreView extends FrameBase
      * 加载布局
      *
      * @param $content
-     * @param null $p
+     * @param $layer_ext
      * @throws CoreException
      */
-    function loadLayer($content, $p=null)
+    function loadLayer($content, $layer_ext='.layer.php')
     {
-        if($this->set) {
+        if($this->set)
+        {
             extract($this->set, EXTR_PREFIX_SAME, "USER_DEFINED");
         }
         $_realpath = $this->getTplPath();
         $controller_config = $this->config->get("controller", strtolower($this->controller));
 
         //运行时>配置>默认
-        if( isset($layer) ) {
-            $layer_file = $_realpath.$layer.'.layer.php';
-        } else if( $controller_config && isset($controller_config["layer"]) ) {
-            $layer_file = $_realpath.$controller_config["layer"].'.layer.php';
-        } else {
-            $layer_file = $_realpath.'default.layer.php';
+        if( isset($layer) )
+        {
+            $layer_file = $_realpath.$layer.$layer_ext;
+        }
+        else if( $controller_config && isset($controller_config["layer"]) )
+        {
+            $layer_file = $_realpath.$controller_config["layer"].$layer_ext;
+        }
+        else
+        {
+            $layer_file = $_realpath.'default'.$layer_ext;
         }
 
         if( file_exists($layer_file) ) include $layer_file;

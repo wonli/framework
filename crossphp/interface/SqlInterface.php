@@ -22,7 +22,7 @@ interface SqlInterface
      * @param $page array('p', 'page');
      * @return mixed
      */
-    function find($table, $fields, $where, $order, & $page);
+    function find($table, $fields, $where, $order = 1, & $page = array('p', 'limit') );
 
     /**
      * add data
@@ -32,7 +32,7 @@ interface SqlInterface
      * @param $multi
      * @return mixed
      */
-    function add($table, $data, $multi);
+    function add($table, $data, $multi = false);
 
     /**
      * update

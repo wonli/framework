@@ -1,5 +1,5 @@
 <?php
-class CrossArray Extends ArrayIterator
+class CrossArray
 {
 
     /**
@@ -9,7 +9,6 @@ class CrossArray Extends ArrayIterator
 
     function __construct( $data )
     {
-        parent::__construct();
         $this->data = $data;
     }
 

@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: Dispatcher.php 147 2013-09-29 06:27:50Z ideaa $
+ * @Version $Id: Dispatcher.php 152 2013-10-09 01:52:36Z ideaa $
  */
 class Dispatcher
 {
@@ -94,8 +94,8 @@ class Dispatcher
         }
 
         return array(
-            'controller' =>  $controller,
-            'action'     =>   $action,
+            'controller' =>  ucfirst($controller),
+            'action'     =>  $action,
             'params'     =>  $params,
         );
     }
@@ -185,27 +185,27 @@ class Dispatcher
      */
     private function init_params( $params )
     {
-        if(! empty($params))
+        if(is_array($params))
         {
-            if( self::$appConfig->get('url', 'type') == 1 )
+            if(self::$appConfig->get("url", "type") == 2)
             {
-                if(! isset($params [1]))
-                {
-                    $this->setParams( $params [0] );
-                }
-                else
-                {
-                    $this->setParams( $params );
-                }
+                $this->setParams( $params );
             }
             else
             {
-                $this->setParams( $params );
+                if( count($params) > 1 )
+                {
+                    $this->setParams( $params );
+                }
+                else
+                {
+                    $this->setParams( current( $params ) );
+                }
             }
         }
         else
         {
-            $this->setParams();
+            $this->setParams( $params );
         }
     }
 
@@ -230,6 +230,8 @@ class Dispatcher
     {
         $this->init_controller( $controller );
         $this->init_params( $args );
+
+        $controller = $this->getController();
         return new $controller;
     }
 
@@ -275,7 +277,7 @@ class Dispatcher
      */
     private function setController( $controller )
     {
-        self::$controller = ucfirst( $controller );
+        self::$controller = $controller;
     }
 
     /**

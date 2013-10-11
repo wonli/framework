@@ -5,7 +5,7 @@
  */
 
 interface iHttpAuth {
-    public function set($key, $value, $exp);
+    public function set($key, $value, $exp = 86400);
     public function get($key, $de = false);
 }
 
@@ -44,7 +44,7 @@ class CookieAuth implements iHttpAuth
         $key = $this->cookieKey($name);
         if(is_array($params)) {
             $_cookie = $this->get($name, true);
-            
+
             if($_cookie)
             {
                 if(is_array($_cookie) && !empty($_cookie)) {
@@ -60,7 +60,7 @@ class CookieAuth implements iHttpAuth
 
         $str = Helper::authcode($params, "ENCODE", $key);
         $exp = time() + $exp;
-        
+
         if( setcookie($name, $str, $exp, "/", COOKIE_DOMAIN) ) return true;
         else return false;
     }
@@ -116,7 +116,7 @@ class SessionAuth implements iHttpAuth
         if(empty($_SESSION)) session_start();
     }
 
-    function set($key, $value, $exp)
+    function set($key, $value, $exp = 86400)
     {
         $_SESSION[$key] = $value;
         return true;

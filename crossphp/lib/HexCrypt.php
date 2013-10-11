@@ -7,13 +7,25 @@ class HexCrypt extends DEcode
     {
 
     }
-    
+
+    /**
+     * 加密
+     *
+     * @param $data
+     * @return array
+     */
     public function EnCode ($data)
     {
         // bin2hex($data);
-        return @unpack('H*', $data); 
+        return @unpack('H*', $data);
     }
-    
+
+    /**
+     * 解密
+     *
+     * @param $data
+     * @return string
+     */
     public function DeCode ($data)
     {
         return @pack('H*', $data);
