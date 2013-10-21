@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Simple php5 Framework",
     "keywords": ["crossphp", "php5 Framework"],
-    "homepage": "http://",
+    "homepage": "http://www.crossphp.com",
     "repositories": [
         {
             "type": "vcs",
@@ -15,7 +15,7 @@
         {
             "name": "ideaa",
             "email": "ideaa@qq.com",
-            "homepage": "http://ideaa.sinaapp.com/",
+            "homepage": "http://ideaa.sinaapp.com",
             "role": "Developer"
         }
     ],
