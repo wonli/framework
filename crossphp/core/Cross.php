@@ -8,7 +8,7 @@ class Cross
     /**
      * app 名称
      *
-     * @var
+     * @var string
      */
     public $app_name;
 

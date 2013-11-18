@@ -73,10 +73,11 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * prepare方式单条查询
-     * @param $table 表名称
-     * @param $fields 需要返回的字段
-     * @param $where 查询条件
+     * @see MysqlModel::prepare_getone
+     *
+     * @param database $table
+     * @param fileds $fields
+     * @param conditions $where
      * @return mixed
      */
     function get($table, $fields, $where)
@@ -85,12 +86,12 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * 返回所有结果
+     * @see MysqlModel::prepare_get_all
      *
-     * @param $table 表名称
-     * @param $fields 需要返回的字段
-     * @param $where 查询条件
-     * @param int $order 排序规则
+     * @param $table
+     * @param $fields
+     * @param null $where
+     * @param int $order
      * @param int $group_by
      * @return array
      */
@@ -100,34 +101,28 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * prepare插入
-     * @param $table 表名称
-     * @param $data 要处理的数据,跟表中的字段对应
-     * @param bool $multi <pre>
-     *  是否批量插入数据,如果是
-     *      $data = array(
-     *          'fields' = array(字段1,字段2,...),
-     *          'values'= array(
-     *                      array(字段1的值, 字段2的值),
-     *                      array(字段1的值, 字段2的值))
-     *      );
-     *  </pre>
-     * @return array
-     * @throws FrontException
+     * @see MysqlModel::prepare_insert
+     *
+     * @param $table
+     * @param $data
+     * @param bool $multi
+     * @param array $insert_data
+     * @return array|bool|mixed
      */
-    function add($table, $data, $multi = false)
+    function add($table, $data, $multi = false, & $insert_data = array())
     {
-        return $this->prepare_insert($table, $data, $multi);
+        return $this->prepare_insert($table, $data, $multi, $insert_data);
     }
 
     /**
-     * 带分页功能的查询
-     * @param $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
-     * @param $fields 要查询的字段 所有字段的时候 $fields='*'
-     * @param $where 查询条件
-     * @param int $order 排序
-     * @param array $page 分页参数 默认返回50条记录
-     * @return array
+     * @see MysqlModel::prepare_find
+     *
+     * @param $table
+     * @param $fields
+     * @param $where
+     * @param int $order
+     * @param array $page
+     * @return array|mixed
      */
     function find($table, $fields, $where, $order = 1, & $page = array('p'=>1, 'limit'=>50))
     {
@@ -135,11 +130,12 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * prepare 更新数据
+     * @see MysqlModel::prepare_update
+     *
      * @param $table
      * @param $data
      * @param $where
-     * @return $this|array|string
+     * @return $this|array|mixed|string
      */
     function update($table, $data, $where)
     {
@@ -147,11 +143,11 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * prepare 删除数据
+     * @see MysqlModel::prepare_delete
      *
      * @param $table
      * @param $where
-     * @return mixed|void
+     * @return bool|mixed
      */
     function del($table, $where)
     {
@@ -200,15 +196,17 @@ class MysqlModel implements SqlInterface
      * 执行sql 用于无返回值的操作
      *
      * @param $sql
-     * @return bool
+     * @return int
+     * @throws CoreException
      */
     function execute($sql)
     {
-        if($this->pdo->exec($sql))
+        try
         {
-            return true;
+            return $this->pdo->exec($sql);
+        } catch ( Exception $e ) {
+            throw new CoreException( $e->getMessage() );
         }
-        return false;
     }
 
     /**
@@ -294,6 +292,7 @@ class MysqlModel implements SqlInterface
      * @param $table 表名称
      * @param $data 要处理的数据,跟表中的字段对应
      * @param bool $multi <pre>
+     * @param array $insert_data
      *  是否批量插入数据,如果是
      *      $data = array(
      *          'fields' = array(字段1,字段2,...),
@@ -302,16 +301,18 @@ class MysqlModel implements SqlInterface
      *                      array(字段1的值, 字段2的值))
      *      );
      *  </pre>
-     * @return array
+     * @return array|bool
      * @throws FrontException
      */
-    function prepare_insert($table, $data, $multi = false)
+    function prepare_insert($table, $data, $multi = false, & $insert_data )
     {
         $insert_sql = "INSERT {$table} (%s) VALUE (%s)";
         $field = $value = '';
 
         if(true === $multi )
         {
+            $inc_name = $this->get_auto_increment_name( $table );
+
             if( empty($data ['fields']) || empty($data ['values']) ) {
                 throw new FrontException("data format error!");
             }
@@ -322,17 +323,29 @@ class MysqlModel implements SqlInterface
             }
 
             $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
-
             $stmt = $this->prepare($this->sql);
-            foreach($data ['values'] as $data_array) {
-                $stmt->exec($data_array);
+            $add_data_info = array();
+
+            foreach($data ['values'] as $data_array)
+            {
+                if( $stmt->exec($data_array) )
+                {
+                    $add_data_info = array_combine($data['fields'], $data_array);
+                    if($inc_name)
+                    {
+                        $add_data_info[ $inc_name ] = $this->insert_id();
+                    }
+
+                    $insert_data[] = $add_data_info;
+                }
             }
 
             return true;
         }
         else
         {
-            foreach($data as $_field => $_value) {
+            foreach($data as $_field => $_value)
+            {
                 $field .= "{$_field},";
                 $value .= "?,";
                 $r[] = $_value;
@@ -342,7 +355,12 @@ class MysqlModel implements SqlInterface
             $stmt = $this->prepare($this->sql);
             $id = $stmt->exec($r)->insert_id();
 
-            return $id;
+            if($id)
+            {
+                return $id;
+            }
+
+            return true;
         }
     }
 
@@ -588,6 +606,45 @@ class MysqlModel implements SqlInterface
     		$group_str = 1;
     	}
     	return $group_str;
+    }
+
+    /**
+     * 获取数据表信息
+     *
+     * @param $table_name
+     * @return array
+     * @throws CoreException
+     */
+    function get_db_table_info( $table_name )
+    {
+        $sql  = "SHOW COLUMNS FROM {$table_name}";
+        $info = $this->fetchAll($sql);
+        if($info)
+        {
+            return $info;
+        }
+
+        throw new CoreException( "SHOW {$table_name} COLUMNS error !" );
+    }
+
+    /**
+     * 获取自增字段名
+     *
+     * @param $table_name
+     * @return bool
+     */
+    function get_auto_increment_name( $table_name )
+    {
+        $table_info = $this->get_db_table_info( $table_name );
+        foreach($table_info as $ti)
+        {
+            if($ti['Extra'] == 'auto_increment')
+            {
+                return $ti['Field'];
+            }
+        }
+
+        return false;
     }
 
     /**

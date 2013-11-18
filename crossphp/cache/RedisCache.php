@@ -23,7 +23,7 @@ class RedisCache
     }
 
     /**
-     * 调用redis类提供的方法
+     * 璋冪敤redis绫绘彁渚涚殑鏂规硶
      *
      * @param $method
      * @param $argv
