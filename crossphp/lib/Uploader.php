@@ -25,12 +25,12 @@ class Uploader
      * @var 文件储存路径
      */
     protected $_root_dir;
-    
-    
+
     /**
      * 添加post上来的文件
      *
      * @param $file 文件名
+     * @throws CoreException
      */
     function addFile($file)
     {
@@ -65,6 +65,7 @@ class Uploader
      * 获取上传的文件的大小
      *
      * @param $file
+     * @throws CoreException
      * @return bool
      */
     function _get_uploaded_info($file)
@@ -163,7 +164,6 @@ class Uploader
         }
 
         $path = trim($dir, '/') . '/' . $name;
-
         return $this->move_uploaded_file($this->_file['tmp_name'], $path);
     }
 
@@ -172,6 +172,7 @@ class Uploader
      *
      * @param $src
      * @param $target
+     * @throws CoreException
      * @return bool
      */
     function move_uploaded_file($src, $target)

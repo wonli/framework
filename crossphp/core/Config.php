@@ -80,14 +80,14 @@ class Config
      * 解析配置文件和自定义参数
      *
      * @param null $user_config 用户自定义参数
-     * @param bool $apped_sys 是否附加系统默认参数
+     * @param bool $append_sys 是否附加系统默认参数
      * @return $this
      */
-    function parse($user_config = null, $apped_sys = true)
+    function parse($user_config = null, $append_sys = true)
     {
         $config_data = $this->readConfigFile();
 
-        if(true === $apped_sys)
+        if(true === $append_sys)
         {
             $this->sys = $this->getSysSet();
 
@@ -103,8 +103,8 @@ class Config
         {
             if(!is_array($user_config) && is_file($user_config))
             {
-                $configset = require $configset;
-                $this->setData($user_config);
+                $config_set = require $user_config;
+                $this->setData($config_set);
                 return $this;
             }
             else if(! empty($user_config) && is_array($user_config) )
@@ -179,9 +179,9 @@ class Config
      * $config为字符串的时候 获取配置数组,此时设定$name 则获取数组中指定项的值
      * $config为数组的时候 获取数组中指定的配置项,如果$name为true 则获取指定项之外的配置项
      *
-     * @param $confing 字符串或数组
-     * @param $name null或boolean
-     * @return string或array
+     * @param $config
+     * @param $name null|boolean
+     * @return string|array
      */
     function get($config, $name=null)
     {

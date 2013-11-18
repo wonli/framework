@@ -92,7 +92,7 @@ class Request
         if (!$this->_scriptUrl) $this->_initScriptUrl();
         return $this->_scriptUrl;
     }
-    
+
 	/**
 	 * 设置基础路径
      *
@@ -101,7 +101,7 @@ class Request
     public function setBaseUrl($url) {
         $this->_baseUrl = $url;
     }
-    
+
 	/**
 	 * 返回baseurl
      *
@@ -141,7 +141,7 @@ class Request
     {
         $this->_indexName = $indexname;
     }
-    
+
 	/**
 	 * 取得Host信息
      *
@@ -158,9 +158,9 @@ class Request
      * @return null
      */
 	private function _initHostInfo() {
-		
+
 		if(PHP_SAPI === 'cli') return "cli";
-		
+
 		$http = $this->_SERVER("HTTPS") == 'on'?'https':'http';
 
 		if (($httpHost = $this->_SERVER('HTTP_HOST')) != null)

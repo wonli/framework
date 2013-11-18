@@ -7,7 +7,12 @@ abstract class CrossException extends Exception
         set_exception_handler(array($this, "error_handler"));
     }
 
-    //提取错误文件源代码
+    /**
+     * 提取错误文件源代码
+     *
+     * @param exception $e
+     * @return array
+     */
     function cp_exception_source(exception $e)
     {
         $trace = $e->getTrace();
@@ -48,6 +53,11 @@ abstract class CrossException extends Exception
         return $result;
     }
 
-    //定义错误处理抽象类
+    /**
+     * 错误处理抽象方法
+     *
+     * @param exception $e
+     * @return mixed
+     */
     abstract protected function error_handler (exception $e);
 }

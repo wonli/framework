@@ -22,6 +22,13 @@ class RedisCache
         $this->link = $obj;
     }
 
+    /**
+     * 调用redis类提供的方法
+     *
+     * @param $method
+     * @param $argv
+     * @return mixed|null
+     */
     public function __call($method, $argv)
     {
         $result = null;

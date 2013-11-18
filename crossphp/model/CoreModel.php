@@ -13,7 +13,7 @@ class CoreModel
                 $host = $link_params['host'];
                 $name = $link_params['name'];
                 $port = isset($link_params['port'])?$link_params['port']:3306;
-                $char_set = isset($link_params['chatset'])?$link_params['chatset']:'utf8';
+                $char_set = isset($link_params['charset'])?$link_params['charset']:'utf8';
 
                 $dsn = "mysql:host={$host};dbname={$name};port={$port};charset={$char_set}";
                 return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"]);

@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <title>crossphp error</title>
-    <style type="text/css">     
+    <style type="text/css">
     .cf:before, .cf:after {content: " ";display: table;}
     .cf:after {clear: both;} .cf {*zoom: 1;}
     body { font: 14px helvetica, arial, sans-serif; color: #2B2B2B; background-color: #D4D4D4; padding:0; margin: 0; max-height: 100%; }
@@ -47,7 +47,7 @@
     .data-table tbody { font: 13px consolas, monospace; }
     .data-table thead { display: none; }  .data-table tr { padding: 5px 0; }
     .data-table td:first-child { width: 20%; min-width: 130px; overflow: hidden; font-weight: bold; color: #463C54; padding-right: 5px;  }
-    .data-table td:last-child { width: 80%; -ms-word-break: break-all; word-break: break-all; word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; }
+    .data-table td:last-child { width: 80%; -ms-word-break: break-all; word-break: break-all; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; }
     .data-table .empty { color: rgba(0, 0, 0, .3); font-style: italic; }
     .handler { padding: 10px; font: 14px monospace; }
     .handler.active { color: #BBBBBB; background: #989898; font-weight: bold; }
@@ -117,11 +117,16 @@
                 <?php endif ?>
             </div>
         </div>
-        
-        <div class="data-table-container" id="data-tables">    
+
+        <div class="data-table-container" id="data-tables">
             <div class="data-table" id="sg-serverrequest-data">
                 <label>CrossParams Data</label>
-                <?php if(! empty(Dispatcher::$params)) : ?>
+                <?php
+                    $params = Dispatcher::getParams();
+                    $controller = Dispatcher::getController();
+                    $action = Dispatcher::getAction();
+                ?>
+                <?php if(! empty($params)) : ?>
                     <table class="data-table">
                         <thead>
                           <tr>
@@ -130,20 +135,20 @@
                           </tr>
                         </thead>
                         <tbody>
-                            <?php if(! empty(Dispatcher::$controller)) : ?>
+                            <?php if(! empty($controller)) : ?>
                             <tr>
                             	<td>Controller</td>
-                            	<td><?php echo Dispatcher::$controller ?></td>
+                            	<td><?php echo $controller ?></td>
                             </tr>
                             <?php endif ?>
-                            <?php if(! empty(Dispatcher::$action)) : ?>
+                            <?php if(! empty($action)) : ?>
                             <tr>
                             	<td>Action</td>
-                            	<td><?php echo Dispatcher::$action ?></td>
+                            	<td><?php echo $action ?></td>
                             </tr>
-                            <?php endif ?>                            
-                            
-                            <?php foreach(Dispatcher::$params as $c_key => $c_value) : ?>
+                            <?php endif ?>
+
+                            <?php foreach($params as $c_key => $c_value) : ?>
                             <tr>
                               <td>Params <?php echo $c_key ?>:</td>
                               <td><?php echo $c_value ?></td>
@@ -155,7 +160,7 @@
                     <span class="empty">empty</span>
                 <?php endif ?>
             </div>
-            
+
             <div class="data-table" id="sg-get-data">
                 <label>GET Data</label>
                 <?php if(! empty($_GET)) : ?>
@@ -179,7 +184,7 @@
                     <span class="empty">empty</span>
                 <?php endif ?>
             </div>
-            
+
             <div class="data-table" id="sg-post-data">
                 <label>POST Data</label>
                 <?php if(! empty($_POST)) : ?>
@@ -203,7 +208,7 @@
                     <span class="empty">empty</span>
                 <?php endif ?>
             </div>
-            
+
             <div class="data-table" id="sg-files">
                 <label>Files</label>
                 <?php if(! empty($_FILES)) : ?>
@@ -230,7 +235,7 @@
 
             <div class="data-table" id="sg-cookies">
                 <label>Cookies</label>
-                
+
                 <?php if(! empty($_COOKIE)) : ?>
                     <table class="data-table">
                         <thead>
@@ -252,7 +257,7 @@
                     <span class="empty">empty</span>
                 <?php endif ?>
             </div>
-            
+
             <div class="data-table" id="sg-session">
                 <label>Session</label>
                 <?php if(! empty($_SESSION)) : ?>

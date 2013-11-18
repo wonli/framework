@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:       wonli
- * @Version $Id: Dispatcher.php 152 2013-10-09 01:52:36Z ideaa $
+ * @Version $Id: Dispatcher.php 162 2013-10-23 13:01:37Z ideaa $
  */
 class Dispatcher
 {
@@ -48,6 +48,7 @@ class Dispatcher
     /**
      * 实例化dispatcher
      *
+     * @param $app_name
      * @param $app_config
      * @return Dispatcher
      */
@@ -67,6 +68,7 @@ class Dispatcher
      *
      * @param $router
      * @param $args 当$router类型为string时,指定参数
+     * @return array
      */
     private function getRouter( $router, $args )
     {
@@ -98,6 +100,60 @@ class Dispatcher
             'action'     =>  $action,
             'params'     =>  $params,
         );
+    }
+
+    /**
+     * 初始化请求cache
+     *
+     * @return bool|FileCache|Memcache|RedisCache
+     */
+    function init_request_cache( )
+    {
+        $controller_conf = $this->getConfig()->get('controller', strtolower(self::$controller));
+        if(! isset($controller_conf['cache']))
+        {
+            return false;
+        }
+
+        $controller_cache_config = $controller_conf ['cache'];
+        list($is_enable, $cache_config) = $controller_cache_config;
+        if(! $is_enable)
+        {
+            return false;
+        }
+
+        $app_name = $this->getConfig()->get("sys", "app_name");
+        $cache_dot_config = array(
+            '1' =>  $this->getConfig()->get('url', 'dot'),
+            '2' =>  '.',
+            '3' =>  ':',
+        );
+
+        if(! isset($cache_config ['cache_path']))
+        {
+            $cache_config ['cache_path'] = DOCROOT.'cache'.DS.'html';
+        }
+
+        if(! isset($cache_config ['file_ext']))
+        {
+            $cache_config ['file_ext'] = '.html';
+        }
+
+        if(! isset($cache_config ['key_dot']))
+        {
+            $cache_config ['key_dot'] = $cache_dot_config[ $cache_config['type'] ];
+        }
+
+        $cache_key_conf = array(
+            $app_name,
+            strtolower($this->getController()),
+            $this->getAction(),
+            implode($cache_config ['key_dot'], $this->getParams())
+        );
+        $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
+        $cache_config['key']   = $cache_key;
+
+        return CoreCache::factory( $cache_config );
     }
 
     /**
@@ -222,8 +278,9 @@ class Dispatcher
     /**
      * 实例化带参数的控制器
      *
-     * @param $router 要解析的路由
+     * @param $controller
      * @param null $args 指定的参数
+     * @internal param $router 要解析的路由
      * @return mixed
      */
     public function widget_run($controller, $args = null)
@@ -251,12 +308,23 @@ class Dispatcher
 
         $this->init_controller( $router ['controller'], $action );
         $this->init_params( $router ['params'] );
+        $cache = $this->init_request_cache();
+
+        if($cache)
+        {
+            $content = $cache->get();
+            if(strlen($content) > 0)
+            {
+                return $content;
+            }
+        }
 
         $cp = new self::$controller( );
         if(true == $run_controller)
         {
             $cp->run( self::$action, self::$params );
         }
+
         return $cp;
     }
 
@@ -303,7 +371,7 @@ class Dispatcher
     /**
      * 获取配置
      *
-     * @return app
+     * @return array
      */
     public static function getConfig()
     {
@@ -323,7 +391,7 @@ class Dispatcher
     /**
      * 获取action名称
      *
-     * @return action
+     * @return string
      */
     public static function getAction()
     {

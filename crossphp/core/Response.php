@@ -1,7 +1,16 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
-
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Response
+ */
 class Response
 {
+    /**
+     * 返回头http类型
+     *
+     * @var string
+     */
+    protected $content_type;
 
     /**
      * @var array $statusDescriptions
@@ -53,9 +62,9 @@ class Response
     );
 
     /**
-     * @var array $mimetypes
+     * @var array $mime_types
      */
-    static public $mimetypes = array (
+    static public $mime_types = array (
         'ez' => 'application/andrew-inset',
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',
@@ -198,7 +207,9 @@ class Response
     );
 
     /**
-     * @var 单例
+     * Response instance
+     *
+     * @var object
      */
     static $instance;
 
@@ -210,13 +221,14 @@ class Response
     /**
      * 单例模式
      *
-     * @param string $response_type
+     * @param string $content_type
+     * @internal param string $response_type
      * @return Response
      */
     static function getInstance( $content_type = 'html' )
     {
         if(! self::$instance) {
-            self::$instance = new Response( $content_type );
+            self::$instance = new Response( strtolower($content_type) );
         }
         return self::$instance;
     }
@@ -231,17 +243,16 @@ class Response
     /**
      * 设置返回头类型
      *
-     * @param $heaer_type
+     * @param $header_type
+     * @return $this
      */
     function set_ContentType( $header_type )
     {
-        $header_type = strtolower( $header_type );            
-    
-        if(isset(self::$mimetypes [$header_type]))
+        if(isset(self::$mime_types [$header_type]))
         {
-            $this->content_type = self::$mimetypes [$header_type];
+            $this->content_type = self::$mime_types [$header_type];
         } else {
-            $this->content_type = self::$mimetypes [ 'html' ];
+            $this->content_type = self::$mime_types [ 'html' ];
         }
         return $this;
     }
@@ -267,17 +278,65 @@ class Response
     }
 
     /**
-     * 发送http header
+     * 发送http 状态码
      *
      * @param int $code
      */
-    function send_header($code = 200)
+    function send_response_status($code = 200)
     {
         if( 200 != $code ) {
             $this->sendStatus($code);
         }
 
         header("Content-Type: {$this->content_type};charset=utf-8");
+    }
+
+    /**
+     * 生成参数
+     *
+     * @param $content
+     * @return array
+     */
+    private function make_params($content)
+    {
+        $result['CP_PARAMS'] = $content;
+        return $result;
+    }
+
+    /**
+     * 发送header
+     *
+     * @param $contents
+     * @return $this
+     */
+    function send_header( $content )
+    {
+        $contents = $this->make_params( $content );
+        foreach( $contents as $c_name => $c_val )
+        {
+            if(is_array($c_val))
+            {
+                $c_val = json_encode( $c_val );
+            }
+            header("{$c_name}:{$c_val}");
+        }
+        return $this;
+    }
+
+    /**
+     * 为response附加返回参数
+     *
+     * @param $conetent
+     * @return $this
+     */
+    function add_params( $content )
+    {
+        $contents = $this->make_params( $content );
+        foreach( $contents as $c_name => $c_val )
+        {
+            $_SERVER[$c_name] = $c_val;
+        }
+        return $this;
     }
 
     /**
@@ -289,7 +348,7 @@ class Response
      */
     function output($code = 200, $contents = '')
     {
-        $this->send_header($code);
+        $this->send_response_status($code);
 
         if(! $contents ) {
             $contents = self::$statusDescriptions [$code];
@@ -302,13 +361,13 @@ class Response
      * 调用模板输出信息
      *
      * @param int $code
-     * @param null $message
-     * @param null $tpl
+     * @param string $message
+     * @param string $tpl
      * @return mixed
      */
     function display($code = 200, $message = '', $tpl = '')
     {
-        $this->send_header($code);
+        $this->send_response_status($code);
 
         if(! $message ) {
             $message = self::$statusDescriptions [$code];

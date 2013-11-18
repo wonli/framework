@@ -62,8 +62,9 @@ class Cross
     /**
      * 实例化框架
      *
-     * @param $appname 要加载的App名称
+     * @param $app_name
      * @param $runtime_config 运行时加载的设置
+     * @internal param $appname 要加载的App名称
      * @return mixed
      */
     static function loadApp($app_name, $runtime_config = null)
@@ -80,6 +81,7 @@ class Cross
     /**
      * 返回配置类对象
      *
+     * @param null $app_name
      * @return config Object
      */
     function config( $app_name = null )

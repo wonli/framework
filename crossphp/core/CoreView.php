@@ -1,11 +1,10 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author:       wonli
- * @Version $Id: CoreView.php 156 2013-10-10 01:37:58Z ideaa $
+ * @Auth: wonli <wonli@live.com>
+ * Class CoreView
  */
 class CoreView extends FrameBase
 {
-
     /**
      * 模板数据
      *
@@ -65,14 +64,14 @@ class CoreView extends FrameBase
     /**
      * 模板的绝对路径
      *
-     * @param $tplname
+     * @param $tpl_name
      * @param $get_content 是否读取模板内容
      * @param $file_ext_name 模板文件扩展名
      * @return string
      */
-    function tpl($tplname, $get_content=false, $file_ext_name='.tpl.php')
+    function tpl($tpl_name, $get_content=false, $file_ext_name='.tpl.php')
     {
-        $file_path = $this->getTplPath().$tplname.$file_ext_name;
+        $file_path = $this->getTplPath().$tpl_name.$file_ext_name;
 
         if(true === $get_content)
         {
@@ -233,25 +232,14 @@ class CoreView extends FrameBase
     }
 
     /**
-     * 带生成静态页面的_display方法
+     * 渲染模板
      *
-     * @param $date 要渲染的数据
-     * @param $method 调用的方法
-     * @return HTML
+     * @param null $data
+     * @param null $method
      */
-    final function display(  $date=null, $method = null )
+    final function display(  $data=null, $method = null )
     {
-        $this->data = $date;
-        if($this->cache_config)
-        {
-            $cache_type = $this->cache_config["type"];
-            $cache_extime = $this->cache_config["extime"];
-
-            if($cache_type === 1)
-            {
-                return $this->buildHtml($date, $method);
-            }
-        }
+        $this->data = $data;
 
         if($method === null)
         {
@@ -261,14 +249,16 @@ class CoreView extends FrameBase
                 $method = strtoupper( $display_type );
             }
         }
-        return $this->_display($date, $method);
+
+        echo $this->_display($data, $method);
     }
 
     /**
-     * 输出带Layer的HTML页面
+     * 加载layer
      *
-     * @param string $date
-     * @param string $method
+     * @param null $data
+     * @param null $method
+     * @return bool
      */
     function _display($data = null, $method = null)
     {
@@ -284,6 +274,7 @@ class CoreView extends FrameBase
         ob_start();
         $this->$method( $data );
         $this->loadLayer( ob_get_clean() );
+        return ob_get_clean();
     }
 
     /**
@@ -461,6 +452,7 @@ class CoreView extends FrameBase
      * 输出JSON
      *
      * @param $data
+     * @return mixed
      */
     function JSON($data)
     {
@@ -475,8 +467,9 @@ class CoreView extends FrameBase
      * 输出XML
      *
      * @param $data
+     * @return mixed
      */
-    function XML($data)
+    function XML( $data )
     {
         $this->set(
             array("layer"=>"xml")
@@ -494,10 +487,19 @@ class CoreView extends FrameBase
      * @param $array_data
      * @param $xml_res
      */
-    function array_to_xml($array_data, & $xml_res) {
-        foreach($array_data as $key => $value) {
-            if(is_array($value)) {
-                if(! is_numeric($key)){
+    function array_to_xml($array_data, & $xml_res)
+    {
+        if(! is_array($array_data))
+        {
+            $array_data = array($array_data);
+        }
+
+        foreach($array_data as $key => $value)
+        {
+            if(is_array($value))
+            {
+                if(! is_numeric($key))
+                {
                     $subnode = $xml_res->addChild($key);
                     $this->array_to_xml($value, $subnode);
                 }
@@ -529,32 +531,36 @@ class CoreView extends FrameBase
         {
             extract($this->set, EXTR_PREFIX_SAME, "USER_DEFINED");
         }
-        $_realpath = $this->getTplPath();
+        $_real_path = $this->getTplPath();
         $controller_config = $this->config->get("controller", strtolower($this->controller));
 
         //运行时>配置>默认
         if( isset($layer) )
         {
-            $layer_file = $_realpath.$layer.$layer_ext;
+            $layer_file = $_real_path.$layer.$layer_ext;
         }
         else if( $controller_config && isset($controller_config["layer"]) )
         {
-            $layer_file = $_realpath.$controller_config["layer"].$layer_ext;
+            $layer_file = $_real_path.$controller_config["layer"].$layer_ext;
         }
         else
         {
-            $layer_file = $_realpath.'default'.$layer_ext;
+            $layer_file = $_real_path.'default'.$layer_ext;
         }
 
-        if( file_exists($layer_file) ) include $layer_file;
-        else throw new CoreException($layer_file.' layer Not found!');
+        if(! file_exists($layer_file) )
+        {
+            throw new CoreException($layer_file.' layer Not found!');
+        }
+
+        include $layer_file;
     }
 
     /**
      * 访问未定义的方法时 通过__call 抛出异常
      *
      * @param $action
-     * @param $args
+     * @param $argv
      * @throws FrontException
      */
     function __call($action, $argv)

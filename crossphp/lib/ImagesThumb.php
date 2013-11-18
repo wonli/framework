@@ -65,7 +65,8 @@ class ImagesThumb
      *
      * @static
      * @access public
-     * @param string $image 图像文件名
+     * @param $img
+     * @internal param string $image 图像文件名
      * @return mixed
      */
     function getImageInfo( $img )
@@ -92,7 +93,9 @@ class ImagesThumb
      * @static
      * @access public
      * @param boolean $is_save 是否保留原图
+     * @param bool $location
      * @param boolean $interlace 启用隔行扫描
+     * @throws CoreException
      * @return void
      */
     function thumb($is_save=true, $location= false, $interlace=true)
@@ -234,5 +237,5 @@ class ImagesThumb
     }
 
 }
-    
-    
+
+

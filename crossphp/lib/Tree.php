@@ -3,7 +3,7 @@
  * Class Tree
  * crossphp 优化返回数据
  */
-class Tree 
+class Tree
 {
     /**
      * @var array 数据
@@ -43,7 +43,7 @@ class Tree
     /**
      * 构造函数
      *
-     * @param mix $value
+     * @param string $value
      */
     function __construct($value = 'root')
     {
@@ -75,6 +75,7 @@ class Tree
      *
      * @param int $layer
      * @param int $root
+     * @param null $except
      * @param string $space
      * @return array (id=>value)
      */
@@ -95,9 +96,9 @@ class Tree
     /**
      * 设置结点
      *
-     * @param mix $id
-     * @param mix $parent
-     * @param mix $value
+     * @param $id
+     * @param $parent
+     * @param $value
      */
     function setNode($id, $parent, $value)
     {
@@ -123,6 +124,8 @@ class Tree
 
     /**
      * 计算layer
+     *
+     * @param int $root
      */
     function setLayer($root = 0)
     {
@@ -136,9 +139,9 @@ class Tree
     /**
      * 先根遍历，不包括root
      *
-     * @param array $tree
-     * @param mix $root
-     * @param mix $except 除外的结点，用于编辑结点时，上级不能选择自身及子结点
+     * @param $tree
+     * @param int $root
+     * @param null $except 除外的结点，用于编辑结点时，上级不能选择自身及子结点
      */
     function getList(&$tree, $root = 0, $except = NULL)
     {
@@ -192,8 +195,8 @@ class Tree
     /**
      * 取得祖先，不包括自身
      *
-     * @param mix $id
-     * @return array
+     * @param $id
+     * @return mixed
      */
     function getParents($id)
     {
@@ -223,6 +226,7 @@ class Tree
      * 取得子孙，包括自身，先根遍历
      *
      * @param int $id
+     * @param null $except
      * @return array
      */
     function getChilds($id = 0, $except = NULL)
@@ -236,11 +240,18 @@ class Tree
 
     /**
      * 先根遍历，数组格式 id,子id,value对应的值
+     * <pre>
      * array(
      *     array('id' => '', 'value' => '', children => array(
      *         array('id' => '', 'value' => '', children => array()),
      *     ))
      * )
+     * </pre>
+     *
+     * @param int $root
+     * @param null $layer
+     * @param bool $clear
+     * @return array
      */
     function getArrayList($root = 0 , $layer = NULL, $clear = false)
     {
@@ -251,15 +262,15 @@ class Tree
             {
                 continue;
             }
-            
+
             if(true === $clear) {
                 $data[] = array(
                         $this->id_field  => $id,
-                        $this->value_field=> $this->getValue($id), 
+                        $this->value_field=> $this->getValue($id),
                         'children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()
                     );
             } else {
-                $data[] = array_merge( $this->data[$id], array('children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()));           
+                $data[] = array_merge( $this->data[$id], array('children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()));
             }
         }
         return $data;

@@ -12,7 +12,7 @@ class CoreController extends FrameBase
  	 */
  	protected function is_post()
  	{
-        return strtolower($_SERVER['REQUEST_METHOD']) == 'post';
+        return isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post';
  	}
 
     /**
@@ -21,7 +21,7 @@ class CoreController extends FrameBase
      */
     protected function is_get()
     {
-        return strtolower($_SERVER['REQUEST_METHOD']) == 'get';
+        return isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'get';
     }
 
     /**
@@ -47,8 +47,8 @@ class CoreController extends FrameBase
     /**
      * 取得通过POST传递的参数
      *
-     * @param $p 调试参数
-     * @return
+     * @param bool $p 调试参数
+     * @return array
      */
     protected function getArgs($p=false)
     {
@@ -74,7 +74,7 @@ class CoreController extends FrameBase
     /**
      * 返回执行的前一页
      *
-     * @return
+     * @return void
      */
     protected function return_referer()
     {
@@ -84,7 +84,10 @@ class CoreController extends FrameBase
     /**
      * 跳转到指定页面
      *
-     * @param $url 要跳转的路径
+     * @param null $_controller
+     * @param null $params
+     * @param bool $sec
+     * @internal param $url 要跳转的路径
      * @return javascript
      */
     protected function to($_controller=null, $params=null, $sec=false)
@@ -113,13 +116,13 @@ class CoreController extends FrameBase
     /**
      * view->display 的连接
      *
-     * @param null $date
+     * @param null $data
      * @param null $method
      * @return mixed
      */
-    protected function display($date=null, $method = null)
+    protected function display($data=null, $method = null)
     {
-        return $this->view->display( $date, $method );
+        return $this->view->display( $data, $method );
     }
 
     /**
@@ -136,6 +139,7 @@ class CoreController extends FrameBase
      * 重设视图action名称
      *
      * @param $action_name
+     * @return $this
      */
     function setAction( $action_name )
     {

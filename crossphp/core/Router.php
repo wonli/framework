@@ -65,6 +65,7 @@ class Router implements RouterInterface
      * 设置url解析参数
      *
      * @param $params
+     * @return $this
      */
     public function set_router_params( $params = null )
     {
@@ -105,11 +106,11 @@ class Router implements RouterInterface
         {
             case 1 :
                 $request = Request::getInstance()->getUrlRequest( $url_config ['type'] );
-                return self::paseString($request, $url_config);
+                return self::parseString($request, $url_config);
 
             case 2 :
                 $path_info = Request::getInstance()->getUrlRequest( $url_config ['type'] );
-                $request = self::paseString($path_info, $url_config);
+                $request = self::parseString($path_info, $url_config);
 
                 if(! empty($request))
                 {
@@ -126,33 +127,38 @@ class Router implements RouterInterface
     }
 
     /**
-     * 解析querystring
-     * @param  array $init_url 用户配置参数
-     * @return <pre>
+     * 解析请求字符串
+     * <pre>
      * [0] 解析的结果
      * [1] 抛出异常
      * [2] 返回空字符串
      * </pre>
+     *
+     * @param $_query_string
+     * @param $url_config
+     * @throws FrontException
+     * @return array
      */
-    static function paseString( $_querystring, $url_config )
+    static function parseString( $_query_string, $url_config )
     {
-        $_querystring = trim(trim( $_querystring, "/" ), $url_config['dot']);
+        $_query_string = trim(trim( $_query_string, "/" ), $url_config['dot']);
 
-        if(! $_querystring) {
+        if(! $_query_string) {
             return ;
         }
 
-        $_urlext = $url_config["ext"];
-        if(isset($_urlext[1]) && false !== strpos($_querystring, $_urlext[0]))
+        $_url_ext = $url_config["ext"];
+        if(isset($_url_ext[1]) && false !== strpos($_query_string, $_url_ext[0]))
         {
-            list($_querystring, $ext) = explode($_urlext[0], $_querystring);
-            if($ext !== substr($_urlext, 1)) {
+            list($_query_string, $ext) = explode($_url_ext[0], $_query_string);
+            if($ext !== substr($_url_ext, 1)) {
                 throw new FrontException("找不到该页面");
             }
         }
 
+        $router_params = array();
         if($url_config['dot']) {
-            $router_params = array_filter( explode($url_config['dot'], $_querystring) );
+            $router_params = array_filter( explode($url_config['dot'], $_query_string) );
         }
         return $router_params;
     }
@@ -218,8 +224,8 @@ class Router implements RouterInterface
     /**
      * 解析alias配置
      *
-     * @param $router
-     * @throws CoreException
+     * @param $request
+     * @internal param $router
      */
     function setRouter($request)
     {

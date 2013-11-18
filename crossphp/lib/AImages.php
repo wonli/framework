@@ -1,6 +1,6 @@
 <?php
 /**
- * 图片上次类
+ * 图片上传类
  * Class AImages
  */
 class AImages{
@@ -154,7 +154,8 @@ class AImages{
      *
      * @static
      * @access public
-     * @param string $image 图像文件名
+     * @param $img
+     * @internal param string $image 图像文件名
      * @return mixed
      */
     function getImageInfo($img) {
@@ -175,18 +176,19 @@ class AImages{
         }
     }
 
-	/**
+    /**
      * 生成缩略图
      * @static
      * @access public
-     * @param string $image  原图
-     * @param string $type 图像格式
-     * @param string $thumbname 缩略图文件名
-     * @param string $maxWidth  宽度
-     * @param string $maxHeight  高度
-     * @param string $position 缩略图保存目录
-     * @param boolean $interlace 启用隔行扫描
+     * @param string $image 原图
      * @param boolean $is_save 是否保留原图
+     * @param int $resize
+     * @param string $type 图像格式
+     * @param int|string $maxWidth 宽度
+     * @param int|string $maxHeight 高度
+     * @param boolean $interlace 启用隔行扫描
+     * @internal param string $thumbname 缩略图文件名
+     * @internal param string $position 缩略图保存目录
      * @return void
      */
 

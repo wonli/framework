@@ -4,68 +4,83 @@
  * Class FileCache
  */
 
-//文件缓存实现
 class FileCache implements CacheInterface
 {
     /**
-     * @var cache key
+     * 过期时间
+     *
+     * @var int
      */
-    private $cachekey;
+    private $expire_time;
 
     /**
-     * @var 过期时间
+     * 缓存文件路径
+     *
+     * @var string
      */
-    private $extime;
+    private $cache_file;
 
-    /**
-     * @var 缓存的文件
-     */
-    private $cachefile;
-
-    function __construct($cache_key, $extime)
+    function __construct($cache_config)
     {
-        $this->setCacheKey($cache_key);
-        $this->extime = $extime;
+        $this->cache_file = $cache_config['cache_path'].DS.$cache_config['key'].$cache_config['file_ext'];
+        $this->expire_time = $cache_config ['expire_time'];
+
         $this->init();
     }
 
+    /**
+     * 如果缓存文件不存在则创建
+     */
     function init()
     {
-        $cachedir = Cross::config()->get("sys", "cache_path");
-        $cachekey = str_replace(Cross::config()->get("url","dot"), DS, $this->cachekey);
-
-        $this->cachefile = $cachedir.$cachekey.'.html';
+        if(! file_exists($this->cache_file))
+        {
+            Helper::mkfile($this->cache_file);
+        }
     }
 
-    function setCacheKey($cache_key){
-        $this->cachekey = $cache_key;
-    }
-
-    function getCacheKey()
+    /**
+     * 返回缓存文件
+     *
+     * @param string $key
+     * @return mixed
+     */
+    function get( $key = '' )
     {
-        return $this->cachekey;
+        return file_get_contents( $this->cache_file );
     }
 
-    function get()
-    {
-        return include $this->cachefile;
-    }
-
+    /**
+     * 检查过期时间
+     *
+     * @return bool
+     */
     function getExtime()
     {
-        if(! file_exists($this->cachefile)) {
+        if(! file_exists($this->cache_file))
+        {
             return false;
         }
 
-        if( (time() - filemtime( $this->cachefile )) < $this->extime) {
+        if( (time() - filemtime( $this->cache_file )) < $this->expire_time)
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
-    function set()
+    /**
+     * 保存缓存
+     *
+     * @param $key
+     * @param $value
+     * @return mixed|void
+     */
+    function set( $key, $value )
     {
-
+        var_dump(  $key );
     }
 }

@@ -26,9 +26,9 @@ class CrossArray
      * $config为字符串的时候 获取配置数组,此时设定$name 则获取数组中指定项的值
      * $config为数组的时候 获取数组中指定的配置项,如果$name为true 则获取指定项之外的配置项
      *
-     * @param $confing 字符串或数组
+     * @param $config
      * @param $name null或boolean
-     * @return string或array
+     * @return string|array
      */
     function get($config, $name=null)
     {

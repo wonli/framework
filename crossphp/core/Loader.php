@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
  * @Author:  wonli <wonli@live.com>
- * @Version: $Id: Loader.php 155 2013-10-09 12:12:01Z ideaa $
+ * @Version: $Id: Loader.php 166 2013-11-06 07:52:21Z ideaa $
  */
 class Loader
 {
@@ -38,6 +38,7 @@ class Loader
     /**
      * 单例模式运行Loader
      *
+     * @param $app_name
      * @return Loader
      */
     public static function init( $app_name )
@@ -95,22 +96,23 @@ class Loader
             'FrontException'    => 'exception/FrontException.php',
             'CacheException'    => 'exception/CacheException.php',
 
-            'Page'          => 'lib/Page.php', //分页
-            'MySql'         => 'lib/pdo_mysql.php',
-            'MongoBase'     => 'lib/MongoBase.php',
-            'DataAccess'    => 'lib/DataAccess.php',
-            'ReSizeImage'   => 'lib/ReSizeImage.php', //图片剪裁
-            'PdoAccess'     => 'lib/PdoAccess.php',
-            'Captcha'       => 'lib/Captcha.php', //头像
-            'AImages'       => 'lib/AImages.php', //图片上传
-            'ImagesThumb'   => 'lib/ImagesThumb.php', //图片剪裁
-            'Tree'          => 'lib/Tree.php', //格式化树
-            'Crumb'         => 'lib/Crumb.php', //验证字符串
-            'CacheRedis'	=> 'lib/CacheRedis.php',
-            'Uploader'	    => 'lib/Uploader.php',
-            'Mcrypt'        => 'lib/Mcrypt.php',
-            'DEcode'        => 'lib/DEcode.php',
-            'HexCrypt'      => 'lib/HexCrypt.php',
+            'Page'          =>  'lib/Page.php', //分页
+            'MysqlSimple'   =>  'lib/MysqlSimple.php',
+            'MongoBase'     =>  'lib/MongoBase.php',
+            'ReSizeImage'   =>  'lib/ReSizeImage.php', //图片剪裁
+            'PdoAccess'     =>  'lib/PdoAccess.php',
+            'Captcha'       =>  'lib/Captcha.php', //头像
+            'AImages'       =>  'lib/AImages.php', //图片上传
+            'ImagesThumb'   =>  'lib/ImagesThumb.php', //图片剪裁
+            'Tree'          =>  'lib/Tree.php', //格式化树
+            'Crumb'         =>  'lib/Crumb.php', //验证字符串
+            'Uploader'	    =>  'lib/Uploader.php',
+            'Mcrypt'        =>  'lib/Mcrypt.php',
+            'DEcode'        =>  'lib/DEcode.php',
+            'HexCrypt'      =>  'lib/HexCrypt.php',
+            'DESMcrypt'     =>  'lib/DESMcrypt.php',
+            'Mcrypt'        =>  'lib/Mcrypt.php',
+            'PYInitials'    =>  'lib/PYInitials.php',
         );
     }
 
@@ -143,21 +145,20 @@ class Loader
     /**
      * 读取指定的单一文件
      *
-     * @param $file 参见Loader::getFileRealPath()
-     * @param bool $parse_file 是否解析文件路径
+     * @param $file Loader::parseFileRealPath()
+     * @param bool $read_file 是否读取文件内容
      * @return mixed
      * @throws CoreException
      */
-    static public function read( $file, $parse_file = true )
+    static public function read( $file, $read_file = true )
     {
-        if(true === $parse_file)
+        if(file_exists($file))
         {
-            $parse_path = Loader::parseFileRealPath( $file, '' );
-            $file_path = current( $parse_path );
+            $file_path = $file;
         }
         else
         {
-            $file_path = $file;
+            $file_path = Loader::getFilePath( $file );
         }
 
         $key = crc32($file_path);
@@ -166,8 +167,13 @@ class Loader
             return self::$loaded [ $key ];
         }
 
-        if( file_exists($file_path) )
+        if( is_readable($file_path) )
         {
+            if(false === $read_file)
+            {
+                return require $file_path;
+            }
+
             $ext = Helper::getExt($file_path);
             switch($ext)
             {
@@ -185,13 +191,12 @@ class Loader
                     throw new CoreException("不支持的解析格式");
             }
         }
-        else throw new CoreException("未找到要载入的文件:{$file}");
+        else throw new CoreException("读取文件失败:{$file}");
     }
 
     /**
      * 根据给定的参数解析文件的绝对路径
-     *
-     * @param $class 类名称 <pre>
+     * <pre>
      *  格式如下:
      *
      *  1 file_name 直接指定文件路径
@@ -199,7 +204,9 @@ class Loader
      *  3 app::[path/]file_name 当前app路径
      *  4 core::[path/]file_name 核心目录
      * </pre>
+     *
      * @param $class
+     * @param string $append_file_ext
      * @return array
      */
     static function parseFileRealPath( $class, $append_file_ext=".php" )
@@ -250,36 +257,47 @@ class Loader
     }
 
     /**
-     * autoload函数
+     * @see Loader::parseFileRealPath
      *
-     * @param $classname
+     * @param $file
+     * @return mixed
+     */
+    static function getFilePath( $file )
+    {
+        return current( Loader::parseFileRealPath($file, '') );
+    }
+
+    /**
+     * 自动加载函数
+     *
+     * @param $class_name
      * @return bool
      */
-    function autoLoad($classname)
+    function autoLoad($class_name)
     {
-        if( isset(self::$coreClass [$classname]) )
+        if( isset(self::$coreClass [$class_name]) )
         {
-            $file_real_path= CROSSPHP_PATH.self::$coreClass[$classname];
+            $file_real_path= CROSSPHP_PATH.self::$coreClass[$class_name];
         }
         else
         {
-            if( 'Module' === substr($classname, -6) )
+            if( 'Module' === substr($class_name, -6) )
             {
                 return spl_autoload_register(array("Loader","module_load"));
             }
-            else if( 'View' === substr($classname, -4) )
+            else if( 'View' === substr($class_name, -4) )
             {
-                $_filetype = 'views';
+                $_file_type = 'views';
             }
             else
             {
-                $_filetype = 'controllers';
+                $_file_type = 'controllers';
             }
 
-            if(! isset($file_real_path) && $_filetype)
+            if(! isset($file_real_path) && $_file_type)
             {
-                $_filepath = APP_PATH_DIR.DS.$this->app_name.DS.$_filetype.DS;
-                $file_real_path = $_filepath.$classname.'.php';
+                $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
+                $file_real_path = $_file_path.$class_name.'.php';
             }
 
             if( ! is_file($file_real_path) )
@@ -299,8 +317,8 @@ class Loader
      */
     static function module_load( $module_name )
     {
-        $_filepath = DOCROOT."modules".DS;
-        $file_real_path = $_filepath.$module_name.".php";
+        $_file_path = DOCROOT."modules".DS;
+        $file_real_path = $_file_path.$module_name.".php";
 
         if( file_exists( $file_real_path ) )
         {

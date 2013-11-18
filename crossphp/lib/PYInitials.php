@@ -38,11 +38,12 @@ class PYInitials
         215249 => 'Z',
     );
     private $_charset = null;
+
     /**
      * 构造函数, 指定需要的编码 default: utf-8
      * 支持utf-8, gb2312
      *
-     * @param unknown_type $charset
+     * @param string $charset
      */
     public function __construct( $charset = 'utf-8' )
     {
@@ -140,19 +141,26 @@ class PYInitials
         }
         $words = $this->_cutWord( $str );
         foreach ( $words as $word )
-        {            
+        {
         	if ( $this->_isAscii($word) ) {//非中文
                 $result[] = $word;
                 continue;
             }
             $code = ( ord(substr($word,0,1)) ) * 1000 + (ord(substr($word,1,1)));
-            //获取拼音首字母A--Z 
+            //获取拼音首字母A--Z
             if ( ($i = $this->_search($code)) != -1 ){
                 $result[] = $this->_pinyins[$i];
             }
         }
         return strtoupper(implode('',$result));
     }
+
+    /**
+     * get char
+     *
+     * @param $ascii
+     * @return string
+     */
     private function _getChar( $ascii )
     {
         if ( $ascii >= 48 && $ascii <= 57){
@@ -172,27 +180,27 @@ class PYInitials
      * @return int
      */
     private function _search( $code )
-    {    	
+    {
         $data = array_keys($this->_pinyins);
-      
+
         $lower = 0;
         $upper = sizeof($data)-1;
-        
+
         // 排除非一级汉字
         if ($code < $data[0] || $code > $data[23]) return -1;
-       
-        for (;;) {        	
-            if ( $lower > $upper ){              
+
+        for (;;) {
+            if ( $lower > $upper ){
             	return $data[$lower-1];
             }
             $middle = (int) round(($lower + $upper) / 2);
-            if ( !isset($data[$middle]) ) {           
+            if ( !isset($data[$middle]) ) {
             	return -1;
             }
-          
+
             if ( $data[$middle] < $code ){
                 $lower = (int)$middle + 1;
-            }else if ( $data[$middle] == $code ) {            
+            }else if ( $data[$middle] == $code ) {
                  return $data[$middle];
             }else{
                 $upper = (int)$middle - 1;

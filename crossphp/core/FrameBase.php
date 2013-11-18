@@ -262,18 +262,27 @@ class FrameBase
      * 加载module
      *
      * @param $module_name
+     * @param string $params
      * @return mixed
      */
-    protected function loadModule( $module_name, $db_type = '' )
+    protected function loadModule( $module_name, $params = '' )
     {
+        $args = func_get_args();
+        if( $params != '' && count($args) > 2 )
+        {
+            array_shift($args);
+            $params = $args;
+        }
+
         if( false !== strpos( $module_name, "/") )
         {
             list($_, $module_name) = explode("/", $module_name);
+            unset($_);
             Loader::import("::modules/{$module_name}Module");
         }
 
         $_module = ucfirst($module_name.'Module');
-        return new $_module( );
+        return new $_module( $params );
     }
 
     /**
@@ -302,60 +311,26 @@ class FrameBase
     }
 
     /**
-     * 运行app TODO 检查是否有页面缓存
+     * 运行app
      *
      * @param $act
-     * @param $params
      */
-    function run($act , $params)
+    function run( $act )
     {
-        /**
-            $_key_dot = self::$appConfig->get("url", "dot");
-            $_app_name = self::$appConfig->get("sys", "app_name");
-
-            //简单文件缓存
-            if(empty(self::$params)) {
-            $_key_params = 'index';
-            } else {
-            if(is_array(self::$params)) {
-            $_key_params = implode($_key_dot, self::$params);
-            } else {
-            $_key_params = self::$params;
-            }
-            }
-            $_cache_key = self::$controller.$_key_dot.self::$action.$_key_dot.$_key_params;
-            $this_controller_config = self::$appConfig->get("controller", strtolower(self::$controller));
-
-            $_cacheConfig = null;
-            if(isset($this_controller_config["cache"]) && $this_controller_config["cache"][0] === true) {
-            list($_isCache, $_cacheConfig) = $this_controller_config["cache"];
-            $_ex = false;
-
-            if(true === $_isCache)
-            {
-            $cache=Cache::create( $_cacheConfig, $_cache_key );
-            $_ex = $cache->getExtime();
-            }
-
-            if(true === $_isCache && $_ex) {
-            return $cache->get();
-            }
-            }
-            self::$cache_config = $_cacheConfig;
-         */
-
         $mr = new ReflectionClass($this);
 
         $_before = "{$act}_before";
         $_after = "{$act}_after";
 
-        if( $mr->hasMethod($_before) ) {
+        if( $mr->hasMethod($_before) )
+        {
             $this->$_before();
         }
 
-        $this->$act( $params );
+        $this->$act( );
 
-        if( $mr->hasMethod($_after) ) {
+        if( $mr->hasMethod($_after) )
+        {
             $this->$_after();
         }
     }
@@ -382,10 +357,10 @@ class FrameBase
     }
 
     /**
-     * request,response,view 重载
+     * 重载 request,response,view
      *
      * @param $property
-     * @return action|mixed
+     * @return mixed|object|Response
      */
     function __get( $property )
     {

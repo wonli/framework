@@ -153,11 +153,35 @@ class Helper
      */
     static function createFolders($path)
     {
-        if (!file_exists($path))
+        if (! is_dir($path))
         {
-            self::createFolders(dirname($path));
-            mkdir($path,0777);
+            mkdir($path, 0777, true);
         }
+    }
+
+    /**
+     * 根据文件名创建文件
+     *
+     * @param $file_name
+     * @param $chmod
+     * @return bool
+     */
+    static function mkfile($file_name, $chmod = 0777)
+    {
+        if(! file_exists($file_name))
+        {
+            $file_path = dirname( $file_name );
+            if(! is_dir($file_path))
+            {
+                mkdir($file_path, $chmod, true);
+            }
+
+            $fp = fopen($file_name, 'w+');
+            fclose( $fp );
+            chmod($file_name, $chmod);
+        }
+
+        return true;
     }
 
     /**
@@ -168,36 +192,31 @@ class Helper
      */
     static function valid_email($email)
     {
-        if (!@ereg("^[^@]{1,64}@[^@]{1,255}$",$email))
-        {
+        // First, we check that there's one @ symbol, and that the lengths are right
+        if (!preg_match("/^[^@]{1,64}@[^@]{1,255}$/", $email)) {
             return false;
         }
-
-        $email_array = explode("@",$email);
-        $local_array = explode(".",$email_array[0]);
-        for ($i = 0;$i <sizeof($local_array);$i++)
-        {
-            if (!@ereg("^(([A-Za-z0-9!#$%&'*+/=?^_`{|}~-][A-Za-z0-9!#$%&'*+/=?^_`{|}~\.-]{0,63})|(\"[^(\\|\")]{0,62}\"))$",$local_array[$i]))
-            {
+        // Split it into sections to make life easier
+        $email_array = explode("@", $email);
+        $local_array = explode(".", $email_array[0]);
+        for ($i = 0; $i < sizeof($local_array); $i++) {
+            if (!preg_match("/^(([A-Za-z0-9!#$%&'*+\/=?^_`{|}~-][A-Za-z0-9!#$%&'*+\/=?^_`{|}~\.-]{0,63})|(\"[^(\\|\")]{0,62}\"))$/", $local_array[$i])) {
                 return false;
             }
         }
 
-        if (!@ereg("^\[?[0-9\.]+\]?$",$email_array[1]))
-        {
-            $domain_array = explode(".",$email_array[1]);
-            if (sizeof($domain_array) <2)
-            {
-                return false;
+        if (!preg_match("/^\[?[0-9\.]+\]?$/", $email_array[1])) { // Check if domain is IP. If not, it should be valid domain name
+            $domain_array = explode(".", $email_array[1]);
+            if (sizeof($domain_array) < 2) {
+                return false; // Not enough parts to domain
             }
-
-            for ($i = 0;$i <sizeof($domain_array);$i++){
-                if (!@ereg("^(([A-Za-z0-9][A-Za-z0-9-]{0,61}[A-Za-z0-9])|([A-Za-z0-9]+))$",$domain_array[$i]))
-                {
+            for ($i = 0; $i < sizeof($domain_array); $i++) {
+                if (!preg_match("/^(([A-Za-z0-9][A-Za-z0-9-]{0,61}[A-Za-z0-9])|([A-Za-z0-9]+))$/", $domain_array[$i])) {
                     return false;
                 }
             }
         }
+
         return true;
     }
 
@@ -410,16 +429,15 @@ class Helper
         return  $path_name.'/'.$dir1.'/'.$dir2.'/'.$dir3.'/'.substr($id, -2).'/';
     }
 
-	/**
-	 * 发送一个http请求
+    /**
+     * 发送一个http请求
      *
-	 * @param  $url    请求链接
-	 * @param  $method 请求方式
-	 * @param array $vars 请求参数
-	 * @param  $time_out  请求过期时间
-	 * @return JsonObj
-	 */
-	static function curl_request($url, array $vars=array(), $method = 'post')
+     * @param $url
+     * @param array $vars
+     * @param string $method
+     * @return mixed|string
+     */
+    static function curl_request($url, array $vars=array(), $method = 'post')
 	{
 		$method = strtolower($method);
 		if($method == 'get' && !empty($vars))

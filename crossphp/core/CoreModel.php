@@ -1,6 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author: wonli <wonli@live.com>
+ * @Auth: wonli <wonli@live.com>
+ * Class CoreModel
  */
 class CoreModel extends FrameBase
 {
@@ -39,9 +40,9 @@ class CoreModel extends FrameBase
      */
     private function dbcontent()
     {
-        $db = $this->getDBConfig();        
+        $db = $this->getDBConfig();
         $dbtype = $this->getDBType();
-        
+
         if(!$db) {
             return false;
         }
@@ -62,6 +63,8 @@ class CoreModel extends FrameBase
     /**
      * 读取数据库配置
      *
+     * @param string $type
+     * @throws CoreException
      * @return array
      */
     function _config($type='all')
@@ -102,14 +105,14 @@ class CoreModel extends FrameBase
     /**
      * 读取数据库配置
      *
-     * @return bool
+     * @param string $type
      * @throws CoreException
+     * @return bool
      */
     private function getDBConfig( $type='CONTROLLER' )
     {
-        $dbconfig = $this->_config( );
+        $db_config = $this->_config( );
         $controller_config = $this->config->get("controller", strtolower($this->controller));
-
 
         if(isset( $controller_config ['db']))
         {
@@ -119,18 +122,18 @@ class CoreModel extends FrameBase
                 $this->setDBType($type);
             }
 
-            if( isset( $dbconfig[$type] [$config_num] ) )
+            if( isset( $db_config[$type] [$config_num] ) )
             {
-                return $dbconfig[$type] [$config_num];
+                return $db_config[$type] [$config_num];
             } else {
-                throw new CoreException("指定的数据库连接未配置: ".$type.'-'.$num);
+                throw new CoreException("指定的数据库连接未配置: ".$type.'-'.$config_num);
             }
         }
         else
         {
-            if($dbconfig["mysql"]["db"]) {
+            if($db_config["mysql"]["db"]) {
                 $this->setDBType("mysql");
-                return $dbconfig["mysql"]["db"];
+                return $db_config["mysql"]["db"];
             } else {
                 throw new CoreException("未找到数据库默认配置");
             }
@@ -180,8 +183,9 @@ class CoreModel extends FrameBase
      * 取缓存key
      *
      * @param $key_name
-     * @return mixed
+     * @param $key_value
      * @throws FrontException
+     * @return mixed
      */
     static function cache_key($key_name, $key_value)
     {

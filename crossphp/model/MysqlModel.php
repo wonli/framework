@@ -22,30 +22,48 @@ class MysqlModel implements SqlInterface
     private static $instance;
 
     /**
-     * @param $config_path 默认参数的路径
+     * 创建数据库连接
+     * <ul>
+     * <li>PDO::ATTR_PERSISTENT => false //禁用长连接</li>
+     * <li>PDO::ATTR_EMULATE_PREPARES => false //禁用模拟预处理</li>
+     * <li>PDO::ATTR_STRINGIFY_FETCHES => false //禁止数值转换成字符串</li>
+     * <li>PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true //使用缓冲查询</li>
+     * <li>PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION //发生错误时抛出异常 </li>
+     * <li>PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8" </li>
+     * </ul>
      *
+     * @param $dsn dsn
+     * @param $user 数据库用户名
+     * @param $password 数据库密码
+     * @throws CoreException
      */
     private function __construct( $dsn, $user, $password )
     {
         try{
             $this->pdo = new PDO($dsn, $user, $password, array(
                 PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
             ));
-            $this->pdo->query('set names utf8;');
         } catch(Exception $e) {
             throw new CoreException($e->getMessage().' line:'.$e->getLine().' '.$e->getFile());
         }
     }
 
     /**
-     * @param $dsn $user, $password
+     * @see MysqlModel::__construct
+     *
+     * @param $dsn
+     * @param $user
+     * @param $password
+     * @return mixed
      */
     static function getInstance( $dsn, $user, $password )
     {
         //同时建立多个数据库连接
         $_instance =  md5($dsn.$user.$password);
-
         if(! isset( self::$instance[ $_instance ]) )
         {
             self::$instance [$_instance] = new self($dsn, $user, $password);
@@ -78,7 +96,7 @@ class MysqlModel implements SqlInterface
      */
     function getAll($table, $fields, $where=null, $order=1, $group_by = 1)
     {
-        return $this->prepare_getall($table, $fields, $where, $order, $group_by);
+        return $this->prepare_get_all($table, $fields, $where, $order, $group_by);
     }
 
     /**
@@ -144,14 +162,18 @@ class MysqlModel implements SqlInterface
      * 执行一条SQL 语句 并返回结果
      *
      * @param $sql
-     * @param $model
+     * @param int $model
+     * @throws CoreException
      * @return mixed
      */
     function fetchOne($sql, $model = PDO::FETCH_ASSOC)
     {
-        $data = $this->pdo->query($sql);
-        if($data) {
-            return $data->fetch($model);
+        try
+        {
+            $data = $this->pdo->query( $sql );
+            return $data->fetch( $model );
+        } catch( Exception $e ) {
+            throw new CoreException( $e->getMessage() );
         }
     }
 
@@ -159,14 +181,18 @@ class MysqlModel implements SqlInterface
      * 执行sql 并返回所有结果
      *
      * @param $sql
-     * @param $model
+     * @param int $model
+     * @throws CoreException
      * @return array
      */
     function fetchAll($sql, $model = PDO::FETCH_ASSOC)
     {
-        $data = $this->pdo->query($sql);
-        if($data) {
+        try
+        {
+            $data = $this->pdo->query( $sql );
             return $data->fetchAll( $model );
+        } catch ( Exception $e ) {
+            throw new CoreException( $e->getMessage() );
         }
     }
 
@@ -195,12 +221,13 @@ class MysqlModel implements SqlInterface
      */
     public function prepare($statement, $params = array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY))
     {
-        $res = $this->pdo->prepare($statement, $params);
-        if ($res) {
-            $this->stmt = $res;
+        try
+        {
+            $this->stmt = $this->pdo->prepare($statement, $params);
             return $this;
+        } catch (PDOException $e) {
+            throw new CoreException( $e->getMessage() );
         }
-        throw new CoreException("prepare error!");
     }
 
     /**
@@ -212,17 +239,12 @@ class MysqlModel implements SqlInterface
      */
     public function exec($args=null)
     {
-        if(! $this->stmt) throw new CoreException("stmt init failed!");
-        $result = $this->stmt->execute($args);
-
-        if($result)
+        try
         {
+            $result = $this->stmt->execute($args);
             return $this;
-        }
-        else
-        {
-            $error_info = implode(" ", $this->stmt->errorInfo() );
-            throw new CoreException( "failed: {$error_info}");
+        } catch (PDOException $e) {
+            throw new CoreException( $e->getMessage() );
         }
     }
 
@@ -237,8 +259,8 @@ class MysqlModel implements SqlInterface
     public function stmt_fetch($_fetchAll=false, $result_type = PDO::FETCH_ASSOC)
     {
         if(! $this->stmt) throw new CoreException("stmt init failed!");
-
-        if($_fetchAll) {
+        if(true === $_fetchAll)
+        {
             return $this->stmt->fetchAll($result_type);
         }
         return $this->stmt->fetch($result_type);
@@ -260,8 +282,8 @@ class MysqlModel implements SqlInterface
         $field_str = $this->parse_fields($fields);
 		$where_str = $this->parse_where($where, $params);
 
-        $sql = sprintf($one_sql, $field_str, $where_str);
-        $result = $this->prepare( $sql )->exec($params)->stmt_fetch();
+        $this->sql = sprintf($one_sql, $field_str, $where_str);
+        $result = $this->prepare( $this->sql )->exec($params)->stmt_fetch();
 
         return $result;
     }
@@ -299,9 +321,9 @@ class MysqlModel implements SqlInterface
                 $value .= "?,";
             }
 
-            $sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
+            $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
 
-            $stmt = $this->prepare($sql);
+            $stmt = $this->prepare($this->sql);
             foreach($data ['values'] as $data_array) {
                 $stmt->exec($data_array);
             }
@@ -316,8 +338,8 @@ class MysqlModel implements SqlInterface
                 $r[] = $_value;
             }
 
-            $sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
-            $stmt = $this->prepare($sql);
+            $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
+            $stmt = $this->prepare($this->sql);
             $id = $stmt->exec($r)->insert_id();
 
             return $id;
@@ -346,12 +368,13 @@ class MysqlModel implements SqlInterface
         $total = $this->prepare_getone($table, 'COUNT(*) as total', $where);
 
         $page['result_count'] = intval($total ['total']);
+        $page['limit'] = max(1, intval($page['limit']));
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
         $page['p'] = max(1, min( $page['p'], $page['total_page']));
         $p = ($page['p'] - 1) * $page['limit'];
 
-        $sql = sprintf($all_sql, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
-        $result = $this->prepare($sql)->exec($params)->stmt_fetch(true);
+        $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
+        $result = $this->prepare($this->sql)->exec($params)->stmt_fetch(true);
         return $result;
     }
 
@@ -362,28 +385,29 @@ class MysqlModel implements SqlInterface
      * @param $fields 要查询的字段 所有字段的时候 $fields='*'
      * @param $where 查询条件
      * @param int $order 排序
+     * @param int $group_by
      * @return array
      */
-    function prepare_getall($table, $fields, $where = null, $order = 1, $groupby=1)
+    function prepare_get_all($table, $fields, $where = null, $order = 1, $group_by=1)
     {
         $params = array();
         $field_str = $this->parse_fields($fields);
         $where_str = $this->parse_where($where, $params);
         $order_str = $this->parse_order($order);
-        $group_str = $this->parse_group($groupby);
+        $group_str = $this->parse_group($group_by);
 
-        if($groupby !== 1)
+        if($group_by !== 1)
         {
             $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
-            $sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);
+            $this->sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);
         }
         else
         {
             $all_sql = "SELECT %s FROM {$table} WHERE %s ORDER BY %s";
-            $sql = sprintf($all_sql, $field_str, $where_str, $order_str);
+            $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str);
         }
 
-        $result = $this->prepare($sql)->exec( $params )->stmt_fetch(true);
+        $result = $this->prepare($this->sql)->exec( $params )->stmt_fetch(true);
         return $result;
     }
 
@@ -401,10 +425,17 @@ class MysqlModel implements SqlInterface
 
         if(! empty($data) )
         {
-        	$field = '';
-            foreach($data as $d_key => $d_value) {
-                $field .= "{$d_key} = ? ,";
-                $params [] = strval($d_value);
+            $field = '';
+            if(is_array($data))
+            {
+                foreach($data as $d_key => $d_value) {
+                    $field .= "{$d_key} = ? ,";
+                    $params [] = strval($d_value);
+                }
+            }
+            else
+            {
+                $field = $data;
             }
         }
 
@@ -416,8 +447,8 @@ class MysqlModel implements SqlInterface
         	$params [] = $wp;
         }
 
-        $sql = sprintf($up_sql, trim($field, ","), $where_str);
-        $this->prepare($sql)->exec($params);
+        $this->sql = sprintf($up_sql, trim($field, ","), $where_str);
+        $this->prepare($this->sql)->exec($params);
         return true;
     }
 
@@ -434,9 +465,24 @@ class MysqlModel implements SqlInterface
 
         $params = array();
         $where_str = $this->parse_where($where, $params);
+        $this->sql = sprintf($del_sql, $table, $where_str);
 
-        $sql = sprintf($del_sql, $table, $where_str);
-        $this->prepare( $sql )->exec( $params );
+        $stmt = $this->prepare( $this->sql );
+        foreach($params as $param)
+        {
+            if(is_array($param))
+            {
+                foreach($param as $p)
+                {
+                    $stmt->exec( array($p) );
+                }
+            }
+            else
+            {
+                $stmt->exec( array($param) );
+            }
+        }
+
         return true;
     }
 
@@ -474,8 +520,16 @@ class MysqlModel implements SqlInterface
         {
             if( is_array($where) )
             {
-                foreach($where as $w_key => $w_value) {
-                    $where_str  [] = "{$w_key} = ?";
+                foreach($where as $w_key => $w_value)
+                {
+                    $operator = '=';
+                    if(is_array($w_value))
+                    {
+                        list($operator, $n_value) = $w_value;
+                        $w_value = $n_value;
+                    }
+
+                    $where_str  [] = "{$w_key} {$operator} ?";
                     $params [] = $w_value;
                 }
                 $where_str = implode(" AND ", $where_str);
@@ -520,14 +574,14 @@ class MysqlModel implements SqlInterface
     /**
      * 解析group by
      *
-     * @param $order
-     * @return int|string
+     * @param $group_by
+     * @return int
      */
-    function parse_group($groupby)
+    function parse_group($group_by)
     {
-    	if(! empty($group))
+    	if(! empty($group_by))
     	{
-    		$group_str = $group;
+    		$group_str = $group_by;
     	}
     	else
     	{
@@ -562,20 +616,11 @@ class MysqlModel implements SqlInterface
     }
 
     /**
-     * 返回最后操作id
+     * 返回最后操作的id
      *
      * @return string
      */
-    function insertid()
-    {
-        return $this->pdo->lastInsertId();
-    }
-
-    /**
-     * @see insertid()
-     * @return string
-     */
     function insert_id(){
-        return $this->insertid();
+        return $this->pdo->lastInsertId();
     }
 }

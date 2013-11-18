@@ -1,7 +1,7 @@
 <?php defined('CROSSPHP_PATH')or die('Access Denied');
 /**
- * @Author:       wonli
- * @Version: $Id: CoreModule.php 146 2013-09-29 03:21:24Z ideaa $
+ * @Auth: wonli <wonli@live.com>
+ * Class CoreModule
  */
 class CoreModule extends FrameBase
 {
@@ -81,6 +81,7 @@ class CoreModule extends FrameBase
     /**
      * 读取并解析数据库配置
      *
+     * @param string $type
      * @return array
      */
     function db_config( $type='all' )
@@ -96,8 +97,9 @@ class CoreModule extends FrameBase
      * 取缓存key
      *
      * @param $key_name
-     * @return mixed
+     * @param null $key_value
      * @throws FrontException
+     * @return mixed
      */
     static function cache_key($key_name, $key_value=null)
     {
@@ -133,6 +135,7 @@ class CoreModule extends FrameBase
 
     /**
      * 加载其他module
+     *
      * @param $module_name 要加载的module的全名
      * @return object
      */
