@@ -49,34 +49,48 @@ class Request
     }
 
     /**
-     * 设置scripturl
+     * 初始化URL
      *
+     * @throws FrontException
      * @return null
      */
-    private function _initScriptUrl() {
+    private function _initScriptUrl()
+    {
         if (($scriptName = $this->_SERVER('SCRIPT_FILENAME')) == null) {
             throw new FrontException('determine the entry script URL failed!!!');
         }
         $scriptName = basename($scriptName);
-        if (($_scriptName = $this->_SERVER('SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName) {
+        if (($_scriptName = $this->_SERVER('SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName)
+        {
             $this->_scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->_SERVER('PHP_SELF')) != null && basename($_scriptName) === $scriptName) {
+        }
+        elseif (($_scriptName = $this->_SERVER('PHP_SELF')) != null && basename($_scriptName) === $scriptName)
+        {
             $this->_scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->_SERVER('ORIG_SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName) {
+        }
+        elseif (($_scriptName = $this->_SERVER('ORIG_SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName)
+        {
             $this->_scriptUrl = $_scriptName;
-        } elseif (($pos = strpos($this->_SERVER('PHP_SELF'), '/' . $scriptName)) !== false) {
+        }
+        elseif (($pos = strpos($this->_SERVER('PHP_SELF'), '/' . $scriptName)) !== false)
+        {
             $this->_scriptUrl = substr($this->_SERVER('SCRIPT_NAME'), 0, $pos) . '/' . $scriptName;
         } elseif (($_documentRoot = $this->_SERVER('DOCUMENT_ROOT')) != null && ($_scriptName = $this->_SERVER(
-            'SCRIPT_FILENAME')) != null && strpos($_scriptName, $_documentRoot) === 0) {
+            'SCRIPT_FILENAME')) != null && strpos($_scriptName, $_documentRoot) === 0)
+        {
             $this->_scriptUrl = str_replace('\\', '/', str_replace($_documentRoot, '', $_scriptName));
-        } else
+        }
+        else
+        {
             throw new FrontException('determine the entry script URL failed!!');
+        }
     }
 
     /**
      * 取得$_SERVER全局变量的值
      *
      * @param string $name $_SERVER的名称
+     * @return string
      */
     private function _SERVER($name)
     {
@@ -88,7 +102,8 @@ class Request
      *
      * @return null
      */
-    public function getScriptUrl() {
+    public function getScriptUrl()
+    {
         if (!$this->_scriptUrl) $this->_initScriptUrl();
         return $this->_scriptUrl;
     }
@@ -98,7 +113,8 @@ class Request
      *
 	 * @param  string $url 设置基础路径
 	 */
-    public function setBaseUrl($url) {
+    public function setBaseUrl($url)
+    {
         $this->_baseUrl = $url;
     }
 
@@ -108,7 +124,8 @@ class Request
 	 * @param  boolean $absolute 是否返回带HOST的绝对路径
 	 * @return string 当前请求的url
 	 */
-	public function getBaseUrl($absolute = false) {
+	public function getBaseUrl($absolute = false)
+    {
 		if ($this->_baseUrl === null) $this->_baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
 		return $absolute ? $this->getHostInfo() . $this->_baseUrl : $this->_baseUrl;
 	}
@@ -118,7 +135,8 @@ class Request
      *
 	 * @return string 当前请求的脚本名
 	 */
-    public function getScriptName() {
+    public function getScriptName()
+    {
         $s = explode("/", $this->_SERVER('SCRIPT_NAME'));
         return end( $s );
     }
@@ -135,11 +153,11 @@ class Request
     }
 
     /**
-     * @param $indexname
+     * @param $index_name
      */
-    public function setIndexName($indexname)
+    public function setIndexName($index_name)
     {
-        $this->_indexName = $indexname;
+        $this->_indexName = $index_name;
     }
 
 	/**
@@ -147,7 +165,8 @@ class Request
      *
 	 * @return null
 	 */
-	public function getHostInfo() {
+	public function getHostInfo()
+    {
         if(!$this->_hostInfo) $this->_initHostInfo();
 		return $this->_hostInfo;
 	}
@@ -155,21 +174,30 @@ class Request
     /**
      * 设置Host信息
      *
+     * @throws FrontException
      * @return null
      */
-	private function _initHostInfo() {
-
-		if(PHP_SAPI === 'cli') return "cli";
+	private function _initHostInfo()
+    {
+		if(PHP_SAPI === 'cli')
+        {
+            return "cli";
+        }
 
 		$http = $this->_SERVER("HTTPS") == 'on'?'https':'http';
-
 		if (($httpHost = $this->_SERVER('HTTP_HOST')) != null)
-			$this->_hostInfo = $http . '://' . $httpHost;
-		elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null) {
+        {
+            $this->_hostInfo = $http . '://' . $httpHost;
+        }
+		elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null)
+        {
 			$this->_hostInfo = $http . '://' . $httpHost;
 			if (($port = $this->getServerPort()) != null) $this->_hostInfo .= ':' . $port;
-		} else
-			throw new FrontException('determine the entry script URL failed!!');
+		}
+        else
+        {
+            throw new FrontException('determine the entry script URL failed!!');
+        }
 	}
 
     /**
@@ -177,14 +205,16 @@ class Request
      *
      * @return int 当前服务器端口号
      */
-	public function getServerPort() {
+	public function getServerPort()
+    {
         $_default = $this->_SERVER("HTTPS") == 'on'?443:80;
 		return $_default;
 	}
 
     /**
-     * 当前scriptfile的路径
+     * 当前scriptFile的路径
      *
+     * @throws FrontException
      * @return string
      */
     public function getScriptFilePath()

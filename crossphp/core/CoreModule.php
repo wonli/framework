@@ -32,7 +32,7 @@ class CoreModule extends FrameBase
     protected static $cache_file;
 
     /**
-     * 调用moduel
+     * 实例化moduel
      *
      * @param null 指定数据库配置
      */

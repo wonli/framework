@@ -18,14 +18,17 @@ class CoreModel
                 $dsn = "mysql:host={$host};dbname={$name};port={$port};charset={$char_set}";
                 return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"]);
 
-            case 'mongodb':
-                return true;
+            case 'mongo':
+                return new MongoModel( $link_params );
 
             case 'redis':
-                return new RedisCache($link_params);
+                return new RedisCache( $link_params );
+
+            case 'couch':
+                return new CouchModel( $link_params );
 
             default:
-                throw new CoreException("不支持的数据库类型!");
+                throw new CoreException("不支持的数据库扩展!");
         }
     }
 }

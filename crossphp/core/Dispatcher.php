@@ -194,42 +194,53 @@ class Dispatcher
 
             try
             {
-                #会触发autoLoad
-                $is_callable = new ReflectionMethod($controller, $action);
+                /**
+                 * 判断Controller是否手动处理action
+                 */
+                $have_call = new ReflectionMethod($controller, '__call');
+                $this->setAction($action);
 
             } catch (Exception $e) {
 
-                #控制器静态属性_act_alias_指定action的别名
                 try
                 {
-                    $_property = new ReflectionProperty($controller, '_act_alias_');
+                    #会触发autoLoad
+                    $is_callable = new ReflectionMethod($controller, $action);
+
                 } catch (Exception $e) {
-                    throw new CoreException("app:{$app_name}不能识别的请求{$controller}->{$action}");
+
+                    #控制器静态属性_act_alias_指定action的别名
+                    try
+                    {
+                        $_property = new ReflectionProperty($controller, '_act_alias_');
+                    } catch (Exception $e) {
+                        throw new CoreException("app:{$app_name}不能识别的请求{$controller}->{$action}");
+                    }
+
+                    $act_alias = $_property->getValue();
+                    if( isset($act_alias [$action]) )
+                    {
+                        $_action = $act_alias [$action];
+                    }
+
+                    if(! empty($_action))
+                    {
+                        $is_callable = new ReflectionMethod($controller, $_action);
+                    } else {
+                        throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
+                    }
                 }
 
-                $act_alias = $_property->getValue();
-                if( isset($act_alias [$action]) )
+                if( $is_callable->isPublic() )
                 {
-                    $_action = $act_alias [$action];
-                }
-
-                if(! empty($_action))
-                {
-                    $is_callable = new ReflectionMethod($controller, $_action);
+                    $this->setAction( $action );
+                    if(! empty($_action))
+                    {
+                        $this->setAction($_action);
+                    }
                 } else {
-                    throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
+                    throw new CoreException("不被允许访问的方法!");
                 }
-            }
-
-            if( $is_callable->isPublic() )
-            {
-                $this->setAction( $action );
-                if(! empty($_action))
-                {
-                    $this->setAction($_action);
-                }
-            } else {
-                throw new CoreException("不被允许访问的方法!");
             }
         }
     }

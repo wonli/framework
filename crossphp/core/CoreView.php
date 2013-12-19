@@ -236,45 +236,46 @@ class CoreView extends FrameBase
      *
      * @param null $data
      * @param null $method
+     * @param int $http_response_status
      */
-    final function display(  $data=null, $method = null )
+    function display(  $data = null, $method = null, $http_response_status = 200 )
     {
         $this->data = $data;
+        $display_type = $this->config->get("sys", "display");
 
         if($method === null)
         {
-            $display_type = $this->config->get("sys", "display");
-
-            if($display_type && $display_type != "HTML") {
+            if($display_type && $display_type != "HTML")
+            {
                 $method = strtoupper( $display_type );
+            }
+            else
+            {
+                $method = $this->action;
             }
         }
 
-        echo $this->_display($data, $method);
-    }
-
-    /**
-     * 加载layer
-     *
-     * @param null $data
-     * @param null $method
-     * @return bool
-     */
-    function _display($data = null, $method = null)
-    {
-        if(null == $method)
+        if(! $method)
         {
-            $method = $this->action;
-        }
-
-        if(! $method) {
             $method = Router::$default_action;
         }
 
         ob_start();
+        $this->obRender($data, $method);
+        Response::getInstance( $display_type )->output( $http_response_status, ob_get_clean() );
+    }
+
+    /**
+     * 输出带layer的view
+     *
+     * @param $data
+     * @param $method
+     */
+    function obRender( $data, $method )
+    {
+        ob_start();
         $this->$method( $data );
         $this->loadLayer( ob_get_clean() );
-        return ob_get_clean();
     }
 
     /**
@@ -460,7 +461,7 @@ class CoreView extends FrameBase
             array("layer"=>"json")
         );
 
-        return Response::getInstance("json")->output(200, json_encode($data));
+        echo json_encode($data);
     }
 
     /**
@@ -478,7 +479,7 @@ class CoreView extends FrameBase
         $xml = new SimpleXMLElement('<root/>');
         $this->array_to_xml($data, $xml);
 
-        return Response::getInstance("xml")->output(200, $xml->asXML());
+        echo $xml->asXML();
     }
 
     /**

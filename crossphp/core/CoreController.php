@@ -87,8 +87,6 @@ class CoreController extends FrameBase
      * @param null $_controller
      * @param null $params
      * @param bool $sec
-     * @internal param $url 要跳转的路径
-     * @return javascript
      */
     protected function to($_controller=null, $params=null, $sec=false)
     {
@@ -99,17 +97,17 @@ class CoreController extends FrameBase
     /**
      * 加载缓存的文件
      *
-     * @param $cachename
-     * @return mixed
+     * @param $cache_name
      * @throws CoreException
+     * @return mixed
      */
-    protected function loadCache($cachename)
+    protected function loadCache($cache_name)
     {
-        if( file_exists($datafile = APP_PATH.DS.'cache'.DS.$cachename.'.php') ){
-            $helper = require_once $datafile;
+        if( file_exists($data_file = APP_PATH.DS.'cache'.DS.$cache_name.'.php') ){
+            $helper = require_once $data_file;
             return $helper;
         } else {
-            throw new CoreException($cachename.' is not found!');
+            throw new CoreException($cache_name.' is not found!');
         }
     }
 

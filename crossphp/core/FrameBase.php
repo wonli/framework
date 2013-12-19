@@ -29,6 +29,11 @@ class FrameBase
      */
     protected $controller;
 
+    /**
+     * @var array
+     */
+    static protected $moduleInstance = array();
+
     public function __construct()
     {
         $this->app_init();
@@ -259,7 +264,7 @@ class FrameBase
     }
 
     /**
-     * 加载module
+     * 加载指定Module
      *
      * @param $module_name
      * @param string $params
@@ -267,22 +272,27 @@ class FrameBase
      */
     protected function loadModule( $module_name, $params = '' )
     {
-        $args = func_get_args();
-        if( $params != '' && count($args) > 2 )
+        if(! isset(self::$moduleInstance[ $module_name ]))
         {
-            array_shift($args);
-            $params = $args;
+            $args = func_get_args();
+            if( $params != '' && count($args) > 2 )
+            {
+                array_shift($args);
+                $params = $args;
+            }
+
+            if( false !== strpos( $module_name, "/") )
+            {
+                list($_, $module_name) = explode("/", $module_name);
+                unset($_);
+                Loader::import("::modules/{$module_name}Module");
+            }
+
+            $_module = ucfirst($module_name.'Module');
+            self::$moduleInstance[ $module_name ] = new $_module( $params );
         }
 
-        if( false !== strpos( $module_name, "/") )
-        {
-            list($_, $module_name) = explode("/", $module_name);
-            unset($_);
-            Loader::import("::modules/{$module_name}Module");
-        }
-
-        $_module = ucfirst($module_name.'Module');
-        return new $_module( $params );
+        return self::$moduleInstance[ $module_name ];
     }
 
     /**

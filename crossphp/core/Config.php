@@ -147,7 +147,7 @@ class Config
      */
     function readConfigFile()
     {
-        return Loader::read($this->res_file, false);
+        return Loader::read( $this->res_file );
     }
 
     /**

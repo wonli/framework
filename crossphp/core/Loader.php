@@ -76,6 +76,7 @@ class Loader
             'CoreModel'       => 'model/CoreModel.php',
             'MysqlModel'      => 'model/MysqlModel.php',
             'MongoModel'      => 'model/MongoModel.php',
+            'CouchModel'      => 'model/CouchModel.php',
 
             'Request'         => 'core/Request.php',
             'Response'        => 'core/Response.php',
@@ -171,7 +172,7 @@ class Loader
         {
             if(false === $read_file)
             {
-                return require $file_path;
+                return file_get_contents( $file_path );
             }
 
             $ext = Helper::getExt($file_path);

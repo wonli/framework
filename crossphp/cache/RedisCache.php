@@ -7,9 +7,13 @@
 
 class RedisCache
 {
+    /**
+     * @var redis
+     */
+    public $link;
+
     function __construct($option)
     {
-
         if ( ! extension_loaded('redis') ) {
             throw new CoreException('NOT_SUPPERT : redis');
         }
@@ -18,7 +22,6 @@ class RedisCache
 
         $obj->connect($option ['host'], $option ['port']);
         $obj->select($option['db']);
-
         $this->link = $obj;
     }
 

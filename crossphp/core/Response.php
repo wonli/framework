@@ -306,7 +306,7 @@ class Response
     /**
      * 发送header
      *
-     * @param $contents
+     * @param $content
      * @return $this
      */
     function send_header( $content )
@@ -326,7 +326,7 @@ class Response
     /**
      * 为response附加返回参数
      *
-     * @param $conetent
+     * @param $content
      * @return $this
      */
     function add_params( $content )
@@ -354,7 +354,7 @@ class Response
             $contents = self::$statusDescriptions [$code];
         }
 
-        print ' '.$contents;
+        print $contents;
     }
 
     /**

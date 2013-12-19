@@ -64,7 +64,7 @@ class Cross
      *
      * @param $app_name
      * @param $runtime_config 运行时加载的设置
-     * @internal param $appname 要加载的App名称
+     * @internal param $app_name 要加载的App名称
      * @return mixed
      */
     static function loadApp($app_name, $runtime_config = null)

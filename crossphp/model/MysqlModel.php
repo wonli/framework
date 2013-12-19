@@ -147,11 +147,12 @@ class MysqlModel implements SqlInterface
      *
      * @param $table
      * @param $where
+     * @param bool $multi
      * @return bool|mixed
      */
-    function del($table, $where)
+    function del($table, $where, $multi=false)
     {
-        return $this->prepare_delete($table, $where);
+        return $this->prepare_delete($table, $where, $multi);
     }
 
     /**
@@ -473,35 +474,54 @@ class MysqlModel implements SqlInterface
     /**
      * 删除数据
      *
-     * @param $table 表名称
-     * @param $where 条件
+     * @param $table
+     * @param $where
+     * @param bool $multi 是否批量删除数据
+     *      $where = array(
+     *          'fields' = array(字段1,字段2,...),
+     *          'values'= array(
+     *                      array(字段1的值, 字段2的值),
+     *                      array(字段1的值, 字段2的值))
+     *      );
      * @return bool
+     * @throws FrontException
      */
-    function prepare_delete($table, $where)
+    function prepare_delete($table, $where, $multi = false)
     {
         $del_sql = "DELETE FROM %s WHERE %s";
 
-        $params = array();
-        $where_str = $this->parse_where($where, $params);
-        $this->sql = sprintf($del_sql, $table, $where_str);
-
-        $stmt = $this->prepare( $this->sql );
-        foreach($params as $param)
+        if(true === $multi )
         {
-            if(is_array($param))
-            {
-                foreach($param as $p)
-                {
-                    $stmt->exec( array($p) );
-                }
+            if( empty($where ['fields']) || empty($where ['values']) ) {
+                throw new FrontException("data format error!");
             }
-            else
-            {
-                $stmt->exec( array($param) );
-            }
-        }
 
-        return true;
+            $where_condition = array();
+            foreach ($where ['fields'] as $d)
+            {
+                $where_condition[] = "{$d} = ?";
+            }
+
+            $where_str = implode(" AND ", $where_condition);
+            $this->sql = sprintf($del_sql, $table, $where_str);
+
+            $stmt = $this->prepare($this->sql);
+            foreach($where ['values'] as $data_array)
+            {
+                $stmt->exec($data_array);
+            }
+
+            return true;
+        }
+        else
+        {
+            $params = array();
+            $where_str = $this->parse_where($where, $params);
+
+            $this->sql = sprintf($del_sql, $table, $where_str);
+            $this->prepare( $this->sql )->exec( $params );
+            return true;
+        }
     }
 
     /**
