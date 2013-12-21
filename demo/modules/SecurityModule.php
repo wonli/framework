@@ -2,25 +2,40 @@
 /**
 * @Author: wonli <wonli@live.com>
 */
-class SecurityModule extends BaseModule
+class SecurityModule extends AdminModule
 {
     private $t_sec = "back_securitycard";
-    
-    function checkPassword($op)
+
+    /**
+     * 验证老密码
+     *
+     * @param $inp_pwd
+     * @return bool
+     */
+    function checkPassword( $inp_pwd )
     {
-        $sql = "select * from `admin` where `name`='{$_SESSION['admin']}' and `password`='{$op}'";
-        return $this->link->fetchOne($sql);
+        $admin_info = $this->link->get("back_admin", "*", array('name'=>$_SESSION['admin']));
+        return $admin_info ['password'] === sha1( md5($inp_pwd) );
     }
 
-    function setadminpassword($np)
+    /**
+     * 更新密码
+     *
+     * @param $inp_pwd
+     * @return array|string
+     */
+    function update_password( $inp_pwd )
     {
-        $time = time();
-        $sql = "update `admin` set `t`='{$time}',`password`='{$np}' where `name`='{$_SESSION['admin']}'";
-        if($this->link->execute($sql)) {
-            return 1;
-        } else {
-            return -2;
+        $np = sha1( md5($inp_pwd));
+        $status = $this->link->update("back_admin", array('password'=>$np),
+            array('name'=>$_SESSION['admin']));
+
+        if($status)
+        {
+            return $this->result(1, "更改成功");
         }
+
+        return $this->result(-2, "更新失败");
     }
     
     /**
@@ -72,12 +87,12 @@ class SecurityModule extends BaseModule
         $scode =  array_slice($scode, 0, 2);
         return $scode[0].$scode[1];
     }
-    
+
     /**
      * 绑定密保卡
      *
-     * @param string binduser
-     * @return mix
+     * @param $bind_user
+     * @return int
      */
     function bindcard($bind_user)
     {
@@ -103,12 +118,12 @@ class SecurityModule extends BaseModule
             return -1;
         }
     }        
-    
+
     /**
      * 更新密保卡
      *
-     * @param security user
-     * @return mix
+     * @param $bind_user
+     * @return int
      */
     function updateCard($bind_user)
     {
@@ -137,7 +152,7 @@ class SecurityModule extends BaseModule
     /**
      * 取消绑定
      *
-     * @param string binduser
+     * @param string $bind_user
      * @return bool;
      */
     function killbind($bind_user)
@@ -159,12 +174,12 @@ class SecurityModule extends BaseModule
     /**
      * 检查是否绑定过密保卡
      *
-     * @param string binduser
+     * @param string $bind_user
      * @return bool
      */
-    public function checkbind($binduser)
+    public function checkbind($bind_user)
     {
-        $id = $this->link->get($this->t_sec, 'id', array('bind_user'=>$binduser));
+        $id = $this->link->get($this->t_sec, 'id', array('bind_user'=>$bind_user));
 
         if(! empty($id) ) return true;
         else return false;
@@ -188,12 +203,12 @@ class SecurityModule extends BaseModule
 
         return false;
     }
-    
+
     /**
      * 返回密保卡数据
      *
-     * @param 
-     * @return data
+     * @param $bind_user
+     * @return int
      */
     function secrityData($bind_user)
     {
@@ -291,14 +306,14 @@ class SecurityModule extends BaseModule
         header('Content-Disposition: attachment; filename='.$binduser.'_seccard.png'); 
         imagepng($im);
     }    
-    
+
     /**
      * 验证密保卡
      *
-     * @param array carddata
-     * @param string $location  ex:A1B2
-     * @param string $inputscode
-     * @return bool
+     * @param $user
+     * @param $location
+     * @param $inputscode
+     * @return bool|int
      */
     function verifyscode($user, $location, $inputscode)
     {

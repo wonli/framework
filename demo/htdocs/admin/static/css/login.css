@@ -1,0 +1,13 @@
+ body{background:#dfdfdf url(../images/login_bg.png) center top no-repeat;}
+.wrap{position:relative;min-width:960px;}
+.box{position:absolute;left:150px;top:230px;}
+.login .logo{float:left;padding-top:30px}
+.login-form{overflow:hidden;zoom:1;}
+.login label{display:block;width:85px;text-align:right;padding-top:8px;line-height:12px;}
+.login .login-form{background:url(../images/line.png) left top no-repeat;height:217px;}
+.login .tb-main{padding-top:56px;padding-left:36px}
+.login .item{margin-bottom:10px;}
+.login .n-text{border:solid 1px #c5c5c5;background:url(../images/input_bg.png) repeat-x;height:18px;width:160px;padding:3px 3px 4px;outline:none;}
+.login .avidte{width:75px;}
+.tb-main td{vertical-align:top}
+.btn-submit{background:url(../images/btn_login.png) no-repeat;width:94px;height:28px;border:none;cursor:pointer}

@@ -1,10 +1,14 @@
-<?php 
+<?php
 /**
 * @Author:   wonli <wonli@live.com>
 */
-define("__DEBUG__", true);
+define("__DEBUG__", false);
 require '../../crossboot.php';
-//解析请求
+
+/**
+ * 从url中解析控制器示例(自定义路由)
+ * {{{
+ */
 $controller = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : '';
 if( $controller )
 {
@@ -15,8 +19,11 @@ if( $controller )
     }
     unset($_REQUEST['mode']);
 } else {
-    $controller = 'main:index';
+    $controller = 'article:index';
 }
+/**
+ * }}}
+ */
 
 if(__DEBUG__)
 {
@@ -32,9 +39,8 @@ if(__DEBUG__)
     } catch(Exception $e) {
 
         Response::getInstance( 'json' )->output("200", json_encode(
-            array('ret'=>999, 'error'=>888)
+            array( 'ret'=>999, 'error'=>$e->getMessage() )
         ));
-
     }
 
 }

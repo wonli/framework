@@ -283,12 +283,11 @@ class FrameBase
 
             if( false !== strpos( $module_name, "/") )
             {
-                list($_, $module_name) = explode("/", $module_name);
-                unset($_);
                 Loader::import("::modules/{$module_name}Module");
+                $module_name = end( explode("/", $module_name) );
             }
 
-            $_module = ucfirst($module_name.'Module');
+            $_module = ucfirst("{$module_name}Module");
             self::$moduleInstance[ $module_name ] = new $_module( $params );
         }
 

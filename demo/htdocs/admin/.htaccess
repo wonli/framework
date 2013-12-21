@@ -1,0 +1,20 @@
+#ȡ��PHP.INI�е�����
+php_value auto_append_file none
+php_value auto_prepend_file none
+php_value include_path "."
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !\.(css|js|txt|mp3|zip|png|gif|jpe?g|exe|rmvb|rm|avi)$
+
+RewriteRule (.*) /htdocs/admin/index.php/$1 [L]
+</IfModule>
+
+
+<IfModule mod_headers.c>
+<FilesMatch ".(js|css|xml|gz)$">
+Header append Vary Accept-Encoding
+</FilesMatch>
+</IfModule>

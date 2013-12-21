@@ -276,6 +276,7 @@ class Loader
      */
     function autoLoad($class_name)
     {
+
         if( isset(self::$coreClass [$class_name]) )
         {
             $file_real_path= CROSSPHP_PATH.self::$coreClass[$class_name];
@@ -298,6 +299,10 @@ class Loader
             if(! isset($file_real_path) && $_file_type)
             {
                 $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
+                if(false !== strpos($class_name, '\\'))
+                {
+                    $_file_path = APP_PATH_DIR.DS;
+                }
                 $file_real_path = $_file_path.$class_name.'.php';
             }
 
@@ -307,6 +312,7 @@ class Loader
             }
         }
 
+        self::$loaded[ $class_name ] = $file_real_path;
         require $file_real_path;
     }
 
@@ -319,8 +325,12 @@ class Loader
     static function module_load( $module_name )
     {
         $_file_path = DOCROOT."modules".DS;
-        $file_real_path = $_file_path.$module_name.".php";
+        if(false !== strpos($module_name, '\\'))
+        {
+            $_file_path = DOCROOT;
+        }
 
+        $file_real_path = $_file_path.$module_name.".php";
         if( file_exists( $file_real_path ) )
         {
             require($file_real_path);

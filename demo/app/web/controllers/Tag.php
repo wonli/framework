@@ -1,32 +1,25 @@
-<?php defined('DOCROOT')or die("Access Denied");
+<?php
 /**
 * @Author:       wonli <wonli@live.com>
 */
 class Tag extends CoreController
 {
-    static $_act_alias_ = array(
-
-    );
-
-    function t()
-    {
-        echo 1;
-    }
-    
-    
     function index()
     {
-        @list($tid, $tname, $p) = $this->params;
-        if(! $tid) return $this->to("article");;
+        @list($tid, $tag_name, $p) = $this->params;
+        if(! $tid)
+        {
+            $this->to("article");
+        }
 
         $page = array(
             'p' => $p ? $p : 0,
             'limit' => 10,
             'half' => 3,
-            'link' => array("tag", array($tid, $tname))
+            'link' => array("tag", array($tid, $tag_name))
         );
 
-        $data['tag'] = $this->loadModule("User")->get_all_tag();
+        $data['tag'] = $this->loadModule("Blog")->get_all_tag();
         $data['article'] = $this->loadModule("Article")->get_article_by_tag($tid, $page);
         $data['page'] = $page;
 

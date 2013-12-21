@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 /**
 * app配置文件
 */
@@ -83,14 +83,14 @@ return array(
              */
             'alias'=>'main:index',
         ),
-		
+
 		'tag'=>array(
             /**
              * tag 实际指向的是tag->index() 方法
              */
             'alias' => 'tag:index',
 		),
-        
+
         'article' => array(
             'alias' =>  array(
                 'page' => 'index'

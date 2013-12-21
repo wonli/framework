@@ -1,0 +1,6 @@
+.auto{width:960px;margin:0 auto;}
+body{background:#f1f1f1}
+#head{height:117px;overflow:hidden;background:#f1f1f1 url(../images/head_bg.png) repeat-x;width:100%}
+#sub{float:left;width:197px;margin-left:-100%;background:#417eb7;border-bottom:solid 1px #2969a6}
+#main{float:left;width:100%;}
+#main .in{margin-left:220px;padding:20px 20px 20px 0}

@@ -2,16 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cn">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="<?php echo $static_url ?>css/style.css" media="all" />
-    <link rel="stylesheet" type="text/css" href="<?php echo STATIC_URL ?>editor/plugins/code/prettify.css" media="all" />
-    <script type="text/javascript" src="<?php echo $static_url ?>js/jquery-1.7.1.min.js"></script>
-    <script src="<?php echo STATIC_URL ?>editor/plugins/code/prettify.js" charset="utf-8"></script>    
+    <link rel="stylesheet" type="text/css" href="<?php echo $this->res("skin/{$skin}/css/style.css") ?>" media="all" />
+    <link rel="stylesheet" type="text/css" href="<?php echo $this->res("editor/plugins/code/prettify.css") ?>" media="all" />
+    <script type="text/javascript" src="<?php echo $this->res("js/jquery-1.7.1.min.js") ?>"></script>
+    <script src="<?php echo $this->res("editor/plugins/code/prettify.js") ?>" charset="utf-8"></script>
     <title><?php echo isset($title) ? $title : 'CrossBlog' ?></title>
 </head>
 <body>
     <div class="wrap">
         <div class="panl">
             <ul>
+                <!--
             	<li>
                     <?php if(isset($_SESSION["u"])) : ?>
                     <a href="<?php echo $this->link("user") ?>">欢迎你: <?php echo $_SESSION["screen_name"] ?></a>
@@ -20,6 +21,7 @@
                     <a href="<?php echo $this->link("user:login") ?>">登录</a>
                     <?php endif ?>
                 </li>
+                -->
             </ul>
         </div>
     </div>
@@ -40,7 +42,7 @@
         <?php echo $content ?>
     </div>
     <div class="wrap foot clear">
-        <span>ideaa 2012<br>Powered by CrossPHP</span>
-    </div>   
+        <span>Ideaa 2012 Powered by <a href="http://git.oschina.net/ideaa/crossphp">CrossPHP</a></span>
+    </div>
 </body>
 </html>

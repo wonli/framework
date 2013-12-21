@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die("Access Denied");
+<?php
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Article
@@ -15,12 +15,13 @@ class Article extends CoreController
         );
 
         $result['data'] = $this->loadModule('Article')->getArticle( $page );
+        $result["tag"] = $this->loadModule("Blog")->get_all_tag();
         $result['page'] = $page;
 
-        $this->view->display($result);
+        $this->display($result);
     }
 
-    function detail($q)
+    function detail( )
     {
         $p = is_array($this->params) ? intval($this->params[0]) : intval($this->params);
 
@@ -30,37 +31,12 @@ class Article extends CoreController
 
             if($data)
             {
-                $this->view->display(array($data));
+                $this->display(array($data));
             } else {
-                $this->view->notes("你所请求的页面不存在!");
+                $this->notes("你所请求的页面不存在!");
             }
         } else {
             $this->to();
-        }
-    }
-
-    function comment()
-    {
-        if($_POST)
-        {
-            $args = $this->getArgs();
-            $id = intval($args["id"]);
-            $content = $args["comment"];
-            $user = $args["user"];
-            $email = $args["email"];
-            $link = $args["link"];
-            $ct = time();
-
-            if(empty($user) || empty($content) ) {
-                return $this->to("article:detail", $id);
-            }
-
-            $notes = $this->model->saveComment($id, $content, $user, $email, $link,$ct);
-            if($notes) {
-                return $this->to("article:detail", $id);
-            } else {
-                return $this->to("article:detail", $id);
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 /**
  * @Auth: wonli <wonli@live.com>
  * Class TagModule

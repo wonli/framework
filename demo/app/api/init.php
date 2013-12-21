@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 /**
 * app配置文件
 */
@@ -19,7 +19,7 @@ return array(
         /**
          * 默认的template路径
          */
-        'default_tpl' => 'api',
+        'default_tpl' => 'web',
 
         /**
          * response输出方式
@@ -27,7 +27,6 @@ return array(
          */
         'display' => 'JSON'
     ),
-
 
     'url' => array(
 
@@ -51,7 +50,7 @@ return array(
         /**
          * url请求中的连接字符
          */
-        'dot'=>'/',
+        'dot'=>'-',
 
         /**
          * 请求扩展
@@ -83,6 +82,19 @@ return array(
              * 也可以在控制器中用静态属性_act_alias_来指定别名[优先级低于配置]
              */
             'alias'=>'main:index',
+        ),
+
+		'tag'=>array(
+            /**
+             * tag 实际指向的是tag->index() 方法
+             */
+            'alias' => 'tag:index',
+		),
+
+        'article' => array(
+            'alias' =>  array(
+                'page' => 'index'
+            ),
         ),
     )
 );

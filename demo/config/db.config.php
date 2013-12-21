@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 
 if( defined("SAE_APPNAME") )
 {
@@ -9,8 +9,8 @@ if( defined("SAE_APPNAME") )
 		'pass' => SAE_MYSQL_PASS,
 		'name' => SAE_MYSQL_DB,
 		'charset' => 'utf8',
-	);	
-	
+	);
+
 } else {
 
 	$mysql_link = array(
@@ -21,7 +21,7 @@ if( defined("SAE_APPNAME") )
 		'name' => 'blog',
 		'charset' => 'utf8',
 	);
-	
+
 }
 
 $redis_link = array(

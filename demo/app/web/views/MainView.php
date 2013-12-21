@@ -1,12 +1,12 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 /**
  * @Auth: wonli <wonli@live.com>
  * Class MainView
  */
-class MainView extends CoreView
+class MainView extends BaseView
 {
     function index($data)
-    {        
+    {
         $article = $data["article"];
 
         //用于SEO
