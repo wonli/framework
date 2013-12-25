@@ -641,4 +641,21 @@ class Helper
         $unit=array('b','kb','mb','gb','tb','pb');
         return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
     }
+
+    /**
+     * 计算 excel 某列对应的 字符串编号
+     *
+     * @param int $pColumnIndex
+     * @return string
+     */
+    static function stringFromXlsColumnIndex($pColumnIndex = 0)
+    {
+        // Determine column string
+        if ($pColumnIndex < 26) {
+            return chr(65 + $pColumnIndex);
+        } elseif ($pColumnIndex < 702) {
+            return chr(64 + ($pColumnIndex / 26)).chr(65 + $pColumnIndex % 26);
+        }
+        return chr(64 + (($pColumnIndex - 26) / 676)).chr(65 + ((($pColumnIndex - 26) % 676) / 26)).chr(65 + $pColumnIndex % 26);
+    }
 }

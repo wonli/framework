@@ -127,7 +127,6 @@ class Loader
     static public function import( $files )
     {
         $list = Loader::parseFileRealPath($files);
-
         foreach($list as $file)
         {
             $cache_key = crc32($file);
@@ -240,13 +239,19 @@ class Loader
             if(false !== strpos($f, '::'))
             {
                 list($path, $file_info) = explode('::', $f);
-
                 if(! $path)
                 {
                     $path = "project";
                 }
 
-                $list [] = rtrim( rtrim($_defines[strtolower($path)], DS).DS.str_replace("/", DS, $file_info), $append_file_ext).$append_file_ext;
+                $file_real_path = rtrim($_defines[strtolower($path)], DS).DS.str_replace("/", DS, $file_info);
+                $file_path_info = pathinfo( $file_real_path );
+                if(! isset($file_path_info['extension']) )
+                {
+                    $file_real_path .= $append_file_ext;
+                }
+
+                $list [] = $file_real_path;
             }
             else
             {
