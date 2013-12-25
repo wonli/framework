@@ -1,4 +1,4 @@
-<?php defined('DOCROOT')or die('Access Denied');
+<?php
 /**
 * Author: wonli <wonli@live.com>
 */

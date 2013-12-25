@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Author:  wonli <wonli@live.com>
  * @version: $Id: Cross.php 141 2013-09-24 06:43:12Z ideaa $
@@ -111,7 +111,6 @@ class Cross
     private function appInit( )
     {
         $sys_config = $this->config()->get("sys");
-
         $this->definer(array(
             'APP_NAME'      => $sys_config["app_name"],
             'SITE_URL'      => $sys_config["site_url"],

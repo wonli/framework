@@ -10,6 +10,7 @@ try
 {
     Cross::loadApp( 'web' )->run();
 } catch (Exception $e) {
+    //如果捕捉到异常 调用404页面
     Cross::loadApp( 'web' )->get( 'Robot:error_404' );
 }
 /*

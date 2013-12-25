@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 class DESMcrypt
 {
     /**

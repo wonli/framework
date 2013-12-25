@@ -4,7 +4,6 @@
  *
  * Class RedisCache
  */
-
 class RedisCache
 {
     /**

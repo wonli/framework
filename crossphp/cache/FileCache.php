@@ -1,9 +1,8 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Auth wonli <wonli@live.com>
  * Class FileCache
  */
-
 class FileCache implements CacheInterface
 {
     /**

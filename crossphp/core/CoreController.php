@@ -1,6 +1,7 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
- * @Author:       wonli
+ * @Auth: wonli <wonli@live.com>
+ * Class CoreController
  */
 class CoreController extends FrameBase
 {

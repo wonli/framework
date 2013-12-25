@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Author:  wonli <wonli@live.com>
  * @Version: $Id: Router.php 138 2013-09-13 09:59:03Z ideaa $

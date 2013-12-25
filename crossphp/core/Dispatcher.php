@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Author:       wonli
  * @Version $Id: Dispatcher.php 162 2013-10-23 13:01:37Z ideaa $
@@ -131,7 +131,7 @@ class Dispatcher
 
         if(! isset($cache_config ['cache_path']))
         {
-            $cache_config ['cache_path'] = DOCROOT.'cache'.DS.'html';
+            $cache_config ['cache_path'] = PROJECT_PATH.'cache'.DS.'html';
         }
 
         if(! isset($cache_config ['file_ext']))

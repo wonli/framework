@@ -1,7 +1,6 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Auth <wonli@live.com>
- *
  * Class Cache
  */
 class CoreCache

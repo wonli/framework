@@ -36,9 +36,14 @@ class CouchModel
         $result = null;
         if(method_exists($this->link, $method))
         {
-            $result = ($argv == null)
-                ? $this->link->$method()
-                : call_user_func_array(array($this->link, $method), $argv);
+            try
+            {
+                $result = ($argv == null)
+                    ? $this->link->$method()
+                    : call_user_func_array(array($this->link, $method), $argv);
+            } catch ( Exception $e ) {
+                throw new CoreException( $e->getMessage() );
+            }
         }
         return $result;
     }

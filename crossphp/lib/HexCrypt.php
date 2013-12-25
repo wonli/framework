@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /*16进制编码方式利用0-f进行编码*/
 class HexCrypt extends DEcode
 {

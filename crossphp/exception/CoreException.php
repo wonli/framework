@@ -5,7 +5,7 @@ class CoreException extends CrossException
     {
         $cp_error = $this->cp_exception_source($e);
         $code = $e->getCode() ? $e->getCode() : 200;
-        $tpl = CROSSPHP_PATH.'exception/_tpl/fronterror.php';         
+        $tpl = CP_PATH.'exception/_tpl/fronterror.php';         
         return Response::getInstance()->display( $code, $cp_error, $tpl );
     }
 }

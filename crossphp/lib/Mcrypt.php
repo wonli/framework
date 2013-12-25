@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /*使用MCRYPT_BLOWFISH加密算法*/
 class Mcrypt extends DEcode
 {

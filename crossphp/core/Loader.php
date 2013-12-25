@@ -1,4 +1,4 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
  * @Author:  wonli <wonli@live.com>
  * @Version: $Id: Loader.php 166 2013-11-06 07:52:21Z ideaa $
@@ -215,8 +215,8 @@ class Loader
         $files = $list = array();
         $_defines = array (
             'app' => defined("APP_PATH")?APP_PATH:'',
-            'core' => CP_CORE_PATH,
-            'project' => DOCROOT
+            'core' => CP_PATH.'core',
+            'project' => PROJECT_PATH
         );
 
         if(is_array($class))
@@ -279,7 +279,7 @@ class Loader
 
         if( isset(self::$coreClass [$class_name]) )
         {
-            $file_real_path= CROSSPHP_PATH.self::$coreClass[$class_name];
+            $file_real_path= CP_PATH.self::$coreClass[$class_name];
         }
         else
         {
@@ -324,10 +324,10 @@ class Loader
      */
     static function module_load( $module_name )
     {
-        $_file_path = DOCROOT."modules".DS;
+        $_file_path = PROJECT_PATH."modules".DS;
         if(false !== strpos($module_name, '\\'))
         {
-            $_file_path = DOCROOT;
+            $_file_path = PROJECT_PATH;
         }
 
         $file_real_path = $_file_path.$module_name.".php";

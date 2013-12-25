@@ -1,4 +1,8 @@
 <?php
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class ArrayMap
+ */
 class ArrayMap extends ArrayIterator
 {
     /**

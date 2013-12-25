@@ -1,6 +1,7 @@
-<?php defined('CROSSPHP_PATH')or die('Access Denied');
+<?php
 /**
- * 简单Request类
+ * @Auth: wonli <wonli@live.com>
+ * Class Request
  */
 class Request
 {
