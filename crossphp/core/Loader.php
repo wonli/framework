@@ -306,7 +306,7 @@ class Loader
                 $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
                 if(false !== strpos($class_name, '\\'))
                 {
-                    $_file_path = APP_PATH_DIR.DS;
+                    $_file_path = PROJECT_PATH.DS;
                 }
                 $file_real_path = $_file_path.$class_name.'.php';
             }
