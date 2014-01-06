@@ -162,16 +162,19 @@ class Loader
         }
 
         $key = crc32($file_path);
-        if( isset(self::$loaded [ $key ]) )
+        $read_file_flag = $read_file ? 1 : 0;
+        if( isset(self::$loaded [$read_file_flag][ $key ]) )
         {
-            return self::$loaded [ $key ];
+            return self::$loaded [$read_file_flag][ $key ];
         }
 
         if( is_readable($file_path) )
         {
             if(false === $read_file)
             {
-                return file_get_contents( $file_path );
+                $file_content = file_get_contents( $file_path );
+                self::$loaded [$read_file_flag][ $key ] = $file_content;
+                return $file_content;
             }
 
             $ext = Helper::getExt($file_path);
@@ -179,12 +182,12 @@ class Loader
             {
                 case 'php' :
                     $data = require $file_path;
-                    self::$loaded [$key] = $data;
+                    self::$loaded [$read_file_flag][$key] = $data;
                     return $data;
 
                 case 'json' :
                     $data = json_decode( file_get_contents($file_path), true);
-                    self::$loaded [$key] = $data;
+                    self::$loaded [$read_file_flag][$key] = $data;
                     return $data;
 
                 default :

@@ -163,6 +163,8 @@ class Config
         $_sys['base_url'] = Request::getInstance()->getBaseUrl();
         $_sys['site_url'] = $_sys['host'].$_sys['base_url'];
 
+        $_sys['htdocs_url'] = $_sys['host'].str_replace($this->appname, '', $_sys['base_url']);
+
         $_sys['app_name'] = $this->appname;
         $_sys['app_path'] = APP_PATH_DIR.DS.$this->appname;
 

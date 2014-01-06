@@ -30,7 +30,7 @@
                 </div>
                 <div class="uinfo">
                     <p>您好, <em><?php echo $_SESSION["admin"] ?></em> [ <a href="<?php echo $this->link("admin:logout") ?>" target="_top">退出</a> ]</p>
-                    <p class="btnlink"><a href="" target="_blank">网站首页</a></p>
+                    <p class="btnlink"><a href="<?php echo HTDOCS_URL."web" ?>" target="_blank">网站首页</a></p>
                 </div>
                 <div class="navbg"></div>
                 <div class="nav">

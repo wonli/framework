@@ -74,9 +74,13 @@ class AdminModule extends CoreModule
             return false;
         }
 
+        $accept_field = array('name', 'password', 'rid', 't');
         foreach($data as $k => & $d)
         {
-            if(empty($d)) unset($data[$k]);
+            if(! in_array($k, $accept_field))
+            {
+                unset($data[$k]);
+            }
 
             if($k === 'password')
             {
