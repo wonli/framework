@@ -40,7 +40,7 @@ h3{ margin-bottom:10px; font-size:14px; color:#09C; }
 	.navbg{ position:absolute; z-index:1; top:52px; left:153px; width:6px; height:37px; background:#F7FAFD; }
 	.nav{ position:absolute; z-index:2; top:14px; left:160px; width:100%; height:75px; }
 		.nav ul{ overflow:hidden; position:relative; z-index:4; font-size:14px; }
-			.nav li{ float:left; height:43px; line-height:43px; background:url(../images/btn_block.gif) right -115px no-repeat; }
+			.nav li{ float:left; height:43px; line-height:43px; }
 				.nav li em{ display:block; }
 				.nav li a{ padding:5px 10px; color:#639BB0; font-weight:700; }
 				.nav li a:hover{ color:#d82622; text-decoration:none; }
@@ -65,9 +65,9 @@ h3{ margin-bottom:10px; font-size:14px; color:#09C; }
 	.menu ul{ position:absolute; top:10px; right:7px; list-style:none; width:153px; background:#F2F9FD url(../images/bg_repx_h.gif) no-repeat 5px -20px; }
 		.menu li{ margin:3px 0; *margin:0; height:auto !important; height:25px; overflow:hidden; }
 		.menu li.a { margin-top:0; }
-		.menu li a{ display:block; padding:4px 0 3px 30px; *padding:5px 0 3px 30px; background:url(../images/bg_repno.gif) no-repeat 15px -43px; color:#666; }
-			.menu li a:hover{ text-decoration:none; background:#EAF4FB url(../images/bg_repno.gif) no-repeat 15px -43px; color:#2366A8; }
-			.menu li a.tabon,.menu li a.tabon:hover{ text-decoration:none; background:#DEEFFA url(../images/bg_repno.gif) no-repeat 15px -43px; color:#2366A8; }
+		.menu li a{ display:block; padding:4px 0 3px 30px; *padding:5px 0 3px 30px; color:#666; }
+			.menu li a:hover{ text-decoration:none; background:#EAF4FB; color:#2366A8; }
+			.menu li a.tabon,.menu li a.tabon:hover{ text-decoration:none; background:#DEEFFA; color:#2366A8; }
 .mask{ padding-top:9px; background:url(../images/bg_repx_hb.gif) repeat-x; }
 
 /* tab */
@@ -94,7 +94,7 @@ h3{ margin-bottom:10px; font-size:14px; color:#09C; }
 .copyright{ position:absolute; z-index:10; left:5px; bottom:3px; padding-top:3px; border-top:1px dashed #DDD; text-align:left; line-height:150%; font-family:Tahoma; font-size:11px; }
 .logintb{ text-align:left; margin:120px auto 0; width:600px; }
 .login{ padding-right:30px; width:310px; height:150px; background:url(../images/bg_login.gif) right 50% no-repeat; }
-	.login h1{ text-indent:-9999px; margin-bottom:10px; width:262px; height:26px; background:url(../images/login_title.gif) no-repeat; }
+	.login h1{ text-indent:-9999px; margin-bottom:10px; width:262px; height:26px; }
 	.login p{ line-height:150%; }
 .logintitle{ float:left; clear:left; width:60px; line-height:180%; font-weight:700; font-size:14px; color:#666; }
 .loginform{ float:left; line-height:180%; font-size:14px; width:160px; }
@@ -117,7 +117,7 @@ h3{ margin-bottom:10px; font-size:14px; color:#09C; }
 			.itemtitle .tab1 a:hover{ background:#F5F5F5 url(../images/btn_block_3.gif) no-repeat 0 -40px; color:#09C; }
 				.itemtitle .tab1 a:hover span{ background:url(../images/btn_block_3.gif) no-repeat right -60px; }
 		.itemtitle .tab1 .hasdropmenu a:hover{ color:#666; }
-		.itemtitle .tab1 .current a{ background:url(btn_block_3.gif) no-repeat 0 0 !important; }
+		.itemtitle .tab1 .current a{ }
 			.itemtitle .tab1 .current a span, .itemtitle .tab1 .current a:hover span{ background:url(../images/btn_block_3.gif) no-repeat right -20px; color:#FFF; }
 		.itemtitle .tab1 .dropmenu a{ background:none !important; }
 			.itemtitle .tab1 .dropmenu a:hover{ background:#DEEFFA !important; }
@@ -273,6 +273,6 @@ h3{ margin-bottom:10px; font-size:14px; color:#09C; }
 		.custombar em a { color: #555; }
 		.custombar em span { cursor: pointer; margin-left: 5px; background:url(../images/close.gif) no-repeat 0 5px; }
 		.custombar em.current { background: #FFF; }
-		.custombar #custombar_add span { border:0; cursor:pointer; background:url(../images/add.gif) no-repeat 0px 2px; width: 13px; height: 13px; }	
+		.custombar #custombar_add span { border:0; cursor:pointer; background:url(../images/add.gif) no-repeat 0px 2px; width: 13px; height: 13px; }
 
 

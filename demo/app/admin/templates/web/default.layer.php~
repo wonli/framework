@@ -16,8 +16,6 @@
     <script type="text/javascript" src="<?php echo $this->res("js/lib/jquery.js") ?>"></script>
     <script type="text/javascript" src="<?php echo $this->res("js/cp.js") ?>"></script>
 
-    <script type="text/javascript" src="<?php echo $this->res("editor/kindeditor-min.js") ?>"></script>
-
     <script type="text/javascript" src="<?php echo $this->res("lib/artDialog/jquery.artDialog.js?skin=green") ?>"></script>
     <script type="text/javascript" src="<?php echo $this->res("lib/artDialog/plugins/iframeTools.js") ?>"></script>
 
@@ -33,11 +31,11 @@
         <td colspan="2" height="90">
             <div class="mainhd">
                 <div class="logo" style="color:#18a622;front-size:20px;">
-                    CrossPHP
+                    CP
                 </div>
                 <div class="uinfo">
                     <p>您好, <em><?php echo $_SESSION["admin"] ?></em> [ <a href="<?php echo $this->link("admin:logout") ?>" target="_top">退出</a> ]</p>
-                    <p class="btnlink"><a href="<?php echo HTDOCS_URL."web" ?>" target="_blank">网站首页</a></p>
+                    <p class="btnlink"><a href="" target="_blank">网站首页</a></p>
                 </div>
                 <div class="navbg"></div>
                 <div class="nav">

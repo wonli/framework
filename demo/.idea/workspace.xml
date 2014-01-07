@@ -23,135 +23,40 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Install.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/install/controllers/Install.php">
+      <file leaf-file-name="default.layer.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/admin/templates/web/default.layer.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="0" selection-start="103" selection-end="103" vertical-scroll-proportion="-4.137931" vertical-offset="0" max-vertical-offset="3107">
+            <state line="39" column="108" selection-start="2339" selection-end="2339" vertical-scroll-proportion="0.5825243" vertical-offset="240" max-vertical-offset="2667">
               <folding>
-                <element signature="n#__construct#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#index#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#config#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#saveConfig#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#test#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#importData#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#succeed#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#createAdmin#0;n#Install#0;n#!!top" expanded="true" />
-                <element signature="n#endNav#0;n#Install#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#td#0;n#tr#0;n#table#0;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="agreement.html" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/cache/install/agreement.html">
+      <file leaf-file-name="add.tpl.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/admin/templates/web/blog/add.tpl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="3" column="15" selection-start="33" selection-end="33" vertical-scroll-proportion="-0.59080964" vertical-offset="600" max-vertical-offset="1514">
+            <state line="16" column="54" selection-start="951" selection-end="951" vertical-scroll-proportion="-11.034483" vertical-offset="0" max-vertical-offset="1934">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="blog.sql" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/cache/install/blog.sql">
+      <file leaf-file-name="Blog.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/admin/controllers/Blog.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="87" column="18" selection-start="3843" selection-end="3843" vertical-scroll-proportion="-6.1538463" vertical-offset="1260" max-vertical-offset="5565">
+            <state line="29" column="35" selection-start="466" selection-end="466" vertical-scroll-proportion="-16.551723" vertical-offset="0" max-vertical-offset="2147">
               <folding />
-            </state>
-          </provider>
-          <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-            <state />
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Test.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/install/controllers/Test.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="0" selection-start="126" selection-end="126" vertical-scroll-proportion="-4.137931" vertical-offset="0" max-vertical-offset="1207">
-              <folding>
-                <element signature="n#mysql_test#0;n#Test#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Admin.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/admin/controllers/Admin.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="50" column="1" selection-start="1063" selection-end="1063" vertical-scroll-proportion="-26.896551" vertical-offset="0" max-vertical-offset="1787">
-              <folding>
-                <element signature="n#login#0;n#Admin#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Base.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/admin/controllers/Base.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="26" selection-start="222" selection-end="222" vertical-scroll-proportion="22.068966" vertical-offset="960" max-vertical-offset="3747">
-              <folding>
-                <element signature="n#__construct#0;n#Base#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AdminModule.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/modules/AdminModule.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="12" selection-start="1493" selection-end="1493" vertical-scroll-proportion="-3.4482758" vertical-offset="360" max-vertical-offset="2587">
-              <folding>
-                <element signature="n#add_admin#0;n#AdminModule#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AclModule.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/modules/AclModule.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="206" column="9" selection-start="5086" selection-end="5086" vertical-scroll-proportion="0.44827586" vertical-offset="3933" max-vertical-offset="9327">
-              <folding>
-                <element signature="n#del_nav#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#init_menu_list#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#save_nav#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#save_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_role_list#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_role_info#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#save_role_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#edit_role_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_menu_list#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_nav_list#0;n#AclModule#0;n#!!top" expanded="true" />
-                <element signature="n#get_c_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="InstallModule.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/modules/InstallModule.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="7" selection-start="231" selection-end="231" vertical-scroll-proportion="14.4827585" vertical-offset="660" max-vertical-offset="2407">
-              <folding>
-                <element signature="n#getSQL#0;n#InstallModule#0;n#!!top" expanded="true" />
-                <element signature="n#getAgreement#0;n#InstallModule#0;n#!!top" expanded="true" />
-                <element signature="n#getDBConfig#0;n#InstallModule#0;n#!!top" expanded="true" />
-                <element signature="n#updateDBConfig#0;n#InstallModule#0;n#!!top" expanded="true" />
-                <element signature="n#writeInstallFlag#0;n#InstallModule#0;n#!!top" expanded="true" />
-                <element signature="n#isInstall#0;n#InstallModule#0;n#!!top" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="default.layer.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/admin/templates/web/default.layer.php">
+        <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="22" selection-start="1803" selection-end="1803" vertical-scroll-proportion="-11.724138" vertical-offset="240" max-vertical-offset="2527">
-              <folding>
-                <marker date="1389001326661" expanded="true" signature="2476:2521" placeholder="..." />
-              </folding>
+            <state line="20" column="76" selection-start="1289" selection-end="1289" vertical-scroll-proportion="-9.655172" vertical-offset="120" max-vertical-offset="1867">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -174,9 +79,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/app/install/templates/web/test/redis.tpl.php" />
-        <option value="$PROJECT_DIR$/app/install/templates/web/install/test.tpl.php" />
-        <option value="$PROJECT_DIR$/modules/ImportModule.php" />
         <option value="$PROJECT_DIR$/app/install/templates/web/install/result.tpl.php" />
         <option value="$PROJECT_DIR$/app/install/templates/web/install/succeed.tpl.php" />
         <option value="$PROJECT_DIR$/app/install/views/InstallView.php" />
@@ -188,8 +90,11 @@
         <option value="$PROJECT_DIR$/modules/InstallModule.php" />
         <option value="$PROJECT_DIR$/app/install/controllers/Install.php" />
         <option value="$PROJECT_DIR$/cache/install/blog.sql" />
-        <option value="$PROJECT_DIR$/app/admin/templates/web/default.layer.php" />
         <option value="$PROJECT_DIR$/cache/install/agreement.html" />
+        <option value="$PROJECT_DIR$/app/admin/templates/web/blog/list.tpl.php" />
+        <option value="$PROJECT_DIR$/app/admin/templates/web/blog/add.tpl.php" />
+        <option value="$PROJECT_DIR$/app/admin/controllers/Blog.php" />
+        <option value="$PROJECT_DIR$/app/admin/templates/web/default.layer.php" />
       </list>
     </option>
   </component>
@@ -311,6 +216,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -375,9 +281,52 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="admin" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="admin" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -386,8 +335,8 @@
     <property name="options.lastSelected" value="preferences.sourceCode.General" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../crossphp" />
     <property name="FullScreen" value="true" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="PublishConfig" serverName="127.0.0.1:88" serverId="cf43cacc-0946-4456-b161-c5a974471a13">
     <servers>
@@ -496,7 +445,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1280" y="0" width="1920" height="1080" extended-state="6" />
+    <frame x="1280" y="0" width="1920" height="1080" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -504,7 +453,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14155982" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1431624" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
@@ -534,72 +483,26 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/install/views/TestView.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="357" selection-end="357" vertical-scroll-proportion="0.43149945" vertical-offset="0" max-vertical-offset="1347">
-          <folding>
-            <element signature="n#getTestTpl#0;n#TestView#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/install/templates/web/test/mongo.tpl.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="105" selection-start="575" selection-end="660" vertical-scroll-proportion="0.32362458" vertical-offset="0" max-vertical-offset="1327">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/install/templates/web/test/mysql.tpl.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="22" selection-start="396" selection-end="396" vertical-scroll-proportion="0.17259978" vertical-offset="0" max-vertical-offset="1767">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/install/templates/web/install/test.tpl.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="79" selection-start="313" selection-end="313" vertical-scroll-proportion="-6.206897" vertical-offset="0" max-vertical-offset="1167">
-          <folding>
-            <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
-            <marker date="1388996356152" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/install/templates/web/default.layer.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="7" selection-start="599" selection-end="599" vertical-scroll-proportion="0.34519956" vertical-offset="0" max-vertical-offset="1267">
-          <folding>
-            <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
+        <state line="16" column="7" selection-start="599" selection-end="599" vertical-scroll-proportion="0.34519956" vertical-offset="0" max-vertical-offset="1267" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/db.config.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="30" selection-start="284" selection-end="284" vertical-scroll-proportion="0.34519956" vertical-offset="0" max-vertical-offset="1907">
-          <folding />
-        </state>
+        <state line="16" column="30" selection-start="284" selection-end="284" vertical-scroll-proportion="0.34519956" vertical-offset="0" max-vertical-offset="1907" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/modules/InstallModule.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="7" selection-start="231" selection-end="231" vertical-scroll-proportion="14.4827585" vertical-offset="660" max-vertical-offset="2407">
-          <folding>
-            <element signature="n#getSQL#0;n#InstallModule#0;n#!!top" expanded="true" />
-            <element signature="n#getAgreement#0;n#InstallModule#0;n#!!top" expanded="true" />
-            <element signature="n#getDBConfig#0;n#InstallModule#0;n#!!top" expanded="true" />
-            <element signature="n#updateDBConfig#0;n#InstallModule#0;n#!!top" expanded="true" />
-            <element signature="n#writeInstallFlag#0;n#InstallModule#0;n#!!top" expanded="true" />
-            <element signature="n#isInstall#0;n#InstallModule#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="15" column="7" selection-start="231" selection-end="231" vertical-scroll-proportion="0.0" vertical-offset="300" max-vertical-offset="1600">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cache/install/blog.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="87" column="18" selection-start="3843" selection-end="3843" vertical-scroll-proportion="-6.1538463" vertical-offset="1260" max-vertical-offset="5565">
+        <state line="87" column="18" selection-start="3843" selection-end="3843" vertical-scroll-proportion="0.0" vertical-offset="1740" max-vertical-offset="4760">
           <folding />
         </state>
       </provider>
@@ -609,90 +512,89 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/install/controllers/Test.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="126" selection-end="126" vertical-scroll-proportion="-4.137931" vertical-offset="0" max-vertical-offset="1207">
-          <folding>
-            <element signature="n#mysql_test#0;n#Test#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="9" column="0" selection-start="126" selection-end="126" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="400">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/modules/AclModule.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="206" column="9" selection-start="5086" selection-end="5086" vertical-scroll-proportion="0.44827586" vertical-offset="3933" max-vertical-offset="9327">
-          <folding>
-            <element signature="n#del_nav#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#init_menu_list#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#save_nav#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#save_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_role_list#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_role_info#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#save_role_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#edit_role_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_menu_list#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_nav_list#0;n#AclModule#0;n#!!top" expanded="true" />
-            <element signature="n#get_c_menu#0;n#AclModule#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="206" column="9" selection-start="5086" selection-end="5086" vertical-scroll-proportion="0.0" vertical-offset="4120" max-vertical-offset="8660">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/modules/AdminModule.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="12" selection-start="1493" selection-end="1493" vertical-scroll-proportion="-3.4482758" vertical-offset="360" max-vertical-offset="2587">
-          <folding>
-            <element signature="n#add_admin#0;n#AdminModule#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="56" column="12" selection-start="1493" selection-end="1493" vertical-scroll-proportion="0.0" vertical-offset="1120" max-vertical-offset="2920">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/admin/controllers/Admin.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="1" selection-start="1063" selection-end="1063" vertical-scroll-proportion="-26.896551" vertical-offset="0" max-vertical-offset="1787">
-          <folding>
-            <element signature="n#login#0;n#Admin#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="50" column="1" selection-start="1063" selection-end="1063" vertical-scroll-proportion="0.0" vertical-offset="1000" max-vertical-offset="1140">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/admin/controllers/Base.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="26" selection-start="222" selection-end="222" vertical-scroll-proportion="22.068966" vertical-offset="960" max-vertical-offset="3747">
-          <folding>
-            <element signature="n#__construct#0;n#Base#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/admin/templates/web/default.layer.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="22" selection-start="1803" selection-end="1803" vertical-scroll-proportion="-11.724138" vertical-offset="240" max-vertical-offset="2527">
-          <folding>
-            <marker date="1389001326661" expanded="true" signature="2476:2521" placeholder="..." />
-          </folding>
+        <state line="16" column="26" selection-start="222" selection-end="222" vertical-scroll-proportion="0.0" vertical-offset="320" max-vertical-offset="2880">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/install/controllers/Install.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="103" selection-end="103" vertical-scroll-proportion="-4.137931" vertical-offset="0" max-vertical-offset="3107">
-          <folding>
-            <element signature="n#__construct#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#index#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#config#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#saveConfig#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#test#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#importData#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#succeed#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#createAdmin#0;n#Install#0;n#!!top" expanded="true" />
-            <element signature="n#endNav#0;n#Install#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="6" column="0" selection-start="103" selection-end="103" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="2240">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cache/install/agreement.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="15" selection-start="33" selection-end="33" vertical-scroll-proportion="-0.59080964" vertical-offset="600" max-vertical-offset="1514">
+        <state line="3" column="15" selection-start="33" selection-end="33" vertical-scroll-proportion="0.049234137" vertical-offset="15" max-vertical-offset="1514">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/admin/templates/web/blog/list.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="6" selection-start="489" selection-end="489" vertical-scroll-proportion="-9.655172" vertical-offset="0" max-vertical-offset="1227">
+          <folding>
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/admin/templates/web/blog/add.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="54" selection-start="951" selection-end="951" vertical-scroll-proportion="-11.034483" vertical-offset="0" max-vertical-offset="1934">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/admin/controllers/Blog.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="35" selection-start="466" selection-end="466" vertical-scroll-proportion="-16.551723" vertical-offset="0" max-vertical-offset="2147">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="76" selection-start="1289" selection-end="1289" vertical-scroll-proportion="-9.655172" vertical-offset="120" max-vertical-offset="1867">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/admin/templates/web/default.layer.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="39" column="108" selection-start="2339" selection-end="2339" vertical-scroll-proportion="0.5825243" vertical-offset="240" max-vertical-offset="2667">
+          <folding>
+            <element signature="n#style#0;n#div#0;n#div#0;n#td#0;n#tr#0;n#table#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

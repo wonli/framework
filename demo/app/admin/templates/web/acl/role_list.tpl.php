@@ -1,5 +1,5 @@
-<form action="" method="post">
-    <table class="tb2">
+<form class="pure-form" action="" method="post">
+    <table class="pure-table pure-table-horizontal">
         <?php foreach($data['role_list'] as $r) : ?>
             <tr>
                 <td><?php echo $r['name'] ?></td>

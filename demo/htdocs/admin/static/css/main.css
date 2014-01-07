@@ -1,6 +1,8 @@
-.main-box{position:relative;}
-.main-bd .list table{border:solid 1px #dfdfdf;border-bottom:none;width:100%;color:#717070}
-.main-bd .list table td{border-bottom:solid 1px #dfdfdf;padding:6px 0;line-height:18px;}
-.main-bd .list table .hight td{background:#fff}
-.main-bd .list thead td{background:#f1f1f1;font-weight:600}
-.c{text-align:center;width:54px;}
+.center
+{
+	text-align:center;
+}
+th, .table-footer-bg
+{
+    background:  #E6F2FB;
+}

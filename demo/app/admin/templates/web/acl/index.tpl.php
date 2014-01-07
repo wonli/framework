@@ -1,10 +1,19 @@
-<form action="" method="post">
-<div>
-
-	<table class="tb2">
+<form class="pure-form" action="" method="post">
+	<table>
 		<tr>
-			<th>菜单</th>
-			<th style="text-align:center">子菜单</th>
+			<th style="text-align: center">类名称</th>
+			<th style="text-align:center">
+                <table>
+                    <tr>
+                        <th>
+                            <td style="height:30px;width:120px;">方法名称</td>
+                            <td style="width:150px;">名称</td>
+                            <td style="width:50px;">是否显示</td>
+                            <td style="width:30px;">排序</td>
+                        </th>
+                    </tr>
+                </table>
+            </th>
 		</tr>
 
         <?php foreach($menu_list as $menu) : ?>
@@ -16,29 +25,28 @@
 				</span>
 			</td>
 			<td style="margin-left:30px;">
-				<table class="tb1">
-                    <?php if(isset($menu["method"])) : ?>
-					<?php foreach($menu["method"] as $m => $set ) : ?>
-					<tr>
-						<td style="width:120px;"><?php echo $m ?></td>
-						<td><input type="text" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][name]" id="" value="<?php if(isset($set["name"])) { echo $set["name"]; } ?>" /></td>
-						<td><input type="checkbox" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][display]" <?php if(isset($set["display"]) && $set["display"] == 1) :?>checked<?php endif;?> id="" /></td>
-						<td><input type="text" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][order]" <?php if(! empty($set["order"])) :?>value="<?php echo $set["order"]; ?>"<?php endif;?> style="width:50px;" /></td>
-					</tr>
-					<?php endforeach;?>
-                    <?php endif ?>
+				<table class="pure-table pure-table-horizontal">
+                    <?php if(! empty($menu["method"])) : ?>
+                        <?php foreach($menu["method"] as $m => $set ) : ?>
+                        <tr>
+                            <td style="width:120px;"><?php echo $m ?></td>
+                            <td><input type="text" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][name]" id="" value="<?php if(isset($set["name"])) { echo $set["name"]; } ?>" /></td>
+                            <td><input type="checkbox" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][display]" <?php if(isset($set["display"]) && $set["display"] == 1) :?>checked<?php endif;?> id="" /></td>
+                            <td><input type="text" name="menu[<?php echo $menu["id"] ?>][<?php echo $m ?>][order]" <?php if(! empty($set["order"])) :?>value="<?php echo $set["order"]; ?>"<?php endif;?> style="width:50px;" /></td>
+                        </tr>
+                        <?php endforeach;?>
+                    <?php endif; ?>
 				</table>
 			</td>
 		</tr>
         <?php endforeach ?>
         <tr>
+            <td></td>
         	<td colspan="2">
-				<input class="btn" style="margin-left:30px;width:60px;height:25px;" type="submit" value="提交" />
+				<input class="pure-button" style="" type="submit" value="提交" />
         	</td>
         </tr>
     </table>
-
-</div>
 </form>
 
 

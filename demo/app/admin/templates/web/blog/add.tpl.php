@@ -1,11 +1,11 @@
-<div class="user">
-    <form action="<?php echo $this->link("blog:post") ?>" method="post">
+<div class="user" style="text-align: left;">
+    <form class="pure-form" action="<?php echo $this->link("blog:post") ?>" method="post">
         <ul>
             <li>
                 <div class="ctxt">标题: </div>
                 <div class="cinp">
                     <input type="hidden" name="id" id="" value="<?php echo isset($data['id'])?$data['id']:'' ?>"/>
-                    <input type="text" name="title" id="" value="<?php echo isset($data['title'])?$data['title']:'' ?>"/>
+                    <input type="text" class="pure-input-1-3" name="title" id="" value="<?php echo isset($data['title'])?$data['title']:'' ?>"/>
                     <span style="line-height:25px;">
                         <input type="checkbox" name="status" id="" value="1" <?php if(! isset($data["status"]) || $data["status"] == 1) : ?>checked<?php endif ?> /> 是否显示
                     </span>
@@ -14,7 +14,7 @@
             <li>
                 <div class="ctxt">发布日期: </div>
                 <div class="cinp">
-                    <input type="text" name="ct" id="" value="<?php echo date('Y-m-d H:i:s')?>"/>
+                    <input type="text" style="width:200px;" name="ct" id="" value="<?php echo date('Y-m-d H:i:s')?>"/>
                 </div>
             </li>
             <li>
@@ -37,7 +37,7 @@
             </li>
             <li>
                 <div class="ctxt">&nbsp;</div>
-                <div class="cinp"><input style="height:40px;width:100px;" type="submit" value="发表" /></div>
+                <div class="cinp"><input style="height:40px;width:100px;" type="submit" class="pure-button" value="发表" /></div>
             </li>
         </ul>
     </form>

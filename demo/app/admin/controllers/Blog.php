@@ -27,7 +27,7 @@ class Blog extends Base
      */
     function index()
     {
-        $this->display();
+        $this->to("blog:blogList");
     }
 
     /**

@@ -1,6 +1,6 @@
-<div>
+<div class="pure-form">
     <form action="" method="post">
-    <table class="tb2">
+    <table class="pure-table pure-table-horizontal" style="border:none">
         <tr>
             <th>id</th>
             <th>用户名</th>
@@ -42,7 +42,7 @@
         </tr>
         <tr>
             <td></td>
-            <td clospan="12"><input type="submit" value="保存"/></td>
+            <td colspan="12"><input class="pure-button" type="submit" value="保存"/></td>
         </tr>
     </table>
     </form>

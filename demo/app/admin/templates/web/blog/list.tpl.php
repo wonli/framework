@@ -1,4 +1,4 @@
-<div class="list left">
+<div class="pure-form" style="text-align: left;">
     <ul>
         <?php
         foreach($data as $d)
