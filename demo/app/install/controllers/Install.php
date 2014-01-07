@@ -16,7 +16,7 @@ class Install extends CoreController {
 
         $is_install = $this->INSTALL->isInstall();
         if( $is_install && $this->action != 'endnav' ) {
-            die("please del cache/install.Lock ...");
+            die("please del cache/install/install.Lock ...");
         }
     }
 
