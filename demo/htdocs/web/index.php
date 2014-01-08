@@ -10,8 +10,14 @@ try
 {
     Cross::loadApp( 'web' )->run();
 } catch (Exception $e) {
-    //如果捕捉到异常 调用404页面
-    Cross::loadApp( 'web' )->get( 'Robot:error_404' );
+
+    $file = Loader::getFilePath( '::cache/install/install.Lock' );
+    if(file_exists($file)) {
+        //如果捕捉到异常 调用404页面
+        Cross::loadApp( 'web' )->get( 'Robot:error_404' );
+    } else {
+        header("LOCATION:".HTDOCS_URL."install");
+    }
 }
 /*
 	其他调用方式及应该用场景
