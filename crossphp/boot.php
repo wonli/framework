@@ -21,7 +21,7 @@ defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
 /**
  * 项目APP路径
  */
-define('APP_PATH_DIR', PROJECT_PATH.'app');
+define('APP_PATH_DIR', rtrim(PROJECT_PATH, DS).DS.'app');
 
 /**
  * require cross && loader

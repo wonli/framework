@@ -57,7 +57,7 @@ class Config
     function __construct( $appname, $res_file )
     {
         $this->appname = $appname ? $appname : APP_NAME;
-        $this->res_file = rtrim(APP_PATH_DIR, DS).DS.$this->appname.DS.$res_file;
+        $this->res_file = APP_PATH_DIR.DS.$this->appname.DS.$res_file;
     }
 
     /**

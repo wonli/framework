@@ -216,9 +216,10 @@ class Loader
     {
         $files = $list = array();
         $_defines = array (
-            'app' => defined("APP_PATH")?APP_PATH:'',
-            'core' => CP_PATH.'core',
-            'project' => PROJECT_PATH
+            'app'       =>  defined("APP_PATH")?APP_PATH:'',
+            'core'      =>  CP_PATH.'core',
+            'static'    =>  STATIC_PATH,
+            'project'   =>  PROJECT_PATH,
         );
 
         if(is_array($class))

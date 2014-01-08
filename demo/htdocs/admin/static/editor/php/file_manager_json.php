@@ -45,7 +45,7 @@ if (empty($_GET['path'])) {
 	$current_dir_path = $_GET['path'];
 	$moveup_dir_path = preg_replace('/(.*?)[^\/]+\/$/', '$1', $current_dir_path);
 }
-echo realpath($root_path);
+//echo realpath($root_path);
 //排序形式，name or size or type
 $order = empty($_GET['order']) ? 'name' : strtolower($_GET['order']);
 
@@ -83,7 +83,7 @@ if ($handle = opendir($current_path)) {
 			$file_list[$i]['has_file'] = false;
 			$file_list[$i]['filesize'] = filesize($file);
 			$file_list[$i]['dir_path'] = '';
-			$file_ext = strtolower(array_pop(explode('.', trim($file))));
+			$file_ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 			$file_list[$i]['is_photo'] = in_array($file_ext, $ext_arr);
 			$file_list[$i]['filetype'] = $file_ext;
 		}
