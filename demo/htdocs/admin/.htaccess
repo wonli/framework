@@ -1,17 +1,21 @@
-#ȡ��PHP.INI�е�����
+#clear php.ini auto_append_file set.
+# auto_prepend_file set.
 php_value auto_append_file none
 php_value auto_prepend_file none
 php_value include_path "."
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !\.(css|js|txt|mp3|zip|png|gif|jpe?g|exe|rmvb|rm|avi)$
+#{{{rewrite start
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
 
-RewriteRule (.*) /htdocs/admin/index.php/$1 [L]
+RewriteCond %{REQUEST_URI}::$1 ^(/.+)(.+)::\2$
+RewriteRule ^(.*) - [E=BASE:%1]
+RewriteRule ^(.*)$ %{ENV:BASE}index.php/$1 [NC,L]
 </IfModule>
-
 
 <IfModule mod_headers.c>
 <FilesMatch ".(js|css|xml|gz)$">
