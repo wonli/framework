@@ -242,11 +242,9 @@ class Request
      */
     public function getUrlRequest($type = 1)
     {
-        if($type == 2) {
+        if ($type == 2) {
             return $this->_SERVER('PATH_INFO');
-        }
-        else
-        {
+        } else {
             return $this->_SERVER('QUERY_STRING');
         }
     }

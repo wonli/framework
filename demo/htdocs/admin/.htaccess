@@ -6,6 +6,7 @@ php_value include_path "."
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
+#{{{rewrite start
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d

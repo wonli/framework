@@ -105,11 +105,11 @@ class Router implements RouterInterface
         switch ($url_config ['type'])
         {
             case 1 :
-                $request = Request::getInstance()->getUrlRequest( $url_config ['type'] );
+                $request = Request::getInstance()->getUrlRequest( 1 );
                 return self::parseString($request, $url_config);
 
             case 2 :
-                $path_info = Request::getInstance()->getUrlRequest( $url_config ['type'] );
+                $path_info = Request::getInstance()->getUrlRequest( 2 );
                 $request = self::parseString($path_info, $url_config);
 
                 if(! empty($request))
@@ -142,9 +142,10 @@ class Router implements RouterInterface
     static function parseString( $_query_string, $url_config )
     {
         $_query_string = trim(trim( $_query_string, "/" ), $url_config['dot']);
+        $router_params = array();
 
-        if(! $_query_string) {
-            return ;
+        if (! $_query_string) {
+            return $router_params;
         }
 
         $_url_ext = $url_config["ext"];
@@ -156,9 +157,11 @@ class Router implements RouterInterface
             }
         }
 
-        $router_params = array();
-        if($url_config['dot']) {
-            $router_params = array_filter( explode($url_config['dot'], $_query_string) );
+
+        if ( false !== strpos($_query_string, $url_config['dot']) ) {
+            $router_params = explode($url_config['dot'], $_query_string);
+        } else {
+            $router_params = array($_query_string);
         }
         return $router_params;
     }
@@ -234,6 +237,7 @@ class Router implements RouterInterface
          */
         $controller_config = $this->config->get("controller");
         $_controller = $request [0];
+        $this->config->set('url', array('ori_controller' => $_controller));
         array_shift($request);
 
         if(isset($controller_config [ $_controller ]))
@@ -244,12 +248,12 @@ class Router implements RouterInterface
         if( isset($_config['alias']) && !empty($_config['alias']) )
         {
             $_calias = $_config['alias'];
-
             if(is_array($_calias))
             {
                 if(isset($request [0]))
                 {
                     $_action = $request [0];
+                    $this->config->set('url', array('ori_action' => $_action));
                     array_shift( $request );
 
                     if(isset($_calias [$_action]))
@@ -283,17 +287,12 @@ class Router implements RouterInterface
                     $_action = $_user_alias [0];
                     array_shift($_user_alias);
 
-                    if(isset($request [0]))
-                    {
-                        array_unshift($_user_alias, $request [0]);
-                        array_shift($request);
-                    }
-
                     $alias_params = $_user_alias;
                 }
                 else
                 {
-                    $_controller = ucfirst($_calias);
+                    $_controller = $_calias;
+
                     if(isset($request [0]))
                     {
                         $_action = $request[0];
@@ -311,6 +310,7 @@ class Router implements RouterInterface
             if( isset($request[0]) )
             {
                 $_action = $request [0];
+                $this->config->set('url', array('ori_action' => $_action));
                 array_shift( $request );
             }
             else
@@ -321,7 +321,7 @@ class Router implements RouterInterface
 
         if(isset($alias_params) && ! empty($alias_params))
         {
-            $_params = array_merge($alias_params, $request);
+            $_params = array_merge($request, $alias_params);
         }
         else
         {

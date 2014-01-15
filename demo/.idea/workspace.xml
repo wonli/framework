@@ -23,10 +23,44 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="default.layer.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="default.layer.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="0.27400216" vertical-offset="66" max-vertical-offset="1587">
+            <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="-0.0" vertical-offset="320" max-vertical-offset="720">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Article.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/web/controllers/Article.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="21" column="5" selection-start="537" selection-end="537" vertical-scroll-proportion="0.45307443" vertical-offset="0" max-vertical-offset="1747">
+              <folding>
+                <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
+                <element signature="n#detail#0;n#Article#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Main.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/web/controllers/Main.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="7" column="26" selection-start="123" selection-end="123" vertical-scroll-proportion="-1.862069" vertical-offset="86" max-vertical-offset="1607">
+              <folding>
+                <element signature="n#__construct#0;n#Main#0;n#!!top" expanded="true" />
+                <element signature="n#index#0;n#Main#0;n#!!top" expanded="true" />
+                <element signature="n#setSkin#0;n#Main#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="init.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/web/init.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="42" column="18" selection-start="603" selection-end="603" vertical-scroll-proportion="-4.827586" vertical-offset="660" max-vertical-offset="2907">
               <folding />
             </state>
           </provider>
@@ -50,9 +84,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/app/install/templates/web/install/succeed.tpl.php" />
-        <option value="$PROJECT_DIR$/app/install/views/InstallView.php" />
-        <option value="$PROJECT_DIR$/modules/AdminModule.php" />
         <option value="$PROJECT_DIR$/../crossphp/core/Config.php" />
         <option value="$PROJECT_DIR$/../crossphp/core/Cross.php" />
         <option value="$PROJECT_DIR$/app/admin/controllers/Admin.php" />
@@ -66,6 +97,9 @@
         <option value="$PROJECT_DIR$/app/admin/controllers/Blog.php" />
         <option value="$PROJECT_DIR$/app/admin/templates/web/default.layer.php" />
         <option value="$PROJECT_DIR$/app/web/templates/web/default.layer.php" />
+        <option value="$PROJECT_DIR$/app/web/init.php" />
+        <option value="$PROJECT_DIR$/app/api/controllers/Article.php" />
+        <option value="$PROJECT_DIR$/app/web/controllers/Article.php" />
       </list>
     </option>
   </component>
@@ -187,6 +221,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -212,10 +247,67 @@
               <option name="myItemId" value="demo" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="controllers" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -342,7 +434,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19978632" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20405982" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
@@ -372,29 +464,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/cache/install/blog.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="87" column="18" selection-start="3843" selection-end="3843" vertical-scroll-proportion="0.0" vertical-offset="1740" max-vertical-offset="4760" />
-      </provider>
-      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/install/controllers/Test.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="126" selection-end="126" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="400" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/AclModule.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="206" column="9" selection-start="5086" selection-end="5086" vertical-scroll-proportion="0.0" vertical-offset="4120" max-vertical-offset="8660" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/AdminModule.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="12" selection-start="1493" selection-end="1493" vertical-scroll-proportion="0.0" vertical-offset="1120" max-vertical-offset="2920" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/admin/controllers/Admin.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="50" column="1" selection-start="1063" selection-end="1063" vertical-scroll-proportion="0.0" vertical-offset="1000" max-vertical-offset="1140" />
@@ -452,8 +521,45 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="0.27400216" vertical-offset="66" max-vertical-offset="1587">
+        <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="0.0" vertical-offset="320" max-vertical-offset="720">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Main.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="26" selection-start="123" selection-end="123" vertical-scroll-proportion="-1.862069" vertical-offset="86" max-vertical-offset="1607">
+          <folding>
+            <element signature="n#__construct#0;n#Main#0;n#!!top" expanded="true" />
+            <element signature="n#index#0;n#Main#0;n#!!top" expanded="true" />
+            <element signature="n#setSkin#0;n#Main#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/api/controllers/Article.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="0" selection-start="167" selection-end="167" vertical-scroll-proportion="0.21574973" vertical-offset="0" max-vertical-offset="1747">
+          <folding>
+            <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/init.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="42" column="18" selection-start="603" selection-end="603" vertical-scroll-proportion="-4.827586" vertical-offset="660" max-vertical-offset="2907">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Article.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="5" selection-start="537" selection-end="537" vertical-scroll-proportion="0.45307443" vertical-offset="0" max-vertical-offset="1747">
+          <folding>
+            <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
+            <element signature="n#detail#0;n#Article#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

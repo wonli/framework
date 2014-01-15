@@ -125,19 +125,25 @@ class CoreView extends FrameBase
      * @param bool $sec
      * @return string
      */
-    function link($_controller=null, $params=null, $sec = false)
+    function link($controller=null, $params=null, $sec = false)
     {
         $_linkurl = $this->link_base;
 
-        if($_controller) {
-            $_linkurl .= $this->makeController($_controller);
+        $_action = '';
+        $_controller = '';
+
+        if($controller)
+        {
+            $_linkurl .= $this->makeController($controller, $_controller, $_action);
         }
 
-        if($params != null) {
-            $_linkurl .= $this->urlconfig['dot'].$this->makeParams($params, $sec);
+        if($params != null)
+        {
+            $_linkurl .= $this->makeParams($params, $_controller, $_action, $sec);
         }
 
-        if($this->urlconfig['ext']) {
+        if($this->urlconfig['ext'])
+        {
             $_linkurl .= $this->urlconfig['ext'];
         }
 
@@ -159,36 +165,44 @@ class CoreView extends FrameBase
     /**
      * 生成控制器连接
      *
-     * @param $_controller
+     * @param $controller
+     * @param string $_controller
+     * @param string $_action
      * @return string
      */
-    private function makeController($_controller)
+    private function makeController($controller, & $r_controller = '', & $r_action = '')
     {
-        $_linkurl = '';
-        if(false !== strpos($_controller, ":")){
-            list($controller, $action) = explode(":", $_controller);
+        $_linkurl = '/';
+        if (false !== strpos($controller, ":")) {
+            list($_controller, $_action) = explode(":", $controller);
         } else {
-            $controller = $_controller;
+            $_controller = $controller;
         }
 
-        if($this->urlconfig ['rewrite']) {
-            $_linkurl .= '/'.$controller;
-        }else{
-            $index = $this->urlconfig ["index"];
-            $_dot = "?";
+        $r_controller = $_controller;
+        if(isset($_action)) {
+            $r_action = $_action;
+        }
 
-            if($index == 'index.php') {
-                if($this->urlconfig ["type"] == 2) {
-                	$_dot = $index;
-                }
-                $_linkurl .= '/'.$_dot.'/'.$controller;
+        if ($this->urlconfig ['rewrite']) {
+            $_linkurl .= $_controller;
+        } else {
+            $index = $this->urlconfig ['index'];
+
+            if ( $this->urlconfig ['type'] == 2 ) {
+                $_dot = $index;
             } else {
-                $_linkurl .= '/'.$index.$_dot.$controller;
+                if ($index == 'index.php') {
+                    $_dot = '?';
+                } else {
+                    $_dot = $index.'?';
+                }
             }
+            $_linkurl .=  $_dot.'/'.$_controller;
         }
 
-        if(isset($action)){
-            $_linkurl .= $this->urlconfig['dot'].$action;
+        if (isset($_action)) {
+            $_linkurl .= $this->urlconfig['dot'].$_action;
         }
 
         return $_linkurl;
@@ -198,37 +212,86 @@ class CoreView extends FrameBase
      * 生成link参数
      *
      * @param $params
+     * @param string $_controller
+     * @param string $_action
      * @param bool $sec
      * @return string
      */
-    private function makeParams($params, $sec = false)
+    private function makeParams($params, $_controller='', $_action='', $sec = false)
     {
         $_params = '';
 
         if($params) {
-            $_piex = '';
-            if($this->urlconfig ["type"] == 1)
+            $_piex = $this->urlconfig['dot'];
+            if ($this->urlconfig ["type"] == 1)
             {
-                if(is_array($params)) {
+                if (is_array($params)) {
                     $_params = implode($this->urlconfig['dot'], $params);
                 } else {
-                    $_params = $params;
+                    $url_str = array();
+                    parse_str($params, $url_str);
+                    $_params = implode($this->urlconfig['dot'], $url_str);
                 }
+
             } else {
                 $_piex = '?';
-                if(is_array($params)) {
+                if (is_array($params)) {
                     $_params = http_build_query($params);
                 } else {
                     $_params = $params;
                 }
             }
 
-            if(true === $sec) {
+            if (true === $sec) {
                 $_params = $this->encode_params($_params, "crossphp");
             }
         }
 
         return $_piex.$_params;
+    }
+
+    /**
+     * 设置params缓存
+     *
+     * @param $controller
+     * @param $action
+     * @param $params
+     */
+    private function setParamsCache($controller='', $action='', $params)
+    {
+        if ($action) {
+            $cache_key = strtolower($controller.':'.$action);
+        } else {
+            $cache_key = strtolower($controller);
+        }
+
+        $params_cache_file = Loader::getFilePath("::cache/params.cache.php");
+        if (! file_exists($params_cache_file)) {
+            Helper::mkfile($params_cache_file);
+        }
+
+        $params_cache_content = Loader::read($params_cache_file);
+        if (! is_array($params_cache_content)) {
+            $params_cache_content = array();
+        }
+
+        $refresh_cache = false;
+        if (isset($params_cache_content[$cache_key])) {
+            $cached_content = $params_cache_content[$cache_key];
+
+            if (count($cached_content) <= count(array_keys( $params ))) {
+                $refresh_cache = true;
+                $params_cache_content[$cache_key] = array_keys( $params );
+            }
+
+        } else {
+            $refresh_cache = true;
+            $params_cache_content[$cache_key] = array_keys( $params );
+        }
+
+        if (true === $refresh_cache) {
+            file_put_contents($params_cache_file, "<?php return ".var_export($params_cache_content, true).";");
+        }
     }
 
     /**

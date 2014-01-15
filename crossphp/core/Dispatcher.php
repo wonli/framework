@@ -252,28 +252,76 @@ class Dispatcher
      */
     private function init_params( $params )
     {
-        if(is_array($params))
+        if (self::$appConfig->get("url", "type") == 2)
         {
-            if(self::$appConfig->get("url", "type") == 2)
+            $this->setParams( $params );
+        }
+        else
+        {
+            if( count($params) > 1 )
             {
                 $this->setParams( $params );
             }
             else
             {
-                if( count($params) > 1 )
-                {
-                    $this->setParams( $params );
-                }
-                else
-                {
-                    $this->setParams( current( $params ) );
-                }
+                $this->setParams( current( $params ) );
             }
         }
-        else
-        {
-            $this->setParams( $params );
+    }
+
+    /**
+     * 还原参数的key
+     *
+     * @param $controller
+     * @param $action
+     * @param $params
+     * @return array
+     */
+    static function restore_params_keys( $params )
+    {
+        $params_cache_file = Loader::getFilePath("::cache/params.cache.php");
+        if (! file_exists($params_cache_file)) {
+            return $params;
         }
+
+        $_params = array();
+        $controller_config = self::$appConfig->get("url");
+        if (isset($controller_config ['ori_controller'])) {
+            $controller = $controller_config ['ori_controller'];
+        } else {
+            return $_params;
+        }
+
+        if (isset($controller_config['ori_action'])) {
+            $action = $controller_config ['ori_action'];
+        }
+
+        if (isset($action)) {
+            $params_cache_key = strtolower($controller.':'.$action);
+        } else {
+            $params_cache_key = strtolower($controller);
+        }
+
+        $params_cache_content = Loader::read("::cache/params.cache.php");
+        if (isset($params_cache_content[$params_cache_key])) {
+            foreach($params_cache_content[$params_cache_key] as $k => $p) {
+                if (isset($params[$k])) {
+                    $_params[$p] = $params[$k];
+                    unset($params[$k]);
+                }
+            }
+
+            if (! empty($params)) {
+                foreach ($params as $p_key => $p_val) {
+                    $_params [] = $p_val;
+                    unset($params[$p_key]);
+                }
+            }
+        } else {
+            $_params = $params;
+        }
+
+        return $_params;
     }
 
     /**

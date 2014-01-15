@@ -214,10 +214,37 @@ class FrameBase
      */
     protected function sparams( $params=null )
     {
-        if(! $params) {
-            $params = $this->params;
+        $url_type = $this->config->get('url', 'type');
+
+        if (null === $params) {
+            if ($url_type == 2) {
+                $params = current(array_keys( $this->params ));
+            } else {
+                $params = $this->params;
+                if (is_array($this->params)) {
+                    $params = current( array_values( $this->params ) );
+                }
+            }
         }
-        return $this->encode_params($params, "crossphp", "decode");
+
+        $result = array();
+        $decode_params_str = false;
+        if(is_string($params)) {
+            $decode_params_str = $this->encode_params($params, "crossphp", "decode");
+        }
+
+        if (false == $decode_params_str) {
+            return $this->params;
+        }
+
+        if( $url_type == 2 ) {
+            parse_str($decode_params_str, $result);
+        } else {
+            $_params = explode($this->config->get('url', 'dot'), $decode_params_str);
+            $result = Dispatcher::restore_params_keys($this->controller, $this->action, $_params);
+        }
+
+        return $result;
     }
 
     /**
