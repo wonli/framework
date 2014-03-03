@@ -62,6 +62,7 @@ class Loader
             'CacheInterface'    => 'interface/CacheInterface.php',
             'SqlInterface'      => 'interface/SqlInterface.php',
 
+            'Rest'            => 'core/Rest.php',
             'Widget'          => 'core/Widget.php',
             'Loader'          => 'core/Loader.php',
             'Dispatcher'      => 'core/Dispatcher.php',

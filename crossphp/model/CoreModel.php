@@ -10,13 +10,20 @@ class CoreModel
         {
             case 'mysql' :
 
-                $host = $link_params['host'];
-                $name = $link_params['name'];
                 $port = isset($link_params['port'])?$link_params['port']:3306;
                 $char_set = isset($link_params['charset'])?$link_params['charset']:'utf8';
+                $options = isset($link_params['options'])?$link_params['options']:array();
 
-                $dsn = "mysql:host={$host};dbname={$name};port={$port};charset={$char_set}";
-                return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"]);
+                if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($link_params['unix_socket']))
+                {
+                    $dsn = "mysql:dbname={$link_params['name']};unix_socket={$link_params['unix_socket']}";
+                }
+                else
+                {
+                    $dsn = "mysql:host={$link_params['host']};dbname={$link_params['name']};port={$port};charset={$char_set}";
+                }
+
+                return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"], $options);
 
             case 'mongo':
                 return new MongoModel( $link_params );

@@ -65,8 +65,8 @@ class CoreView extends FrameBase
      * 模板的绝对路径
      *
      * @param $tpl_name
-     * @param $get_content 是否读取模板内容
-     * @param $file_ext_name 模板文件扩展名
+     * @param bool $get_content 是否读取模板内容
+     * @param string $file_ext_name 模板文件扩展名
      * @return string
      */
     function tpl($tpl_name, $get_content=false, $file_ext_name='.tpl.php')
@@ -120,7 +120,7 @@ class CoreView extends FrameBase
     /**
      * 生成连接
      *
-     * @param null $_controller 控制器:方法
+     * @param null $controller 控制器:方法
      * @param null $params
      * @param bool $sec
      * @return string
@@ -166,13 +166,13 @@ class CoreView extends FrameBase
      * 生成控制器连接
      *
      * @param $controller
-     * @param string $_controller
-     * @param string $_action
+     * @param string $r_controller
+     * @param string $r_action
      * @return string
      */
     private function makeController($controller, & $r_controller = '', & $r_action = '')
     {
-        $_linkurl = '/';
+        $_link_url = '/';
         if (false !== strpos($controller, ":")) {
             list($_controller, $_action) = explode(":", $controller);
         } else {
@@ -185,7 +185,7 @@ class CoreView extends FrameBase
         }
 
         if ($this->urlconfig ['rewrite']) {
-            $_linkurl .= $_controller;
+            $_link_url .= $_controller;
         } else {
             $index = $this->urlconfig ['index'];
 
@@ -198,14 +198,14 @@ class CoreView extends FrameBase
                     $_dot = $index.'?';
                 }
             }
-            $_linkurl .=  $_dot.'/'.$_controller;
+            $_link_url .=  $_dot.'/'.$_controller;
         }
 
         if (isset($_action)) {
-            $_linkurl .= $this->urlconfig['dot'].$_action;
+            $_link_url .= $this->urlconfig['dot'].$_action;
         }
 
-        return $_linkurl;
+        return $_link_url;
     }
 
     /**
@@ -323,9 +323,8 @@ class CoreView extends FrameBase
             $method = Router::$default_action;
         }
 
-        ob_start();
+        Response::getInstance()->set_response_status( $http_response_status );
         $this->obRender($data, $method);
-        Response::getInstance( $display_type )->output( $http_response_status, ob_get_clean() );
     }
 
     /**
@@ -339,47 +338,6 @@ class CoreView extends FrameBase
         ob_start();
         $this->$method( $data );
         $this->loadLayer( ob_get_clean() );
-    }
-
-    /**
-     * 生成静态页面
-     *
-     * @param null $date 要渲染的数据
-     * @param null $method
-     * @throws CoreException
-     */
-    function buildHtml( $date=null, $method=null )
-    {
-        ob_start();
-        $this->_display($date, $method);
-        $html = ob_get_clean();
-
-        $static_path = $this->config->get("sys", "cache_path").'html'.DS.$this->controller.DS.$this->action.DS;
-
-        if($this->params) {
-            $htmlfile = $static_path.$this->params.'.html';
-        } else {
-            $htmlfile = $static_path.'index.html';
-        }
-
-        if(! is_file($htmlfile)) {
-            if(!is_dir(dirname($htmlfile))) {
-                mkdir(dirname($htmlfile), 0777, true);
-            }
-            if(false === file_put_contents($htmlfile, $html)) {
-                throw new CoreException("生成失败!");
-            }
-        } else {
-            if(md5($html) == md5( file_get_contents($htmlfile) ) ) {
-                touch($htmlfile);
-            } else {
-                if(false === file_put_contents($htmlfile, $html)) {
-                    throw new CoreException("生成失败!");
-                }
-            }
-        }
-
-        echo $html;
     }
 
     /**
@@ -501,6 +459,7 @@ class CoreView extends FrameBase
                 break;
             case 'css' :
                 $tpl = '<link rel="stylesheet" type="text/css" href="%s"/>';
+                break;
 
             default :
                 $tpl = null;
@@ -543,6 +502,14 @@ class CoreView extends FrameBase
         $this->array_to_xml($data, $xml);
 
         echo $xml->asXML();
+    }
+
+    /**
+     * 输出html
+     */
+    function HTML()
+    {
+
     }
 
     /**
@@ -618,18 +585,6 @@ class CoreView extends FrameBase
         }
 
         include $layer_file;
-    }
-
-    /**
-     * 访问未定义的方法时 通过__call 抛出异常
-     *
-     * @param $action
-     * @param $argv
-     * @throws FrontException
-     */
-    function __call($action, $argv)
-    {
-        throw new FrontException("未定义的方法 {$action}");
     }
 }
 

@@ -19,7 +19,17 @@ class RedisCache
 
         $obj = new redis();
 
-        $obj->connect($option ['host'], $option ['port']);
+        if(strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket']))
+        {
+            /**
+             * unixsocket /tmp/redis.sock
+             * unixsocketperm 777
+             */
+            $obj->connect('/tmp/redis.sock');
+        } else {
+            $obj->connect($option ['host'], $option ['port']);
+        }
+
         $obj->select($option['db']);
         $this->link = $obj;
     }

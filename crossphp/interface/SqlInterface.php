@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @Auth wonli <wonli@live.com>
+ * Interface SqlInterface
+ */
 interface SqlInterface
 {
     /**

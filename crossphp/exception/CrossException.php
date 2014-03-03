@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class CrossException
+ */
 abstract class CrossException extends Exception
 {
     function __construct($message='CP error', $code=null)

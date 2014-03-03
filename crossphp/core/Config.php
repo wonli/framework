@@ -131,7 +131,7 @@ class Config
     /**
      * 保存配置参数
      *
-     * @param $init 配置文件
+     * @param array $init 配置文件
      * @return array
      */
     function setData($init)
@@ -193,8 +193,8 @@ class Config
     /**
      * 设定配置项的值
      *
-     * @param $name 要设定的项
-     * @param $values 设定的项的值
+     * @param string $name 要设定的项
+     * @param string $values 设定的项的值
      * @return null
      */
     function set($name, $values=null)
@@ -207,7 +207,7 @@ class Config
     /**
      * 返回全部配置
      *
-     * @param   $obj 是否返回对象
+     * @param bool|$obj 是否返回对象
      * @return array/object
      */
     function getAll($obj = false)

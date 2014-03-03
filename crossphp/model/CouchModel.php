@@ -29,6 +29,7 @@ class CouchModel
      *
      * @param $method
      * @param $argv
+     * @throws CoreException
      * @return mixed|null
      */
     public function __call($method, $argv)

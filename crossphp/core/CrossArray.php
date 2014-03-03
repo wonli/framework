@@ -31,7 +31,7 @@ class CrossArray
      * $config为数组的时候 获取数组中指定的配置项,如果$name为true 则获取指定项之外的配置项
      *
      * @param $config
-     * @param $name null或boolean
+     * @param null|boolean $name
      * @return string|array
      */
     function get($config, $name=null)
@@ -74,7 +74,7 @@ class CrossArray
     /**
      * 返回全部数据
      *
-     * @param   $obj 是否返回对象
+     * @param bool| $obj 是否返回对象
      * @return array/object
      */
     function getAll($obj = false)

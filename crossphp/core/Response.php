@@ -13,6 +13,203 @@ class Response
     protected $content_type;
 
     /**
+     * @var int
+     */
+    protected $response_status;
+
+    /**
+     * Response instance
+     *
+     * @var object
+     */
+    static $instance;
+
+    private function __construct( )
+    {
+
+    }
+
+    /**
+     * 单例模式
+     *
+     * @return Response
+     */
+    static function getInstance( )
+    {
+        if(! self::$instance) {
+            self::$instance = new Response( );
+        }
+        return self::$instance;
+    }
+
+    /**
+     * @param $code
+     */
+    static function sendStatus($code) {
+        header("HTTP/1.1 {$code}");
+    }
+
+    /**
+     * 设置返回头类型
+     *
+     * @param $header_type
+     * @return $this
+     */
+    function set_ContentType( $header_type )
+    {
+        if(isset(self::$mime_types [$header_type]))
+        {
+            $this->content_type = self::$mime_types [$header_type];
+        } else {
+            $this->content_type = self::$mime_types [ 'html' ];
+        }
+        return $this;
+    }
+
+    /**
+     * @param int $status
+     * @return $this
+     */
+    function set_response_status( $status = 200 )
+    {
+        $this->response_status = $status;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    function get_response_status()
+    {
+        return isset($this->response_status)?$this->response_status:
+            $this->set_response_status();
+    }
+
+    /**
+     * 返回ContentType
+     *
+     * @return mixed
+     */
+    function get_ContentType()
+    {
+        return $this->content_type;
+    }
+
+    /**
+     * 发送basic_auth认证
+     */
+    function basic_auth()
+    {
+        header('HTTP/1.1 401 Unauthorized');
+        header('WWW-Authenticate: Basic realm="CP Secret"');
+        print 'Auth Faile';
+    }
+
+    /**
+     * 发送http 状态码
+     *
+     * @param int $code
+     */
+    function send_response_status($code = 200)
+    {
+        if( 200 != $code ) {
+            Response::sendStatus($code);
+        }
+
+        header("Content-Type: {$this->content_type};charset=utf-8");
+    }
+
+    /**
+     * 生成参数
+     *
+     * @param $content
+     * @return array
+     */
+    private function make_params($content = '')
+    {
+        $result = array();
+        $result['CP_PARAMS'] = $content;
+        return $result;
+    }
+
+    /**
+     * 发送header
+     *
+     * @param $content
+     * @return $this
+     */
+    function send_header( $content )
+    {
+        $contents = $this->make_params( $content );
+        foreach( $contents as $c_name => $c_val )
+        {
+            if(is_array($c_val))
+            {
+                $c_val = json_encode( $c_val );
+            }
+            header("{$c_name}:{$c_val}");
+        }
+        return $this;
+    }
+
+    /**
+     * 为response附加返回参数
+     *
+     * @param $content
+     * @return $this
+     */
+    function add_params( $content )
+    {
+        $contents = $this->make_params( $content );
+        foreach( $contents as $c_name => $c_val )
+        {
+            $_SERVER[$c_name] = $c_val;
+        }
+        return $this;
+    }
+
+    /**
+     * 输出内容
+     *
+     * @param string $contents
+     * @return mixed
+     */
+    function output( $contents = '' )
+    {
+        $code = $this->get_response_status();
+        $this->send_response_status($code);
+
+        if(! $contents ) {
+            $contents = self::$statusDescriptions [$code];
+        }
+
+        print $contents;
+    }
+
+    /**
+     * 调用模板输出信息
+     *
+     * @param string $message
+     * @param string $tpl
+     * @return mixed
+     */
+    function display( $message = '', $tpl = '' )
+    {
+        $code = $this->get_response_status();
+        $this->send_response_status($code);
+
+        if(! $message ) {
+            $message = self::$statusDescriptions [$code];
+        }
+
+        if(null !== $tpl && file_exists($tpl)) {
+            return require $tpl;
+        } else {
+            var_export( $message, true);
+        }
+    }
+
+    /**
      * @var array $statusDescriptions
      */
     static public $statusDescriptions = array(
@@ -205,179 +402,5 @@ class Response
         'movie' => 'video/x-sgi-movie',
         'ice' => 'x-conference/x-cooltalk',
     );
-
-    /**
-     * Response instance
-     *
-     * @var object
-     */
-    static $instance;
-
-    private function __construct( $content_type )
-    {
-        $this->set_ContentType( $content_type );
-    }
-
-    /**
-     * 单例模式
-     *
-     * @param string $content_type
-     * @internal param string $response_type
-     * @return Response
-     */
-    static function getInstance( $content_type = 'html' )
-    {
-        if(! self::$instance) {
-            self::$instance = new Response( strtolower($content_type) );
-        }
-        return self::$instance;
-    }
-
-    /**
-     * @param $code
-     */
-    function sendStatus($code) {
-        header("HTTP/1.1 {$code}");
-    }
-
-    /**
-     * 设置返回头类型
-     *
-     * @param $header_type
-     * @return $this
-     */
-    function set_ContentType( $header_type )
-    {
-        if(isset(self::$mime_types [$header_type]))
-        {
-            $this->content_type = self::$mime_types [$header_type];
-        } else {
-            $this->content_type = self::$mime_types [ 'html' ];
-        }
-        return $this;
-    }
-
-    /**
-     * 返回ContentType
-     *
-     * @return mixed
-     */
-    function get_ContentType()
-    {
-        return $this->content_type;
-    }
-
-    /**
-     * 发送basic_auth认证
-     */
-    function basic_auth()
-    {
-        header('HTTP/1.1 401 Unauthorized');
-        header('WWW-Authenticate: Basic realm="CP Secret"');
-        print 'Auth Faile';
-    }
-
-    /**
-     * 发送http 状态码
-     *
-     * @param int $code
-     */
-    function send_response_status($code = 200)
-    {
-        if( 200 != $code ) {
-            $this->sendStatus($code);
-        }
-
-        header("Content-Type: {$this->content_type};charset=utf-8");
-    }
-
-    /**
-     * 生成参数
-     *
-     * @param $content
-     * @return array
-     */
-    private function make_params($content)
-    {
-        $result['CP_PARAMS'] = $content;
-        return $result;
-    }
-
-    /**
-     * 发送header
-     *
-     * @param $content
-     * @return $this
-     */
-    function send_header( $content )
-    {
-        $contents = $this->make_params( $content );
-        foreach( $contents as $c_name => $c_val )
-        {
-            if(is_array($c_val))
-            {
-                $c_val = json_encode( $c_val );
-            }
-            header("{$c_name}:{$c_val}");
-        }
-        return $this;
-    }
-
-    /**
-     * 为response附加返回参数
-     *
-     * @param $content
-     * @return $this
-     */
-    function add_params( $content )
-    {
-        $contents = $this->make_params( $content );
-        foreach( $contents as $c_name => $c_val )
-        {
-            $_SERVER[$c_name] = $c_val;
-        }
-        return $this;
-    }
-
-    /**
-     * 输出内容
-     *
-     * @param int $code
-     * @param $contents
-     * @return mixed
-     */
-    function output($code = 200, $contents = '')
-    {
-        $this->send_response_status($code);
-
-        if(! $contents ) {
-            $contents = self::$statusDescriptions [$code];
-        }
-
-        print $contents;
-    }
-
-    /**
-     * 调用模板输出信息
-     *
-     * @param int $code
-     * @param string $message
-     * @param string $tpl
-     * @return mixed
-     */
-    function display($code = 200, $message = '', $tpl = '')
-    {
-        $this->send_response_status($code);
-
-        if(! $message ) {
-            $message = self::$statusDescriptions [$code];
-        }
-
-        if(null !== $tpl && file_exists($tpl)) {
-            return require $tpl;
-        } else {
-            var_export( $message, true);
-        }
-    }
 }
 

@@ -117,11 +117,12 @@ class CoreController extends FrameBase
      *
      * @param null $data
      * @param null $method
+     * @param int $http_response_status
      * @return mixed
      */
-    protected function display($data=null, $method = null)
+    protected function display($data=null, $method = null, $http_response_status = 200)
     {
-        return $this->view->display( $data, $method );
+        return $this->view->display( $data, $method, $http_response_status );
     }
 
     /**

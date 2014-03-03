@@ -1,38 +1,53 @@
 <?php
 /**
- * @Author:       wonli wonli@live.com
+ * @Auth: wonli <wonli@live.com>
+ * Class FrameBase
  */
+
 class FrameBase
 {
     /**
-     * @var 参数
+     * @var array
      */
     protected $params;
 
     /**
-     * @var action 名称
+     * @var string
      */
     protected $action;
 
     /**
-     * @var module
+     * @var string
      */
     protected $module;
 
     /**
-     * @var 用户配置
+     * 用户配置
+     *
+     * @var array
      */
     protected $config;
 
     /**
-     * @var 控制器名称
+     * 控制器名称
+     *
+     * @var string
      */
     protected $controller;
 
     /**
+     * module的实例
+     *
      * @var array
      */
     static protected $moduleInstance = array();
+
+    /**
+     * object的缓存hash
+     *
+     * @var array
+     */
+    static protected $objectCache = array();
 
     public function __construct()
     {
@@ -169,8 +184,8 @@ class FrameBase
     /**
      * 加密会话 sys=>auth中指定是cookie/session
      *
-     * @param $key key
-     * @param $value 值
+     * @param string $key key
+     * @param string $value 值
      * @param int $exp 过期时间
      * @return bool
      */
@@ -277,8 +292,8 @@ class FrameBase
      * 加载其他控制器
      *
      * @param $controller_name
-     * @param $params
-     * @param $run_action 是否只返回controller的实例
+     * @param array $params
+     * @param bool $run_action
      * <pre>
      *  如果$run_action=true
      *      $controller_name 支持 控制器:方法 的形式调用
@@ -322,6 +337,29 @@ class FrameBase
     }
 
     /**
+     * 缓存并返回object的一个实例(module为一个对象)
+     *
+     * @param $objectInstance
+     * @return mixed
+     * @throws CoreException
+     */
+    protected function loadObject( $objectInstance )
+    {
+        try
+        {
+            $obj = new ReflectionClass( $objectInstance );
+            if(! isset(self::$objectCache[ $obj->name ]))
+            {
+                self::$objectCache[ $obj->name ] = $objectInstance;
+            }
+
+            return self::$objectCache[ $obj->name ];
+        } catch (Exception $e) {
+            throw new CoreException( 'cache module failed!' );
+        }
+    }
+
+    /**
      * 加载视图
      *
      * @param null $action
@@ -350,6 +388,7 @@ class FrameBase
      * 运行app
      *
      * @param $act
+     * @return string
      */
     function run( $act )
     {
@@ -358,17 +397,17 @@ class FrameBase
         $_before = "{$act}_before";
         $_after = "{$act}_after";
 
-        if( $mr->hasMethod($_before) )
-        {
+        ob_start();
+        if ( $mr->hasMethod($_before) ) {
             $this->$_before();
         }
 
         $this->$act( );
 
-        if( $mr->hasMethod($_after) )
-        {
+        if ( $mr->hasMethod($_after) ) {
             $this->$_after();
         }
+        return ob_get_clean();
     }
 
     /**

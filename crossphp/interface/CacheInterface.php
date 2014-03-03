@@ -1,10 +1,8 @@
 <?php
 /**
  * @Auth wonli <wonli@live.com>
- *
  * Class CacheInterface
  */
-
 interface CacheInterface
 {
     /**

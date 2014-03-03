@@ -81,10 +81,9 @@ class CoreModule extends FrameBase
     /**
      * 读取并解析数据库配置
      *
-     * @param string $type
      * @return array
      */
-    function db_config( $type='all' )
+    function db_config( )
     {
         if(! self::$db_config)
         {

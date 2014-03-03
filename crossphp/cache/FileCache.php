@@ -22,9 +22,7 @@ class FileCache implements CacheInterface
     function __construct($cache_config)
     {
         $this->cache_file = $cache_config['cache_path'].DS.$cache_config['key'].$cache_config['file_ext'];
-        $this->expire_time = $cache_config ['expire_time'];
-
-        $this->init();
+        $this->expire_time = isset($cache_config ['expire_time'])?$cache_config ['expire_time']:3600;
     }
 
     /**
@@ -46,7 +44,12 @@ class FileCache implements CacheInterface
      */
     function get( $key = '' )
     {
-        return file_get_contents( $this->cache_file );
+        if(file_exists( $this->cache_file ))
+        {
+            return file_get_contents( $this->cache_file );
+        }
+
+        return false;
     }
 
     /**
@@ -80,6 +83,15 @@ class FileCache implements CacheInterface
      */
     function set( $key, $value )
     {
-        var_dump(  $key );
+        if(null == $key)
+        {
+            $key = $this->cache_file;
+            if(! file_exists($key))
+            {
+                $this->init();
+            }
+        }
+
+        file_put_contents($key, $value);
     }
 }

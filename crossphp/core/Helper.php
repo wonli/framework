@@ -437,18 +437,18 @@ class Helper
      * @param string $method
      * @return mixed|string
      */
-    static function curl_request($url, array $vars=array(), $method = 'post')
+    static function curl_request($url, $vars=array(), $method = 'post')
 	{
-		$method = strtolower($method);
-		if($method == 'get' && !empty($vars))
+		$method = strtoupper($method);
+		if( strcmp($method, 'GET') == 0 && !empty($vars))
 		{
-			if(strpos($url, '?') === false)
+			if(false === strpos($url, '?'))
             {
-				$url = $url . '?' . http_build_query($vars);
+				$url .= '?' . is_array($vars)?http_build_query($vars):$vars;
             }
 			else
             {
-				$url = $url . '&' . http_build_query($vars);
+				$url .= '&' . is_array($vars)?http_build_query($vars):$vars;
             }
 		}
 
@@ -457,8 +457,10 @@ class Helper
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-HTTP-Method-Override: {$method}"));
 
-		if ($method == 'post')
+		if (strcmp($method, 'POST') == 0 || strcmp($method, 'PUT') == 0)
 		{
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
@@ -539,6 +541,7 @@ class Helper
             }
         }
     }
+
     /**
      * 判断是否是中文字符串
      *

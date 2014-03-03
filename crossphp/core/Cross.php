@@ -177,6 +177,16 @@ class Cross
     }
 
     /**
+     * REST
+     *
+     * @return $this
+     */
+    public function rest()
+    {
+        return Rest::getInstance( $this->config() );
+    }
+
+    /**
      * 根据配置解析请求
      *
      * @param $params = null 用于自定义url请求内容
@@ -207,11 +217,11 @@ class Cross
     public function mrun( $args = null )
     {
         $url_type = self::config()->get('url', 'type');
-        $r = Request::getInstance()->getUrlRequest( $url_type );
+        $req = Request::getInstance()->getUrlRequest( $url_type );
 
-        if(isset( self::$map [ $r ] ))
+        if(isset( self::$map [ $req ] ))
         {
-            $controller = self::$map [ $r ];
+            $controller = self::$map [ $req ];
             Cross::get( $controller, $args );
         }
         else

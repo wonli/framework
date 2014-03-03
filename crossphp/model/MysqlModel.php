@@ -17,36 +17,51 @@ class MysqlModel implements SqlInterface
     public $pdo;
 
     /**
-     * @var 数据库连接实例
+     * 数据库连接实例
+     *
+     * @var object
      */
     private static $instance;
 
     /**
-     * 创建数据库连接
+     * 默认连接参数
      * <ul>
-     * <li>PDO::ATTR_PERSISTENT => false //禁用长连接</li>
-     * <li>PDO::ATTR_EMULATE_PREPARES => false //禁用模拟预处理</li>
-     * <li>PDO::ATTR_STRINGIFY_FETCHES => false //禁止数值转换成字符串</li>
-     * <li>PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true //使用缓冲查询</li>
-     * <li>PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION //发生错误时抛出异常 </li>
-     * <li>PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8" </li>
+     *  <li>PDO::ATTR_PERSISTENT => false //禁用长连接</li>
+     *  <li>PDO::ATTR_EMULATE_PREPARES => false //禁用模拟预处理</li>
+     *  <li>PDO::ATTR_STRINGIFY_FETCHES => false //禁止数值转换成字符串</li>
+     *  <li>PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true //使用缓冲查询</li>
+     *  <li>PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION //发生错误时抛出异常 </li>
+     *  <li>PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8" </li>
      * </ul>
      *
-     * @param $dsn dsn
-     * @param $user 数据库用户名
-     * @param $password 数据库密码
+     * @var array
+     */
+    private $options = array(
+        PDO::ATTR_PERSISTENT => false,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+    );
+
+    /**
+     * 创建数据库连接
+     *
+     * @param $dsn string dsn
+     * @param $user string 数据库用户名
+     * @param $password string 数据库密码
+     * @param array $options
      * @throws CoreException
      */
-    private function __construct( $dsn, $user, $password )
+    private function __construct( $dsn, $user, $password, $options = array() )
     {
-        try{
-            $this->pdo = new PDO($dsn, $user, $password, array(
-                PDO::ATTR_PERSISTENT => false,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
-            ));
+        try {
+
+            if (empty($options)) {
+                $options = $this->options;
+            }
+
+            $this->pdo = new PDO($dsn, $user, $password, $options);
         } catch(Exception $e) {
             throw new CoreException($e->getMessage().' line:'.$e->getLine().' '.$e->getFile());
         }
@@ -75,9 +90,9 @@ class MysqlModel implements SqlInterface
     /**
      * @see MysqlModel::prepare_getone
      *
-     * @param database $table
-     * @param fileds $fields
-     * @param conditions $where
+     * @param  $table string
+     * @param  $fields string
+     * @param  $where array
      * @return mixed
      */
     function get($table, $fields, $where)
@@ -240,7 +255,7 @@ class MysqlModel implements SqlInterface
     {
         try
         {
-            $result = $this->stmt->execute($args);
+            $this->stmt->execute($args);
             return $this;
         } catch (PDOException $e) {
             throw new CoreException( $e->getMessage() );
@@ -290,8 +305,8 @@ class MysqlModel implements SqlInterface
     /**
      * prepare插入
      *
-     * @param $table 表名称
-     * @param $data 要处理的数据,跟表中的字段对应
+     * @param string $table 表名称
+     * @param string $data 要处理的数据,跟表中的字段对应
      * @param bool $multi <pre>
      * @param array $insert_data
      *  是否批量插入数据,如果是
@@ -368,9 +383,9 @@ class MysqlModel implements SqlInterface
     /**
      * 带分页功能的查询
      *
-     * @param $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
-     * @param $fields 要查询的字段 所有字段的时候 $fields='*'
-     * @param $where 查询条件
+     * @param string $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
+     * @param string $fields 要查询的字段 所有字段的时候 $fields='*'
+     * @param string $where 查询条件
      * @param int $order 排序
      * @param array $page 分页参数 默认返回50条记录
      * @return array
@@ -400,9 +415,9 @@ class MysqlModel implements SqlInterface
     /**
      * 取出所有结果
      *
-     * @param $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
-     * @param $fields 要查询的字段 所有字段的时候 $fields='*'
-     * @param $where 查询条件
+     * @param string $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
+     * @param string $fields 要查询的字段 所有字段的时候 $fields='*'
+     * @param string $where 查询条件
      * @param int $order 排序
      * @param int $group_by
      * @return array

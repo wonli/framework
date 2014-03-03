@@ -264,8 +264,38 @@ class Request
      */
     public function isPutRequest()
 	{
-		return ( $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'),'PUT') ) || $this->getIsPutViaPostRequest();
+		return ( $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'), 'PUT') ) || $this->isPutViaPostRequest();
 	}
+
+    /**
+   	 * 判断一个链接是否为post请求
+     *
+   	 * @return boolean
+   	 */
+   	public function isPostRequest()
+   	{
+        return $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'), 'POST');
+   	}
+
+    /**
+     * 判断请求类型是否为get
+     *
+     * @return bool
+     */
+    public function isGetRequest()
+    {
+        return $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'), 'GET');
+    }
+
+    /**
+     * 判断请求类型是否为delete
+     *
+     * @return bool
+     */
+    public function isDeleteRequest()
+    {
+        return $this->_SERVER('REQUEST_METHOD') && !strcasecmp($this->_SERVER('REQUEST_METHOD'), 'DELETE');
+    }
 
     /**
      * 是否是通过POST的PUT请求
@@ -274,7 +304,7 @@ class Request
      */
     protected function isPutViaPostRequest()
 	{
-		return isset($_POST['_method']) && !strcasecmp($_POST['_method'],'PUT');
+		return isset($_POST['_method']) && !strcasecmp($_POST['_method'], 'PUT');
 	}
 
     /**

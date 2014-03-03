@@ -1,7 +1,7 @@
 <?php
 /**
- * @Author:       wonli
- * @Version $Id: Dispatcher.php 162 2013-10-23 13:01:37Z ideaa $
+ * @Auth: wonli <wonli@live.com>
+ * Class Dispatcher
  */
 class Dispatcher
 {
@@ -67,11 +67,15 @@ class Dispatcher
      * 解析router
      *
      * @param $router
-     * @param $args 当$router类型为string时,指定参数
+     * @param string $args 当$router类型为string时,指定参数
      * @return array
      */
     private function getRouter( $router, $args )
     {
+        $controller = '';
+        $action = '';
+        $params = '';
+
         if( is_object($router) ) {
             $controller     = $router->getController();
             $action         = $router->getAction();
@@ -116,17 +120,18 @@ class Dispatcher
         }
 
         $controller_cache_config = $controller_conf ['cache'];
-        list($is_enable, $cache_config) = $controller_cache_config;
-        if(! $is_enable)
+        list($cache_type, $cache_config) = $controller_cache_config;
+        if(! $cache_type || $cache_type < 0)
         {
             return false;
         }
+        $cache_config ['type'] = $cache_type;
 
         $app_name = $this->getConfig()->get("sys", "app_name");
         $cache_dot_config = array(
-            '1' =>  $this->getConfig()->get('url', 'dot'),
-            '2' =>  '.',
-            '3' =>  ':',
+            1 =>  $this->getConfig()->get('url', 'dot'),
+            2 =>  '.',
+            3 =>  ':',
         );
 
         if(! isset($cache_config ['cache_path']))
@@ -141,7 +146,12 @@ class Dispatcher
 
         if(! isset($cache_config ['key_dot']))
         {
-            $cache_config ['key_dot'] = $cache_dot_config[ $cache_config['type'] ];
+            if (isset($cache_dot_config[ $cache_type ]))
+            {
+                $cache_config ['key_dot'] = $cache_dot_config[ $cache_type ];
+            } else {
+                $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
+            }
         }
 
         $cache_key_conf = array(
@@ -150,6 +160,7 @@ class Dispatcher
             $this->getAction(),
             implode($cache_config ['key_dot'], $this->getParams())
         );
+
         $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
         $cache_config['key']   = $cache_key;
 
@@ -159,8 +170,8 @@ class Dispatcher
     /**
      * 初始化控制器
      *
-     * @param $controller 控制器
-     * @param $action 动作
+     * @param string $controller 控制器
+     * @param string $action 动作
      * @throws CoreException
      */
     private function init_controller( $controller, $action=null )
@@ -204,14 +215,14 @@ class Dispatcher
 
                 try
                 {
-                    #会触发autoLoad
+                    //会触发autoLoad
                     $is_callable = new ReflectionMethod($controller, $action);
 
                 } catch (Exception $e) {
 
-                    #控制器静态属性_act_alias_指定action的别名
                     try
                     {
+                        //控制器静态属性_act_alias_指定action的别名
                         $_property = new ReflectionProperty($controller, '_act_alias_');
                     } catch (Exception $e) {
                         throw new CoreException("app:{$app_name}不能识别的请求{$controller}->{$action}");
@@ -272,8 +283,6 @@ class Dispatcher
     /**
      * 还原参数的key
      *
-     * @param $controller
-     * @param $action
      * @param $params
      * @return array
      */
@@ -354,7 +363,7 @@ class Dispatcher
     /**
      * 运行框架
      *
-     * @param $router 要解析的理由
+     * @param object|string $router 要解析的理由
      * @param null $args 指定参数
      * @param bool $run_controller 是否只返回控制器实例
      * @return array|mixed|string
@@ -369,28 +378,32 @@ class Dispatcher
         $this->init_params( $router ['params'] );
         $cache = $this->init_request_cache();
 
-        if($cache)
+        if ($cache && $cache->getExtime())
         {
-            $content = $cache->get();
-            if(strlen($content) > 0)
+            echo 'cached';
+            $response = $cache->get();
+        } else {
+            $cp = new self::$controller( );
+            if (true === $run_controller)
             {
-                return $content;
+                $response = $cp->run( self::$action, self::$params );
+                if($cache)
+                {
+                    $cache->set(null, $response);
+                }
+            } else {
+                return $cp;
             }
         }
 
-        $cp = new self::$controller( );
-        if(true == $run_controller)
-        {
-            $cp->run( self::$action, self::$params );
-        }
-
-        return $cp;
+        $display_type = $this->getConfig()->get('sys', 'display');
+        Response::getInstance( )->set_ContentType( $display_type )->output( $response );
     }
 
     /**
      * 设置config
      *
-     * @param $config 配置
+     * @param array|object $config 配置
      */
     private static function setConfig( $config )
     {
