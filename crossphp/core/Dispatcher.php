@@ -380,14 +380,13 @@ class Dispatcher
 
         if ($cache && $cache->getExtime())
         {
-            echo 'cached';
             $response = $cache->get();
         } else {
             $cp = new self::$controller( );
             if (true === $run_controller)
             {
                 $response = $cp->run( self::$action, self::$params );
-                if($cache)
+                if ($cache)
                 {
                     $cache->set(null, $response);
                 }

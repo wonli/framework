@@ -81,8 +81,12 @@ class Response
      */
     function get_response_status()
     {
-        return isset($this->response_status)?$this->response_status:
-            $this->set_response_status();
+         if (! isset($this->response_status) )
+         {
+             $this->set_response_status();
+         }
+
+         return $this->response_status;
     }
 
     /**
