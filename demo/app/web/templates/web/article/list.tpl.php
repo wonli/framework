@@ -2,7 +2,7 @@
     <?php foreach($article as $item) : ?>
     <li>
         <div class="articlelist">
-            <a class="listtitle" href="<?php echo $this->link("article:detail", array($item["id"], "{$item["title"]}.html")) ?>">
+            <a class="listtitle" href="<?php echo $this->link("article:detail", array('id'=>$item["id"], 'name'=>"{$item["title"]}.html")) ?>">
                 <?php echo $item["title"] ?>
             </a>
             <?php if(! empty($item["tag"])) : ?>

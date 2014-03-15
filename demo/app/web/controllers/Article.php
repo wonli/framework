@@ -1,7 +1,7 @@
 <?php
 /**
  * @Auth: wonli <wonli@live.com>
- * Class Article
+ * Article.php
  */
 class Article extends CoreController
 {
