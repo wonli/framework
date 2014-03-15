@@ -17,7 +17,7 @@ class Config
      *
      * @var string
      */
-    protected $appname;
+    protected $appName;
 
     /**
      * 配置资源文件地址
@@ -54,26 +54,26 @@ class Config
      */
     protected $init;
 
-    function __construct( $appname, $res_file )
+    function __construct( $appName, $res_file )
     {
-        $this->appname = $appname ? $appname : APP_NAME;
-        $this->res_file = APP_PATH_DIR.DS.$this->appname.DS.$res_file;
+        $this->appName = $appName ? $appName : APP_NAME;
+        $this->res_file = APP_PATH_DIR.DS.$this->appName.DS.$res_file;
     }
 
     /**
      * 实例化配置类
      *
-     * @param $appname
+     * @param $appName
      * @param string $file
      * @return Config
      */
-    static function load( $appname = null, $file="init.php" )
+    static function load( $appName = null, $file="init.php" )
     {
-        if(! isset(self::$instance [ $appname ]))
+        if(! isset(self::$instance [ $appName ]))
         {
-            self::$instance [ $appname ] = new Config( $appname, $file );
+            self::$instance [ $appName ] = new Config( $appName, $file );
         }
-        return self::$instance [ $appname ];
+        return self::$instance [ $appName ];
     }
 
     /**
@@ -163,10 +163,10 @@ class Config
         $_sys['base_url'] = Request::getInstance()->getBaseUrl();
         $_sys['site_url'] = $_sys['host'].$_sys['base_url'];
 
-        $_sys['htdocs_url'] = $_sys['host'].str_replace($this->appname, '', $_sys['base_url']);
+        $_sys['htdocs_url'] = $_sys['host'].str_replace($this->appName, '', $_sys['base_url']);
 
-        $_sys['app_name'] = $this->appname;
-        $_sys['app_path'] = APP_PATH_DIR.DS.$this->appname;
+        $_sys['app_name'] = $this->appName;
+        $_sys['app_path'] = APP_PATH_DIR.DS.$this->appName;
 
         $_sys['static_url'] = $_sys["site_url"].'/static/';
         $_sys['static_path'] = Request::getInstance()->getScriptFilePath().DS.'static'.DS;

@@ -120,9 +120,57 @@ class CoreController extends FrameBase
      * @param int $http_response_status
      * @return mixed
      */
-    protected function display($data=null, $method = null, $http_response_status = 200)
+    protected function display($data = null, $method = null, $http_response_status = 200)
     {
-        return $this->view->display( $data, $method, $http_response_status );
+        Response::getInstance()->set_response_status( $http_response_status );
+        return $this->view->display( $data, $method );
+    }
+
+    /**
+     * 发送下载请求
+     *
+     * @param null $data
+     * @param null $method
+     * @param null $file_name
+     * @param array $add_header
+     * @param bool $only_add_header
+     * @return bool|mixed
+     */
+    protected function download($data = null, $method = null, $file_name = null, $add_header = array(), $only_add_header = false)
+    {
+        if (null == $file_name)
+        {
+            $file_name = $method.time();
+        }
+
+        $down_header = array(
+            "Pragma: public",
+            "Expires: 0",
+            "Cache-Control:must-revalidate, post-check=0, pre-check=0",
+            "Content-Type: application/force-download",
+            "Content-Type: application/octet-stream",
+            "Content-Type: application/download",
+            "Content-Disposition:attachment;filename={$file_name}",
+            "Content-Transfer-Encoding:binary"
+        );
+
+        if (! empty($add_header))
+        {
+            if (true === $only_add_header)
+            {
+                $down_header = $add_header;
+            } else {
+                $down_header = array_merge($down_header, $add_header);
+            }
+        }
+
+        Response::getInstance()->set_header( $down_header );
+        if ($data && $method)
+        {
+            return $this->view->display( $data, $method );
+        }
+
+        return true;
     }
 
     /**

@@ -263,74 +263,7 @@ class Dispatcher
      */
     private function init_params( $params )
     {
-        if (self::$appConfig->get("url", "type") == 2)
-        {
-            $this->setParams( $params );
-        }
-        else
-        {
-            if( count($params) > 1 )
-            {
-                $this->setParams( $params );
-            }
-            else
-            {
-                $this->setParams( current( $params ) );
-            }
-        }
-    }
-
-    /**
-     * 还原参数的key
-     *
-     * @param $params
-     * @return array
-     */
-    static function restore_params_keys( $params )
-    {
-        $params_cache_file = Loader::getFilePath("::cache/params.cache.php");
-        if (! file_exists($params_cache_file)) {
-            return $params;
-        }
-
-        $_params = array();
-        $controller_config = self::$appConfig->get("url");
-        if (isset($controller_config ['ori_controller'])) {
-            $controller = $controller_config ['ori_controller'];
-        } else {
-            return $_params;
-        }
-
-        if (isset($controller_config['ori_action'])) {
-            $action = $controller_config ['ori_action'];
-        }
-
-        if (isset($action)) {
-            $params_cache_key = strtolower($controller.':'.$action);
-        } else {
-            $params_cache_key = strtolower($controller);
-        }
-
-        $params_cache_content = Loader::read("::cache/params.cache.php");
-        if (isset($params_cache_content[$params_cache_key])) {
-            foreach($params_cache_content[$params_cache_key] as $k => $p) {
-                if (isset($params[$k])) {
-                    $_params[$p] = $params[$k];
-                    unset($params[$k]);
-                }
-            }
-
-            if (! empty($params)) {
-                foreach ($params as $p_key => $p_val) {
-                    $_params [] = $p_val;
-                    unset($params[$p_key]);
-                }
-            }
-        } else {
-            $_params = $params;
-        }
-
-        return $_params;
+        $this->setParams( $params );
     }
 
     /**
@@ -430,12 +363,97 @@ class Dispatcher
     }
 
     /**
+     * 解析用户在action注释中定义的配置
+     *
+     * @param $params
+     * @return mixed
+     */
+    function parse_action_user_annotate_params( $params )
+    {
+        foreach ($params as $key => & $val)
+        {
+            if (false === $n = strpos($val, '('))
+            {
+                $val = $this->parse_params_val( $val );
+            } else {
+                $val = $this->parse_params_array( $val );
+            }
+        }
+
+        return $params;
+    }
+
+    /**
+     * 逗号或空格分隔的值参数转数组
+     *
+     * @param $val
+     * @return array
+     */
+    function parse_params_val( $val )
+    {
+        return array_filter(preg_split('/[\s,]+/', $val));
+    }
+
+    /**
+     * 配置参数转二维数组
+     * <pre>
+     *  如: true(1, file, 300)
+     *
+     *  将被转换为
+     *  array(
+     *      true,
+     *      array(
+     *          1,
+     *          file,
+     *          300
+     *      )
+     *  )
+     * </pre>
+     * @param $val
+     * @return array
+     */
+    function parse_params_array( $val )
+    {
+        $result = array();
+        $flag = preg_match_all('/(.*?)\((.*?)\)/', $val, $val);
+
+        $result[] = $val[1][0];
+        $result[] = $this->parse_params_val($val[2][0]);
+
+        return $result;
+    }
+
+    /**
      * 设置params
      *
      * @param null $params
      */
     private function setParams( $params = null )
     {
+        if ($this->getConfig()->get('url', 'type') == 1)
+        {
+            $ref = new ReflectionMethod(self::$controller, self::$action);
+            $document = $ref->getDocComment();
+
+            $flag = preg_match_all('/@cp_(.*?)\s+(.*?)\n/',$document, $document);
+            if ($flag)
+            {
+                $conf = array_combine($document[1], $document[2]);
+                $conf = $this->parse_action_user_annotate_params($conf);
+                if (! empty($params))
+                {
+                    $params_set = array();
+                    foreach ($params as $k => $p)
+                    {
+                        if (isset($conf['params'][$k])) {
+                            $params_set[ $conf['params'][$k] ] = $p;
+                        }
+                    }
+                    $params = $params_set;
+                }
+            }
+        }
+
         self::$params = $params;
     }
 

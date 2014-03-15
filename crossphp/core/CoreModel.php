@@ -6,9 +6,9 @@
 class CoreModel extends FrameBase
 {
     /**
-     * @var 数据库类型
+     * @var string 数据库类型
      */
-    private $dbtype;
+    private $dbType;
 
     /**
      * @var bool|Mongo|PdoDataAccess
@@ -16,9 +16,14 @@ class CoreModel extends FrameBase
     protected $link;
 
     /**
-     * @var 缓存key
+     * @var array 缓存key
      */
     protected static $cache_key;
+
+    /**
+     * @var object
+     */
+    protected $db;
 
     /**
      * 构造函数连接数据库
@@ -41,13 +46,13 @@ class CoreModel extends FrameBase
     private function dbcontent()
     {
         $db = $this->getDBConfig();
-        $dbtype = $this->getDBType();
+        $dbType = $this->getDBType();
 
         if(!$db) {
             return false;
         }
 
-        switch($dbtype)
+        switch($dbType)
         {
             case 'mysql' :
                 return PdoAccess::getInstance($db["dsn"], $db["user"], $db["pass"]);
@@ -88,8 +93,8 @@ class CoreModel extends FrameBase
      */
     private function setDBType($type)
     {
-        if(! $this->dbtype) {
-            $this->dbtype = $type;
+        if(! $this->dbType) {
+            $this->dbType = $type;
         }
     }
 
@@ -99,7 +104,7 @@ class CoreModel extends FrameBase
      */
     private function getDBType()
     {
-        return $this->dbtype;
+        return $this->dbType;
     }
 
     /**

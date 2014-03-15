@@ -23,44 +23,69 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="default.layer.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
+      <file leaf-file-name="Dispatcher.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../crossphp/core/Dispatcher.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="-0.0" vertical-offset="320" max-vertical-offset="720">
-              <folding />
+            <state line="266" column="5" selection-start="6900" selection-end="6900" vertical-scroll-proportion="-7.4827585" vertical-offset="5103" max-vertical-offset="10952">
+              <folding>
+                <element signature="n#__construct#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#init#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#getRouter#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#init_request_cache#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#init_controller#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#init_params#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#init_config#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#widget_run#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#run#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#setConfig#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#setController#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#setAction#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#parse_action_user_annotate_params#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#parse_params_val#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#parse_params_array#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#setParams#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#getConfig#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#getController#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#getAction#0;n#Dispatcher#0;n#!!top" expanded="true" />
+                <element signature="n#getParams#0;n#Dispatcher#0;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Article.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Article.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/web/controllers/Article.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="5" selection-start="537" selection-end="537" vertical-scroll-proportion="0.45307443" vertical-offset="0" max-vertical-offset="1747">
+            <state line="15" column="24" selection-start="317" selection-end="317" vertical-scroll-proportion="-8.275862" vertical-offset="60" max-vertical-offset="1892">
               <folding>
-                <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
                 <element signature="n#detail#0;n#Article#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Main.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/web/controllers/Main.php">
+      <file leaf-file-name="Tag.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/web/controllers/Tag.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="26" selection-start="123" selection-end="123" vertical-scroll-proportion="-1.862069" vertical-offset="86" max-vertical-offset="1607">
-              <folding>
-                <element signature="n#__construct#0;n#Main#0;n#!!top" expanded="true" />
-                <element signature="n#index#0;n#Main#0;n#!!top" expanded="true" />
-                <element signature="n#setSkin#0;n#Main#0;n#!!top" expanded="true" />
-              </folding>
+            <state line="21" column="25" selection-start="447" selection-end="447" vertical-scroll-proportion="0.31512606" vertical-offset="120" max-vertical-offset="1612">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="init.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/web/init.php">
+      <file leaf-file-name="detail.tpl.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/web/templates/web/article/detail.tpl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="18" selection-start="603" selection-end="603" vertical-scroll-proportion="-4.827586" vertical-offset="660" max-vertical-offset="2907">
+            <state line="20" column="0" selection-start="653" selection-end="653" vertical-scroll-proportion="-0.6896552" vertical-offset="240" max-vertical-offset="1272">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.tpl.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/web/templates/web/article/index.tpl.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2" column="68" selection-start="121" selection-end="121" vertical-scroll-proportion="-0.6896552" vertical-offset="20" max-vertical-offset="1132">
               <folding />
             </state>
           </provider>
@@ -97,9 +122,17 @@
         <option value="$PROJECT_DIR$/app/admin/controllers/Blog.php" />
         <option value="$PROJECT_DIR$/app/admin/templates/web/default.layer.php" />
         <option value="$PROJECT_DIR$/app/web/templates/web/default.layer.php" />
-        <option value="$PROJECT_DIR$/app/web/init.php" />
         <option value="$PROJECT_DIR$/app/api/controllers/Article.php" />
         <option value="$PROJECT_DIR$/app/web/controllers/Article.php" />
+        <option value="$PROJECT_DIR$/htdocs/web/index.php" />
+        <option value="$PROJECT_DIR$/app/web/init.php" />
+        <option value="$PROJECT_DIR$/app/web/templates/web/article/index.tpl.php" />
+        <option value="$PROJECT_DIR$/app/web/templates/web/article/list.tpl.php" />
+        <option value="$PROJECT_DIR$/app/web/templates/web/article/detail.tpl.php" />
+        <option value="$PROJECT_DIR$/app/web/templates/web/main/index.tpl.php" />
+        <option value="$PROJECT_DIR$/app/web/templates/web/tag/index.tpl.php" />
+        <option value="$PROJECT_DIR$/../crossphp/core/Dispatcher.php" />
+        <option value="$PROJECT_DIR$/app/web/controllers/Tag.php" />
       </list>
     </option>
   </component>
@@ -221,7 +254,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -229,16 +261,14 @@
               <option name="myItemId" value="demo" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
+          </PATH>
+          <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.jetbrains.php.config.PhpExternalLibrariesNodePatcher$PatchedExternalLibrariesNode" />
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="PHP" />
-              <option name="myItemType" value="com.jetbrains.php.config.PhpExternalLibrariesNodePatcher$PatchedLibraryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="crossphp" />
+              <option name="myItemId" value="demo" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -249,6 +279,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="htdocs" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="htdocs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -308,6 +360,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -318,38 +371,7 @@
     <property name="FullScreen" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
-  </component>
-  <component name="PublishConfig" serverName="127.0.0.1:88" serverId="cf43cacc-0946-4456-b161-c5a974471a13">
-    <servers>
-      <server id="0775b588-b286-4d16-a79d-116bb2f77c9c">
-        <serverdata />
-      </server>
-      <server id="1009adc5-b8d7-4271-b810-d09cd1ca3d33">
-        <serverdata />
-      </server>
-      <server id="105a3fa6-eaa1-4e88-bb34-71a54469c717">
-        <serverdata />
-      </server>
-      <server id="35a791d5-a918-4596-ad9d-a022b963745a">
-        <serverdata />
-      </server>
-      <server id="480bd710-e473-4798-87ab-a56f9a53be07">
-        <serverdata />
-      </server>
-      <server id="64857f18-8e6b-4024-9c40-b16bb17e196f">
-        <serverdata />
-      </server>
-      <server id="af4bdaa2-d9e0-46ce-9a93-da3b16e53be5">
-        <serverdata />
-      </server>
-      <server id="cf43cacc-0946-4456-b161-c5a974471a13">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </server>
-    </servers>
+    <property name="LayoutCode.rearrangeEntriesPHP" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -368,6 +390,22 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <option name="name" value="Go application" />
+      <option name="saveOutputToFile" value="false" />
+      <option name="showConsoleOnStdErr" value="false" />
+      <option name="showConsoleOnStdOut" value="false" />
+      <option name="scriptName" value="" />
+      <option name="scriptArguments" value="" />
+      <option name="builderArguments" value="" />
+      <option name="goBuildBeforeRun" value="false" />
+      <option name="goOutputDir" value="" />
+      <option name="workingDir" value="" />
+      <option name="envVars" value="" />
+      <option name="goVetEnabled" value="false" />
+      <module name="" />
+      <method />
+    </configuration>
     <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
       <TestRunner />
       <method />
@@ -376,6 +414,31 @@
       <method />
     </configuration>
     <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
+      <method />
+    </configuration>
+    <configuration default="true" type="GoTestConfiguration" factoryName="Go Test">
+      <option name="name" value="Go Test" />
+      <option name="saveOutputToFile" value="false" />
+      <option name="showConsoleOnStdErr" value="false" />
+      <option name="showConsoleOnStdOut" value="false" />
+      <option name="envVars" value="" />
+      <option name="testRunnerArgs" value="" />
+      <option name="testTargetType" value="Package" />
+      <option name="packageName" value="" />
+      <option name="packageDir" value="" />
+      <option name="testFile" value="" />
+      <option name="testArgs" value="" />
+      <option name="workingDir" value="" />
+      <option name="executeWhat" value="Test" />
+      <option name="filter" value="" />
+      <option name="useShortRun" value="false" />
+      <option name="testBeforeBenchmark" value="false" />
+      <option name="goVetEnabled" value="false" />
+      <module name="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" working-dir="">
+      <browser start="false" url="" with-js-debugger="false" />
       <method />
     </configuration>
     <configuration default="true" type="XSLT" factoryName="XSLT">
@@ -426,28 +489,35 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1280" y="0" width="1920" height="1080" extended-state="0" />
+    <frame x="1280" y="0" width="1920" height="1080" extended-state="6" />
     <editor active="true" />
     <layout>
+      <window_info id="Plugins" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20405982" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20362474" sideWeight="0.6006098" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39939025" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -464,6 +534,38 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="0.0" vertical-offset="320" max-vertical-offset="720">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Article.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="5" selection-start="537" selection-end="537" vertical-scroll-proportion="0.0" vertical-offset="260" max-vertical-offset="880">
+          <folding>
+            <element signature="n#detail#0;n#Article#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Main.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="26" selection-start="123" selection-end="123" vertical-scroll-proportion="0.0" vertical-offset="140" max-vertical-offset="740">
+          <folding>
+            <element signature="n#index#0;n#Main#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/init.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="42" column="18" selection-start="603" selection-end="603" vertical-scroll-proportion="0.0" vertical-offset="840" max-vertical-offset="2080">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/admin/controllers/Admin.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="50" column="1" selection-start="1063" selection-end="1063" vertical-scroll-proportion="0.0" vertical-offset="1000" max-vertical-offset="1140" />
@@ -519,47 +621,163 @@
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1123" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/api/controllers/Article.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="0" selection-start="167" selection-end="167" vertical-scroll-proportion="0.21574973" vertical-offset="0" max-vertical-offset="1747">
+          <folding>
+            <element signature="n#index#0;n#Article#0;n#!!top" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Robot.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1101">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/web/templates/web/default.layer.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="0.0" vertical-offset="320" max-vertical-offset="720">
+        <state line="16" column="46" selection-start="1180" selection-end="1180" vertical-scroll-proportion="-8.793103" vertical-offset="65" max-vertical-offset="1613">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/web/controllers/Main.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="26" selection-start="123" selection-end="123" vertical-scroll-proportion="-1.862069" vertical-offset="86" max-vertical-offset="1607">
+        <state line="27" column="9" selection-start="614" selection-end="614" vertical-scroll-proportion="0.37289914" vertical-offset="85" max-vertical-offset="1532">
           <folding>
-            <element signature="n#__construct#0;n#Main#0;n#!!top" expanded="true" />
             <element signature="n#index#0;n#Main#0;n#!!top" expanded="true" />
-            <element signature="n#setSkin#0;n#Main#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/api/controllers/Article.php">
+    <entry file="file://$PROJECT_DIR$/htdocs/api/index.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="0" selection-start="167" selection-end="167" vertical-scroll-proportion="0.21574973" vertical-offset="0" max-vertical-offset="1747">
-          <folding>
-            <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
-          </folding>
+        <state line="23" column="3" selection-start="478" selection-end="478" vertical-scroll-proportion="-15.862069" vertical-offset="0" max-vertical-offset="1848">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/web/init.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="18" selection-start="603" selection-end="603" vertical-scroll-proportion="-4.827586" vertical-offset="660" max-vertical-offset="2907">
+        <state line="42" column="17" selection-start="602" selection-end="602" vertical-scroll-proportion="-15.655172" vertical-offset="346" max-vertical-offset="2932">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/htdocs/web/index.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="3" selection-start="89" selection-end="89" vertical-scroll-proportion="-4.137931" vertical-offset="0" max-vertical-offset="2012">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/article/list.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="9" column="184" selection-start="572" selection-end="572" vertical-scroll-proportion="-6.206897" vertical-offset="0" max-vertical-offset="1352">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/main/index.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="64" selection-start="127" selection-end="127" vertical-scroll-proportion="-1.3793104" vertical-offset="0" max-vertical-offset="1112">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/page/about.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1021">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/page/article.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1062">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/page/p1.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1609">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/page/page.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1789">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/tag/index.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="40" selection-start="672" selection-end="676" vertical-scroll-proportion="-12.413794" vertical-offset="0" max-vertical-offset="1448">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../crossphp/core/Dispatcher.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="266" column="5" selection-start="6900" selection-end="6900" vertical-scroll-proportion="-7.4827585" vertical-offset="5103" max-vertical-offset="10952">
+          <folding>
+            <element signature="n#__construct#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#init#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#getRouter#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#init_request_cache#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#init_controller#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#init_params#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#init_config#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#widget_run#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#run#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#setConfig#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#setController#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#setAction#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#parse_action_user_annotate_params#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#parse_params_val#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#parse_params_array#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#setParams#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#getConfig#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#getController#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#getAction#0;n#Dispatcher#0;n#!!top" expanded="true" />
+            <element signature="n#getParams#0;n#Dispatcher#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/article/detail.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="0" selection-start="653" selection-end="653" vertical-scroll-proportion="-0.6896552" vertical-offset="240" max-vertical-offset="1272">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/templates/web/article/index.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="68" selection-start="121" selection-end="121" vertical-scroll-proportion="-0.6896552" vertical-offset="20" max-vertical-offset="1132">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/web/controllers/Article.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="5" selection-start="537" selection-end="537" vertical-scroll-proportion="0.45307443" vertical-offset="0" max-vertical-offset="1747">
+        <state line="15" column="24" selection-start="317" selection-end="317" vertical-scroll-proportion="-8.275862" vertical-offset="60" max-vertical-offset="1892">
           <folding>
-            <element signature="n#index#0;n#Article#0;n#!!top" expanded="true" />
             <element signature="n#detail#0;n#Article#0;n#!!top" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/web/controllers/Tag.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="25" selection-start="447" selection-end="447" vertical-scroll-proportion="0.31512606" vertical-offset="120" max-vertical-offset="1612">
+          <folding />
         </state>
       </provider>
     </entry>

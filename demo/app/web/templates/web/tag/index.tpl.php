@@ -4,9 +4,9 @@
             <?php foreach($data["tag"] as $tag) : ?>
             <li>
                 <?php if($data["tid"] == $tag["id"]) : ?>
-                <a style="color:#151A91" href="<?php echo $this->link("tag",array($tag["id"], $tag["name"])) ?> "><?php echo $tag["name"] ?></a>
+                <a style="color:#151A91" href="<?php echo $this->link("tag",array('id'=>$tag["id"])) ?> "><?php echo $tag["name"] ?></a>
                 <?php else : ?>
-                <a href="<?php echo $this->link("tag",array($tag["id"], $tag["name"])) ?> "><?php echo $tag["name"] ?></a>
+                <a href="<?php echo $this->link("tag",array('id'=>$tag["id"])) ?> "><?php echo $tag["name"] ?></a>
                 <?php endif ?>
             </li>
             <?php endforeach ?>

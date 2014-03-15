@@ -145,7 +145,7 @@ class Cross
     /**
      * 配置uri 参见mrun()
      *
-     * @param $uri 指定uri
+     * @param string $uri 指定uri
      * @param null $controller "控制器:方法"
      */
     public function map($uri, $controller = null)
@@ -168,8 +168,8 @@ class Cross
     /**
      * 直接调用控制器类中的方法 忽略解析和alias配置
      *
-     * @param $controller "控制器:方法"
-     * @param $args 参数
+     * @param string $controller "控制器:方法"
+     * @param null $args 参数
      */
     public function get( $controller, $args = null )
     {
@@ -189,8 +189,8 @@ class Cross
     /**
      * 根据配置解析请求
      *
-     * @param $params = null 用于自定义url请求内容
-     * @param $args 参数
+     * @param string $params = null 用于自定义url请求内容
+     * @param string $args 参数
      */
     public function run( $params = null, $args = null )
     {
@@ -201,7 +201,7 @@ class Cross
      * 自定义router运行
      *
      * @param RouterInterface $router RouterInterface的实现
-     * @param $args 参数
+     * @param string $args 参数
      */
     public function rrun( RouterInterface $router, $args )
     {

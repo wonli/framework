@@ -127,27 +127,27 @@ class CoreView extends FrameBase
      */
     function link($controller=null, $params=null, $sec = false)
     {
-        $_linkurl = $this->link_base;
+        $_link_url = $this->link_base;
 
         $_action = '';
         $_controller = '';
 
         if($controller)
         {
-            $_linkurl .= $this->makeController($controller, $_controller, $_action);
+            $_link_url .= $this->makeController($controller, $_controller, $_action);
         }
 
         if($params != null)
         {
-            $_linkurl .= $this->makeParams($params, $_controller, $_action, $sec);
+            $_link_url .= $this->makeParams($params, $_controller, $_action, $sec);
         }
 
         if($this->urlconfig['ext'])
         {
-            $_linkurl .= $this->urlconfig['ext'];
+            $_link_url .= $this->urlconfig['ext'];
         }
 
-        return $_linkurl;
+        return $_link_url;
     }
 
     /**
@@ -220,9 +220,9 @@ class CoreView extends FrameBase
     private function makeParams($params, $_controller='', $_action='', $sec = false)
     {
         $_params = '';
+        $_dot = $this->urlconfig['dot'];
 
         if($params) {
-            $_piex = $this->urlconfig['dot'];
             if ($this->urlconfig ["type"] == 1)
             {
                 if (is_array($params)) {
@@ -234,7 +234,7 @@ class CoreView extends FrameBase
                 }
 
             } else {
-                $_piex = '?';
+                $_dot = '?';
                 if (is_array($params)) {
                     $_params = http_build_query($params);
                 } else {
@@ -247,51 +247,7 @@ class CoreView extends FrameBase
             }
         }
 
-        return $_piex.$_params;
-    }
-
-    /**
-     * 设置params缓存
-     *
-     * @param $controller
-     * @param $action
-     * @param $params
-     */
-    private function setParamsCache($controller='', $action='', $params)
-    {
-        if ($action) {
-            $cache_key = strtolower($controller.':'.$action);
-        } else {
-            $cache_key = strtolower($controller);
-        }
-
-        $params_cache_file = Loader::getFilePath("::cache/params.cache.php");
-        if (! file_exists($params_cache_file)) {
-            Helper::mkfile($params_cache_file);
-        }
-
-        $params_cache_content = Loader::read($params_cache_file);
-        if (! is_array($params_cache_content)) {
-            $params_cache_content = array();
-        }
-
-        $refresh_cache = false;
-        if (isset($params_cache_content[$cache_key])) {
-            $cached_content = $params_cache_content[$cache_key];
-
-            if (count($cached_content) <= count(array_keys( $params ))) {
-                $refresh_cache = true;
-                $params_cache_content[$cache_key] = array_keys( $params );
-            }
-
-        } else {
-            $refresh_cache = true;
-            $params_cache_content[$cache_key] = array_keys( $params );
-        }
-
-        if (true === $refresh_cache) {
-            file_put_contents($params_cache_file, "<?php return ".var_export($params_cache_content, true).";");
-        }
+        return $_dot.$_params;
     }
 
     /**
@@ -299,9 +255,8 @@ class CoreView extends FrameBase
      *
      * @param null $data
      * @param null $method
-     * @param int $http_response_status
      */
-    function display(  $data = null, $method = null, $http_response_status = 200 )
+    function display(  $data = null, $method = null )
     {
         $this->data = $data;
         $display_type = $this->config->get("sys", "display");
@@ -323,7 +278,6 @@ class CoreView extends FrameBase
             $method = Router::$default_action;
         }
 
-        Response::getInstance()->set_response_status( $http_response_status );
         $this->obRender($data, $method);
     }
 
@@ -413,7 +367,7 @@ class CoreView extends FrameBase
      * @param $res_url
      * @param string $location
      */
-    function addres($res_url, $location="header"){
+    function addRes($res_url, $location="header"){
         $this->res_list [ $location ] = $res_url;
     }
 
@@ -422,7 +376,7 @@ class CoreView extends FrameBase
      * @param string $location
      * @return string
      */
-    function loadres($location="header")
+    function loadRes($location="header")
     {
         $result = '';
         if(isset($this->res_list [$location]) && !empty($this->res_list [$location])) {
@@ -433,10 +387,10 @@ class CoreView extends FrameBase
         {
             if(is_array($data)) {
                 foreach($data as $r) {
-                    $result .= $this->output_reslink($r);
+                    $result .= $this->outputResLink($r);
                 }
             } else {
-                $result .= $this->output_reslink($data);
+                $result .= $this->outputResLink($data);
             }
         }
 
@@ -448,7 +402,7 @@ class CoreView extends FrameBase
      * @param $res_link
      * @return string
      */
-    function output_reslink($res_link)
+    function outputResLink($res_link)
     {
         $t = Helper::getExt($res_link);
 
@@ -531,8 +485,8 @@ class CoreView extends FrameBase
             {
                 if(! is_numeric($key))
                 {
-                    $subnode = $xml_res->addChild($key);
-                    $this->array_to_xml($value, $subnode);
+                    $subNode = $xml_res->addChild($key);
+                    $this->array_to_xml($value, $subNode);
                 }
                 else{
                     $this->array_to_xml($value, $xml_res);

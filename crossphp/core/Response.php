@@ -18,6 +18,11 @@ class Response
     protected $response_status;
 
     /**
+     * @var array
+     */
+    protected $header;
+
+    /**
      * Response instance
      *
      * @var object
@@ -129,31 +134,56 @@ class Response
      * @param $content
      * @return array
      */
-    private function make_params($content = '')
+    private function make_params($content)
     {
         $result = array();
-        $result['CP_PARAMS'] = $content;
+        if (is_string($content))
+        {
+            $result['CP_PARAMS'] = $content;
+        } else {
+            $result = $content;
+        }
+
         return $result;
     }
 
     /**
      * 发送header
      *
-     * @param $content
+     * @param $contents
      * @return $this
      */
-    function send_header( $content )
+    function send_header( $contents )
     {
-        $contents = $this->make_params( $content );
-        foreach( $contents as $c_name => $c_val )
+        if (! is_array($contents))
         {
-            if(is_array($c_val))
-            {
-                $c_val = json_encode( $c_val );
-            }
-            header("{$c_name}:{$c_val}");
+            $contents = array($contents);
         }
+
+        foreach( $contents as $content )
+        {
+            header($content);
+        }
+
         return $this;
+    }
+
+    /**
+     * 设置header信息
+     *
+     * @param $header
+     */
+    function set_header( $header )
+    {
+        $this->header = $header;
+    }
+
+    /**
+     * 获取要发送到header信息
+     */
+    function get_header( )
+    {
+        return $this->header;
     }
 
     /**
@@ -183,7 +213,14 @@ class Response
         $code = $this->get_response_status();
         $this->send_response_status($code);
 
-        if(! $contents ) {
+        $header = $this->get_header();
+        if (! empty($header))
+        {
+            $this->send_header( $header );
+        }
+
+        if (! $contents)
+        {
             $contents = self::$statusDescriptions [$code];
         }
 
@@ -201,6 +238,12 @@ class Response
     {
         $code = $this->get_response_status();
         $this->send_response_status($code);
+
+        $header = $this->get_header();
+        if (! empty($header))
+        {
+            $this->send_header( $header );
+        }
 
         if(! $message ) {
             $message = self::$statusDescriptions [$code];

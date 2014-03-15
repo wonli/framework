@@ -13,7 +13,7 @@ class CoreModule extends FrameBase
     protected $db_type;
 
     /**
-     * @var link resource;
+     * @var MysqlModel
      */
     protected $link;
 
@@ -32,9 +32,9 @@ class CoreModule extends FrameBase
     protected static $cache_file;
 
     /**
-     * 实例化moduel
+     * 实例化module
      *
-     * @param null 指定数据库配置
+     * @param null $params 指定数据库配置
      */
     function __construct( $params = null )
     {
@@ -135,7 +135,7 @@ class CoreModule extends FrameBase
     /**
      * 加载其他module
      *
-     * @param $module_name 要加载的module的全名
+     * @param string $module_name 要加载的module的全名
      * @return object
      */
     final function load($module_name)

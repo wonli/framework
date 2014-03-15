@@ -1,6 +1,6 @@
 <div class="tag">
     <?php foreach($tag as $t) : ?>
-        <a href="<?php echo $this->link("tag",array($t["id"], $t["name"])) ?> "><?php echo $t["name"] ?></a>
+        <a href="<?php echo $this->link("tag",array('id'=>$t["id"])) ?> "><?php echo $t["name"] ?></a>
     <?php endforeach ?>
 </div>
 <div class="main">

@@ -7,7 +7,7 @@
             </a>
             <?php if(! empty($item["tag"])) : ?>
                 <?php foreach($item["tag"] as $tag) : ?>
-                <a style="font-size:9px;background: rgb(240, 248, 250);padding: 0px 5px;border:1px solid rgb(234, 240, 243)" href="<?php echo $this->link("tag",array($tag["id"], $tag["name"])) ?> "><?php echo $tag["name"] ?></a>
+                <a style="font-size:9px;background: rgb(240, 248, 250);padding: 0px 5px;border:1px solid rgb(234, 240, 243)" href="<?php echo $this->link("tag",array('id'=>$tag["id"])) ?> "><?php echo $tag["name"] ?></a>
                 <?php endforeach ?>
             <?php endif ?>
 

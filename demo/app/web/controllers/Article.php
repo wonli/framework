@@ -5,10 +5,13 @@
  */
 class Article extends CoreController
 {
-    function index()
+    /**
+     * @cp_params p
+     */
+    function index( )
     {
         $page = array(
-            'p' =>  $this->params?intval($this->params):0,
+            'p' =>  isset($this->params['p'])?intval($this->params['p']):0,
             'limit' => 20,
             'half' => 3,
             'link' => array("article:page"),
@@ -21,13 +24,16 @@ class Article extends CoreController
         $this->display($result);
     }
 
+    /**
+     * @cp_params id
+     */
     function detail( )
     {
-        $p = is_array($this->params) ? intval($this->params[0]) : intval($this->params);
+        $id = is_array($this->params['id']) ? intval($this->params['id']) : intval($this->params['id']);
 
-        if($p)
+        if($id)
         {
-            $data = $this->loadModule('Article')->getDetail($p);
+            $data = $this->loadModule('Article')->getDetail($id);
 
             if($data)
             {

@@ -4,19 +4,24 @@
 */
 class Tag extends CoreController
 {
+    /**
+     * @cp_params id, p
+     */
     function index()
     {
-        @list($tid, $tag_name, $p) = $this->params;
+        $tid = isset($this->params['id']) ? intval($this->params['id']) : 0;
+        $p = isset($this->params['p'])?intval($this->params['p']):0;
+
         if(! $tid)
         {
             $this->to("article");
         }
 
         $page = array(
-            'p' => $p ? $p : 0,
-            'limit' => 10,
+            'p' => $p,
+            'limit' => 15,
             'half' => 3,
-            'link' => array("tag", array($tid, $tag_name))
+            'link' => array("tag", array('id'=>$tid))
         );
 
         $data['tag'] = $this->loadModule("Blog")->get_all_tag();
