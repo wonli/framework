@@ -34,6 +34,13 @@ class Dispatcher
     private static $controller;
 
     /**
+     * action 注释
+     *
+     * @var string
+     */
+    private $action_annotate;
+
+    /**
      * 以单例模式运行
      *
      * @var object
@@ -76,19 +83,19 @@ class Dispatcher
         $action = '';
         $params = '';
 
-        if( is_object($router) ) {
+        if ( is_object($router) ) {
             $controller     = $router->getController();
             $action         = $router->getAction();
             $params         = $router->getParams();
         }
 
-        if(is_array($router)) {
+        if (is_array($router)) {
             $controller = $router["controller"];
             $action = $router["action"];
             $params = $router["params"];
         }
 
-        if( is_string($router) ) {
+        if ( is_string($router) ) {
             if(strpos($router,':')) {
                 list($controller, $action) = explode(':', $router);
             } else {
@@ -107,25 +114,25 @@ class Dispatcher
     }
 
     /**
-     * 初始化请求cache
+     * 初始化request cache
      *
+     * @param $cache_config
      * @return bool|FileCache|Memcache|RedisCache
      */
-    function init_request_cache( )
+    function init_request_cache( $request_cache_config )
     {
-        $controller_conf = $this->getConfig()->get('controller', strtolower(self::$controller));
-        if(! isset($controller_conf['cache']))
-        {
+        if (! $request_cache_config) {
             return false;
         }
 
-        $controller_cache_config = $controller_conf ['cache'];
-        list($cache_type, $cache_config) = $controller_cache_config;
-        if(! $cache_type || $cache_type < 0)
-        {
+        list($open_cache, $cache_config) = $request_cache_config;
+        if (! $open_cache) {
             return false;
         }
-        $cache_config ['type'] = $cache_type;
+
+        if (empty($cache_config['type'])) {
+            throw new CoreException('请用使用type项指定cache类型');
+        }
 
         $app_name = $this->getConfig()->get("sys", "app_name");
         $cache_dot_config = array(
@@ -134,21 +141,18 @@ class Dispatcher
             3 =>  ':',
         );
 
-        if(! isset($cache_config ['cache_path']))
-        {
+        if(! isset($cache_config ['cache_path'])) {
             $cache_config ['cache_path'] = PROJECT_PATH.'cache'.DS.'html';
         }
 
-        if(! isset($cache_config ['file_ext']))
-        {
+        if (! isset($cache_config ['file_ext'])) {
             $cache_config ['file_ext'] = '.html';
         }
 
-        if(! isset($cache_config ['key_dot']))
+        if (! isset($cache_config ['key_dot']))
         {
-            if (isset($cache_dot_config[ $cache_type ]))
-            {
-                $cache_config ['key_dot'] = $cache_dot_config[ $cache_type ];
+            if (isset($cache_dot_config[ $cache_config['type'] ])) {
+                $cache_config ['key_dot'] = $cache_dot_config[ $cache_config['type'] ];
             } else {
                 $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
             }
@@ -210,6 +214,7 @@ class Dispatcher
                  */
                 $have_call = new ReflectionMethod($controller, '__call');
                 $this->setAction($action);
+                unset($have_call);
 
             } catch (Exception $e) {
 
@@ -224,6 +229,7 @@ class Dispatcher
                     {
                         //控制器静态属性_act_alias_指定action的别名
                         $_property = new ReflectionProperty($controller, '_act_alias_');
+
                     } catch (Exception $e) {
                         throw new CoreException("app:{$app_name}不能识别的请求{$controller}->{$action}");
                     }
@@ -245,6 +251,7 @@ class Dispatcher
                 if( $is_callable->isPublic() )
                 {
                     $this->setAction( $action );
+                    $this->setActionAnnotate( $is_callable->getDocComment() );
                     if(! empty($_action))
                     {
                         $this->setAction($_action);
@@ -261,9 +268,9 @@ class Dispatcher
      *
      * @param $params
      */
-    private function init_params( $params )
+    private function init_params( $params, $annotate_params = array() )
     {
-        $this->setParams( $params );
+        $this->setParams( $params, $annotate_params );
     }
 
     /**
@@ -306,10 +313,21 @@ class Dispatcher
     {
         $router = $this->getRouter( $router, $args);
         $action = $run_controller ? $router ['action'] : null;
-
         $this->init_controller( $router ['controller'], $action );
-        $this->init_params( $router ['params'] );
-        $cache = $this->init_request_cache();
+
+        $action_config = $this->getActionConfig();
+        $action_params = array();
+        if (isset($action_config['params']))
+        {
+            $action_params = $action_config['params'];
+        }
+        $this->init_params( $router ['params'], $action_params );
+
+        $cache = false;
+        if (isset($action_config['cache']))
+        {
+            $cache = $this->init_request_cache( $action_config['cache'] );
+        }
 
         if ($cache && $cache->getExtime())
         {
@@ -363,98 +381,58 @@ class Dispatcher
     }
 
     /**
-     * 解析用户在action注释中定义的配置
-     *
-     * @param $params
-     * @return mixed
-     */
-    function parse_action_user_annotate_params( $params )
-    {
-        foreach ($params as $key => & $val)
-        {
-            if (false === $n = strpos($val, '('))
-            {
-                $val = $this->parse_params_val( $val );
-            } else {
-                $val = $this->parse_params_array( $val );
-            }
-        }
-
-        return $params;
-    }
-
-    /**
-     * 逗号或空格分隔的值参数转数组
-     *
-     * @param $val
-     * @return array
-     */
-    function parse_params_val( $val )
-    {
-        return array_filter(preg_split('/[\s,]+/', $val));
-    }
-
-    /**
-     * 配置参数转二维数组
-     * <pre>
-     *  如: true(1, file, 300)
-     *
-     *  将被转换为
-     *  array(
-     *      true,
-     *      array(
-     *          1,
-     *          file,
-     *          300
-     *      )
-     *  )
-     * </pre>
-     * @param $val
-     * @return array
-     */
-    function parse_params_array( $val )
-    {
-        $result = array();
-        $flag = preg_match_all('/(.*?)\((.*?)\)/', $val, $val);
-
-        $result[] = $val[1][0];
-        $result[] = $this->parse_params_val($val[2][0]);
-
-        return $result;
-    }
-
-    /**
      * 设置params
      *
      * @param null $params
      */
-    private function setParams( $params = null )
+    private function setParams( $params = null, $annotate_params = array() )
     {
         if ($this->getConfig()->get('url', 'type') == 1)
         {
-            $ref = new ReflectionMethod(self::$controller, self::$action);
-            $document = $ref->getDocComment();
-
-            $flag = preg_match_all('/@cp_(.*?)\s+(.*?)\n/',$document, $document);
-            if ($flag)
+            if (! empty($params))
             {
-                $conf = array_combine($document[1], $document[2]);
-                $conf = $this->parse_action_user_annotate_params($conf);
-                if (! empty($params))
+                $params_set = array();
+                foreach ($params as $k => $p)
                 {
-                    $params_set = array();
-                    foreach ($params as $k => $p)
-                    {
-                        if (isset($conf['params'][$k])) {
-                            $params_set[ $conf['params'][$k] ] = $p;
-                        }
+                    if (isset($annotate_params[$k])) {
+                        $params_set[ $annotate_params[$k] ] = $p;
                     }
-                    $params = $params_set;
                 }
+                $params = $params_set;
             }
         }
 
         self::$params = $params;
+    }
+
+    /**
+     * 设置action注释
+     *
+     * @param string $annotate
+     */
+    public function setActionAnnotate( $annotate )
+    {
+        $this->action_annotate = $annotate;
+    }
+
+    /**
+     * 获取action注释
+     *
+     * @return string
+     */
+    public function getActionAnnotate()
+    {
+        return $this->action_annotate;
+    }
+
+    /**
+     * 获取action注释配置
+     *
+     * @return array|bool
+     */
+    public function getActionConfig()
+    {
+        return Annotate::getInstance( $this->action_annotate )->parse();
     }
 
     /**

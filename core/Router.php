@@ -1,9 +1,8 @@
 <?php
 /**
- * @Author:  wonli <wonli@live.com>
- * @Version: $Id: Router.php 138 2013-09-13 09:59:03Z ideaa $
+ * @Auth: wonli <wonli@live.com>
+ * Class Router
  */
-
 class Router implements RouterInterface
 {
     /**
@@ -32,7 +31,7 @@ class Router implements RouterInterface
     public static $default_action = "index";
 
     /**
-     * @var $router_params;
+     * @var $router_params ;
      */
     private $router_params = array();
 
@@ -44,7 +43,7 @@ class Router implements RouterInterface
 
     private static $instance;
 
-    private function __construct( $_config )
+    private function __construct($_config)
     {
         $this->config = $_config;
     }
@@ -52,11 +51,10 @@ class Router implements RouterInterface
     /**
      * 实例化类
      */
-    static function init( config $_config )
+    static function init(config $_config)
     {
-        if(! self::$instance)
-        {
-            self::$instance = new Router( $_config );
+        if (!self::$instance) {
+            self::$instance = new Router($_config);
         }
         return self::$instance;
     }
@@ -67,14 +65,11 @@ class Router implements RouterInterface
      * @param $params
      * @return $this
      */
-    public function set_router_params( $params = null )
+    public function set_router_params($params = null)
     {
-        if(null === $params)
-        {
+        if (null === $params) {
             $this->router_params = $this->initParams();
-        }
-        else
-        {
+        } else {
             $this->router_params = $params;
         }
         return $this;
@@ -95,25 +90,23 @@ class Router implements RouterInterface
      *
      * @return $this
      */
-    function initParams( )
+    function initParams()
     {
         $url_config = $this->config->get("url");
         $request = array();
 
         $r = $_REQUEST;
 
-        switch ($url_config ['type'])
-        {
+        switch ($url_config ['type']) {
             case 1 :
-                $request = Request::getInstance()->getUrlRequest( 1 );
+                $request = Request::getInstance()->getUrlRequest(1);
                 return self::parseString($request, $url_config);
 
             case 2 :
-                $path_info = Request::getInstance()->getUrlRequest( 2 );
+                $path_info = Request::getInstance()->getUrlRequest(2);
                 $request = self::parseString($path_info, $url_config);
 
-                if(! empty($request))
-                {
+                if (!empty($request)) {
                     return array_merge($request, $r);
                 }
 
@@ -139,26 +132,25 @@ class Router implements RouterInterface
      * @throws FrontException
      * @return array
      */
-    static function parseString( $_query_string, $url_config )
+    static function parseString($_query_string, $url_config)
     {
-        $_query_string = trim(trim( $_query_string, "/" ), $url_config['dot']);
+        $_query_string = trim(trim($_query_string, "/"), $url_config['dot']);
         $router_params = array();
 
-        if (! $_query_string) {
+        if (!$_query_string) {
             return $router_params;
         }
 
         $_url_ext = $url_config["ext"];
-        if(isset($_url_ext[1]) && false !== strpos($_query_string, $_url_ext[0]))
-        {
+        if (isset($_url_ext[1]) && false !== strpos($_query_string, $_url_ext[0])) {
             list($_query_string, $ext) = explode($_url_ext[0], $_query_string);
-            if($ext !== substr($_url_ext, 1)) {
+            if ($ext !== substr($_url_ext, 1)) {
                 throw new FrontException("找不到该页面");
             }
         }
 
 
-        if ( false !== strpos($_query_string, $url_config['dot']) ) {
+        if (false !== strpos($_query_string, $url_config['dot'])) {
             $router_params = explode($url_config['dot'], $_query_string);
         } else {
             $router_params = array($_query_string);
@@ -173,20 +165,19 @@ class Router implements RouterInterface
      * @return array
      * @throws CoreException
      */
-    private function getDefaultRouter( $init_default )
+    private function getDefaultRouter($init_default)
     {
-        if( $init_default )
-        {
+        if ($init_default) {
             list($_defController, $_defAction) = explode(":", $init_default);
             $_defaultRouter = array();
 
-            if( isset($_defController) ) {
+            if (isset($_defController)) {
                 $_defaultRouter['controller'] = $_defController;
             } else {
                 throw new CoreException("please define the default controller in the APP_PATH/APP_NAME/init file!");
             }
 
-            if(isset($_defAction)) {
+            if (isset($_defAction)) {
                 $_defaultRouter['action'] = $_defAction;
             } else {
                 throw new CoreException("please define the default action in the APP_PATH/APP_NAME/init file!");
@@ -194,8 +185,7 @@ class Router implements RouterInterface
 
             $_defaultRouter['params'] = $_REQUEST;
             return $_defaultRouter;
-        }
-        else throw new CoreException("undefined default router!");
+        } else throw new CoreException("undefined default router!");
     }
 
     /**
@@ -204,22 +194,19 @@ class Router implements RouterInterface
      * @return $this
      * @throws FrontException
      */
-    public function getRouter( )
+    public function getRouter()
     {
         $_router = $this->get_router_params();
 
         #没有请求时的控制器和路由
-        if( empty($_router) )
-        {
-            $_defaultRouter = $this->getDefaultRouter( $this->config->get("url", "*") );
+        if (empty($_router)) {
+            $_defaultRouter = $this->getDefaultRouter($this->config->get("url", "*"));
 
             $this->setController($_defaultRouter['controller']);
             $this->setAction($_defaultRouter['action']);
             $this->setParams($_defaultRouter['params']);
-        }
-        else
-        {
-            $this->setRouter( $_router );
+        } else {
+            $this->setRouter($_router);
         }
         return $this;
     }
@@ -235,52 +222,35 @@ class Router implements RouterInterface
         /**
          * 控制器配置
          */
-        $controller_config = $this->config->get("controller");
+        $router_config = $this->config->get("router");
         $_controller = $request [0];
         $this->config->set('url', array('ori_controller' => $_controller));
         array_shift($request);
 
-        if(isset($controller_config [ $_controller ]))
-        {
-            $_config = $controller_config [ $_controller ];
-        }
-
-        if( isset($_config['alias']) && !empty($_config['alias']) )
-        {
-            $_calias = $_config['alias'];
-            if(is_array($_calias))
-            {
-                if(isset($request [0]))
-                {
+        if (isset($router_config [$_controller])) {
+            $controller_alias = $router_config [$_controller];
+            if (is_array($controller_alias)) {
+                if (isset($request [0])) {
                     $_action = $request [0];
                     $this->config->set('url', array('ori_action' => $_action));
-                    array_shift( $request );
+                    array_shift($request);
 
-                    if(isset($_calias [$_action]))
-                    {
-                        if(false !== strpos($_calias [$_action], ":"))
-                        {
-                            $_calias_ = explode(":", $_calias [$_action]);
-                            $_action = $_calias_[0];
-                            array_shift($_calias_);
-                            $alias_params = $_calias_;
-                        }
-                        else
-                        {
-                            $_action = $_calias [$_action];
+                    if (isset($controller_alias [$_action])) {
+                        if (false !== strpos($controller_alias [$_action], ":")) {
+                            $controller_alias_ = explode(":", $controller_alias [$_action]);
+                            $_action = $controller_alias_[0];
+                            array_shift($controller_alias_);
+                            $alias_params = $controller_alias_;
+                        } else {
+                            $_action = $controller_alias [$_action];
                         }
                     }
-                }
-                else
-                {
+                } else {
                     $_action = self::$default_action;
                 }
-            }
-            else
-            {
-                if( false !== strpos($_calias, ":") )
-                {
-                    $_user_alias = explode(":", $_calias);
+            } else {
+                if (false !== strpos($controller_alias, ":")) {
+                    $_user_alias = explode(":", $controller_alias);
                     $_controller = $_user_alias [0];
                     array_shift($_user_alias);
 
@@ -288,51 +258,37 @@ class Router implements RouterInterface
                     array_shift($_user_alias);
 
                     $alias_params = $_user_alias;
-                }
-                else
-                {
-                    $_controller = $_calias;
+                } else {
+                    $_controller = $controller_alias;
 
-                    if(isset($request [0]))
-                    {
+                    if (isset($request [0])) {
                         $_action = $request[0];
                         array_shift($request);
-                    }
-                    else
-                    {
+                    } else {
                         $_action = self::$default_action;
                     }
                 }
             }
-        }
-        else
-        {
-            if( isset($request[0]) )
-            {
+        } else {
+            if (isset($request[0])) {
                 $_action = $request [0];
                 $this->config->set('url', array('ori_action' => $_action));
-                array_shift( $request );
-            }
-            else
-            {
+                array_shift($request);
+            } else {
                 $_action = self::$default_action;
             }
         }
 
-        if(isset($alias_params) && ! empty($alias_params))
-        {
+        if (isset($alias_params) && !empty($alias_params)) {
             $_params = array_merge($request, $alias_params);
-        }
-        else
-        {
+        } else {
             $_params = $request;
         }
 
-        $this->setController( $_controller );
-        $this->setAction( $_action );
-        $this->setParams( $_params );
+        $this->setController($_controller);
+        $this->setAction($_action);
+        $this->setParams($_params);
     }
-
 
     /**
      * 设置controller

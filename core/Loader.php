@@ -87,6 +87,7 @@ class Loader
             'HttpAuth'        => 'core/HttpAuth.php',
             'CrossArray'      => 'core/CrossArray.php',
             'ArrayMap'        => 'core/ArrayMap.php',
+            'Annotate'        => 'core/Annotate.php',
 
             'CoreCache'       => 'cache/CoreCache.php',
             'ControllerCache' => 'cache/ControllerCache.php',
