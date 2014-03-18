@@ -432,7 +432,8 @@ class Dispatcher
      */
     public function getActionConfig()
     {
-        return Annotate::getInstance( $this->action_annotate )->parse();
+        $annotate = new Annotate( $this->getActionAnnotate() );
+        return $annotate->parse();
     }
 
     /**
