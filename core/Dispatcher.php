@@ -395,7 +395,9 @@ class Dispatcher
                 foreach ($params as $k => $p)
                 {
                     if (isset($annotate_params[$k])) {
-                        $params_set[ $annotate_params[$k] ] = $p;
+                        $params_set [ $annotate_params[$k] ] = $p;
+                    } else {
+                        $params_set [] = $p;
                     }
                 }
                 $params = $params_set;
