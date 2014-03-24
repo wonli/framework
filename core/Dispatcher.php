@@ -384,6 +384,7 @@ class Dispatcher
      * 设置params
      *
      * @param null $params
+     * @param array $annotate_params
      */
     private function setParams( $params = null, $annotate_params = array() )
     {

@@ -132,11 +132,11 @@ class Loader
         foreach($list as $file)
         {
             $cache_key = crc32($file);
-            if(isset( self::$loaded [$cache_key] ) ) {
+            if (isset( self::$loaded [$cache_key] ) ) {
                 return ;
             }
 
-            if(file_exists($file))
+            if (file_exists($file))
             {
                 self::$loaded [$cache_key] = 1; //标识已载入
                 require $file;
@@ -154,7 +154,7 @@ class Loader
      */
     static public function read( $file, $read_file = true )
     {
-        if(file_exists($file))
+        if (file_exists($file))
         {
             $file_path = $file;
         }
@@ -165,14 +165,14 @@ class Loader
 
         $key = crc32($file_path);
         $read_file_flag = $read_file ? 1 : 0;
-        if( isset(self::$loaded [$read_file_flag][ $key ]) )
+        if (isset(self::$loaded [$read_file_flag][ $key ]) )
         {
             return self::$loaded [$read_file_flag][ $key ];
         }
 
-        if( is_readable($file_path) )
+        if (is_readable($file_path) )
         {
-            if(false === $read_file)
+            if (false === $read_file)
             {
                 $file_content = file_get_contents( $file_path );
                 self::$loaded [$read_file_flag][ $key ] = $file_content;
@@ -224,13 +224,13 @@ class Loader
             'project'   =>  PROJECT_PATH,
         );
 
-        if(is_array($class))
+        if (is_array($class))
         {
             $files = $class;
         }
         else
         {
-            if(false !== strpos($class, ","))
+            if (false !== strpos($class, ","))
             {
                 $files = explode("," , $class);
             }
@@ -240,19 +240,19 @@ class Loader
             }
         }
 
-        foreach($files as $f)
+        foreach ($files as $f)
         {
             if(false !== strpos($f, '::'))
             {
                 list($path, $file_info) = explode('::', $f);
-                if(! $path)
+                if (! $path)
                 {
                     $path = "project";
                 }
 
                 $file_real_path = rtrim($_defines[strtolower($path)], DS).DS.str_replace("/", DS, $file_info);
                 $file_path_info = pathinfo( $file_real_path );
-                if(! isset($file_path_info['extension']) )
+                if (! isset($file_path_info['extension']) )
                 {
                     $file_real_path .= $append_file_ext;
                 }
@@ -288,17 +288,17 @@ class Loader
     function autoLoad($class_name)
     {
 
-        if( isset(self::$coreClass [$class_name]) )
+        if (isset(self::$coreClass [$class_name]))
         {
             $file_real_path= CP_PATH.self::$coreClass[$class_name];
         }
         else
         {
-            if( 'Module' === substr($class_name, -6) )
+            if ( 'Module' === substr($class_name, -6) )
             {
                 return spl_autoload_register(array("Loader","module_load"));
             }
-            else if( 'View' === substr($class_name, -4) )
+            elseif( 'View' === substr($class_name, -4) )
             {
                 $_file_type = 'views';
             }
@@ -307,17 +307,17 @@ class Loader
                 $_file_type = 'controllers';
             }
 
-            if(! isset($file_real_path) && $_file_type)
+            if (! isset($file_real_path) && $_file_type)
             {
                 $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
-                if(false !== strpos($class_name, '\\'))
+                if (false !== strpos($class_name, '\\'))
                 {
                     $_file_path = PROJECT_PATH.DS;
                 }
                 $file_real_path = $_file_path.$class_name.'.php';
             }
 
-            if( ! is_file($file_real_path) )
+            if (! is_file($file_real_path))
             {
                 return false;
             }
@@ -336,13 +336,14 @@ class Loader
     static function module_load( $module_name )
     {
         $_file_path = PROJECT_PATH."modules".DS;
-        if(false !== strpos($module_name, '\\'))
+        if (false !== strpos($module_name, '\\'))
         {
+            $module_name = str_replace('\\', DS, ltrim($module_name, DS));
             $_file_path = PROJECT_PATH;
         }
 
         $file_real_path = $_file_path.$module_name.".php";
-        if( file_exists( $file_real_path ) )
+        if ( file_exists( $file_real_path ) )
         {
             require($file_real_path);
         }
