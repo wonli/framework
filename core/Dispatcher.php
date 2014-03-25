@@ -209,25 +209,24 @@ class Dispatcher
 
             try
             {
-                /**
-                 * 判断Controller是否手动处理action
-                 */
-                $have_call = new ReflectionMethod($controller, '__call');
-                $this->setAction($action);
-                unset($have_call);
+                //会触发autoLoad
+                $is_callable = new ReflectionMethod($controller, $action);
 
             } catch (Exception $e) {
 
                 try
                 {
-                    //会触发autoLoad
-                    $is_callable = new ReflectionMethod($controller, $action);
+                    /**
+                     * 判断Controller是否手动处理action
+                     */
+                    new ReflectionMethod($controller, '__call');
+                    return $this->setAction($action);
 
                 } catch (Exception $e) {
 
                     try
                     {
-                        //控制器静态属性_act_alias_指定action的别名
+                        //通过public static $_act_alias_ 指定action的别名
                         $_property = new ReflectionProperty($controller, '_act_alias_');
 
                     } catch (Exception $e) {
@@ -247,18 +246,18 @@ class Dispatcher
                         throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
                     }
                 }
+            }
 
-                if( $is_callable->isPublic() )
+            if( $is_callable->isPublic() )
+            {
+                $this->setAction( $action );
+                $this->setActionAnnotate( $is_callable->getDocComment() );
+                if(! empty($_action))
                 {
-                    $this->setAction( $action );
-                    $this->setActionAnnotate( $is_callable->getDocComment() );
-                    if(! empty($_action))
-                    {
-                        $this->setAction($_action);
-                    }
-                } else {
-                    throw new CoreException("不被允许访问的方法!");
+                    $this->setAction($_action);
                 }
+            } else {
+                throw new CoreException("不被允许访问的方法!");
             }
         }
     }
