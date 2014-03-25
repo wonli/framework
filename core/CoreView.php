@@ -368,7 +368,7 @@ class CoreView extends FrameBase
      * @param string $location
      */
     function addRes($res_url, $location="header"){
-        $this->res_list [ $location ] = $res_url;
+        $this->res_list [$location][] = $res_url;
     }
 
     /**
@@ -379,11 +379,12 @@ class CoreView extends FrameBase
     function loadRes($location="header")
     {
         $result = '';
-        if(isset($this->res_list [$location]) && !empty($this->res_list [$location])) {
+        if (isset($this->res_list [$location]) && !empty($this->res_list [$location]))
+        {
             $data = $this->res_list [$location];
         }
 
-        if(! empty($data))
+        if (! empty($data))
         {
             if(is_array($data)) {
                 foreach($data as $r) {
@@ -411,8 +412,9 @@ class CoreView extends FrameBase
             case 'js' :
                 $tpl = '<script type="text/javascript" src="%s"></script>';
                 break;
+
             case 'css' :
-                $tpl = '<link rel="stylesheet" type="text/css" href="%s"/>';
+                $tpl = '<link type="text/css" rel="stylesheet" href="%s"/>';
                 break;
 
             default :
@@ -420,7 +422,7 @@ class CoreView extends FrameBase
         }
 
         if(null !== $tpl) {
-            return sprintf($tpl, $res_link);
+            return sprintf($tpl, $this->res($res_link));
         }
         return null;
     }
