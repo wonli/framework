@@ -46,8 +46,7 @@ class Rest
      */
     static function getInstance( $config )
     {
-        if(! self::$instance)
-        {
+        if(! self::$instance) {
             self::$instance = new Rest( $config );
         }
 
@@ -62,15 +61,17 @@ class Rest
      */
     function get( $request_url, Closure $process_func )
     {
-        if( true !== $this->request->isGetRequest() )
-        {
+        if( true !== $this->request->isGetRequest() ) {
             return;
         }
 
         $params = array();
-        if( true === $this->checkRequest( $request_url, $params ))
+        if ( true === $this->checkRequest( $request_url, $params ))
         {
-            $this->response( call_user_func_array($process_func, $params) );
+            $rep = call_user_func_array($process_func, $params);
+            if (null != $rep) {
+                $this->response( $rep );
+            }
         }
     }
 
@@ -82,18 +83,19 @@ class Rest
      */
     function post( $request_url, Closure $process_func )
     {
-        if( true !== $this->request->isPostRequest() )
-        {
+        if ( true !== $this->request->isPostRequest() ) {
             return;
         }
 
-        if(strcasecmp($request_url, $this->request_string) !== 0)
-        {
+        if (strcasecmp($request_url, $this->request_string) !== 0) {
             return;
         }
 
         $data = file_get_contents("php://input");
-        $this->response( call_user_func($process_func, $data) );
+        $rep = call_user_func($process_func, $data);
+        if (null != $rep) {
+            $this->response( $rep );
+        }
     }
 
     /**
@@ -104,18 +106,19 @@ class Rest
      */
     function put( $request_url, Closure $process_func )
     {
-        if( true !== $this->request->isPutRequest() )
-        {
+        if (true !== $this->request->isPutRequest()) {
             return;
         }
 
-        if(strcasecmp($request_url, $this->request_string) !== 0)
-        {
+        if (strcasecmp($request_url, $this->request_string) !== 0) {
             return;
         }
 
         $data = file_get_contents("php://input");
-        $this->response( call_user_func($process_func, $data) );
+        $rep = call_user_func($process_func, $data);
+        if (null != $rep) {
+            $this->response( $rep );
+        }
     }
 
     /**
@@ -126,15 +129,17 @@ class Rest
      */
     function delete( $request_url, Closure $process_func )
     {
-        if( true !== $this->request->isDeleteRequest() )
-        {
+        if (true !== $this->request->isDeleteRequest()) {
             return;
         }
 
         $params = array();
-        if( true === $this->checkRequest( $request_url, $params ))
+        if ( true === $this->checkRequest( $request_url, $params ))
         {
-            $this->response( call_user_func_array($process_func, $params) );
+            $rep = call_user_func_array($process_func, $params);
+            if (null != $rep) {
+                $this->response( $rep );
+            }
         }
     }
 
@@ -149,6 +154,7 @@ class Rest
     {
         $url_dot = $this->config->get("url", "dot");
         $params_key = array();
+        $params_value = array();
         if(false !== strpos($request_url, "{$url_dot}:"))
         {
             $params_start = strpos( $request_url, "{$url_dot}:" );
@@ -156,7 +162,7 @@ class Rest
             $request_url = substr( $request_url, 0, $params_start );
         }
 
-        if(0 === strncasecmp($this->request_string, $request_url, strlen($request_url)))
+        if (0 === strncasecmp($this->request_string, $request_url, strlen($request_url)))
         {
             if(! empty($params_key))
             {
@@ -168,7 +174,7 @@ class Rest
             return false;
         }
 
-        if( isset($params_value) && count($params_key) == count($params_value) )
+        if (isset($params_value) && count($params_key) == count($params_value))
         {
             $params = array_combine($params_key, $params_value);
         }
@@ -187,6 +193,6 @@ class Rest
      */
     function response( $rep )
     {
-        Response::getInstance()->output(200, $rep);
+        Response::getInstance()->output($rep);
     }
 }

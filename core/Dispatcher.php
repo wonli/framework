@@ -141,7 +141,7 @@ class Dispatcher
             3 =>  ':',
         );
 
-        if(! isset($cache_config ['cache_path'])) {
+        if (! isset($cache_config ['cache_path'])) {
             $cache_config ['cache_path'] = PROJECT_PATH.'cache'.DS.'html';
         }
 
@@ -185,21 +185,20 @@ class Dispatcher
         $app_name = $app_sys_conf ['app_name'];
 
         $controller_file = implode(array($app_path,'controllers', "{$controller}.php"), DS);
-        if(! file_exists($controller_file))
+        if (! file_exists($controller_file))
         {
             throw new CoreException("app:{$app_name} 控制器{$controller_file}不存在");
         }
         $this->setController( $controller );
 
-        if($action)
+        if ($action)
         {
             //自动识别返回类型
             $_display_type = $app_sys_conf ['display'];
-            if('AUTO' == $_display_type)
+            if (0 === strcasecmp('AUTO', $_display_type))
             {
                 $_display = 'HTML';
-
-                if( false !== strpos($action, ".") )
+                if (false !== strpos($action, "."))
                 {
                     list($action, $_display) = explode(".", strtolower($action));
                 }
@@ -234,28 +233,22 @@ class Dispatcher
                     }
 
                     $act_alias = $_property->getValue();
-                    if( isset($act_alias [$action]) )
+                    if (isset($act_alias [$action]))
                     {
-                        $_action = $act_alias [$action];
+                        $action = $act_alias [$action];
+                        $is_callable = new ReflectionMethod($controller, $action);
                     }
-
-                    if(! empty($_action))
+                    else
                     {
-                        $is_callable = new ReflectionMethod($controller, $_action);
-                    } else {
                         throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
                     }
                 }
             }
 
-            if( $is_callable->isPublic() )
+            if ($is_callable->isPublic())
             {
                 $this->setAction( $action );
                 $this->setActionAnnotate( $is_callable->getDocComment() );
-                if(! empty($_action))
-                {
-                    $this->setAction($_action);
-                }
             } else {
                 throw new CoreException("不被允许访问的方法!");
             }

@@ -86,7 +86,7 @@ class Cross
      */
     function config( $app_name = null )
     {
-        if(null === $app_name)
+        if (null === $app_name)
         {
             $app_name = $this->app_name;
         }
@@ -129,7 +129,7 @@ class Cross
      */
     private function definer($define, $args=null)
     {
-        if(is_array($define))
+        if (is_array($define))
         {
             foreach($define as $def=>$value)
             {
