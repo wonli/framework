@@ -155,7 +155,13 @@ class Rest
         $url_dot = $this->config->get("url", "dot");
         $params_key = array();
         $params_value = array();
-        if(false !== strpos($request_url, "{$url_dot}:"))
+
+        if (($request_url == '' && $this->request_string != '') || ($request_url == '/' && $this->request_string != '/'))
+        {
+            return false;
+        }
+
+        if (false !== strpos($request_url, "{$url_dot}:"))
         {
             $params_start = strpos( $request_url, "{$url_dot}:" );
             $params_key = array_filter( explode("{$url_dot}:", substr( $request_url, $params_start )));
@@ -174,13 +180,9 @@ class Rest
             return false;
         }
 
-        if (isset($params_value) && count($params_key) == count($params_value))
+        if (! empty($params_value) && count($params_key) == count($params_value))
         {
             $params = array_combine($params_key, $params_value);
-        }
-        else
-        {
-            return false;
         }
 
         return true;
