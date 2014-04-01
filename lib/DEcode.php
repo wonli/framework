@@ -5,12 +5,12 @@ abstract class DEcode
 {
 
     /*编码函数*/
-    abstract function EnCode ($data)
-    
+    abstract function enCode ($data)
+
     ;
 
     /*解码函数*/
-    abstract function DeCode ($data)
-    
+    abstract function deCode ($data)
+
     ;
 }
