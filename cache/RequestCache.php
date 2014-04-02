@@ -1,12 +1,10 @@
 <?php
 /**
- * @Auth <wonli@live.com>
- * Class Cache
+ * @Auth: wonli <wonli@live.com>
+ * Class RequestCache
  */
-class CoreCache
+class RequestCache extends CoreCache
 {
-    static $cache_type = array(1=>'file', 2=>'memcache', 3=>'redis');
-
     /**
      * 实例化缓存类
      *
@@ -22,10 +20,10 @@ class CoreCache
                 return new FileCache( $cache_config );
 
             case 2:
-                return new MemcacheBase( $cache_config );
+                return new RequestMemcache( $cache_config );
 
             case 3:
-                return new RedisCache( $cache_config );
+                return new RequestRedisCache( $cache_config );
 
             default :
                 throw new CoreException("不支持的缓存");

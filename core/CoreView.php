@@ -55,7 +55,7 @@ class CoreView extends FrameBase
         parent::__construct();
 
         $this->urlconfig  = $this->config->get("url");
-        $this->link_base  = $this->config->get("sys", "site_url");
+        $this->link_base  = $this->config->get("sys", "base_url");
         $this->static_url = $this->config->get("sys", "static_url");
 
         $this->set("static_url", $this->static_url);
@@ -132,17 +132,17 @@ class CoreView extends FrameBase
         $_action = '';
         $_controller = '';
 
-        if($controller)
+        if ($controller)
         {
             $_link_url .= $this->makeController($controller, $_controller, $_action);
         }
 
-        if($params != null)
+        if ($params != null)
         {
             $_link_url .= $this->makeParams($params, $_controller, $_action, $sec);
         }
 
-        if($this->urlconfig['ext'])
+        if ($controller && $this->urlconfig['type'] == 1 && $this->urlconfig['ext'])
         {
             $_link_url .= $this->urlconfig['ext'];
         }
@@ -172,6 +172,7 @@ class CoreView extends FrameBase
      */
     private function makeController($controller, & $r_controller = '', & $r_action = '')
     {
+        $_ext = '';
         $_link_url = '/';
         if (false !== strpos($controller, ":")) {
             list($_controller, $_action) = explode(":", $controller);
@@ -180,17 +181,20 @@ class CoreView extends FrameBase
         }
 
         $r_controller = $_controller;
-        if(isset($_action)) {
+        if (isset($_action))
+        {
             $r_action = $_action;
         }
 
         if ($this->urlconfig ['rewrite']) {
             $_link_url .= $_controller;
-        } else {
+        }
+        else
+        {
             $index = $this->urlconfig ['index'];
-
             if ( $this->urlconfig ['type'] == 2 ) {
                 $_dot = $index;
+                $_ext = $this->urlconfig['ext'];
             } else {
                 if ($index == 'index.php') {
                     $_dot = '?';
@@ -205,7 +209,7 @@ class CoreView extends FrameBase
             $_link_url .= $this->urlconfig['dot'].$_action;
         }
 
-        return $_link_url;
+        return $_link_url.$_ext;
     }
 
     /**
@@ -222,7 +226,8 @@ class CoreView extends FrameBase
         $_params = '';
         $_dot = $this->urlconfig['dot'];
 
-        if($params) {
+        if ($params)
+        {
             if ($this->urlconfig ["type"] == 1)
             {
                 if (is_array($params)) {
@@ -261,7 +266,7 @@ class CoreView extends FrameBase
         $this->data = $data;
         $display_type = $this->config->get("sys", "display");
 
-        if($method === null)
+        if ($method === null)
         {
             if($display_type && $display_type != "HTML")
             {
@@ -439,6 +444,7 @@ class CoreView extends FrameBase
             array("layer"=>"json")
         );
 
+        Response::getInstance()->set_ContentType( 'json' );
         echo json_encode($data);
     }
 
@@ -454,6 +460,7 @@ class CoreView extends FrameBase
             array("layer"=>"xml")
         );
 
+        Response::getInstance()->set_ContentType( 'xml' );
         $xml = new SimpleXMLElement('<root/>');
         $this->array_to_xml($data, $xml);
 

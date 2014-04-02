@@ -142,19 +142,22 @@ class Router implements RouterInterface
         }
 
         $_url_ext = $url_config["ext"];
-        if (isset($_url_ext[1]) && false !== strpos($_query_string, $_url_ext[0])) {
-            list($_query_string, $ext) = explode($_url_ext[0], $_query_string);
-            if ($ext !== substr($_url_ext, 1)) {
+        if (isset($_url_ext[1]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0)
+        {
+            if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len)))
+            {
+                $_query_string = substr($_query_string, 0, -$_url_ext_len);
+            } else {
                 throw new FrontException("找不到该页面");
             }
         }
-
 
         if (false !== strpos($_query_string, $url_config['dot'])) {
             $router_params = explode($url_config['dot'], $_query_string);
         } else {
             $router_params = array($_query_string);
         }
+
         return $router_params;
     }
 

@@ -177,8 +177,14 @@ class Helper
             }
 
             $fp = fopen($file_name, 'w+');
-            fclose( $fp );
-            chmod($file_name, $chmod);
+            if ($fp)
+            {
+                fclose( $fp );
+                chmod($file_name, $chmod);
+                return true;
+            }
+
+            return false;
         }
 
         return true;

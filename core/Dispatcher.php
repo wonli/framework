@@ -162,13 +162,13 @@ class Dispatcher
             $app_name,
             strtolower($this->getController()),
             $this->getAction(),
-            implode($cache_config ['key_dot'], $this->getParams())
+            md5(implode($cache_config ['key_dot'], $this->getParams()))
         );
 
         $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
         $cache_config['key']   = $cache_key;
 
-        return CoreCache::factory( $cache_config );
+        return RequestCache::factory( $cache_config );
     }
 
     /**
@@ -193,19 +193,6 @@ class Dispatcher
 
         if ($action)
         {
-            //自动识别返回类型
-            $_display_type = $app_sys_conf ['display'];
-            if (0 === strcasecmp('AUTO', $_display_type))
-            {
-                $_display = 'HTML';
-                if (false !== strpos($action, "."))
-                {
-                    list($action, $_display) = explode(".", strtolower($action));
-                }
-
-                self::$appConfig->set("sys", array("display"=>$_display));
-            }
-
             try
             {
                 //会触发autoLoad
@@ -309,28 +296,26 @@ class Dispatcher
 
         $action_config = $this->getActionConfig();
         $action_params = array();
-        if (isset($action_config['params']))
-        {
+
+        if (isset($action_config['params'])) {
             $action_params = $action_config['params'];
         }
         $this->init_params( $router ['params'], $action_params );
 
         $cache = false;
-        if (isset($action_config['cache']))
-        {
+        if (isset($action_config['cache'])) {
             $cache = $this->init_request_cache( $action_config['cache'] );
         }
 
-        if ($cache && $cache->getExtime())
-        {
+        if ($cache && $cache->getExtime()) {
             $response = $cache->get();
         } else {
             $cp = new self::$controller( );
+
             if (true === $run_controller)
             {
                 $response = $cp->run( self::$action, self::$params );
-                if ($cache)
-                {
+                if ($cache) {
                     $cache->set(null, $response);
                 }
             } else {
@@ -338,8 +323,13 @@ class Dispatcher
             }
         }
 
-        $display_type = $this->getConfig()->get('sys', 'display');
-        Response::getInstance( )->set_ContentType( $display_type )->output( $response );
+        $content_type = Response::getInstance( )->get_ContentType();
+        if (! $content_type)
+        {
+            Response::getInstance( )->set_ContentType( $this->getConfig()->get('sys', 'display') );
+        }
+
+        Response::getInstance( )->output( $response );
     }
 
     /**

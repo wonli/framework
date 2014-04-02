@@ -136,7 +136,7 @@ class CoreController extends FrameBase
      * @param bool $only_add_header
      * @return bool|mixed
      */
-    protected function download($data = null, $method = null, $file_name = null, $add_header = array(), $only_add_header = false)
+    protected function fileDisplay($data = null, $method = null, $file_name = null, $add_header = array(), $only_add_header = false)
     {
         if (null == $file_name)
         {

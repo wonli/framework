@@ -89,10 +89,14 @@ class Loader
             'ArrayMap'        => 'core/ArrayMap.php',
             'Annotate'        => 'core/Annotate.php',
 
-            'CoreCache'       => 'cache/CoreCache.php',
-            'ControllerCache' => 'cache/ControllerCache.php',
-            'FileCache'       => 'cache/FileCache.php',
-            'RedisCache'      => 'cache/RedisCache.php',
+            'CoreCache'             =>  'cache/CoreCache.php',
+            'FileCache'             =>  'cache/FileCache.php',
+            'RedisCache'            =>  'cache/RedisCache.php',
+            'RequestCache'          =>  'cache/RequestCache.php',
+            'MemcacheBase'          =>  'cache/MemcacheBase.php',
+            'ControllerCache'       =>  'cache/ControllerCache.php',
+            'RequestMemcache'       =>  'cache/RequestMemcache.php',
+            'RequestRedisCache'     =>  'cache/RequestRedisCache.php',
 
             'CrossException'    => 'exception/CrossException.php',
             'CoreException'     => 'exception/CoreException.php',
