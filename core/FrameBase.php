@@ -244,7 +244,7 @@ class FrameBase
 
         $result = array();
         $decode_params_str = false;
-        if(is_string($params)) {
+        if (is_string($params)) {
             $decode_params_str = $this->encode_params($params, "crossphp", "decode");
         }
 
@@ -252,11 +252,12 @@ class FrameBase
             return $this->params;
         }
 
-        if( $url_type == 2 ) {
+        if ( $url_type == 2 ) {
             parse_str($decode_params_str, $result);
         } else {
-            $_params = explode($this->config->get('url', 'dot'), $decode_params_str);
-            $result = Dispatcher::restore_params_keys($this->controller, $this->action, $_params);
+            $result_array = explode($this->config->get('url', 'dot'), $decode_params_str);
+            $annotate = Dispatcher::getActionConfig();
+            $result = Dispatcher::combineParamsAnnotateConfig($result_array, $annotate['params']);
         }
 
         return $result;

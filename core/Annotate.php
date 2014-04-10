@@ -10,7 +10,7 @@ class Annotate
         $this->content = $annotate;
     }
 
-    public function getInstance( $annotate )
+    public static function getInstance( $annotate )
     {
         return new Annotate($annotate);
     }

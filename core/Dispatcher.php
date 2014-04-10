@@ -38,7 +38,7 @@ class Dispatcher
      *
      * @var string
      */
-    private $action_annotate;
+    private static $action_annotate;
 
     /**
      * 以单例模式运行
@@ -235,7 +235,7 @@ class Dispatcher
             if ($is_callable->isPublic())
             {
                 $this->setAction( $action );
-                $this->setActionAnnotate( $is_callable->getDocComment() );
+                self::setActionAnnotate( $is_callable->getDocComment() );
             } else {
                 throw new CoreException("不被允许访问的方法!");
             }
@@ -294,7 +294,7 @@ class Dispatcher
         $action = $run_controller ? $router ['action'] : null;
         $this->init_controller( $router ['controller'], $action );
 
-        $action_config = $this->getActionConfig();
+        $action_config = self::getActionConfig();
         $action_params = array();
 
         if (isset($action_config['params'])) {
@@ -372,22 +372,41 @@ class Dispatcher
     {
         if ($this->getConfig()->get('url', 'type') == 1)
         {
-            if (! empty($params))
-            {
-                $params_set = array();
-                foreach ($params as $k => $p)
-                {
-                    if (isset($annotate_params[$k])) {
-                        $params_set [ $annotate_params[$k] ] = $p;
-                    } else {
-                        $params_set [] = $p;
-                    }
-                }
-                $params = $params_set;
-            }
+            $params = self::combineParamsAnnotateConfig($params, $annotate_params);
         }
 
         self::$params = $params;
+    }
+
+    /**
+     * 合并参数注释配置
+     *
+     * @param null  $params
+     * @param array $annotate_params
+     * @return array|null
+     */
+    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array() )
+    {
+        if (empty($annotate_params))
+        {
+            return $params;
+        }
+
+        if (! empty($params))
+        {
+            $params_set = array();
+            foreach ($params as $k => $p)
+            {
+                if (isset($annotate_params[$k])) {
+                    $params_set [ $annotate_params[$k] ] = $p;
+                } else {
+                    $params_set [] = $p;
+                }
+            }
+            $params = $params_set;
+        }
+
+        return $params;
     }
 
     /**
@@ -395,9 +414,9 @@ class Dispatcher
      *
      * @param string $annotate
      */
-    public function setActionAnnotate( $annotate )
+    private static function setActionAnnotate( $annotate )
     {
-        $this->action_annotate = $annotate;
+        self::$action_annotate = $annotate;
     }
 
     /**
@@ -405,9 +424,9 @@ class Dispatcher
      *
      * @return string
      */
-    public function getActionAnnotate()
+    private static function getActionAnnotate()
     {
-        return $this->action_annotate;
+        return self::$action_annotate;
     }
 
     /**
@@ -415,10 +434,9 @@ class Dispatcher
      *
      * @return array|bool
      */
-    public function getActionConfig()
+    public static function getActionConfig()
     {
-        $annotate = new Annotate( $this->getActionAnnotate() );
-        return $annotate->parse();
+        return Annotate::getInstance( self::getActionAnnotate() )->parse();
     }
 
     /**

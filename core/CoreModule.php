@@ -15,7 +15,7 @@ class CoreModule extends FrameBase
     /**
      * @var MysqlModel
      */
-    protected $link;
+    public $link;
 
     /**
      * 数据库配置
@@ -87,7 +87,13 @@ class CoreModule extends FrameBase
     {
         if(! self::$db_config)
         {
-            self::$db_config = CrossArray::init( Loader::read("::config/db.config.php") );
+            $db_config_file = $this->config->get('sys', 'db_config');
+            if (! $db_config_file)
+            {
+                $db_config_file = 'db.config.php';
+            }
+
+            self::$db_config = CrossArray::init( Loader::read("::config/{$db_config_file}") );
         }
         return self::$db_config;
     }
