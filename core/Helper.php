@@ -309,28 +309,43 @@ class Helper
         $box = range(0, 255);
 
         $rndkey = array();
-        for($i = 0; $i <= 255; $i++) {
-            $rndkey[$i] = ord($cryptkey[$i % $key_length]);
+        for ($i = 0; $i <= 255; $i++) {
+            $rndkey[$i] = $cryptkey[$i % $key_length];
         }
+        $rndkey = array_map('ord', $rndkey);
 
-        for($j = $i = 0; $i < 256; $i++) {
+        for ($j = $i = 0; $i < 256; $i++) {
             $j = ($j + $box[$i] + $rndkey[$i]) % 256;
             $tmp = $box[$i];
             $box[$i] = $box[$j];
             $box[$j] = $tmp;
         }
 
-        for($a = $j = $i = 0; $i < $string_length; $i++) {
+        $p1 = $p2 = array();
+        for ($a = $j = $i = 0; $i < $string_length; $i++) {
             $a = ($a + 1) % 256;
             $j = ($j + $box[$a]) % 256;
             $tmp = $box[$a];
             $box[$a] = $box[$j];
             $box[$j] = $tmp;
-            $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
+            $p1[] = $string[$i];
+            $p2[] = $box[($box[$a] + $box[$j]) % 256];
         }
 
-        if($operation == 'DECODE') {
-            if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0)
+        if (! empty($p1))
+        {
+            $p1 = array_map('ord', $p1);
+            foreach($p1 as $k => $pv)
+            {
+                $result[] = $pv ^ $p2[$k];
+            }
+
+            unset($p1, $p2, $box, $tmp, $rndkey);
+            $result = implode('', array_map('chr', $result));
+        }
+
+        if ($operation == 'DECODE') {
+            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0)
                 && substr($result, 10, 16) == substr(md5(substr($result, 26).$keyb), 0, 16)) {
                 return substr($result, 26);
             } else {

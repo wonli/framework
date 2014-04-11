@@ -21,7 +21,12 @@ class Mcrypt extends DEcode
      *
      * @var string
      */
-    private $key = "corssphp(*)9<>@$12v";
+    private $default_key = "corssphp(*)9<>@$12v";
+
+    /**
+     * @var string
+     */
+    private $key;
 
     /**
      * 初始化参数
@@ -40,6 +45,7 @@ class Mcrypt extends DEcode
      */
     public function enCode ($data)
     {
+        $this->key = $this->getKey();
         $s = mcrypt_cbc(MCRYPT_RIJNDAEL_128, $this->key, $data, MCRYPT_ENCRYPT, $this->iv);
         return $this->hexCrypt->EnCode($s);
     }
@@ -52,8 +58,34 @@ class Mcrypt extends DEcode
      */
     public function deCode ($data)
     {
+        $this->key = $this->getKey();
         $s = $this->hexCrypt->DeCode($data);
         $str= mcrypt_cbc(MCRYPT_RIJNDAEL_128, $this->key, $s, MCRYPT_DECRYPT, $this->iv);
         return trim($str);
+    }
+
+    /**
+     * 获取key
+     *
+     * @return string
+     */
+    function getKey()
+    {
+        if (! $this->key)
+        {
+            return md5($this->default_key);
+        }
+
+        return $this->key;
+    }
+
+    /**
+     * 设置key
+     *
+     * @param $key
+     */
+    function setKey( $key )
+    {
+        $this->key = md5($key);
     }
 }

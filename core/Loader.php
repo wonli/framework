@@ -58,10 +58,6 @@ class Loader
     {
         return array
         (
-            'RouterInterface'   => 'interface/RouterInterface.php',
-            'CacheInterface'    => 'interface/CacheInterface.php',
-            'SqlInterface'      => 'interface/SqlInterface.php',
-
             'Rest'            => 'core/Rest.php',
             'Widget'          => 'core/Widget.php',
             'Loader'          => 'core/Loader.php',
@@ -84,10 +80,13 @@ class Loader
             'Router'          => 'core/Router.php',
             'UrlRouter'       => 'core/UrlRouter.php',
             'Helper'          => 'core/Helper.php',
-            'HttpAuth'        => 'core/HttpAuth.php',
             'CrossArray'      => 'core/CrossArray.php',
             'ArrayMap'        => 'core/ArrayMap.php',
             'Annotate'        => 'core/Annotate.php',
+            'HttpAuth'        => 'core/HttpAuth.php',
+
+            'CookieAuth'      => 'auth/CookieAuth.php',
+            'SessionAuth'     => 'auth/SessionAuth.php',
 
             'CoreCache'             =>  'cache/CoreCache.php',
             'FileCache'             =>  'cache/FileCache.php',
@@ -102,6 +101,11 @@ class Loader
             'CoreException'     => 'exception/CoreException.php',
             'FrontException'    => 'exception/FrontException.php',
             'CacheException'    => 'exception/CacheException.php',
+
+            'HttpAuthInterface' =>  'interface/HttpAuthInterface.php',
+            'RouterInterface'   =>  'interface/RouterInterface.php',
+            'CacheInterface'    =>  'interface/CacheInterface.php',
+            'SqlInterface'      =>  'interface/SqlInterface.php',
 
             'Page'          =>  'lib/Page.php', //分页
             'MysqlSimple'   =>  'lib/MysqlSimple.php',
