@@ -248,6 +248,18 @@ class Helper
     }
 
     /**
+     * 解析@到某某
+     *
+     * @param $str
+     * @return mixed
+     */
+    static function parseAt($str)
+    {
+        preg_match_all("/@([^@^\\s^:]{1,})([\\s\\:\\,\\;]{0,1})/", $str, $result);
+        return $result;
+    }
+
+    /**
      * 过滤非法标签
      *
      * @param $str

@@ -97,14 +97,21 @@ class CoreView extends FrameBase
     }
 
     /**
-     * 生成资源路径
+     * 生成资源文件路径
      *
      * @param $res_url
      * @return string
      */
     function res($res_url)
     {
-        return rtrim($this->static_url, "/").'/'.$res_url;
+        if (defined('RES_BASE_URL'))
+        {
+            $res_base_url = RES_BASE_URL;
+        } else {
+            $res_base_url = $this->static_url;
+        }
+
+        return rtrim($res_base_url, "/").'/'.$res_url;
     }
 
     /**
@@ -372,7 +379,8 @@ class CoreView extends FrameBase
      * @param $res_url
      * @param string $location
      */
-    function addRes($res_url, $location="header"){
+    function addRes($res_url, $location="header")
+    {
         $this->res_list [$location][] = $res_url;
     }
 
@@ -384,6 +392,11 @@ class CoreView extends FrameBase
     function loadRes($location="header")
     {
         $result = '';
+        if (empty($this->res_list))
+        {
+            return $result;
+        }
+
         if (isset($this->res_list [$location]) && !empty($this->res_list [$location]))
         {
             $data = $this->res_list [$location];
@@ -405,6 +418,7 @@ class CoreView extends FrameBase
 
     /**
      * 输出js/css连接
+     *
      * @param $res_link
      * @return string
      */
@@ -419,15 +433,15 @@ class CoreView extends FrameBase
                 break;
 
             case 'css' :
-                $tpl = '<link type="text/css" rel="stylesheet" href="%s"/>';
+                $tpl = '<link rel="stylesheet" type="text/css" href="%s"/>';
                 break;
 
             default :
                 $tpl = null;
         }
 
-        if(null !== $tpl) {
-            return sprintf($tpl, $this->res($res_link));
+        if (null !== $tpl) {
+            return sprintf("{$tpl}\n", $this->res($res_link));
         }
         return null;
     }

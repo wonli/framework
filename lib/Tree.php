@@ -100,7 +100,7 @@ class Tree
      * @param $parent
      * @param $value
      */
-    function setNode($id, $parent, $value)
+    private function setNode($id, $parent, $value)
     {
         $parent = $parent ? $parent : 0;
 
@@ -127,7 +127,7 @@ class Tree
      *
      * @param int $root
      */
-    function setLayer($root = 0)
+    private function setLayer($root = 0)
     {
         foreach ($this->child[$root] as $id)
         {
@@ -143,7 +143,7 @@ class Tree
      * @param int $root
      * @param null $except 除外的结点，用于编辑结点时，上级不能选择自身及子结点
      */
-    function getList(&$tree, $root = 0, $except = NULL)
+    private function getList(&$tree, $root = 0, $except = NULL)
     {
         foreach ($this->child[$root] as $id)
         {
@@ -164,7 +164,7 @@ class Tree
      * @param $id
      * @return mixed
      */
-    function getValue($id)
+    private function getValue($id)
     {
         return $this->data[$id][$this->value_field];
     }
@@ -176,7 +176,7 @@ class Tree
      * @param bool $space
      * @return string
      */
-    function getLayer($id, $space = false)
+    private function getLayer($id, $space = false)
     {
         return $space ? str_repeat($space, $this->layer[$id]) : $this->layer[$id];
     }
@@ -187,7 +187,7 @@ class Tree
      * @param $id
      * @return mixed
      */
-    function getParent($id)
+    private function getParent($id)
     {
         return $this->parent[$id];
     }
@@ -198,7 +198,7 @@ class Tree
      * @param $id
      * @return mixed
      */
-    function getParents($id)
+    private function getParents($id)
     {
         while ($this->parent[$id] != -1)
         {
@@ -217,7 +217,7 @@ class Tree
      * @param $id
      * @return mixed
      */
-    function getChild($id)
+    private function getChild($id)
     {
         return $this->child[$id];
     }
@@ -229,7 +229,7 @@ class Tree
      * @param null $except
      * @return array
      */
-    function getChilds($id = 0, $except = NULL)
+    private function getChilds($id = 0, $except = NULL)
     {
         $child = array($id);
         $this->getList($child, $id, $except);

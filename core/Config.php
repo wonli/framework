@@ -163,12 +163,10 @@ class Config
         $_sys['base_url'] = Request::getInstance()->getBaseUrl();
         $_sys['site_url'] = $_sys['host'].$_sys['base_url'];
 
-        $_sys['htdocs_url'] = $_sys['host'].str_replace($this->appName, '', $_sys['base_url']);
-
         $_sys['app_name'] = $this->appName;
         $_sys['app_path'] = APP_PATH_DIR.DS.$this->appName;
 
-        $_sys['static_url'] = $_sys["site_url"].'/static/';
+        $_sys['static_url'] = $_sys["base_url"].'/static/';
         $_sys['static_path'] = Request::getInstance()->getScriptFilePath().DS.'static'.DS;
 
         $_sys['cache_path'] = $_sys["app_path"].DS.'cache'.DS;

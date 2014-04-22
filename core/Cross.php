@@ -114,7 +114,6 @@ class Cross
         $this->definer(array(
             'APP_NAME'      =>  $sys_config['app_name'],
             'SITE_URL'      =>  $sys_config['site_url'],
-            'HTDOCS_URL'    =>  $sys_config['htdocs_url'],
             'STATIC_URL'    =>  $sys_config['static_url'],
             'STATIC_PATH'   =>  $sys_config['static_path'],
             'APP_PATH'      =>  $sys_config['app_path'],
