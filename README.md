@@ -19,3 +19,7 @@ demo源码: [http://git.oschina.net/ideaa/blog](http://git.oschina.net/ideaa/blo
 包含一个后台管理系统的开发骨架:
 
 [http://git.oschina.net/ideaa/skeleton](http://git.oschina.net/ideaa/skeleton "http://git.oschina.net/ideaa/skeleton")
+
+文档参见本项目wiki
+
+[http://git.oschina.net/ideaa/crossphp/wikis/home](http://git.oschina.net/ideaa/crossphp/wikis/home)
