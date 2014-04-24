@@ -400,13 +400,11 @@ class FrameBase
 
         ob_start();
         if ( $mr->hasMethod($_before) ) {
-            $this->$_before();
+            echo $this->$_before();
         }
-
-        $this->$act( );
-
+        echo $this->$act( );
         if ( $mr->hasMethod($_after) ) {
-            $this->$_after();
+            echo $this->$_after();
         }
         return ob_get_clean();
     }
