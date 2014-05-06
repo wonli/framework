@@ -127,23 +127,20 @@ class CoreController extends FrameBase
     }
 
     /**
-     * 发送下载请求
+     * 发送一个包含文件名的下载头
      *
-     * @param null $data
-     * @param null $method
      * @param null $file_name
      * @param array $add_header
      * @param bool $only_add_header
-     * @return bool|mixed
      */
-    protected function fileDisplay($data = null, $method = null, $file_name = null, $add_header = array(), $only_add_header = false)
+    protected function sendDownloadHeader($file_name = null, $add_header = array(), $only_add_header = false)
     {
-        if (null == $file_name)
+        if (null === $file_name)
         {
-            $file_name = $method.time();
+            $file_name = $this->controller.'_'.$this->action;
         }
 
-        $down_header = array(
+        $download_header = array(
             "Pragma: public",
             "Expires: 0",
             "Cache-Control:must-revalidate, post-check=0, pre-check=0",
@@ -158,19 +155,13 @@ class CoreController extends FrameBase
         {
             if (true === $only_add_header)
             {
-                $down_header = $add_header;
+                $download_header = $add_header;
             } else {
-                $down_header = array_merge($down_header, $add_header);
+                $download_header = array_merge($download_header, $add_header);
             }
         }
 
-        Response::getInstance()->set_header( $down_header );
-        if ($data && $method)
-        {
-            return $this->view->display( $data, $method );
-        }
-
-        return true;
+        Response::getInstance()->set_header( $download_header );
     }
 
     /**
