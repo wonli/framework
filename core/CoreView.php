@@ -24,7 +24,7 @@ class CoreView extends FrameBase
      *
      * @var array
      */
-    protected $urlconfig;
+    protected $url_config;
 
     /**
      * 资源配置
@@ -32,6 +32,20 @@ class CoreView extends FrameBase
      * @var array
      */
     protected $res_list;
+
+    /**
+     * 默认模板目录
+     *
+     * @var string
+     */
+    protected $tpl_dir;
+
+    /**
+     * 默认模板路径
+     *
+     * @var string
+     */
+    protected $tpl_base_path;
 
     /**
      * 默认连接
@@ -54,7 +68,7 @@ class CoreView extends FrameBase
     {
         parent::__construct();
 
-        $this->urlconfig  = $this->config->get("url");
+        $this->url_config  = $this->config->get("url");
         $this->link_base  = $this->config->get("sys", "base_url");
         $this->static_url = $this->config->get("sys", "static_url");
 
@@ -72,9 +86,7 @@ class CoreView extends FrameBase
     function tpl($tpl_name, $get_content=false, $file_ext_name='.tpl.php')
     {
         $file_path = $this->getTplPath().$tpl_name.$file_ext_name;
-
-        if(true === $get_content)
-        {
+        if (true === $get_content) {
             return file_get_contents($file_path, true);
         }
 
@@ -86,14 +98,17 @@ class CoreView extends FrameBase
      *
      * @param $name
      * @param null $value
+     * @return $this
      */
     final function set($name, $value=null)
     {
-        if(is_array($name)) {
+        if (is_array($name)) {
             $this->set = array_merge($this->set, $name);
         } else {
             $this->set[$name] = $value;
         }
+
+        return $this;
     }
 
     /**
@@ -104,8 +119,7 @@ class CoreView extends FrameBase
      */
     function res($res_url)
     {
-        if (defined('RES_BASE_URL'))
-        {
+        if (defined('RES_BASE_URL')) {
             $res_base_url = RES_BASE_URL;
         } else {
             $res_base_url = $this->static_url;
@@ -121,7 +135,41 @@ class CoreView extends FrameBase
      */
     function getTplPath()
     {
-        return $this->config->get("sys", "app_path").DS.'templates'.DS.$this->getTplPathByType().DS;
+        return rtrim( $this->getTplBasePath().$this->getTplDir(), DS).DS;
+    }
+
+    /**
+     * app 默认模板路径
+     *
+     * @return string
+     */
+    function getAppDefaultTplPath()
+    {
+        return $this->config->get("sys", "app_path").DS.'templates';
+    }
+
+    /**
+     * 设置模板路径
+     *
+     * @param $tpl_base_path
+     */
+    function setTplBasePath($tpl_base_path)
+    {
+        $this->tpl_base_path = trim($tpl_base_path, DS).DS;
+    }
+
+    /**
+     * 获取模板默认路径
+     *
+     * @return string
+     */
+    function getTplBasePath()
+    {
+        if (! $this->tpl_base_path) {
+            $this->setTplBasePath( $this->getAppDefaultTplPath() );
+        }
+
+        return $this->tpl_base_path;
     }
 
     /**
@@ -139,19 +187,16 @@ class CoreView extends FrameBase
         $_action = '';
         $_controller = '';
 
-        if ($controller)
-        {
+        if ($controller) {
             $_link_url .= $this->makeController($controller, $_controller, $_action);
         }
 
-        if ($params != null)
-        {
+        if ($params != null) {
             $_link_url .= $this->makeParams($params, $_controller, $_action, $sec);
         }
 
-        if ($controller && $this->urlconfig['type'] == 1 && $this->urlconfig['ext'])
-        {
-            $_link_url .= $this->urlconfig['ext'];
+        if ($controller && $this->url_config['type'] == 1 && $this->url_config['ext']) {
+            $_link_url .= $this->url_config['ext'];
         }
 
         return $_link_url;
@@ -188,20 +233,20 @@ class CoreView extends FrameBase
         }
 
         $r_controller = $_controller;
-        if (isset($_action))
-        {
+        if (isset($_action)) {
             $r_action = $_action;
         }
 
-        if ($this->urlconfig ['rewrite']) {
+        if ($this->url_config ['rewrite']) {
             $_link_url .= $_controller;
         }
         else
         {
-            $index = $this->urlconfig ['index'];
-            if ( $this->urlconfig ['type'] == 2 ) {
+            $index = $this->url_config ['index'];
+            if ( $this->url_config ['type'] == 2 )
+            {
                 $_dot = $index;
-                $_ext = $this->urlconfig['ext'];
+                $_ext = $this->url_config['ext'];
             } else {
                 if ($index == 'index.php') {
                     $_dot = '?';
@@ -213,7 +258,7 @@ class CoreView extends FrameBase
         }
 
         if (isset($_action)) {
-            $_link_url .= $this->urlconfig['dot'].$_action;
+            $_link_url .= $this->url_config['dot'].$_action;
         }
 
         return $_link_url.$_ext;
@@ -231,18 +276,18 @@ class CoreView extends FrameBase
     private function makeParams($params, $_controller='', $_action='', $sec = false)
     {
         $_params = '';
-        $_dot = $this->urlconfig['dot'];
+        $_dot = $this->url_config['dot'];
 
         if ($params)
         {
-            if ($this->urlconfig ["type"] == 1)
+            if ($this->url_config ["type"] == 1)
             {
                 if (is_array($params)) {
-                    $_params = implode($this->urlconfig['dot'], $params);
+                    $_params = implode($this->url_config['dot'], $params);
                 } else {
                     $url_str = array();
                     parse_str($params, $url_str);
-                    $_params = implode($this->urlconfig['dot'], $url_str);
+                    $_params = implode($this->url_config['dot'], $url_str);
                 }
 
             } else {
@@ -268,25 +313,20 @@ class CoreView extends FrameBase
      * @param null $data
      * @param null $method
      */
-    function display(  $data = null, $method = null )
+    function display($data = null, $method = null)
     {
         $this->data = $data;
-        $display_type = $this->config->get("sys", "display");
-
         if ($method === null)
         {
-            if($display_type && $display_type != "HTML")
-            {
+            $display_type = $this->config->get("sys", "display");
+            if ($display_type && $display_type != "HTML") {
                 $method = strtoupper( $display_type );
-            }
-            else
-            {
+            } else {
                 $method = $this->action;
             }
         }
 
-        if(! $method)
-        {
+        if (! $method) {
             $method = Router::$default_action;
         }
 
@@ -307,30 +347,43 @@ class CoreView extends FrameBase
     }
 
     /**
+     * 设置模板dir
+     *
+     * @param $dir_name
+     */
+    function setTplDir( $dir_name )
+    {
+        $this->tpl_dir = $dir_name;
+    }
+
+    /**
      * 取得模板路径前缀
      *
      * @return string
      */
-    function getTplPathByType()
+    function getTplDir()
     {
-        /*
-        if($this->is_robot()) {
-            return 'spider';
-        }
-        else
-
-        if ($this->is_mobile()) {
-            return 'mobile';
-        }
-        */
-
-        $tpl_path = 'web';
-        if( $this->config->get("sys", "default_tpl") )
+        if (! $this->tpl_dir)
         {
-            $tpl_path = $this->config->get("sys", "default_tpl");
+            $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
+            if (! $default_tpl_dir)
+            {
+                $default_tpl_dir = 'default';
+            }
+
+            $this->setTplDir( $default_tpl_dir );
         }
 
-        return $tpl_path;
+        if ($this->config->get('sys', 'auto_switch_tpl'))
+        {
+            if ($this->is_robot()) {
+                return 'spider';
+            } elseif ($this->is_mobile()) {
+                return 'mobile';
+            }
+        }
+
+        return $this->tpl_dir;
     }
 
     /**
@@ -392,19 +445,18 @@ class CoreView extends FrameBase
     function loadRes($location="header")
     {
         $result = '';
-        if (empty($this->res_list))
-        {
+        if (empty($this->res_list)) {
             return $result;
         }
 
-        if (isset($this->res_list [$location]) && !empty($this->res_list [$location]))
-        {
+        if (isset($this->res_list [$location]) && !empty($this->res_list [$location])) {
             $data = $this->res_list [$location];
         }
 
         if (! empty($data))
         {
-            if(is_array($data)) {
+            if(is_array($data))
+            {
                 foreach($data as $r) {
                     $result .= $this->outputResLink($r);
                 }
@@ -425,7 +477,6 @@ class CoreView extends FrameBase
     function outputResLink($res_link)
     {
         $t = Helper::getExt($res_link);
-
         switch( strtolower($t) )
         {
             case 'js' :
@@ -468,7 +519,7 @@ class CoreView extends FrameBase
      * @param $data
      * @return mixed
      */
-    function XML( $data )
+    function XML($data)
     {
         $this->set(
             array("layer"=>"xml")
@@ -482,14 +533,6 @@ class CoreView extends FrameBase
     }
 
     /**
-     * 输出html
-     */
-    function HTML()
-    {
-
-    }
-
-    /**
      * 数组转XML 数字会被转换成_num_
      *
      * @param $array_data
@@ -497,8 +540,7 @@ class CoreView extends FrameBase
      */
     function array_to_xml($array_data, & $xml_res)
     {
-        if(! is_array($array_data))
-        {
+        if(! is_array($array_data)) {
             $array_data = array($array_data);
         }
 
@@ -514,13 +556,9 @@ class CoreView extends FrameBase
                 else{
                     $this->array_to_xml($value, $xml_res);
                 }
-            }
-            else if(is_numeric($key))
-            {
+            } else if(is_numeric($key)) {
                 $xml_res->addChild("_{$key}_", $value);
-            }
-            else
-            {
+            } else {
                 $xml_res->addChild($key, $value);
             }
         }
@@ -535,29 +573,19 @@ class CoreView extends FrameBase
      */
     function loadLayer($content, $layer_ext='.layer.php')
     {
-        if($this->set)
-        {
+        if ($this->set) {
             extract($this->set, EXTR_PREFIX_SAME, "USER_DEFINED");
         }
         $_real_path = $this->getTplPath();
-        $controller_config = $this->config->get("controller", strtolower($this->controller));
 
         //运行时>配置>默认
-        if( isset($layer) )
-        {
+        if(isset($layer)) {
             $layer_file = $_real_path.$layer.$layer_ext;
-        }
-        else if( $controller_config && isset($controller_config["layer"]) )
-        {
-            $layer_file = $_real_path.$controller_config["layer"].$layer_ext;
-        }
-        else
-        {
+        } else {
             $layer_file = $_real_path.'default'.$layer_ext;
         }
 
-        if(! file_exists($layer_file) )
-        {
+        if(! file_exists($layer_file)) {
             throw new CoreException($layer_file.' layer Not found!');
         }
 
