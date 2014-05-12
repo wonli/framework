@@ -135,7 +135,7 @@ class CoreView extends FrameBase
      */
     function getTplPath()
     {
-        return rtrim( $this->getTplBasePath().$this->getTplDir(), DS).DS;
+        return rtrim($this->getTplBasePath().$this->getTplDir(), DS).DS;
     }
 
     /**
@@ -155,7 +155,7 @@ class CoreView extends FrameBase
      */
     function setTplBasePath($tpl_base_path)
     {
-        $this->tpl_base_path = trim($tpl_base_path, DS).DS;
+        $this->tpl_base_path = rtrim($tpl_base_path, DS).DS;
     }
 
     /**
