@@ -424,7 +424,10 @@ class CoreView extends FrameBase
      */
     function is_mobile()
     {
-        if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
+        if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
+            return true;
+        }
+        elseif (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
        		return true;
        	}
        	elseif (strpos(strtoupper($_SERVER['HTTP_ACCEPT']), "VND.WAP.WML") > 0) {
@@ -513,7 +516,6 @@ class CoreView extends FrameBase
      * 输出JSON
      *
      * @param $data
-     * @return mixed
      */
     function JSON($data)
     {
@@ -529,51 +531,18 @@ class CoreView extends FrameBase
      * 输出XML
      *
      * @param $data
-     * @return mixed
+     * @param string $root_name
      */
-    function XML($data)
+    function XML($data, $root_name='root')
     {
         $this->set(
             array("layer"=>"xml")
         );
 
         Response::getInstance()->set_ContentType( 'xml' );
-        $xml = new SimpleXMLElement('<root/>');
-        $this->array_to_xml($data, $xml);
+        $xml = Array2XML::createXML($root_name, $data);
 
-        echo $xml->asXML();
-    }
-
-    /**
-     * 数组转XML 数字会被转换成_num_
-     *
-     * @param $array_data
-     * @param $xml_res
-     */
-    function array_to_xml($array_data, & $xml_res)
-    {
-        if(! is_array($array_data)) {
-            $array_data = array($array_data);
-        }
-
-        foreach($array_data as $key => $value)
-        {
-            if(is_array($value))
-            {
-                if(! is_numeric($key))
-                {
-                    $subNode = $xml_res->addChild($key);
-                    $this->array_to_xml($value, $subNode);
-                }
-                else{
-                    $this->array_to_xml($value, $xml_res);
-                }
-            } else if(is_numeric($key)) {
-                $xml_res->addChild("_{$key}_", $value);
-            } else {
-                $xml_res->addChild($key, $value);
-            }
-        }
+        echo $xml->saveXML();
     }
 
     /**

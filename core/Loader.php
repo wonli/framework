@@ -124,6 +124,7 @@ class Loader
             'DESMcrypt'     =>  'lib/DESMcrypt.php',
             'Mcrypt'        =>  'lib/Mcrypt.php',
             'PYInitials'    =>  'lib/PYInitials.php',
+            'Array2XML'     =>  'lib/Array2XML.php',
         );
     }
 
