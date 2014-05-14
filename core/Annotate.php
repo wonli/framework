@@ -72,7 +72,7 @@ class Annotate
      *      array(...)
      *  )
      * </pre>
-     * @param $val
+     * @param $params
      * @return array
      */
     private function parseAnnotateCacheConfig( $params )

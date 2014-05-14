@@ -52,7 +52,7 @@ class ArrayMap extends ArrayIterator
      */
     public function __set($index, $value)
     {
-        if(is_array($value) && isset($value))
+        if (is_array($value) && isset($value))
         {
             $value = new self($value);
         }
@@ -158,9 +158,9 @@ class ArrayMap extends ArrayIterator
      *  <li>$index为字符串的时候 获取配置数组,此时设定$key 则获取数组中指定项的值</li>
      *  <li>$index为数组的时候 获取数组中指定的配置项</li>
      * </ul>
-     * @param $index 字符串或数组
-     * @param $key null或boolean
-     * @return string|array|object
+     * @param $index
+     * @param null $key
+     * @return array|bool|mixed
      */
     public function get($index, $key=null)
     {

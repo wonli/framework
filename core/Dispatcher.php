@@ -116,7 +116,8 @@ class Dispatcher
     /**
      * 初始化request cache
      *
-     * @param $cache_config
+     * @param $request_cache_config
+     * @throws CoreException
      * @return bool|FileCache|Memcache|RedisCache
      */
     function init_request_cache( $request_cache_config )
@@ -246,6 +247,7 @@ class Dispatcher
      * 初始化参数
      *
      * @param $params
+     * @param array $annotate_params
      */
     private function init_params( $params, $annotate_params = array() )
     {

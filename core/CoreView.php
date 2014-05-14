@@ -192,7 +192,7 @@ class CoreView extends FrameBase
         }
 
         if ($params != null) {
-            $_link_url .= $this->makeParams($params, $_controller, $_action, $sec);
+            $_link_url .= $this->makeParams($params, $sec);
         }
 
         if ($controller && $this->url_config['type'] == 1 && $this->url_config['ext']) {
@@ -268,12 +268,10 @@ class CoreView extends FrameBase
      * 生成link参数
      *
      * @param $params
-     * @param string $_controller
-     * @param string $_action
      * @param bool $sec
      * @return string
      */
-    private function makeParams($params, $_controller='', $_action='', $sec = false)
+    private function makeParams($params, $sec = false)
     {
         $_params = '';
         $_dot = $this->url_config['dot'];
@@ -300,7 +298,7 @@ class CoreView extends FrameBase
             }
 
             if (true === $sec) {
-                $_params = $this->encode_params($_params, "crossphp");
+                $_params = $this->urlEncrypt($_params, "crossphp");
             }
         }
 

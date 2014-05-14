@@ -6,41 +6,50 @@
 class Router implements RouterInterface
 {
     /**
-     * @var 用户配置
-     */
-    private $init;
-
-    /**
-     * @var 控制器
-     */
-    private $controller;
-
-    /**
-     * @var action
-     */
-    private $action;
-
-    /**
-     * @var 参数
+     * url参数
+     *
+     * @var array
      */
     private $params;
 
     /**
-     * @var string 默认action
+     * Action名称
+     *
+     * @var string
+     */
+    private $action;
+
+    /**
+     * 控制器名称
+     *
+     * @var string
+     */
+    private $controller;
+
+    /**
+     * 默认action
+     *
+     * @var string
      */
     public static $default_action = "index";
 
     /**
-     * @var $router_params ;
+     * @var array;
      */
     private $router_params = array();
 
     /**
-     * @var 配置参数
+     * app配置
+     *
+     * @var array
      */
     private $config;
 
-
+    /**
+     * router实例
+     *
+     * @var Router
+     */
     private static $instance;
 
     private function __construct($_config)
@@ -93,10 +102,6 @@ class Router implements RouterInterface
     function initParams()
     {
         $url_config = $this->config->get("url");
-        $request = array();
-
-        $r = $_REQUEST;
-
         switch ($url_config ['type']) {
             case 1 :
                 $request = Request::getInstance()->getUrlRequest(1);
@@ -107,15 +112,15 @@ class Router implements RouterInterface
                 $request = self::parseString($path_info, $url_config);
 
                 if (!empty($request)) {
-                    return array_merge($request, $r);
+                    return array_merge($request, $_REQUEST);
                 }
 
                 return $request;
 
             default :
-                $request = array($r["c"], $r["a"]);
-                unset($r["c"], $r["a"]);
-                return array_merge($request, $r);
+                $request = array($_REQUEST["c"], $_REQUEST["a"]);
+                unset($_REQUEST["c"], $_REQUEST["a"]);
+                return array_merge($request, $_REQUEST);
         }
     }
 
@@ -144,8 +149,7 @@ class Router implements RouterInterface
         $_url_ext = $url_config["ext"];
         if (isset($_url_ext[1]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0)
         {
-            if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len)))
-            {
+            if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len))) {
                 $_query_string = substr($_query_string, 0, -$_url_ext_len);
             } else {
                 throw new FrontException("找不到该页面");
@@ -177,13 +181,13 @@ class Router implements RouterInterface
             if (isset($_defController)) {
                 $_defaultRouter['controller'] = $_defController;
             } else {
-                throw new CoreException("please define the default controller in the APP_PATH/APP_NAME/init file!");
+                throw new CoreException("please define the default controller in the APP_PATH/APP_NAME/init.php file!");
             }
 
             if (isset($_defAction)) {
                 $_defaultRouter['action'] = $_defAction;
             } else {
-                throw new CoreException("please define the default action in the APP_PATH/APP_NAME/init file!");
+                throw new CoreException("please define the default action in the APP_PATH/APP_NAME/init.php file!");
             }
 
             $_defaultRouter['params'] = $_REQUEST;
@@ -222,9 +226,7 @@ class Router implements RouterInterface
      */
     function setRouter($request)
     {
-        /**
-         * 控制器配置
-         */
+        //router配置
         $router_config = $this->config->get("router");
         $_controller = $request [0];
         $this->config->set('url', array('ori_controller' => $_controller));

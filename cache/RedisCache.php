@@ -14,7 +14,7 @@ class RedisCache
     function __construct($option)
     {
         if ( ! extension_loaded('redis') ) {
-            throw new CoreException('NOT_SUPPERT : redis');
+            throw new CoreException('NOT_SUPPORT : redis');
         }
 
         $obj = new redis();

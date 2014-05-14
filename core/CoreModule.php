@@ -6,6 +6,11 @@
 class CoreModule extends FrameBase
 {
     /**
+     * @var MysqlModel
+     */
+    public $link;
+
+    /**
      * database type name
      *
      * @var string
@@ -13,16 +18,18 @@ class CoreModule extends FrameBase
     protected $db_type;
 
     /**
-     * @var MysqlModel
+     * 连接配置文件名
+     *
+     * @var string
      */
-    public $link;
+    protected $db_config_file;
 
     /**
-     * 数据库配置
+     * 数据库连接配置
      *
      * @var object
      */
-    protected static $db_config;
+    protected static $link_config;
 
     /**
      * 缓存文件
@@ -51,26 +58,27 @@ class CoreModule extends FrameBase
      */
     function getLink( $params = null )
     {
-        $db_config = $this->db_config( );
+        $db_config = $this->linkConfig( );
         $controller_config = null;
 
-        if( $params )
+        if ($params)
         {
             list($link_type, $link_config) = explode(":", $params);
             $link_params = $db_config->get($link_type, $link_config);
 
-            if( empty($link_params) )
-            {
+            if (empty($link_params)) {
                 throw new CoreException("未配置的数据库: {$link_type}:{$link_config}");
             }
         }
         else
         {
-            if($db_config->get("mysql", "db"))
+            if ($db_config->get("mysql", "db"))
             {
                 $link_type = 'mysql';
                 $link_params = $db_config->get("mysql", "db");
-            } else {
+            }
+            else
+            {
                 throw new CoreException("未找到数据库默认配置");
             }
         }
@@ -83,19 +91,44 @@ class CoreModule extends FrameBase
      *
      * @return array
      */
-    function db_config( )
+    function linkConfig( )
     {
-        if(! self::$db_config)
+        if (! self::$link_config)
+        {
+            $link_config_file = $this->getLinkConfigFile();
+            self::$link_config = CrossArray::init( Loader::read("::config/{$link_config_file}") );
+        }
+        return self::$link_config;
+    }
+
+    /**
+     * 设置连接配置文件名
+     *
+     * @param $link_config_file
+     */
+    function setLinkConfigFile($link_config_file)
+    {
+        $this->db_config_file = $link_config_file;
+    }
+
+    /**
+     * 获取连接配置文件名
+     *
+     * @return mixed
+     */
+    function getLinkConfigFile()
+    {
+        if (! $this->db_config_file)
         {
             $db_config_file = $this->config->get('sys', 'db_config');
-            if (! $db_config_file)
-            {
+            if (! $db_config_file) {
                 $db_config_file = 'db.config.php';
             }
 
-            self::$db_config = CrossArray::init( Loader::read("::config/{$db_config_file}") );
+            $this->setLinkConfigFile($db_config_file);
         }
-        return self::$db_config;
+
+        return $this->db_config_file;
     }
 
     /**

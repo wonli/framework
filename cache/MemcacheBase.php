@@ -14,7 +14,7 @@ class MemcacheBase
     function __construct($option)
     {
         if ( ! extension_loaded('memcache') ) {
-            throw new CoreException('NOT_SUPPERT : memcache');
+            throw new CoreException('NOT_SUPPORT : memcache');
         }
 
         $mc = new Memcache();

@@ -7,26 +7,25 @@
 class FrameBase
 {
     /**
+     * app配置
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * 请求的参数列表
+     *
      * @var array
      */
     protected $params;
 
     /**
+     * action
+     *
      * @var string
      */
     protected $action;
-
-    /**
-     * @var string
-     */
-    protected $module;
-
-    /**
-     * 用户配置
-     *
-     * @var array
-     */
-    protected $config;
 
     /**
      * 控制器名称
@@ -34,6 +33,13 @@ class FrameBase
      * @var string
      */
     protected $controller;
+
+    /**
+     * url加密时用到的key
+     *
+     * @var string
+     */
+    protected $url_crypt_key;
 
     /**
      * module的实例
@@ -106,9 +112,9 @@ class FrameBase
     }
 
     /**
-     * 取得action
+     * 获取action
      *
-     * @return action
+     * @return string
      */
     public function getAction()
     {
@@ -212,22 +218,50 @@ class FrameBase
      * 参数加密
      *
      * @param $tex
-     * @param $key
      * @param string $type
      * @return bool|string
      */
-    protected function encode_params($tex, $key, $type="encode")
+    protected function urlEncrypt($tex, $type="encode")
     {
+        $key = $this->getUrlEncryptKey();
         return Helper::encode_params($tex, $key, $type);
     }
 
     /**
-     * 参数解密
+     * 设置url加密时候用到的key
+     *
+     * @param $key
+     */
+    private function setUrlEncryptKey($key)
+    {
+        $this->url_crypt_key = $key;
+    }
+
+    /**
+     * 获取url加密/解密时用到的key
+     */
+    protected function getUrlEncryptKey()
+    {
+        if (! $this->url_crypt_key)
+        {
+            $url_crypt_key = $this->config->get('url', 'crypto_key');
+            if (! $url_crypt_key) {
+                $url_crypt_key = 'crossphp';
+            }
+
+            $this->setUrlEncryptKey($url_crypt_key);
+        }
+
+        return $this->url_crypt_key;
+    }
+
+    /**
+     * 还原加密后的参数
      *
      * @param null $params
      * @return bool|string
      */
-    protected function sparams( $params=null )
+    protected function sParams($params=null)
     {
         $url_type = $this->config->get('url', 'type');
 
@@ -245,14 +279,14 @@ class FrameBase
         $result = array();
         $decode_params_str = false;
         if (is_string($params)) {
-            $decode_params_str = $this->encode_params($params, "crossphp", "decode");
+            $decode_params_str = $this->urlEncrypt($params, "decode");
         }
 
         if (false == $decode_params_str) {
             return $this->params;
         }
 
-        if ( $url_type == 2 ) {
+        if ($url_type == 2) {
             parse_str($decode_params_str, $result);
         } else {
             $result_array = explode($this->config->get('url', 'dot'), $decode_params_str);
@@ -315,16 +349,16 @@ class FrameBase
      */
     protected function loadModule( $module_name, $params = '' )
     {
-        if(! isset(self::$moduleInstance[ $module_name ]))
+        if (! isset(self::$moduleInstance[ $module_name ]))
         {
             $args = func_get_args();
-            if( $params != '' && count($args) > 2 )
+            if ($params != '' && count($args) > 2)
             {
                 array_shift($args);
                 $params = $args;
             }
 
-            if( false !== strpos( $module_name, "/") )
+            if (false !== strpos( $module_name, "/"))
             {
                 Loader::import("::modules/{$module_name}Module");
                 $module_name = end( explode("/", $module_name) );
@@ -441,16 +475,22 @@ class FrameBase
         switch( $property )
         {
             case 'request' :
-                return $this->request = Request::getInstance();
+                $instance = Request::getInstance();
+                break;
 
             case 'response' :
-                return $this->response = Response::getInstance();
+                $instance = Response::getInstance();
+                break;
 
             case 'view' :
-                return $this->view = $this->loadView();
+                $instance = $this->loadView();
+                break;
 
             default :
+                $instance = null;
                 break;
         }
+
+        return $instance;
     }
 }

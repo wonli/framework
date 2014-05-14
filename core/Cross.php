@@ -62,9 +62,8 @@ class Cross
     /**
      * 实例化框架
      *
-     * @param $app_name
-     * @param $runtime_config 运行时加载的设置
-     * @internal param $app_name 要加载的App名称
+     * @param $app_name app名称
+     * @param null $runtime_config 运行时加载的设置
      * @return mixed
      */
     static function loadApp($app_name, $runtime_config = null)
@@ -121,17 +120,16 @@ class Cross
     }
 
     /**
-     * 常量定义
+     * 定义常量
      *
-     * @param   $define 要定义的常量名
-     * @param   $args   常量的值
+     * @param $define
+     * @param null $args
      */
     private function definer($define, $args=null)
     {
         if (is_array($define))
         {
-            foreach($define as $def=>$value)
-            {
+            foreach($define as $def=>$value) {
                 defined($def)or define($def, $value);
             }
         }

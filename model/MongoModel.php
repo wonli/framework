@@ -20,7 +20,7 @@ class MongoModel
     function __construct( $link_params )
     {
         if ( ! extension_loaded('mongo') ) {
-            throw new CoreException('NOT_SUPPERT : mongo');
+            throw new CoreException('NOT_SUPPORT : mongo');
         }
 
         if(class_exists('MongoClient'))

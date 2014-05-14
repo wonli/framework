@@ -131,7 +131,8 @@ class Loader
     /**
      * 载入文件(支持多文件载入)
      *
-     * @param $files 参见Loader::parseFileRealPath()
+     * @see Loader::parseFileRealPath()
+     * @param $files
      * @return mixed
      * @throws CoreException
      */
@@ -163,19 +164,15 @@ class Loader
      */
     static public function read( $file, $read_file = true )
     {
-        if (file_exists($file))
-        {
+        if (file_exists($file)) {
             $file_path = $file;
-        }
-        else
-        {
+        } else {
             $file_path = Loader::getFilePath( $file );
         }
 
         $key = crc32($file_path);
         $read_file_flag = $read_file ? 1 : 0;
-        if (isset(self::$loaded [$read_file_flag][ $key ]) )
-        {
+        if (isset(self::$loaded [$read_file_flag][ $key ]) ) {
             return self::$loaded [$read_file_flag][ $key ];
         }
 
@@ -296,38 +293,29 @@ class Loader
      */
     function autoLoad($class_name)
     {
-
-        if (isset(self::$coreClass [$class_name]))
-        {
+        if (isset(self::$coreClass [$class_name])) {
             $file_real_path= CP_PATH.self::$coreClass[$class_name];
         }
         else
         {
-            if ( 'Module' === substr($class_name, -6) )
-            {
+            if ( 'Module' === substr($class_name, -6) ) {
                 return spl_autoload_register(array("Loader","module_load"));
-            }
-            elseif( 'View' === substr($class_name, -4) )
-            {
+            } elseif( 'View' === substr($class_name, -4) ) {
                 $_file_type = 'views';
-            }
-            else
-            {
+            } else {
                 $_file_type = 'controllers';
             }
 
             if (! isset($file_real_path) && $_file_type)
             {
                 $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
-                if (false !== strpos($class_name, '\\'))
-                {
+                if (false !== strpos($class_name, '\\')) {
                     $_file_path = PROJECT_PATH.DS;
                 }
                 $file_real_path = $_file_path.$class_name.'.php';
             }
 
-            if (! is_file($file_real_path))
-            {
+            if (! is_file($file_real_path)) {
                 return false;
             }
         }
@@ -352,8 +340,7 @@ class Loader
         }
 
         $file_real_path = $_file_path.$module_name.".php";
-        if ( file_exists( $file_real_path ) )
-        {
+        if (file_exists( $file_real_path )) {
             require($file_real_path);
         }
     }

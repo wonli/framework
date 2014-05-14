@@ -19,21 +19,20 @@ class CookieAuth implements HttpAuthInterface
     private $default_key = "!wl<@>c(r#%o*s&s";
 
     /**
-     * 生成密钥 用户ip+浏览器AGENT+key+params
+     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
      *
-     * @param $params 值
-     * @return string md5 字符串
+     * @param $params
+     * @return string
      */
     protected function cookieKey($params)
     {
-        if (isset($_SERVER['HTTP_USER_AGENT']))
-        {
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
             $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
         } else {
             $agent = 'agent';
         }
 
-        return sha1(Helper::getIp().$agent.$this->key.$params);
+        return sha1(Helper::getIp().$agent.$this->getKey().$params);
     }
 
     /**
@@ -49,13 +48,11 @@ class CookieAuth implements HttpAuthInterface
     /**
      * 设置cookie的key
      *
-     * @param $key
      * @return string
      */
-    protected function getKey( $key )
+    protected function getKey( )
     {
-        if (! $this->key)
-        {
+        if (! $this->key) {
             $this->key = $this->default_key;
         }
 
@@ -63,29 +60,17 @@ class CookieAuth implements HttpAuthInterface
     }
 
     /**
-     * 生成加密后的cookie
+     * 生成机密后的cookie
      *
-     * @param $name cookie的key
-     * @param $params cookie的值
-     * @param int $exp 过期时间
-     * @return bool
+     * @param $name
+     * @param $params
+     * @param int $exp
+     * @return bool|mixed
      */
     function set($name, $params, $exp = 86400)
     {
         $key = $this->cookieKey($name);
         if (is_array($params)) {
-            $_cookie = $this->get($name, true);
-
-            if ($_cookie)
-            {
-                if (is_array($_cookie) && !empty($_cookie)) {
-                    $params = array_merge($_cookie, $params);
-                } else {
-                    $params [] = $_cookie;
-                }
-                array_filter($params);
-            }
-
             $params = json_encode($params);
         }
 
@@ -93,13 +78,11 @@ class CookieAuth implements HttpAuthInterface
         $expire_time = time() + $exp;
 
         $cookie_domain = null;
-        if (defined(COOKIE_DOMAIN))
-        {
+        if (defined("COOKIE_DOMAIN")) {
             $cookie_domain = COOKIE_DOMAIN;
         }
 
-        if ( setcookie($name, $str, $expire_time, "/", $cookie_domain, null, true) )
-        {
+        if (setcookie($name, $str, $expire_time, "/", $cookie_domain, null, true)) {
             return true;
         }
 
@@ -115,29 +98,31 @@ class CookieAuth implements HttpAuthInterface
      */
     function get($params, $de = false)
     {
-        $dejson = false;
+        $de_json = false;
         if (false !== strpos($params, ":")) {
-            list($vkey, $ckey) = explode(":", $params);
-            $dejson = true;
+            list($v_key, $c_key) = explode(":", $params);
+            $de_json = true;
         } else {
-            $vkey = $params;
+            $v_key = $params;
         }
 
-        if ( isset($_COOKIE [$vkey]) ) {
-            $str = $_COOKIE [$vkey];
+        if ( isset($_COOKIE [$v_key]) ) {
+            $str = $_COOKIE [$v_key];
         } else {
             return false;
         }
 
-        $key = $this->cookieKey($vkey);
+        $key = $this->cookieKey($v_key);
         $result = Helper::authcode($str, "DECODE", $key);
 
-        if (! $result) return false;
+        if (! $result) {
+            return false;
+        }
 
-        if ( $dejson || $de ) {
+        if ($de_json || $de) {
             $result = json_decode($result, true);
-            if ( ! empty($ckey) && !empty($result [$ckey]) ) {
-                return $result[$ckey];
+            if (! empty($c_key) && !empty($result [$c_key])) {
+                return $result[$c_key];
             }
             return $result;
         }

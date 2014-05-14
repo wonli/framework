@@ -8,16 +8,18 @@ class SessionAuth implements HttpAuthInterface
 {
     function __construct()
     {
-        if(empty($_SESSION)) session_start();
+        if (! isset($_SESSION)) {
+            session_start();
+        }
     }
 
     /**
-     * 设置cookie的值
+     * 设置session的值
      *
-     * @param     $key
-     * @param     $value
+     * @param $key
+     * @param $value
      * @param int $exp
-     * @return bool
+     * @return bool|mixed
      */
     function set($key, $value, $exp = 86400)
     {
@@ -26,23 +28,25 @@ class SessionAuth implements HttpAuthInterface
     }
 
     /**
-     * 获取cookie的值
+     * 获取session的值
      *
-     * @param      $key
+     * @param $key
      * @param bool $de
      * @return mixed
      */
     function get($key, $de = false)
     {
-        if(false !== strpos($key, ":")) {
-            list($vkey, $ckey) = explode(":", $key);
+        if (false !== strpos($key, ":")) {
+            list($v_key, $c_key) = explode(":", $key);
         } else {
-            $vkey = $key;
+            $v_key = $key;
         }
 
-        $_result = $_SESSION[$vkey];
+        $_result = $_SESSION[$v_key];
+        if (!empty($c_key) && isset($_result[$c_key])) {
+            return $_result[$c_key];
+        }
 
-        if( !empty($ckey) && isset($_result[$ckey]) ) return $_result[$ckey];
-        else return $_result;
+        return $_result;
     }
 }
