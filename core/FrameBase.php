@@ -472,25 +472,20 @@ class FrameBase
      */
     function __get( $property )
     {
-        switch( $property )
+        switch($property)
         {
             case 'request' :
-                $instance = Request::getInstance();
-                break;
+                return $this->request = Request::getInstance();
 
             case 'response' :
-                $instance = Response::getInstance();
-                break;
+                return $this->response = Response::getInstance();
 
             case 'view' :
-                $instance = $this->loadView();
-                break;
+                return $this->view = $this->loadView();
 
             default :
-                $instance = null;
+                return null;
                 break;
         }
-
-        return $instance;
     }
 }
