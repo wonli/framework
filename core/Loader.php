@@ -110,11 +110,12 @@ class Loader
             'Page'          =>  'lib/Page.php', //分页
             'MysqlSimple'   =>  'lib/MysqlSimple.php',
             'MongoBase'     =>  'lib/MongoBase.php',
-            'ReSizeImage'   =>  'lib/ReSizeImage.php', //图片剪裁
+            'ImageCut'      =>  'lib/ImageCut.php', //图片剪裁
+            'ImageThumb'    =>  'lib/ImageThumb.php', //生成缩略图
             'PdoAccess'     =>  'lib/PdoAccess.php',
             'Captcha'       =>  'lib/Captcha.php', //头像
             'AImages'       =>  'lib/AImages.php', //图片上传
-            'ImagesThumb'   =>  'lib/ImagesThumb.php', //图片剪裁
+            'UploadImages'  =>  'lib/UploadImages.php', //图片上传
             'Tree'          =>  'lib/Tree.php', //格式化树
             'Crumb'         =>  'lib/Crumb.php', //验证字符串
             'Uploader'	    =>  'lib/Uploader.php',
