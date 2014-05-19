@@ -73,6 +73,8 @@ class ImageCut
      * 设置保存路径
      *
      * @param $path
+     * @param $name
+     * @return $this
      */
     function set_save_info( $path, $name )
     {
@@ -86,6 +88,7 @@ class ImageCut
      *
      * @param $width
      * @param $height
+     * @return $this
      */
     function set_cut_size($width, $height)
     {
@@ -272,7 +275,8 @@ class ImageCut
     /**
      * 图象目标地址
      *
-     * @param $dstpath
+     * @throws Exception
+     * @return string
      */
     protected function get_save_path( )
     {

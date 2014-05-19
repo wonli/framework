@@ -50,7 +50,7 @@ class ImageThumb
      * 设置文件路径和文件名
      *
      * @param $dir
-     * @param $image
+     * @param $thumb_image_name
      * @return $this
      */
     function set_file($dir, $thumb_image_name)
@@ -64,7 +64,8 @@ class ImageThumb
     /**
      * 设置高宽
      *
-     * @param $size
+     * @param $width
+     * @param string $height
      * @return $this
      */
     function set_size($width, $height = '')
@@ -110,8 +111,9 @@ class ImageThumb
      * 生成缩略图
      *
      * @param bool $interlace
-     * @return bool|mixed|string
+     * @param bool $return_full_path
      * @throws CoreException
+     * @return bool|mixed|string
      */
     function thumb($interlace = true, $return_full_path = false)
     {
