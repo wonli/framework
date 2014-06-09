@@ -92,7 +92,8 @@ class CoreController extends FrameBase
     protected function to($_controller=null, $params=null, $sec=false)
     {
         $url = $this->view->link($_controller, $params, $sec);
-        return header("location:{$url}");
+        header("Location: {$url}");
+        exit(0);
     }
 
     /**
