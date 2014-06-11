@@ -186,19 +186,15 @@ class CoreView extends FrameBase
     function link($controller=null, $params=null, $sec = false)
     {
         $_link_url = $this->link_base;
-
-        $_action = '';
-        $_controller = '';
-
         if ($controller) {
-            $_link_url .= $this->makeController($controller, $_controller, $_action);
+            $_link_url .= $this->makeController($controller);
         }
 
         if ($params != null) {
             $_link_url .= $this->makeParams($params, $sec);
         }
 
-        if ($controller && $this->url_config['type'] == 1 && $this->url_config['ext']) {
+        if ($controller && ($this->url_config['type'] == 1 || $this->url_config['type'] == 3) && $this->url_config['ext']) {
             $_link_url .= $this->url_config['ext'];
         }
 
@@ -225,7 +221,7 @@ class CoreView extends FrameBase
      * @param string $r_action
      * @return string
      */
-    private function makeController($controller, & $r_controller = '', & $r_action = '')
+    private function makeController($controller, &$r_controller = '', &$r_action = '')
     {
         $_ext = '';
         $_link_url = '/';
@@ -246,7 +242,7 @@ class CoreView extends FrameBase
         else
         {
             $index = $this->url_config ['index'];
-            if ( $this->url_config ['type'] == 2 )
+            if ($this->url_config ['type'] == 2 || $this->url_config ['type'] == 4)
             {
                 $_dot = $index;
                 $_ext = $this->url_config['ext'];
@@ -303,6 +299,7 @@ class CoreView extends FrameBase
                     break;
 
                 case 3:
+                case 4:
                     if (! is_array($params)) {
                         $p = array();
                         parse_str($params, $p);

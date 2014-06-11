@@ -110,6 +110,7 @@ class Router implements RouterInterface
                 return self::parseString($request, $url_config, true);
 
             case 2 :
+            case 4 :
                 $path_info = Request::getInstance()->getUrlRequest(2);
                 $request = self::parseString($path_info, $url_config);
                 if (!empty($request)) {
@@ -337,6 +338,7 @@ class Router implements RouterInterface
         switch ($this->config->get('url', 'type'))
         {
             case 3:
+            case 4:
                 $p = array();
                 for ($max = count($params), $i = 0; $i < $max; $i ++) {
                     if (!empty($params[$i]) && !empty($params[$i+1])) {
