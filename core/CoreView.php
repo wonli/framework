@@ -69,7 +69,7 @@ class CoreView extends FrameBase
         parent::__construct();
 
         $this->url_config  = $this->config->get("url");
-        $this->link_base  = $this->config->get("sys", "base_url");
+        $this->link_base  = $this->config->get("sys", "site_url");
         $this->static_url = $this->config->get("sys", "static_url");
 
         $this->set("static_url", $this->static_url);
@@ -115,14 +115,17 @@ class CoreView extends FrameBase
      * 生成资源文件路径
      *
      * @param $res_url
+     * @param bool $convert
      * @return string
      */
-    function res($res_url)
+    function res($res_url, $use_static_url = true)
     {
         if (defined('RES_BASE_URL')) {
             $res_base_url = RES_BASE_URL;
-        } else {
+        } elseif ($use_static_url) {
             $res_base_url = $this->static_url;
+        } else {
+            $res_base_url = SITE_URL;
         }
 
         return rtrim($res_base_url, "/").'/'.$res_url;
@@ -278,23 +281,39 @@ class CoreView extends FrameBase
 
         if ($params)
         {
-            if ($this->url_config ["type"] == 1)
+            switch($this->url_config['type'])
             {
-                if (is_array($params)) {
-                    $_params = implode($this->url_config['dot'], $params);
-                } else {
-                    $url_str = array();
-                    parse_str($params, $url_str);
-                    $_params = implode($this->url_config['dot'], $url_str);
-                }
+                case 1:
+                    if (is_array($params)) {
+                        $_params = implode($this->url_config['dot'], $params);
+                    } else {
+                        $url_str = array();
+                        parse_str($params, $url_str);
+                        $_params = implode($this->url_config['dot'], $url_str);
+                    }
+                    break;
 
-            } else {
-                $_dot = '?';
-                if (is_array($params)) {
-                    $_params = http_build_query($params);
-                } else {
-                    $_params = $params;
-                }
+                case 2:
+                    $_dot = '?';
+                    if (is_array($params)) {
+                        $_params = http_build_query($params);
+                    } else {
+                        $_params = $params;
+                    }
+                    break;
+
+                case 3:
+                    if (! is_array($params)) {
+                        $p = array();
+                        parse_str($params, $p);
+                    } else {
+                        $p = $params;
+                    }
+
+                    foreach($p as $p_key => $p_val) {
+                        $_params .= sprintf("%s%s%s", $p_key, $this->url_config['dot'], $p_val);
+                    }
+                    break;
             }
 
             if (true === $sec) {
@@ -441,13 +460,18 @@ class CoreView extends FrameBase
     }
 
     /**
-     * 添加资源 css|js
+     * 运行时加载css/js
+     *
      * @param $res_url
      * @param string $location
+     * @param bool $convert
      */
-    function addRes($res_url, $location="header")
+    function addRes($res_url, $location="header", $convert = true)
     {
-        $this->res_list [$location][] = $res_url;
+        $this->res_list [$location][] = array(
+            'url'  =>  $res_url,
+            'convert'    =>  $convert
+        );
     }
 
     /**
@@ -458,7 +482,7 @@ class CoreView extends FrameBase
     function loadRes($location="header")
     {
         $result = '';
-        if (empty($this->res_list)) {
+        if (empty($this->res_list) || empty($this->res_list[$location])) {
             return $result;
         }
 
@@ -471,7 +495,7 @@ class CoreView extends FrameBase
             if(is_array($data))
             {
                 foreach($data as $r) {
-                    $result .= $this->outputResLink($r);
+                    $result .= $this->outputResLink($r['url'], $r['convert']);
                 }
             } else {
                 $result .= $this->outputResLink($data);
@@ -485,9 +509,10 @@ class CoreView extends FrameBase
      * 输出js/css连接
      *
      * @param $res_link
-     * @return string
+     * @param bool $make_link
+     * @return null|string
      */
-    function outputResLink($res_link)
+    function outputResLink($res_link, $make_link=true)
     {
         $t = Helper::getExt($res_link);
         switch( strtolower($t) )
@@ -504,8 +529,12 @@ class CoreView extends FrameBase
                 $tpl = null;
         }
 
-        if (null !== $tpl) {
-            return sprintf("{$tpl}\n", $this->res($res_link));
+        if (null !== $tpl)
+        {
+            if ($make_link) {
+                $res_link = $this->res($res_link);
+            }
+            return sprintf("{$tpl}\n", $res_link);
         }
         return null;
     }

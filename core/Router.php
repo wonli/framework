@@ -102,19 +102,19 @@ class Router implements RouterInterface
     function initParams()
     {
         $url_config = $this->config->get("url");
-        switch ($url_config ['type']) {
+        switch ($url_config ['type'])
+        {
             case 1 :
+            case 3 :
                 $request = Request::getInstance()->getUrlRequest(1);
-                return self::parseString($request, $url_config);
+                return self::parseString($request, $url_config, true);
 
             case 2 :
                 $path_info = Request::getInstance()->getUrlRequest(2);
                 $request = self::parseString($path_info, $url_config);
-
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }
-
                 return $request;
 
             default :
@@ -132,13 +132,21 @@ class Router implements RouterInterface
      * [2] 返回空字符串
      * </pre>
      *
-     * @param $_query_string
-     * @param $url_config
-     * @throws FrontException
+     * @param string $_query_string
+     * @param array $url_config
+     * @param bool $parse_mixed_params
      * @return array
+     * @throws FrontException
      */
-    static function parseString($_query_string, $url_config)
+    static function parseString($_query_string, $url_config, $parse_mixed_params = false)
     {
+        if (true === $parse_mixed_params && false !== strpos($_query_string, '&'))
+        {
+            parse_str($_query_string, $add_params);
+            $_query_string = current(explode('&', $_query_string));
+            unset($add_params[$_query_string]);
+        }
+
         $_query_string = trim(trim($_query_string, "/"), $url_config['dot']);
         $router_params = array();
 
@@ -160,6 +168,10 @@ class Router implements RouterInterface
             $router_params = explode($url_config['dot'], $_query_string);
         } else {
             $router_params = array($_query_string);
+        }
+
+        if (! empty($add_params)) {
+            $router_params = array_merge($router_params, $add_params);
         }
 
         return $router_params;
@@ -322,7 +334,21 @@ class Router implements RouterInterface
      */
     private function setParams($params)
     {
-        $this->params = $params;
+        switch ($this->config->get('url', 'type'))
+        {
+            case 3:
+                $p = array();
+                for ($max = count($params), $i = 0; $i < $max; $i ++) {
+                    if (!empty($params[$i]) && !empty($params[$i+1])) {
+                        $p[$params[$i]] = $params[$i+1];
+                        array_shift($params);
+                    }
+                }
+                $this->params = $p;
+                break;
+            default:
+                $this->params = $params;
+        }
     }
 
     /**

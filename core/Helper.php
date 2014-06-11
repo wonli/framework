@@ -668,6 +668,21 @@ class Helper
     }
 
     /**
+     * 返回IP的整数形式
+     *
+     * @param string $ip
+     * @return string
+     */
+    static function getLongIp( $ip = "" )
+    {
+        if ($ip == "") {
+            $ip = self::getIp();
+        }
+
+        return sprintf("%u", $ip);
+    }
+
+    /**
      * 格式化数据大小(单位byte)
      *
      * @param $size

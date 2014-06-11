@@ -199,6 +199,11 @@ class Loader
                     self::$loaded [$read_file_flag][$key] = $data;
                     return $data;
 
+                case 'ini':
+                    $data = parse_ini_file($file_path);
+                    self::$loaded [$read_file_flag][$key] = $data;
+                    return $data;
+
                 default :
                     throw new CoreException("不支持的解析格式");
             }

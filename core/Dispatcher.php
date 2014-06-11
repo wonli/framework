@@ -83,7 +83,7 @@ class Dispatcher
         $action = '';
         $params = '';
 
-        if ( is_object($router) ) {
+        if (is_object($router)) {
             $controller     = $router->getController();
             $action         = $router->getAction();
             $params         = $router->getParams();
@@ -95,8 +95,8 @@ class Dispatcher
             $params = $router["params"];
         }
 
-        if ( is_string($router) ) {
-            if(strpos($router,':')) {
+        if (is_string($router)) {
+            if (strpos($router,':')) {
                 list($controller, $action) = explode(':', $router);
             } else {
                 $controller = $router;
@@ -207,7 +207,8 @@ class Dispatcher
                      * 判断Controller是否手动处理action
                      */
                     new ReflectionMethod($controller, '__call');
-                    return $this->setAction($action);
+                    $this->setAction($action);
+                    return;
 
                 } catch (Exception $e) {
 
