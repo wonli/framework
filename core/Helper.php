@@ -26,7 +26,7 @@ class Helper
     static function ftime($time){
         $t=time()-$time;
 
-        if($t > 2592000 ) {
+        if($t > 63072000 ) {
 
             return date('Y-m-d H:i:s', $time);
 

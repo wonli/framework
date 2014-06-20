@@ -1,25 +1,13 @@
 #CrossPHP#
 
-CrossPHP是一个高效,轻量的PHP开发框架.
+CrossPHP是一个高效, 轻量, 易扩展的PHP5开发框架.
 
-1.支持MVC,REST
+1.简单的MVC, REST支持.
 
-2.调用灵活,可以自动解析url运行,也可以单独调用某一控制器,易于和第三方程序配合工作.比如yar,zmq等.
+2.调用灵活, 可以自动解析url运行, 也可以单独调用某一控制器中的指定方法, 易于和第三方程序配合工作. 比如yar, zmq等.
 
-3.在一个CossPHP中项目被分为多个app,分别控制web,api,管理后台等,轻松支持大型复杂的web项目.
+3.在一个CossPHP项目中一个功能模块被称为一个app, 分别控制web, api, 管理后台等, app之间通过module来交互信息, 易于团队协作.
 
-3.支持layer布局,从action注释读取配置,扩展轻松支持redis,memcache,couchbase等
+4.支持layer布局, 支持从action注释读取配置等, module易扩展, 目前已支持redis, mongodb, memcache, couchbase等
 
-
-
-Blog demo [http://ideaa.sinaapp.com](http://ideaa.sinaapp.com "http://ideaa.sinaapp.com")
-
-demo源码: [http://git.oschina.net/ideaa/blog](http://git.oschina.net/ideaa/blog "http://git.oschina.net/ideaa/blog")
-
-包含一个后台管理系统的开发骨架:
-
-[http://git.oschina.net/ideaa/skeleton](http://git.oschina.net/ideaa/skeleton "http://git.oschina.net/ideaa/skeleton")
-
-文档参见本项目wiki
-
-[http://git.oschina.net/ideaa/crossphp/wikis/home](http://git.oschina.net/ideaa/crossphp/wikis/home)
+官方网站: [http://www.crossphp.com](http://www.crossphp.com "www.crossphp.com")
