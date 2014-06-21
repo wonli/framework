@@ -107,25 +107,30 @@ class Loader
             'CacheInterface'    =>  'interface/CacheInterface.php',
             'SqlInterface'      =>  'interface/SqlInterface.php',
 
-            'Page'          =>  'lib/Page.php', //分页
-            'MysqlSimple'   =>  'lib/MysqlSimple.php',
-            'MongoBase'     =>  'lib/MongoBase.php',
-            'ImageCut'      =>  'lib/ImageCut.php', //图片剪裁
-            'ImageThumb'    =>  'lib/ImageThumb.php', //生成缩略图
-            'PdoAccess'     =>  'lib/PdoAccess.php',
-            'Captcha'       =>  'lib/Captcha.php', //头像
-            'AImages'       =>  'lib/AImages.php', //图片上传
-            'UploadImages'  =>  'lib/UploadImages.php', //图片上传
-            'Tree'          =>  'lib/Tree.php', //格式化树
-            'Crumb'         =>  'lib/Crumb.php', //验证字符串
-            'Uploader'	    =>  'lib/Uploader.php',
-            'Mcrypt'        =>  'lib/Mcrypt.php',
-            'DEcode'        =>  'lib/DEcode.php',
-            'HexCrypt'      =>  'lib/HexCrypt.php',
-            'DESMcrypt'     =>  'lib/DESMcrypt.php',
-            'Mcrypt'        =>  'lib/Mcrypt.php',
-            'PYInitials'    =>  'lib/PYInitials.php',
-            'Array2XML'     =>  'lib/Array2XML.php',
+            //驱动
+            'MysqlSimple'   =>  'lib/driver/MysqlSimple.php',
+            //图片处理
+            'ImageCut'      =>  'lib/images/ImageCut.php', //图片剪裁
+            'ImageThumb'    =>  'lib/images/ImageThumb.php', //生成缩略图
+            'UploadImages'  =>  'lib/images/UploadImages.php', //图片上传
+            'Captcha'       =>  'lib/images/Captcha.php', //验证码
+            //soap
+            'SoapDiscovery' =>  'lib/soap/SoapDiscovery.class.php',
+            //upload
+            'Uploader'	    =>  'lib/upload/Uploader.php',
+            //分页处理
+            'Page'          =>  'lib/pagination/Page.php', //分页
+            //加解密
+            'Mcrypt'        =>  'lib/mcrypt/Mcrypt.php',
+            'DEcode'        =>  'lib/mcrypt/DEcode.php',
+            'HexCrypt'      =>  'lib/mcrypt/HexCrypt.php',
+            'DESMcrypt'     =>  'lib/mcrypt/DESMcrypt.php',
+
+            'Tree'          =>  'lib/array/tree/Tree.php',
+            'Array2XML'     =>  'lib/array/Array2XML.php',
+
+            'Crumb'         =>  'lib/other/Crumb.php', //验证字符串
+            'PYInitials'    =>  'lib/other/PYInitials.php',
         );
     }
 

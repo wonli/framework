@@ -16,8 +16,8 @@ class HexCrypt extends DEcode
      */
     public function enCode ($data)
     {
-        // bin2hex($data);
-        return @unpack('H*', $data);
+        //return @unpack('H*', $data);
+        return bin2hex($data);
     }
 
     /**

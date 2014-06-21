@@ -1,5 +1,10 @@
 <?php
-/*使用MCRYPT_BLOWFISH加密算法*/
+/**
+ * AES CBC
+ *
+ * @Auth: wonli <wonli@live.com>
+ * Class Mcrypt
+ */
 class Mcrypt extends DEcode
 {
     /**
@@ -33,7 +38,6 @@ class Mcrypt extends DEcode
      */
     function __construct ()
     {
-        $this->iv = substr(md5($this->key), 0, mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC));
         $this->hexCrypt = new HexCrypt ( );
     }
 
@@ -45,9 +49,11 @@ class Mcrypt extends DEcode
      */
     public function enCode ($data)
     {
-        $this->key = $this->getKey();
-        $s = mcrypt_cbc(MCRYPT_RIJNDAEL_128, $this->key, $data, MCRYPT_ENCRYPT, $this->iv);
-        return $this->hexCrypt->EnCode($s);
+        $key = $this->getKey();
+        $iv = $this->getIV();
+
+        $s = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $this->pkcs5_pad($data), MCRYPT_MODE_CBC, $iv);
+        return $this->hexCrypt->EnCode($this->iv.$s);
     }
 
     /**
@@ -58,10 +64,11 @@ class Mcrypt extends DEcode
      */
     public function deCode ($data)
     {
-        $this->key = $this->getKey();
+        $key = $this->getKey();
         $s = $this->hexCrypt->DeCode($data);
-        $str= mcrypt_cbc(MCRYPT_RIJNDAEL_128, $this->key, $s, MCRYPT_DECRYPT, $this->iv);
-        return trim($str);
+        $iv = substr($s, 0, 16);
+        $str= mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, substr($s, 16), MCRYPT_MODE_CBC, $iv);
+        return $this->pkcs5_unpad($str);
     }
 
     /**
@@ -71,8 +78,7 @@ class Mcrypt extends DEcode
      */
     function getKey()
     {
-        if (! $this->key)
-        {
+        if (! $this->key) {
             return md5($this->default_key);
         }
 
@@ -86,6 +92,29 @@ class Mcrypt extends DEcode
      */
     function setKey( $key )
     {
-        $this->key = md5($key);
+        $this->key = $key;
+    }
+
+    /**
+     * 设置IV
+     */
+    function setIV($iv)
+    {
+        $this->iv = $iv;
+    }
+
+    /**
+     * 获取IV
+     */
+    function getIV()
+    {
+        if (empty($this->iv))
+        {
+            $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+            $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+            $this->setIV($iv);
+        }
+
+        return $this->iv;
     }
 }
