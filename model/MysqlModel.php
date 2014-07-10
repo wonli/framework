@@ -137,11 +137,12 @@ class MysqlModel implements SqlInterface
      * @param $where
      * @param int $order
      * @param array $page
+     * @param string $group_by
      * @return array|mixed
      */
-    function find($table, $fields, $where, $order = 1, & $page = array('p'=>1, 'limit'=>50))
+    function find($table, $fields, $where, $order = 1, & $page = array('p'=>1, 'limit'=>50), $group_by = 1)
     {
-        return $this->prepare_find($table, $fields, $where, $order, $page);
+        return $this->prepare_find($table, $fields, $where, $order, $page, $group_by);
     }
 
     /**
@@ -388,26 +389,34 @@ class MysqlModel implements SqlInterface
      * @param string $where 查询条件
      * @param int $order 排序
      * @param array $page 分页参数 默认返回50条记录
+     * @param string $group_by
      * @return array
      */
-    function prepare_find($table, $fields, $where = null, $order = 1, & $page = array('p'=>1, 'limit'=>50))
+    function prepare_find($table, $fields, $where = null, $order = 1, & $page = array('p'=>1, 'limit'=>50), $group_by = 1)
     {
-        $all_sql = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s";
         $params = array();
 
         $field_str = $this->parse_fields($fields);
         $where_str = $this->parse_where($where, $params);
         $order_str = $this->parse_order($order);
+        $group_str = $this->parse_group($group_by);
 
         $total = $this->prepare_getone($table, 'COUNT(*) as total', $where);
 
-        $page['result_count'] = intval($total ['total']);
-        $page['limit'] = max(1, intval($page['limit']));
+        $page['result_count'] = (int) $total ['total'];
+        $page['limit'] = max(1, (int) $page['limit']);
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
         $page['p'] = max(1, min( $page['p'], $page['total_page']));
         $p = ($page['p'] - 1) * $page['limit'];
 
-        $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
+        if (1 !== $group_by) {
+            $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s";
+            $this->sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str, "{$p}, {$page['limit']}");
+        } else {
+            $all_sql = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s";
+            $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
+        }
+
         $result = $this->prepare($this->sql)->exec($params)->stmt_fetch(true);
         return $result;
     }
@@ -430,7 +439,7 @@ class MysqlModel implements SqlInterface
         $order_str = $this->parse_order($order);
         $group_str = $this->parse_group($group_by);
 
-        if($group_by !== 1)
+        if (1 !== $group_by)
         {
             $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
             $this->sql = sprintf($all_sql, $field_str, $where_str, $group_str, $order_str);

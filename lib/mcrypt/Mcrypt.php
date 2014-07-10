@@ -22,11 +22,25 @@ class Mcrypt extends DEcode
     private $hexCrypt;
 
     /**
+     * 是否解码
+     *
+     * @var bool
+     */
+    private $isDecode = true;
+
+    /**
+     * 加密/解密的字符串是否包含iv前16个字节
+     *
+     * @var bool
+     */
+    private $isContainIV = true;
+
+    /**
      * key
      *
      * @var string
      */
-    private $default_key = "corssphp(*)9<>@$12v";
+    private $defaultKey = "corssphp(*)9<>@$12v";
 
     /**
      * @var string
@@ -38,7 +52,9 @@ class Mcrypt extends DEcode
      */
     function __construct ()
     {
-        $this->hexCrypt = new HexCrypt ( );
+        if ($this->isDecode) {
+            $this->hexCrypt = new HexCrypt ( );
+        }
     }
 
     /**
@@ -51,9 +67,16 @@ class Mcrypt extends DEcode
     {
         $key = $this->getKey();
         $iv = $this->getIV();
-
         $s = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $this->pkcs5_pad($data), MCRYPT_MODE_CBC, $iv);
-        return $this->hexCrypt->EnCode($this->iv.$s);
+        if ($this->isContainIV) {
+            $s = $iv.$s;
+        }
+
+        if ($this->isDecode && $this->hexCrypt) {
+            return $this->hexCrypt->EnCode($s);
+        }
+
+        return $s;
     }
 
     /**
@@ -65,9 +88,19 @@ class Mcrypt extends DEcode
     public function deCode ($data)
     {
         $key = $this->getKey();
-        $s = $this->hexCrypt->DeCode($data);
-        $iv = substr($s, 0, 16);
-        $str= mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, substr($s, 16), MCRYPT_MODE_CBC, $iv);
+
+        if ($this->isDecode && $this->hexCrypt) {
+            $data = $this->hexCrypt->DeCode($data);
+        }
+
+        if ($this->isContainIV) {
+            $iv = substr($data, 0, 16);
+            $data = substr($data, 16);
+        } else {
+            $iv = $this->getIV();
+        }
+
+        $str= mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $data, MCRYPT_MODE_CBC, $iv);
         return $this->pkcs5_unpad($str);
     }
 
@@ -86,21 +119,51 @@ class Mcrypt extends DEcode
     }
 
     /**
-     * 设置key
+     * 设置用于加解密的key
      *
      * @param $key
+     * @return $this
      */
     function setKey( $key )
     {
         $this->key = $key;
+        return $this;
     }
 
     /**
      * 设置IV
+     *
+     * @param $iv
+     * @return $this
      */
     function setIV($iv)
     {
         $this->iv = $iv;
+        return $this;
+    }
+
+    /**
+     * 加解密是否需要先解码
+     *
+     * @param $isDecode
+     * @return $this
+     */
+    function isDecode($isDecode)
+    {
+        $this->isDecode = $isDecode;
+        return $this;
+    }
+
+    /**
+     * 设置加解密是否包含iv
+     *
+     * @param $isContainIV
+     * @return $this
+     */
+    function isContainIV($isContainIV)
+    {
+        $this->isContainIV = $isContainIV;
+        return $this;
     }
 
     /**

@@ -126,7 +126,7 @@ class Loader
             'HexCrypt'      =>  'lib/mcrypt/HexCrypt.php',
             'DESMcrypt'     =>  'lib/mcrypt/DESMcrypt.php',
 
-            'Tree'          =>  'lib/array/tree/Tree.php',
+            'Tree'          =>  'lib/array/Tree.php',
             'Array2XML'     =>  'lib/array/Array2XML.php',
 
             'Crumb'         =>  'lib/other/Crumb.php', //验证字符串
@@ -237,7 +237,7 @@ class Loader
         $_defines = array (
             'app'       =>  defined("APP_PATH")?APP_PATH:'',
             'core'      =>  CP_PATH.'core',
-            'static'    =>  STATIC_PATH,
+            'static'    =>  defined("STATIC_PATH")?STATIC_PATH:'',
             'project'   =>  PROJECT_PATH,
         );
 
