@@ -3,6 +3,10 @@
  * @Auth wonli <wonli@live.com>
  * Class Config 读取app配置
  */
+namespace cross\core;
+
+use cross\exception\CoreException;
+
 class Config
 {
     /**
@@ -38,14 +42,14 @@ class Config
      *
      * @var array
      */
-    static protected $loaded;
+    protected static $loaded;
 
     /**
      * 单例模式
      *
      * @var object
      */
-    static protected $instance;
+    private static $instance;
 
     /**
      * 所有配置
@@ -54,26 +58,24 @@ class Config
      */
     protected $init;
 
-    function __construct( $appName, $res_file )
+    private function __construct($res_file)
     {
-        $this->appName = $appName ? $appName : APP_NAME;
-        $this->res_file = APP_PATH_DIR.DS.$this->appName.DS.$res_file;
+        $this->res_file = Loader::getFilePath('app::' . $res_file);
     }
 
     /**
      * 实例化配置类
      *
-     * @param $appName
      * @param string $file
      * @return Config
      */
-    static function load( $appName = null, $file="init.php" )
+    static function load($file = "init.php")
     {
-        if(! isset(self::$instance [ $appName ]))
-        {
-            self::$instance [ $appName ] = new Config( $appName, $file );
+        if (!isset(self::$instance)) {
+            self::$instance = new Config($file);
         }
-        return self::$instance [ $appName ];
+
+        return self::$instance;
     }
 
     /**
@@ -87,33 +89,27 @@ class Config
     {
         $config_data = $this->readConfigFile();
 
-        if(true === $append_sys)
-        {
+        if (true === $append_sys) {
             $this->sys = $this->getSysSet();
 
-            if(isset($config_data ['sys']))
-            {
+            if (isset($config_data ['sys'])) {
                 $config_data ['sys'] = array_merge($this->sys, array_filter($config_data ['sys']));
             } else {
                 $config_data ['sys'] = $this->sys;
             }
         }
 
-        if(null !== $user_config)
-        {
-            if(!is_array($user_config) && is_file($user_config))
-            {
+        if (null !== $user_config) {
+            if (!is_array($user_config) && is_file($user_config)) {
                 $config_set = require $user_config;
                 $this->setData($config_set);
+
                 return $this;
-            }
-            else if(! empty($user_config) && is_array($user_config) )
-            {
-                foreach($user_config as $key=>$_config)
-                {
-                    if(is_array($_config)) {
-                        foreach($_config as $_config_key=>$_config_value) {
-                            if($_config_value) {
+            } else if (!empty($user_config) && is_array($user_config)) {
+                foreach ($user_config as $key => $_config) {
+                    if (is_array($_config)) {
+                        foreach ($_config as $_config_key => $_config_value) {
+                            if ($_config_value) {
                                 $config_data [$key] [$_config_key] = $_config_value;
                             }
                         }
@@ -125,6 +121,7 @@ class Config
         }
 
         $this->setData($config_data);
+
         return $this;
     }
 
@@ -147,7 +144,7 @@ class Config
      */
     function readConfigFile()
     {
-        return Loader::read( $this->res_file );
+        return Loader::read($this->res_file);
     }
 
     /**
@@ -157,19 +154,19 @@ class Config
      */
     private function getSysSet()
     {
-        $_sys = array();
-        $_sys['host'] = Request::getInstance()->getHostInfo();
+        $host = Request::getInstance()->getHostInfo();
+        $base_url = Request::getInstance()->getBaseUrl();
+        $script_path = Request::getInstance()->getScriptFilePath();
 
-        $_sys['base_url'] = Request::getInstance()->getBaseUrl();
-        $_sys['site_url'] = $_sys['host'].$_sys['base_url'];
-
-        $_sys['app_name'] = $this->appName;
-        $_sys['app_path'] = APP_PATH_DIR.DS.$this->appName;
-
-        $_sys['static_url'] = $_sys["base_url"].'/static/';
-        $_sys['static_path'] = Request::getInstance()->getScriptFilePath().DS.'static'.DS;
-
-        $_sys['cache_path'] = $_sys["app_path"].DS.'cache'.DS;
+        $_sys = array(
+            'host' => $host,
+            'base_url' => $base_url,
+            'site_url' => $host . $base_url,
+            'app_name' => APP_NAME,
+            'app_path' => APP_PATH,
+            'static_url' => $base_url . '/static/',
+            'static_path' => $script_path . DS . 'static' . DS,
+        );
 
         return $_sys;
     }
@@ -183,7 +180,7 @@ class Config
      * @param $name null|boolean
      * @return string|array
      */
-    function get($config, $name=null)
+    function get($config, $name = null)
     {
         return CrossArray::init($this->init)->get($config, $name);
     }
@@ -192,12 +189,12 @@ class Config
      * 设定配置项的值
      *
      * @param string $name 要设定的项
-     * @param string $values 设定的项的值
+     * @param array|string $values 设定的项的值
      * @return null
      */
-    function set($name, $values=null)
+    function set($name, $values = null)
     {
-        foreach($values as $k=>$v) {
+        foreach ($values as $k => $v) {
             $this->init[$name][$k] = $v;
         }
     }

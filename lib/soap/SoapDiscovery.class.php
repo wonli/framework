@@ -3,19 +3,19 @@
 /**
  * Copyright (c) 2005, Braulio Jos?Solano Rojas
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
+ *
  *     Redistributions of source code must retain the above copyright notice, this list of
- *     conditions and the following disclaimer. 
+ *     conditions and the following disclaimer.
  *     Redistributions in binary form must reproduce the above copyright notice, this list of
  *     conditions and the following disclaimer in the documentation and/or other materials
- *     provided with the distribution. 
+ *     provided with the distribution.
  *     Neither the name of the Solsoft de Costa Rica S.A. nor the names of its contributors may
  *     be used to endorse or promote products derived from this software without specific
  *     prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -29,21 +29,23 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  *
  * @version $Id: SoapDiscovery.class.php 92 2013-07-30 06:06:22Z ideaa $
- * @copyright 2005 
+ * @copyright 2005
  */
 
 /**
  * SoapDiscovery Class that provides Web Service Definition Language (WSDL).
- * 
+ *
  * @package SoapDiscovery
  * @author Braulio Jos?Solano Rojas
  * @copyright Copyright (c) 2005 Braulio Jos?Solano Rojas
  * @version $Id: SoapDiscovery.class.php 92 2013-07-30 06:06:22Z ideaa $
  * @access public
  * */
+namespace cross\lib\soap;
+
 class SoapDiscovery {
 
     private $class_name = '';
@@ -51,7 +53,7 @@ class SoapDiscovery {
 
     /**
      * SoapDiscovery::__construct() SoapDiscovery class Constructor.
-     * 
+     *
      * @param string $class_name
      * @param string $service_name
      * */
@@ -62,7 +64,7 @@ class SoapDiscovery {
 
     /**
      * SoapDiscovery::getWSDL() Returns the WSDL of a class if the class is instantiable.
-     * 
+     *
      * @return string
      * */
     public function getWSDL() {
@@ -114,7 +116,7 @@ class SoapDiscovery {
 
     /**
      * SoapDiscovery::getDiscovery() Returns discovery of WSDL.
-     * 
+     *
      * @return string
      * */
     public function getDiscovery() {

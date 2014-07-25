@@ -3,40 +3,56 @@
  * Class Tree
  * crossphp 优化返回数据
  */
+namespace cross\lib\arrayOperate;
+
 class Tree
 {
     /**
-     * @var array 数据
+     * 数据
+     *
+     * @var array
      */
-    public $data   = array();
+    public $data = array();
 
     /**
-     * @var array 父亲节点与孩子节点的关系映射
+     * 父亲节点与孩子节点的关系映射
+     *
+     * @var array
      */
-    public $child  = array(-1 => array());
+    public $child = array(-1 => array());
 
     /**
-     * @var array 初始节点为0
+     * 初始节点为0
+     *
+     * @var array
      */
-    public $layer  = array(0 => 0);
+    public $layer = array(0 => 0);
 
     /**
-     * @var array 非叶子节点的节点，也就是有孩子节点的节点
+     * 非叶子节点的节点，也就是有孩子节点的节点
+     *
+     * @var array
      */
     public $parent = array();
 
     /**
-     * @var string 子节点的名称
+     * 子节点的名称
+     *
+     * @var string
      */
     public $id_field = '';
 
     /**
-     * @var string 一般是分类名称
+     * 一般是分类名称
+     *
+     * @var string
      */
     public $value_field = '';
 
     /**
-     * @var string 父节点的名称
+     * 父节点的名称
+     *
+     * @var string
      */
     public $parent_field = '';
 
@@ -47,7 +63,7 @@ class Tree
      */
     function __construct($value = 'root')
     {
-       $this->setNode(0, -1, $value);
+        $this->setNode(0, -1, $value);
     }
 
     /**
@@ -61,11 +77,10 @@ class Tree
     function setTree($nodes, $id_field, $parent_field, $value_field)
     {
         $this->value_field = $value_field;
-		$this->id_field =$id_field;
-		$this->parent_field = $parent_field;
-        foreach ($nodes as $node)
-        {
-            $this->setNode($node[$this->id_field], $node[$this->parent_field ], $node);
+        $this->id_field = $id_field;
+        $this->parent_field = $parent_field;
+        foreach ($nodes as $node) {
+            $this->setNode($node[$this->id_field], $node[$this->parent_field], $node);
         }
         $this->setLayer();
     }
@@ -79,17 +94,16 @@ class Tree
      * @param string $space
      * @return array (id=>value)
      */
-    function getOptions($layer = 0, $root = 0, $except = NULL, $space = '&nbsp;&nbsp;')
+    function getOptions($layer = 0, $root = 0, $except = null, $space = '&nbsp;&nbsp;')
     {
         $options = array();
         $childs = $this->getChilds($root, $except);
-        foreach ($childs as $id)
-        {
-            if ($id > 0 && ($layer <= 0 || $this->getLayer($id) <= $layer))
-            {
+        foreach ($childs as $id) {
+            if ($id > 0 && ($layer <= 0 || $this->getLayer($id) <= $layer)) {
                 $options[$id] = $this->getLayer($id, $space) . htmlspecialchars($this->getValue($id));
             }
         }
+
         return $options;
     }
 
@@ -105,17 +119,13 @@ class Tree
         $parent = $parent ? $parent : 0;
 
         $this->data[$id] = $value;
-        if (!isset($this->child[$id]))
-        {
+        if (!isset($this->child[$id])) {
             $this->child[$id] = array();
         }
 
-        if (isset($this->child[$parent]))
-        {
+        if (isset($this->child[$parent])) {
             $this->child[$parent][] = $id;
-        }
-        else
-        {
+        } else {
             $this->child[$parent] = array($id);
         }
 
@@ -129,8 +139,7 @@ class Tree
      */
     private function setLayer($root = 0)
     {
-        foreach ($this->child[$root] as $id)
-        {
+        foreach ($this->child[$root] as $id) {
             $this->layer[$id] = $this->layer[$this->parent[$id]] + 1;
             if ($this->child[$id]) $this->setLayer($id);
         }
@@ -143,12 +152,10 @@ class Tree
      * @param int $root
      * @param null $except 除外的结点，用于编辑结点时，上级不能选择自身及子结点
      */
-    private function getList(&$tree, $root = 0, $except = NULL)
+    private function getList(&$tree, $root = 0, $except = null)
     {
-        foreach ($this->child[$root] as $id)
-        {
-            if ($id == $except)
-            {
+        foreach ($this->child[$root] as $id) {
+            if ($id == $except) {
                 continue;
             }
 
@@ -200,8 +207,7 @@ class Tree
      */
     private function getParents($id)
     {
-        while ($this->parent[$id] != -1)
-        {
+        while ($this->parent[$id] != -1) {
             $id = $parent[$this->layer[$id]] = $this->parent[$id];
         }
 
@@ -229,7 +235,7 @@ class Tree
      * @param null $except
      * @return array
      */
-    private function getChilds($id = 0, $except = NULL)
+    private function getChilds($id = 0, $except = null)
     {
         $child = array($id);
         $this->getList($child, $id, $except);
@@ -253,26 +259,25 @@ class Tree
      * @param bool $clear
      * @return array
      */
-    function getArrayList($root = 0 , $layer = NULL, $clear = false)
+    function getArrayList($root = 0, $layer = null, $clear = false)
     {
         $data = array();
-        foreach ($this->child[$root] as $id)
-        {
-            if($layer && $this->layer[$this->parent[$id]] > $layer-1)
-            {
+        foreach ($this->child[$root] as $id) {
+            if ($layer && $this->layer[$this->parent[$id]] > $layer - 1) {
                 continue;
             }
 
-            if(true === $clear) {
+            if (true === $clear) {
                 $data[] = array(
-                        $this->id_field  => $id,
-                        $this->value_field=> $this->getValue($id),
-                        'children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()
-                    );
+                    $this->id_field => $id,
+                    $this->value_field => $this->getValue($id),
+                    'children' => $this->child[$id] ? $this->getArrayList($id, $layer) : array()
+                );
             } else {
-                $data[] = array_merge( $this->data[$id], array('children' => $this->child[$id] ? $this->getArrayList($id , $layer) : array()));
+                $data[] = array_merge($this->data[$id], array('children' => $this->child[$id] ? $this->getArrayList($id, $layer) : array()));
             }
         }
+
         return $data;
     }
 }

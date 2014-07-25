@@ -3,6 +3,11 @@
  * @Auth: wonli <wonli@live.com>
  * CouchModel.php
  */
+namespace cross\model;
+
+use cross\exception\CoreException;
+use cross\lib\reference\Couchbase;
+use Exception;
 
 class CouchModel
 {
@@ -12,15 +17,14 @@ class CouchModel
      */
     function __construct($link_params)
     {
-        $host  = ! is_array($link_params['host']) ? array($link_params['host']) : $link_params['host'];
+        $host = !is_array($link_params['host']) ? array($link_params['host']) : $link_params['host'];
         $bucket = isset($link_params['bucket']) ? $link_params['bucket'] : 'default';
         $persistent = isset($link_params['persistent']) ? $link_params['persistent'] : true;
 
-        try
-        {
-            $this->link = new Couchbase($host, $link_params['user'], $link_params['pwd'], $bucket, $persistent );
-        } catch ( Exception $e ) {
-            throw new CoreException ( $e->getMessage() );
+        try {
+            $this->link = new Couchbase($host, $link_params['user'], $link_params['pwd'], $bucket, $persistent);
+        } catch (Exception $e) {
+            throw new CoreException ($e->getMessage());
         }
     }
 
@@ -35,17 +39,16 @@ class CouchModel
     public function __call($method, $argv)
     {
         $result = null;
-        if(method_exists($this->link, $method))
-        {
-            try
-            {
+        if (method_exists($this->link, $method)) {
+            try {
                 $result = ($argv == null)
                     ? $this->link->$method()
                     : call_user_func_array(array($this->link, $method), $argv);
-            } catch ( Exception $e ) {
-                throw new CoreException( $e->getMessage() );
+            } catch (Exception $e) {
+                throw new CoreException($e->getMessage());
             }
         }
+
         return $result;
     }
 }

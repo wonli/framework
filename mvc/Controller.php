@@ -3,21 +3,30 @@
  * @Auth: wonli <wonli@live.com>
  * Class CoreController
  */
-class CoreController extends FrameBase
+namespace cross\mvc;
+
+use cross\core\FrameBase;
+use cross\core\Response;
+use cross\exception\CoreException;
+use stdClass;
+
+class Controller extends FrameBase
 {
     protected $args;
 
- 	/**
- 	 * 判断一个链接是否为post请求
- 	 * @return boolean
- 	 */
- 	protected function is_post()
- 	{
+    /**
+     * 判断一个链接是否为post请求
+     *
+     * @return boolean
+     */
+    protected function is_post()
+    {
         return isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post';
- 	}
+    }
 
     /**
      * 判断请求类型是否为get
+     *
      * @return bool
      */
     protected function is_get()
@@ -27,41 +36,45 @@ class CoreController extends FrameBase
 
     /**
      * 是否是cli方式
+     *
      * @return bool
      */
     protected function is_cli()
     {
         define('IS_CLI', PHP_SAPI === 'cli');
-        if(IS_CLI) return true;
+        if (IS_CLI) return true;
+
         return false;
     }
 
     /**
-	 * 判断是否为一个ajax请求
-	 * @return boolean
-	 */
-	protected function is_ajax_request()
-	{
-		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-	}
+     * 判断是否为一个ajax请求
+     *
+     * @return boolean
+     */
+    protected function is_ajax_request()
+    {
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    }
 
     /**
      * 取得通过POST传递的参数
      *
-     * @param bool $p 调试参数
-     * @return array
+     * @param bool $p
+     * @return array|bool
      */
-    protected function getArgs($p=false)
+    protected function getArgs($p = false)
     {
-        if($p) {
+        if ($p) {
             var_dump($_POST);
-            return;
+
+            return true;
         }
 
         $args = array();
-        if( count($_POST) > 0 ) {
-            foreach($_POST as $k=>$v) {
-                if(! empty($v) && is_string($v)) {
+        if (count($_POST) > 0) {
+            foreach ($_POST as $k => $v) {
+                if (!empty($v) && is_string($v)) {
                     $args[$k] = addslashes(trim($v));
                 } else {
                     $args[$k] = $v;
@@ -69,6 +82,7 @@ class CoreController extends FrameBase
             }
         }
         unset($_POST);
+
         return $args;
     }
 
@@ -79,7 +93,8 @@ class CoreController extends FrameBase
      */
     protected function return_referer()
     {
-        return header('location:'.$_SERVER['HTTP_REFERER']);
+        header('location:' . $_SERVER['HTTP_REFERER']);
+        exit(0);
     }
 
     /**
@@ -89,7 +104,7 @@ class CoreController extends FrameBase
      * @param null $params
      * @param bool $sec
      */
-    protected function to($_controller=null, $params=null, $sec=false)
+    protected function to($_controller = null, $params = null, $sec = false)
     {
         $url = $this->view->link($_controller, $params, $sec);
         header("Location: {$url}");
@@ -105,11 +120,12 @@ class CoreController extends FrameBase
      */
     protected function loadCache($cache_name)
     {
-        if( file_exists($data_file = APP_PATH.DS.'cache'.DS.$cache_name.'.php') ){
-            $helper = require_once $data_file;
+        if (file_exists($data_file = APP_PATH . DS . 'cache' . DS . $cache_name . '.php')) {
+            $helper = require $data_file;
+
             return $helper;
         } else {
-            throw new CoreException($cache_name.' is not found!');
+            throw new CoreException($cache_name . ' is not found!');
         }
     }
 
@@ -123,8 +139,8 @@ class CoreController extends FrameBase
      */
     protected function display($data = null, $method = null, $http_response_status = 200)
     {
-        Response::getInstance()->set_response_status( $http_response_status );
-        return $this->view->display( $data, $method );
+        Response::getInstance()->set_response_status($http_response_status);
+        return $this->view->display($data, $method);
     }
 
     /**
@@ -136,9 +152,8 @@ class CoreController extends FrameBase
      */
     protected function sendDownloadHeader($file_name = null, $add_header = array(), $only_add_header = false)
     {
-        if (null === $file_name)
-        {
-            $file_name = $this->controller.'_'.$this->action;
+        if (null === $file_name) {
+            $file_name = $this->controller . '_' . $this->action;
         }
 
         $download_header = array(
@@ -152,17 +167,15 @@ class CoreController extends FrameBase
             "Content-Transfer-Encoding:binary"
         );
 
-        if (! empty($add_header))
-        {
-            if (true === $only_add_header)
-            {
+        if (!empty($add_header)) {
+            if (true === $only_add_header) {
                 $download_header = $add_header;
             } else {
                 $download_header = array_merge($download_header, $add_header);
             }
         }
 
-        Response::getInstance()->set_header( $download_header );
+        Response::getInstance()->set_header($download_header);
     }
 
     /**
@@ -181,7 +194,7 @@ class CoreController extends FrameBase
      * @param $action_name
      * @return $this
      */
-    function setAction( $action_name )
+    function setAction($action_name)
     {
         $this->view->action = $action_name;
         return $this;
@@ -193,21 +206,22 @@ class CoreController extends FrameBase
      * @param bool $obj
      * @return stdClass
      */
-    protected function args($obj=false)
+    protected function args($obj = false)
     {
-        if($obj) {
+        if ($obj) {
             $obj = new stdClass();
-            foreach($this->args as $k=>$value) {
+            foreach ($this->args as $k => $value) {
                 $obj->{$k} = $value;
             }
+
             return $obj;
         }
+
         return $this->args;
     }
 
     /**
      * $_GET
-     *
      * @return mixed
      */
     protected function _GET()
@@ -217,16 +231,17 @@ class CoreController extends FrameBase
 
     /**
      * $_POST
-     *
      * @param bool $debug
      * @return bool
      */
-    protected function _POST($debug=false)
+    protected function _POST($debug = false)
     {
-        if($this->is_post()) {
+        if ($this->is_post()) {
             $this->setArgs($debug);
+
             return true;
         }
+
         return false;
     }
 

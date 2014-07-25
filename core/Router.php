@@ -3,6 +3,12 @@
  * @Auth: wonli <wonli@live.com>
  * Class Router
  */
+namespace cross\core;
+
+use cross\exception\CoreException;
+use cross\exception\FrontException;
+use cross\i\RouterInterface;
+
 class Router implements RouterInterface
 {
     /**
@@ -41,7 +47,7 @@ class Router implements RouterInterface
     /**
      * app配置
      *
-     * @var array
+     * @var Config
      */
     private $config;
 
@@ -60,11 +66,12 @@ class Router implements RouterInterface
     /**
      * 实例化类
      */
-    static function init(config $_config)
+    static function init(Config $_config)
     {
         if (!self::$instance) {
             self::$instance = new Router($_config);
         }
+
         return self::$instance;
     }
 
@@ -81,6 +88,7 @@ class Router implements RouterInterface
         } else {
             $this->router_params = $params;
         }
+
         return $this;
     }
 
@@ -102,11 +110,11 @@ class Router implements RouterInterface
     function initParams()
     {
         $url_config = $this->config->get("url");
-        switch ($url_config ['type'])
-        {
+        switch ($url_config ['type']) {
             case 1 :
             case 3 :
                 $request = Request::getInstance()->getUrlRequest(1);
+
                 return self::parseString($request, $url_config, true);
 
             case 2 :
@@ -116,11 +124,13 @@ class Router implements RouterInterface
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }
+
                 return $request;
 
             default :
                 $request = array($_REQUEST["c"], $_REQUEST["a"]);
                 unset($_REQUEST["c"], $_REQUEST["a"]);
+
                 return array_merge($request, $_REQUEST);
         }
     }
@@ -141,8 +151,7 @@ class Router implements RouterInterface
      */
     static function parseString($_query_string, $url_config, $parse_mixed_params = false)
     {
-        if (true === $parse_mixed_params && false !== strpos($_query_string, '&'))
-        {
+        if (true === $parse_mixed_params && false !== strpos($_query_string, '&')) {
             parse_str($_query_string, $add_params);
             $_query_string = current(explode('&', $_query_string));
             unset($add_params[$_query_string]);
@@ -156,8 +165,7 @@ class Router implements RouterInterface
         }
 
         $_url_ext = $url_config["ext"];
-        if (isset($_url_ext[1]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0)
-        {
+        if (isset($_url_ext[1]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0) {
             if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len))) {
                 $_query_string = substr($_query_string, 0, -$_url_ext_len);
             } else {
@@ -171,7 +179,7 @@ class Router implements RouterInterface
             $router_params = array($_query_string);
         }
 
-        if (! empty($add_params)) {
+        if (!empty($add_params)) {
             $router_params = array_merge($router_params, $add_params);
         }
 
@@ -204,8 +212,11 @@ class Router implements RouterInterface
             }
 
             $_defaultRouter['params'] = $_REQUEST;
+
             return $_defaultRouter;
-        } else throw new CoreException("undefined default router!");
+        } else {
+            throw new CoreException("undefined default router!");
+        }
     }
 
     /**
@@ -217,8 +228,6 @@ class Router implements RouterInterface
     public function getRouter()
     {
         $_router = $this->get_router_params();
-
-        #没有请求时的控制器和路由
         if (empty($_router)) {
             $_defaultRouter = $this->getDefaultRouter($this->config->get("url", "*"));
 
@@ -228,6 +237,7 @@ class Router implements RouterInterface
         } else {
             $this->setRouter($_router);
         }
+
         return $this;
     }
 
@@ -335,14 +345,13 @@ class Router implements RouterInterface
      */
     private function setParams($params)
     {
-        switch ($this->config->get('url', 'type'))
-        {
+        switch ($this->config->get('url', 'type')) {
             case 3:
             case 4:
                 $p = array();
-                for ($max = count($params), $i = 0; $i < $max; $i ++) {
-                    if (!empty($params[$i]) && !empty($params[$i+1])) {
-                        $p[$params[$i]] = $params[$i+1];
+                for ($max = count($params), $i = 0; $i < $max; $i++) {
+                    if (!empty($params[$i]) && !empty($params[$i + 1])) {
+                        $p[$params[$i]] = $params[$i + 1];
                         array_shift($params);
                     }
                 }
@@ -355,6 +364,7 @@ class Router implements RouterInterface
 
     /**
      * 返回控制器名称
+     *
      * @return mixed
      */
     public function getController()

@@ -3,12 +3,15 @@
  * @Auth: wonli <wonli@live.com>
  * SessionAuth.php
  */
+namespace cross\auth;
+
+use cross\i\HttpAuthInterface;
 
 class SessionAuth implements HttpAuthInterface
 {
     function __construct()
     {
-        if (! isset($_SESSION)) {
+        if (!isset($_SESSION)) {
             session_start();
         }
     }
@@ -24,6 +27,7 @@ class SessionAuth implements HttpAuthInterface
     function set($key, $value, $exp = 86400)
     {
         $_SESSION[$key] = $value;
+
         return true;
     }
 

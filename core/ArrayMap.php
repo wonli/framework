@@ -3,6 +3,10 @@
  * @Auth: wonli <wonli@live.com>
  * Class ArrayMap
  */
+namespace cross\core;
+
+use ArrayIterator;
+
 class ArrayMap extends ArrayIterator
 {
     /**
@@ -12,10 +16,8 @@ class ArrayMap extends ArrayIterator
      */
     public function __construct(array $array = array())
     {
-        foreach ($array as &$value)
-        {
-            if(is_array($value) && isset($value))
-            {
+        foreach ($array as &$value) {
+            if (is_array($value) && isset($value)) {
                 $value = new self($value);
             }
         }
@@ -28,7 +30,7 @@ class ArrayMap extends ArrayIterator
      * @param $array
      * @return CrossArray
      */
-    static public function init( $array )
+    static public function init($array)
     {
         return new self($array);
     }
@@ -52,8 +54,7 @@ class ArrayMap extends ArrayIterator
      */
     public function __set($index, $value)
     {
-        if (is_array($value) && isset($value))
-        {
+        if (is_array($value) && isset($value)) {
             $value = new self($value);
         }
 
@@ -87,17 +88,14 @@ class ArrayMap extends ArrayIterator
      * @param array $array
      * @return array
      */
-    public function toArray( $array = array() )
+    public function toArray($array = array())
     {
-        if(empty($array))
-        {
+        if (empty($array)) {
             $array = $this->getArrayCopy();
         }
 
-        foreach ($array as &$value)
-        {
-            if($value instanceof self)
-            {
+        foreach ($array as &$value) {
+            if ($value instanceof self) {
                 $value = $value->toArray();
             }
         }
@@ -131,10 +129,9 @@ class ArrayMap extends ArrayIterator
      * @param $index
      * @param $value
      */
-    public function put($index,$value)
+    public function put($index, $value)
     {
-        if(is_array($value) && isset($value) )
-        {
+        if (is_array($value) && isset($value)) {
             $value = new self($value);
         }
         $this->offsetSet($index, $value);
@@ -142,7 +139,6 @@ class ArrayMap extends ArrayIterator
 
     /**
      * @see put()
-     *
      * @param $index
      * @param $value
      */
@@ -153,39 +149,33 @@ class ArrayMap extends ArrayIterator
 
     /**
      * 获取值
-     *
      * <ul>
      *  <li>$index为字符串的时候 获取配置数组,此时设定$key 则获取数组中指定项的值</li>
      *  <li>$index为数组的时候 获取数组中指定的配置项</li>
      * </ul>
+     *
      * @param $index
      * @param null $key
      * @return array|bool|mixed
      */
-    public function get($index, $key=null)
+    public function get($index, $key = null)
     {
-        if(is_array($index))
-        {
+        if (is_array($index)) {
             $result = array();
-            foreach($index as $i)
-            {
-                if($this->__isset($i))
-                {
+            foreach ($index as $i) {
+                if ($this->__isset($i)) {
                     $result[$i] = $this->offsetGet($i);
                 }
             }
 
             return $result;
-        }
-        else
-        {
-            if($this->__isset($index))
-            {
+        } else {
+            if ($this->__isset($index)) {
                 $index_value = $this->offsetGet($index);
-                if(null !== $key && $index_value instanceof self)
-                {
+                if (null !== $key && $index_value instanceof self) {
                     return $index_value->get($key);
                 }
+
                 return $index_value;
             }
 

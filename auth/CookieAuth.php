@@ -3,6 +3,10 @@
  * @Auth: wonli <wonli@live.com>
  * CookieAuth.php
  */
+namespace cross\auth;
+
+use cross\core\Helper;
+use cross\i\HttpAuthInterface;
 
 class CookieAuth implements HttpAuthInterface
 {
@@ -32,7 +36,7 @@ class CookieAuth implements HttpAuthInterface
             $agent = 'agent';
         }
 
-        return sha1(Helper::getIp().$agent.$this->getKey().$params);
+        return sha1(Helper::getIp() . $agent . $this->getKey() . $params);
     }
 
     /**
@@ -40,7 +44,7 @@ class CookieAuth implements HttpAuthInterface
      *
      * @param $key
      */
-    protected function setKey( $key )
+    protected function setKey($key)
     {
         $this->key = $key;
     }
@@ -50,9 +54,9 @@ class CookieAuth implements HttpAuthInterface
      *
      * @return string
      */
-    protected function getKey( )
+    protected function getKey()
     {
-        if (! $this->key) {
+        if (!$this->key) {
             $this->key = $this->default_key;
         }
 
@@ -106,7 +110,7 @@ class CookieAuth implements HttpAuthInterface
             $v_key = $params;
         }
 
-        if ( isset($_COOKIE [$v_key]) ) {
+        if (isset($_COOKIE [$v_key])) {
             $str = $_COOKIE [$v_key];
         } else {
             return false;
@@ -115,17 +119,19 @@ class CookieAuth implements HttpAuthInterface
         $key = $this->cookieKey($v_key);
         $result = Helper::authcode($str, "DECODE", $key);
 
-        if (! $result) {
+        if (!$result) {
             return false;
         }
 
         if ($de_json || $de) {
             $result = json_decode($result, true);
-            if (! empty($c_key) && !empty($result [$c_key])) {
+            if (!empty($c_key) && !empty($result [$c_key])) {
                 return $result[$c_key];
             }
+
             return $result;
         }
+
         return $result;
     }
 }

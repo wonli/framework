@@ -1,9 +1,12 @@
 <?php
-
 /**
  * @Auth wonli <wonli@live.com>
  * Class ImageThumb 生成图片缩略图
  */
+namespace cross\lib\images;
+
+use cross\exception\CoreException;
+
 class ImageThumb
 {
     /**
@@ -55,7 +58,7 @@ class ImageThumb
      */
     function set_file($dir, $thumb_image_name)
     {
-        $this->save_dir         = $dir;
+        $this->save_dir = $dir;
         $this->thumb_image_name = $thumb_image_name;
 
         return $this;
@@ -76,6 +79,7 @@ class ImageThumb
         }
 
         $this->height = $height;
+
         return $this;
     }
 
@@ -89,20 +93,22 @@ class ImageThumb
     {
         $image_info = getimagesize($images);
         if (false !== $image_info) {
-            $image_ext  = strtolower(image_type_to_extension($image_info[2]));
+            $image_ext = strtolower(image_type_to_extension($image_info[2]));
             $image_type = substr($image_ext, 1);
             $image_size = filesize($images);
 
             $info = array(
-                'width'     => $image_info[0],
-                'height'    => $image_info[1],
-                'ext'       => $image_ext,
+                'width' => $image_info[0],
+                'height' => $image_info[1],
+                'ext' => $image_ext,
                 'file_type' => $image_type,
-                'size'      => $image_size,
-                'mime'      => $image_info['mime'],
+                'size' => $image_size,
+                'mime' => $image_info['mime'],
             );
+
             return $info;
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -112,8 +118,8 @@ class ImageThumb
      *
      * @param bool $interlace
      * @param bool $return_full_path
-     * @throws CoreException
-     * @return bool|mixed|string
+     * @return bool|string
+     * @throws \cross\exception\CoreException
      */
     function thumb($interlace = true, $return_full_path = false)
     {
@@ -123,7 +129,7 @@ class ImageThumb
 
         // 获取原图信息
         $info = $this->get_image_info($this->src_images);
-        if (! $info) {
+        if (!$info) {
             return false;
         }
 
@@ -131,17 +137,17 @@ class ImageThumb
         $src_height = $info['height'];
         $type = strtolower($info['file_type']);
         $file_ext = strtolower($info['ext']);
-        $thumb_file_name = $this->thumb_image_name.$file_ext;
+        $thumb_file_name = $this->thumb_image_name . $file_ext;
         unset($info);
 
-        $scale = min($this->width/$src_width, $this->height/$src_height);
-        if ($scale >= 1)
-        {
+        $scale = min($this->width / $src_width, $this->height / $src_height);
+        if ($scale >= 1) {
             $width = $src_width;
             $height = $src_height;
-        } else {
-            $width = (int) $src_width * $scale;
-            $height = (int) $src_height * $scale;
+        }
+        else {
+            $width = (int)$src_width * $scale;
+            $height = (int)$src_height * $scale;
         }
 
         // 载入原图
@@ -161,19 +167,18 @@ class ImageThumb
             imagecopyresized($thumb_images, $src_images, 0, 0, 0, 0, $width, $height, $src_width, $src_height);
         }
 
-        if ('gif'==$type || 'png'==$type)
-        {
-            $background_color  =  imagecolorallocate($thumb_images,  0, 255, 0);  //指派一个绿色
-            imagecolortransparent($thumb_images, $background_color);  //设置为透明色，若注释掉该行则输出绿色的图
+        if ('gif' == $type || 'png' == $type) {
+            $background_color = imagecolorallocate($thumb_images, 0, 255, 0); //指派一个绿色
+            imagecolortransparent($thumb_images, $background_color); //设置为透明色，若注释掉该行则输出绿色的图
         }
 
         // 对jpeg图形设置隔行扫描
-        if ('jpg'==$type || 'jpeg'==$type) {
-            imageinterlace($thumb_images, (int) $interlace);
+        if ('jpg' == $type || 'jpeg' == $type) {
+            imageinterlace($thumb_images, (int)$interlace);
         }
 
         //返回缩略图的路径，字符串
-        $save_path = $this->save_dir.$thumb_file_name;
+        $save_path = $this->save_dir . $thumb_file_name;
         $this->save_image($thumb_images, $save_path, $type, 100);
         imagedestroy($thumb_images);
         imagedestroy($src_images);
@@ -194,8 +199,7 @@ class ImageThumb
      */
     protected function create_image($image, $image_type)
     {
-        switch($image_type)
-        {
+        switch ($image_type) {
             case 'jpg':
             case 'jpeg':
             case 'pjpeg':

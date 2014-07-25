@@ -3,7 +3,10 @@
  * @Auth: wonli <wonli@live.com>
  * HttpAuthInterface.php
  */
-interface HttpAuthInterface {
+namespace cross\i;
+
+interface HttpAuthInterface
+{
 
     /**
      * 设置

@@ -3,11 +3,15 @@
  * @Auth: wonli <wonli@live.com>
  * MongoModel.php
  */
+namespace cross\model;
+
+use cross\exception\CoreException;
+use MongoClient;
 
 class MongoModel
 {
     /**
-     * @var MongoDB
+     * @var MongoClient
      */
     public $db;
 
@@ -17,19 +21,17 @@ class MongoModel
      * @param $link_params
      * @throws CoreException
      */
-    function __construct( $link_params )
+    function __construct($link_params)
     {
-        if ( ! extension_loaded('mongo') ) {
+        if (!extension_loaded('mongo')) {
             throw new CoreException('NOT_SUPPORT : mongo');
         }
 
-        if(class_exists('MongoClient'))
-        {
+        if (class_exists('MongoClient')) {
             $m = new MongoClient($link_params['dsn'], $link_params['options']);
             $this->db = $m->$link_params['db'];
         }
-        else
-        {
+        else {
             throw new CoreException("please use PCEL MongoDB extends");
         }
     }

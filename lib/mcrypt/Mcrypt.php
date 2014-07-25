@@ -5,6 +5,8 @@
  * @Auth: wonli <wonli@live.com>
  * Class Mcrypt
  */
+namespace cross\lib\mcrypt;
+
 class Mcrypt extends DEcode
 {
     /**
@@ -40,7 +42,7 @@ class Mcrypt extends DEcode
      *
      * @var string
      */
-    private $defaultKey = "corssphp(*)9<>@$12v";
+    private $default_key = "corssphp(*)9<>@$12v";
 
     /**
      * @var string
@@ -50,10 +52,10 @@ class Mcrypt extends DEcode
     /**
      * 初始化参数
      */
-    function __construct ()
+    function __construct()
     {
         if ($this->isDecode) {
-            $this->hexCrypt = new HexCrypt ( );
+            $this->hexCrypt = new HexCrypt ();
         }
     }
 
@@ -63,13 +65,13 @@ class Mcrypt extends DEcode
      * @param $data
      * @return array
      */
-    public function enCode ($data)
+    public function enCode($data)
     {
         $key = $this->getKey();
         $iv = $this->getIV();
         $s = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $this->pkcs5_pad($data), MCRYPT_MODE_CBC, $iv);
         if ($this->isContainIV) {
-            $s = $iv.$s;
+            $s = $iv . $s;
         }
 
         if ($this->isDecode && $this->hexCrypt) {
@@ -85,7 +87,7 @@ class Mcrypt extends DEcode
      * @param $data
      * @return string
      */
-    public function deCode ($data)
+    public function deCode($data)
     {
         $key = $this->getKey();
 
@@ -96,11 +98,13 @@ class Mcrypt extends DEcode
         if ($this->isContainIV) {
             $iv = substr($data, 0, 16);
             $data = substr($data, 16);
-        } else {
+        }
+        else {
             $iv = $this->getIV();
         }
 
-        $str= mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $data, MCRYPT_MODE_CBC, $iv);
+        $str = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $data, MCRYPT_MODE_CBC, $iv);
+
         return $this->pkcs5_unpad($str);
     }
 
@@ -124,9 +128,10 @@ class Mcrypt extends DEcode
      * @param $key
      * @return $this
      */
-    function setKey( $key )
+    function setKey($key)
     {
         $this->key = $key;
+
         return $this;
     }
 
@@ -139,6 +144,7 @@ class Mcrypt extends DEcode
     function setIV($iv)
     {
         $this->iv = $iv;
+
         return $this;
     }
 
@@ -151,6 +157,7 @@ class Mcrypt extends DEcode
     function isDecode($isDecode)
     {
         $this->isDecode = $isDecode;
+
         return $this;
     }
 
@@ -163,6 +170,7 @@ class Mcrypt extends DEcode
     function isContainIV($isContainIV)
     {
         $this->isContainIV = $isContainIV;
+
         return $this;
     }
 
@@ -171,8 +179,7 @@ class Mcrypt extends DEcode
      */
     function getIV()
     {
-        if (empty($this->iv))
-        {
+        if (empty($this->iv)) {
             $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
             $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
             $this->setIV($iv);

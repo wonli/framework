@@ -5,6 +5,8 @@
  * @Auth: wonli <wonli@live.com>
  * Class DEcode
  */
+namespace cross\lib\mcrypt;
+
 abstract class DEcode
 {
     /**
@@ -13,9 +15,7 @@ abstract class DEcode
      * @param $data
      * @return mixed
      */
-    abstract function enCode ($data)
-
-    ;
+    abstract function enCode($data);
 
     /**
      * 解码函数
@@ -23,9 +23,7 @@ abstract class DEcode
      * @param $data
      * @return mixed
      */
-    abstract function deCode ($data)
-
-    ;
+    abstract function deCode($data);
 
     /**
      * PKCS5 补码
@@ -34,10 +32,12 @@ abstract class DEcode
      * @param $blocksize
      * @return string
      */
-    function pkcs5_pad ($text, $blocksize = 16) {
-		$pad = $blocksize - (strlen($text) % $blocksize);
-		return $text . str_repeat(chr($pad), $pad);
-	}
+    function pkcs5_pad($text, $blocksize = 16)
+    {
+        $pad = $blocksize - (strlen($text) % $blocksize);
+
+        return $text . str_repeat(chr($pad), $pad);
+    }
 
     /**
      * PKCS5解码
@@ -45,12 +45,14 @@ abstract class DEcode
      * @param $text
      * @return bool|string
      */
-    function pkcs5_unpad($text) {
-		$pad = ord($text{strlen($text)-1});
-		if ($pad > strlen($text))
-			return false;
-		if (strspn($text, chr($pad), strlen($text) - $pad) != $pad)
-			return false;
-		return substr($text, 0, -1 * $pad);
-	}
+    function pkcs5_unpad($text)
+    {
+        $pad = ord($text{strlen($text) - 1});
+        if ($pad > strlen($text))
+            return false;
+        if (strspn($text, chr($pad), strlen($text) - $pad) != $pad)
+            return false;
+
+        return substr($text, 0, -1 * $pad);
+    }
 }

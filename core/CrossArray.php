@@ -3,15 +3,21 @@
  * @Auth: wonli <wonli@live.com>
  * Class CrossArray
  */
+namespace cross\core;
+
 class CrossArray
 {
-
     /**
      * @var array 数据
      */
     protected $data;
 
-    function __construct( $data )
+    /**
+     * CrossArray
+     *
+     * @param $data
+     */
+    function __construct($data)
     {
         $this->data = $data;
     }
@@ -34,41 +40,45 @@ class CrossArray
      * @param null|boolean $name
      * @return string|array
      */
-    function get($config, $name=null)
+    function get($config, $name = null)
     {
-        if(is_string($config))
-        {
-            if(isset($this->data[$config])) {
-                if($name) {
-                    if(isset($this->data[$config][$name])) {
+        if (is_string($config)) {
+            if (isset($this->data[$config])) {
+                if ($name) {
+                    if (isset($this->data[$config][$name])) {
                         return $this->data[$config][$name];
-                    } else {
-                        return false;
                     }
+
+                    return false;
                 }
+
                 return $this->data[$config];
             }
+
         }
+        else {
 
-        if(is_array($config)) {
-
-            if($name === true) {
-                foreach($config as $item) {
-                    if(isset($this->data[$item])) {
+            if ($name === true) {
+                foreach ($config as $item) {
+                    if (isset($this->data[$item])) {
                         unset($this->data[$item]);
                     }
                 }
+
                 return $this->data;
             } else {
                 $_returnArr = array();
-                foreach($config as $item) {
-                    if(isset($this->data[$item])) {
+                foreach ($config as $item) {
+                    if (isset($this->data[$item])) {
                         $_returnArr[$item] = $this->data[$item];
                     }
                 }
             }
+
             return $_returnArr;
         }
+
+        return null;
     }
 
     /**
@@ -79,9 +89,10 @@ class CrossArray
      */
     function getAll($obj = false)
     {
-        if($obj) {
+        if ($obj) {
             return $this->arrayToObject($this->data);
         }
+
         return $this->data;
     }
 
@@ -91,11 +102,11 @@ class CrossArray
      * @param $d
      * @return object
      */
-    function arrayToObject($d) {
+    function arrayToObject($d)
+    {
         if (is_array($d)) {
-            return (object) array_map(array($this, __FUNCTION__), $d);
-        }
-        else {
+            return (object)array_map(array($this, __FUNCTION__), $d);
+        } else {
             return $d;
         }
     }

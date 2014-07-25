@@ -3,14 +3,16 @@
  * @Auth: wonli <wonli@live.com>
  * Annotate.php
  */
+namespace cross\core;
+
 class Annotate
 {
-    function __construct( $annotate )
+    function __construct($annotate)
     {
         $this->content = $annotate;
     }
 
-    public static function getInstance( $annotate )
+    public static function getInstance($annotate)
     {
         return new Annotate($annotate);
     }
@@ -22,10 +24,9 @@ class Annotate
      */
     public function parse()
     {
-        $flag = preg_match_all('/@cp_(.*?)\s+(.*?)\n/',$this->content, $content);
+        $flag = preg_match_all('/@cp_(.*?)\s+(.*?)\n/', $this->content, $content);
 
-        if (! $flag)
-        {
+        if (!$flag) {
             return true;
         }
 
@@ -41,19 +42,17 @@ class Annotate
      * @param $conf
      * @return array
      */
-    private function parseAnnotate( $conf )
+    private function parseAnnotate($conf)
     {
         $result = array();
-        foreach($conf as $func => $params)
-        {
-            switch($func)
-            {
+        foreach ($conf as $func => $params) {
+            switch ($func) {
                 case 'params':
                     $result['params'] = $this->parseConfigValue($params);
                     break;
 
                 case 'cache':
-                    $result['cache'] = $this->parseAnnotateCacheConfig( $params );
+                    $result['cache'] = $this->parseAnnotateCacheConfig($params);
                     break;
             }
         }
@@ -65,23 +64,22 @@ class Annotate
      * 配置参数转二维数组
      * <pre>
      *  如: true(...)
-     *
      *  将被转换为
      *  array(
      *      true,
      *      array(...)
      *  )
      * </pre>
+     *
      * @param $params
      * @return array
      */
-    private function parseAnnotateCacheConfig( $params )
+    private function parseAnnotateCacheConfig($params)
     {
         $result = array();
         $flag = preg_match_all('/(.*?)\((.*?)\)/', $params, $params);
 
-        if ($flag)
-        {
+        if ($flag) {
             $result[] = $params[1][0] === 'true' ? true : false;
             $result[] = $this->parseConfigValue($params[2][0]);
         }
@@ -93,7 +91,6 @@ class Annotate
      * 配置参数值解析
      * <pre>
      * 如: 1, type:file, 300 会被解析为
-     *
      * array(
      *      1,
      *      'type'  => file,
@@ -108,16 +105,16 @@ class Annotate
     {
         $result = array();
         $conf = array_filter(preg_split('/[\s,]+/', $params));
-        foreach($conf as $c) {
-            if (false !== strpos($c, '='))
-            {
+        foreach ($conf as $c) {
+            if (false !== strpos($c, '=')) {
                 $c = explode('=', $c);
-                $result[ $c[0] ] = isset($c[1]) ? $c[1] : '';
+                $result[$c[0]] = isset($c[1]) ? $c[1] : '';
             } else {
                 $result [] = $c;
             }
         }
         unset($conf);
+
         return $result;
     }
 

@@ -9,6 +9,8 @@
  *  $py = new PYInitials();
  *  $result = $py->getInitials('王小明');
  */
+namespace cross\lib\other;
+
 class PYInitials
 {
     private $_pinyins = array(
@@ -45,114 +47,122 @@ class PYInitials
      *
      * @param string $charset
      */
-    public function __construct( $charset = 'utf-8' )
+    public function __construct($charset = 'utf-8')
     {
-        $this->_charset    = $charset;
+        $this->_charset = $charset;
     }
+
     /**
      * 中文字符串 substr
      *
      * @param string $str
-     * @param int    $start
-     * @param int    $len
+     * @param int $start
+     * @param int $len
      * @return string
      */
-    private function _msubstr ($str, $start, $len)
+    private function _msubstr($str, $start, $len)
     {
-        $start  = $start * 2;
-        $len    = $len * 2;
+        $start = $start * 2;
+        $len = $len * 2;
         $strlen = strlen($str);
         $result = '';
-        for ( $i = 0; $i < $strlen; $i++ ) {
-            if ( $i >= $start && $i < ($start + $len) ) {
-                if ( ord(substr($str, $i, 1)) > 129 ) $result .= substr($str, $i, 2);
+        for ($i = 0; $i < $strlen; $i++) {
+            if ($i >= $start && $i < ($start + $len)) {
+                if (ord(substr($str, $i, 1)) > 129) $result .= substr($str, $i, 2);
                 else $result .= substr($str, $i, 1);
             }
-            if ( ord(substr($str, $i, 1)) > 129 ) $i++;
+            if (ord(substr($str, $i, 1)) > 129) $i++;
         }
+
         return $result;
     }
+
     /**
      * 字符串切分为数组 (汉字或者一个字符为单位)
      *
      * @param string $str
      * @return array
      */
-    private function _cutWord( $str )
+    private function _cutWord($str)
     {
         $words = array();
-         while ( $str != "" )
-         {
-            if ( $this->_isAscii($str) ) {//非中文
+        while ($str != "") {
+            if ($this->_isAscii($str)) { //非中文
                 $words[] = $str[0];
-                $str = substr( $str, strlen($str[0]) );
-            }else{
-                $word = $this->_msubstr( $str, 0, 1 );
-                $words[] = $word;
-                $str = substr( $str,  strlen($word) );
+                $str = substr($str, strlen($str[0]));
             }
-         }
-         return $words;
+            else {
+                $word = $this->_msubstr($str, 0, 1);
+                $words[] = $word;
+                $str = substr($str, strlen($word));
+            }
+        }
+
+        return $words;
     }
+
     /**
      * 判断字符是否是ascii字符
      *
      * @param string $char
      * @return bool
      */
-    private function _isAscii( $char )
+    private function _isAscii($char)
     {
-        return ( ord( substr($char,0,1) ) < 160 );
+        return (ord(substr($char, 0, 1)) < 160);
     }
+
     /**
      * 判断字符串前3个字符是否是ascii字符
      *
      * @param string $str
      * @return bool
      */
-    private function _isAsciis( $str )
+    private function _isAsciis($str)
     {
-        $len = strlen($str) >= 3 ? 3: 2;
+        $len = strlen($str) >= 3 ? 3 : 2;
         $chars = array();
-        for( $i = 1; $i < $len -1; $i++ ){
-            $chars[] = $this->_isAscii( $str[$i] ) ? 'yes':'no';
+        for ($i = 1; $i < $len - 1; $i++) {
+            $chars[] = $this->_isAscii($str[$i]) ? 'yes' : 'no';
         }
-        $result = array_count_values( $chars );
-        if ( empty($result['no']) ){
+        $result = array_count_values($chars);
+        if (empty($result['no'])) {
             return true;
         }
+
         return false;
     }
+
     /**
      * 获取中文字串的拼音首字符
      *
      * @param string $str
      * @return string
      */
-    public function getInitials( $str )
+    public function getInitials($str)
     {
-        if ( empty($str) ) return '';
-        if ( $this->_isAscii($str[0]) && $this->_isAsciis( $str )){
+        if (empty($str)) return '';
+        if ($this->_isAscii($str[0]) && $this->_isAsciis($str)) {
             return $str;
         }
         $result = array();
-        if ( $this->_charset == 'utf-8' ){
-            $str = iconv( 'utf-8', 'gb2312', $str );
+        if ($this->_charset == 'utf-8') {
+            $str = iconv('utf-8', 'gb2312', $str);
         }
-        $words = $this->_cutWord( $str );
-        foreach ( $words as $word )
-        {
-        	if ( $this->_isAscii($word) ) {//非中文
+        $words = $this->_cutWord($str);
+        foreach ($words as $word) {
+            if ($this->_isAscii($word)) { //非中文
                 $result[] = $word;
                 continue;
             }
-            $code = ( ord(substr($word,0,1)) ) * 1000 + (ord(substr($word,1,1)));
+            $code = (ord(substr($word, 0, 1))) * 1000 + (ord(substr($word, 1, 1)));
             //获取拼音首字母A--Z
-            if ( ($i = $this->_search($code)) != -1 ){
+            if (($i = $this->_search($code)) != -1) {
                 $result[] = $this->_pinyins[$i];
             }
         }
-        return strtoupper(implode('',$result));
+
+        return strtoupper(implode('', $result));
     }
 
     /**
@@ -161,50 +171,57 @@ class PYInitials
      * @param $ascii
      * @return string
      */
-    private function _getChar( $ascii )
+    private function _getChar($ascii)
     {
-        if ( $ascii >= 48 && $ascii <= 57){
-            return chr($ascii);  //数字
-        }elseif ( $ascii>=65 && $ascii<=90 ){
-            return chr($ascii);   // A--Z
-        }elseif ($ascii>=97 && $ascii<=122){
-            return chr($ascii-32); // a--z
-        }else{
+        if ($ascii >= 48 && $ascii <= 57) {
+            return chr($ascii); //数字
+        }
+        elseif ($ascii >= 65 && $ascii <= 90) {
+            return chr($ascii); // A--Z
+        }
+        elseif ($ascii >= 97 && $ascii <= 122) {
+            return chr($ascii - 32); // a--z
+        }
+        else {
             return '~'; //其他
         }
     }
+
     /**
      * 查找需要的汉字内码(gb2312) 对应的拼音字符( 二分法 )
      *
      * @param int $code
      * @return int
      */
-    private function _search( $code )
+    private function _search($code)
     {
         $data = array_keys($this->_pinyins);
 
         $lower = 0;
-        $upper = sizeof($data)-1;
+        $upper = sizeof($data) - 1;
 
         // 排除非一级汉字
         if ($code < $data[0] || $code > $data[23]) return -1;
 
-        for (;;) {
-            if ( $lower > $upper ){
-            	return $data[$lower-1];
+        for (; ;) {
+            if ($lower > $upper) {
+                return $data[$lower - 1];
             }
-            $middle = (int) round(($lower + $upper) / 2);
-            if ( !isset($data[$middle]) ) {
-            	return -1;
+            $middle = (int)round(($lower + $upper) / 2);
+            if (!isset($data[$middle])) {
+                return -1;
             }
 
-            if ( $data[$middle] < $code ){
+            if ($data[$middle] < $code) {
                 $lower = (int)$middle + 1;
-            }else if ( $data[$middle] == $code ) {
-                 return $data[$middle];
-            }else{
+            }
+            else if ($data[$middle] == $code) {
+                return $data[$middle];
+            }
+            else {
                 $upper = (int)$middle - 1;
             }
-        }// end for
+        }
+        // end for
     }
 }

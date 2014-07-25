@@ -3,18 +3,20 @@
  * @Auth wonli <wonli@live.com>
  * Class CacheInterface
  */
+namespace cross\i;
+
 interface CacheInterface
 {
     /**
      * @param string $key
      * @return mixed get cache
      */
-    function get( $key = '' );
+    function get($key = '');
 
     /**
      * @param $key
      * @param $value
      * @return mixed set
      */
-    function set( $key, $value );
+    function set($key, $value);
 }

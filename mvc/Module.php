@@ -3,10 +3,19 @@
  * @Auth: wonli <wonli@live.com>
  * Class CoreModule
  */
-class CoreModule extends FrameBase
+namespace cross\mvc;
+
+use cross\core\CrossArray;
+use cross\core\FrameBase;
+use cross\core\Loader;
+use cross\exception\CoreException;
+use cross\exception\FrontException;
+use cross\model\CoreModel;
+
+class Module extends FrameBase
 {
     /**
-     * @var MysqlModel
+     * @var \cross\cache\RedisCache|\cross\model\CouchModel|\cross\model\MongoModel|mixed
      */
     public $link;
 
@@ -43,42 +52,36 @@ class CoreModule extends FrameBase
      *
      * @param null $params 指定数据库配置
      */
-    function __construct( $params = null )
+    function __construct($params = null)
     {
         parent::__construct();
-        $this->link = $this->getLink( $params );
+        $this->link = $this->getLink($params);
     }
 
     /**
      * 连接数据库
      *
      * @param null $params
-     * @return bool|RedisCache
-     * @throws CoreException
+     * @return \cross\cache\RedisCache|\cross\model\CouchModel|\cross\model\MongoModel|mixed
+     * @throws \cross\exception\CoreException
      */
-    function getLink( $params = null )
+    function getLink($params = null)
     {
-        $db_config = $this->linkConfig( );
+        $db_config = $this->linkConfig();
         $controller_config = null;
 
-        if ($params)
-        {
+        if ($params) {
             list($link_type, $link_config) = explode(":", $params);
             $link_params = $db_config->get($link_type, $link_config);
 
             if (empty($link_params)) {
                 throw new CoreException("未配置的数据库: {$link_type}:{$link_config}");
             }
-        }
-        else
-        {
-            if ($db_config->get("mysql", "db"))
-            {
+        } else {
+            if ($db_config->get("mysql", "db")) {
                 $link_type = 'mysql';
                 $link_params = $db_config->get("mysql", "db");
-            }
-            else
-            {
+            } else {
                 throw new CoreException("未找到数据库默认配置");
             }
         }
@@ -91,13 +94,13 @@ class CoreModule extends FrameBase
      *
      * @return array
      */
-    function linkConfig( )
+    function linkConfig()
     {
-        if (! self::$link_config)
-        {
+        if (!self::$link_config) {
             $link_config_file = $this->getLinkConfigFile();
-            self::$link_config = CrossArray::init( Loader::read("::config/{$link_config_file}") );
+            self::$link_config = CrossArray::init(Loader::read("::config/{$link_config_file}"));
         }
+
         return self::$link_config;
     }
 
@@ -118,10 +121,9 @@ class CoreModule extends FrameBase
      */
     function getLinkConfigFile()
     {
-        if (! $this->db_config_file)
-        {
+        if (!$this->db_config_file) {
             $db_config_file = $this->config->get('sys', 'db_config');
-            if (! $db_config_file) {
+            if (!$db_config_file) {
                 $db_config_file = 'db.config.php';
             }
 
@@ -139,47 +141,28 @@ class CoreModule extends FrameBase
      * @throws FrontException
      * @return mixed
      */
-    static function cache_key($key_name, $key_value=null)
+    static function cache_key($key_name, $key_value = null)
     {
-        if( ! self::$cache_file) {
+        if (!self::$cache_file) {
             self::$cache_file = Loader::read("::config/cachekey.php");
         }
         $cache_key_object = CrossArray::init(self::$cache_file);
 
-        if(is_array($key_name))
-        {
+        if (is_array($key_name)) {
             list($key_name, $child_name) = $key_name;
             $cache_key = $cache_key_object->get($key_name, $child_name);
-        }
-        else
-        {
+        } else {
             $cache_key = $cache_key_object->get($key_name);
         }
 
-        if(! empty($cache_key))
-        {
-            if(null !== $key_value)
-            {
+        if (!empty($cache_key)) {
+            if (null !== $key_value) {
                 return "{$cache_key}:{$key_value}";
             }
 
             return $cache_key;
-        }
-        else
-        {
+        } else {
             throw new FrontException("缓存key {$key_name} 未定义");
         }
-    }
-
-    /**
-     * 加载其他module
-     *
-     * @param string $module_name 要加载的module的全名
-     * @return object
-     */
-    final function load($module_name)
-    {
-        $name = substr($module_name, 0, -6);
-        return $this->loadModule($name);
     }
 }

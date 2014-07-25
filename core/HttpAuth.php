@@ -3,6 +3,11 @@
  * @Auth: wonli <wonli@live.com>
  * Class HttpAuth
  */
+namespace cross\core;
+
+use cross\auth\CookieAuth;
+use cross\auth\SessionAuth;
+
 class HttpAuth
 {
     /**
@@ -13,8 +18,7 @@ class HttpAuth
     public static function factory($type = 'COOKIE')
     {
         $type = strtoupper($type);
-        switch($type)
-        {
+        switch ($type) {
             case 'COOKIE' :
                 self::$obj = new CookieAuth();
                 break;

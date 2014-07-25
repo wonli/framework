@@ -1,7 +1,9 @@
 <?php
 /**
-* @Author: wonli <wonli@live.com>
-*/
+ * @Author: wonli <wonli@live.com>
+ */
+namespace cross\lib\driver;
+
 class MysqlSimple
 {
     /**
@@ -14,29 +16,29 @@ class MysqlSimple
      *
      * @param $config
      */
-    function __construct( $config )
+    function __construct($config)
     {
         $this->connect($config['dbhost'], $config['dbuser'],
-            $config['dbpswd'],$config['dbname'], $config['dbport']=3306, $config['charset']);
+            $config['dbpswd'], $config['dbname'], $config['dbport'] = 3306, $config['charset']);
     }
 
     /**
      * connetc to mysql
      *
-     * @param $dbhost
-     * @param $dbuser
-     * @param $dbpass
-     * @param $dbname
+     * @param string $dbhost
+     * @param string $dbuser
+     * @param string $dbpass
+     * @param string $dbname
      * @param int $dbport
      * @param string $charset
      * @return resource
      */
-    function connect($dbhost, $dbuser, $dbpass, $dbname, $dbport=3306, $charset='utf-8')
+    function connect($dbhost, $dbuser, $dbpass, $dbname, $dbport = 3306, $charset = 'utf-8')
     {
-    	$this->_link = mysql_connect("{$dbhost}:{$dbport}", $dbuser, $dbpass)or die("MySql connect error");
+        $this->_link = mysql_connect("{$dbhost}:{$dbport}", $dbuser, $dbpass) or die("MySql connect error");
 
         mysql_select_db($dbname, $this->_link);
-		mysql_query("set names {$charset}");
+        mysql_query("set names {$charset}");
 
         return $this->_link;
     }
@@ -44,20 +46,20 @@ class MysqlSimple
     /**
      * query
      *
-     * @param $sql
+     * @param string $sql
      * @return resource
      */
     private function query($sql)
     {
         $query = mysql_query($sql, $this->_link);
-        if($query) return $query;
-        else exit('Query error.'.mysql_errno().'-'.mysql_error());
+        if ($query) return $query;
+        else exit('Query error.' . mysql_errno() . '-' . mysql_error());
     }
 
     /**
      * execute a sql
      *
-     * @param $sql
+     * @param  string$sql
      * @return resource
      */
     public function execute($sql)
@@ -68,7 +70,7 @@ class MysqlSimple
     /**
      * fetch a row
      *
-     * @param $sql
+     * @param string $sql
      * @return array
      */
     public function fetchOne($sql)
@@ -76,13 +78,14 @@ class MysqlSimple
         $_query = $this->query($sql);
 
         $result = mysql_fetch_assoc($_query);
+
         return $result;
     }
 
     /**
      * fetch all rows
      *
-     * @param $sql
+     * @param string $sql
      * @return array
      */
     public function fetchAll($sql)
@@ -91,11 +94,11 @@ class MysqlSimple
 
         $result = array();
         $i = 0;
-        while($row = mysql_fetch_assoc($_query))
-        {
+        while ($row = mysql_fetch_assoc($_query)) {
             $result[$i] = $row;
             $i++;
         }
+
         return $result;
     }
 

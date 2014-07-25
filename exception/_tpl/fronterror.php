@@ -42,7 +42,7 @@
     .frame-comment a { color: #BEE9EA; font-weight: bold; text-decoration: none; }
     .frame-comment a:hover { color: #4bb1b1; }  .frame-comment:not(:last-child) { border-bottom: 1px dotted rgba(0, 0, 0, .3); }
     .frame-comment-context { font-size: 10px; font-weight: bold; color: #86D2B6; }
-    .data-table-container label { font-size: 16px; font-weight: bold; color: #4288CE; margin: 10px 0; padding: 10px 0;  display: block; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px dotted rgba(0, 0, 0, .2); }
+    .data-table-container label { font-size: 16px; font-weight: bold; color: #4288CE; margin: 10px 0; padding: 10px 0;  display: block; border-bottom: 1px dotted rgba(0, 0, 0, .2); }
     .data-table { width: 100%; margin: 10px 0; }
     .data-table tbody { font: 13px consolas, monospace; }
     .data-table thead { display: none; }  .data-table tr { padding: 5px 0; }
@@ -51,7 +51,7 @@
     .data-table .empty { color: rgba(0, 0, 0, .3); font-style: italic; }
     .handler { padding: 10px; font: 14px monospace; }
     .handler.active { color: #BBBBBB; background: #989898; font-weight: bold; }
-    .exception{ font-family: 微软雅黑; }
+    .exception{ font-family: "microsoft yahei",serif; }
     .line{border-right:1px solid #bbb;position: absolute;padding-right:5px;margin-right: 20px;left: 3px;width: 30px;text-align: right}
     </style>
 </head>
@@ -63,7 +63,9 @@
         <header>
             <div class="exception">
                 <h3 class="exc-title">
-                    File: <?php echo $message["main"]["file"] ?>  Line: <?php echo $message["main"]["line"] ?>
+                    File: <?php use cross\core\Application;
+
+                    echo $message["main"]["file"] ?>  Line: <?php echo $message["main"]["line"] ?>
                 </h3>
                 <p class="exc-message">
                     <?php echo $message["main"]["message"] ?>
@@ -122,9 +124,9 @@
             <div class="data-table" id="sg-serverrequest-data">
                 <label>CrossParams Data</label>
                 <?php
-                    $params = Dispatcher::getParams();
-                    $controller = Dispatcher::getController();
-                    $action = Dispatcher::getAction();
+                    $params = Application::getParams();
+                    $controller = Application::getController();
+                    $action = Application::getAction();
                 ?>
                 <?php if(! empty($params)) : ?>
                     <table class="data-table">
@@ -309,7 +311,7 @@
         },
         hidetrack:function(){
             var tlist = document.getElementsByClassName("trace_info_div");
-            for(var i= 0;i<tlist.length;i++) {
+            for(var i= 0; i < tlist.length;i++) {
                 tlist[i].style.display = 'none';
             }
         },

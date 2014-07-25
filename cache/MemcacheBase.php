@@ -1,9 +1,13 @@
 <?php
 /**
  * @Auth wonli <wonli@live.com>
- *
  * Class MemcacheBase
  */
+namespace cross\cache;
+
+use cross\exception\CoreException;
+use Memcache;
+
 class MemcacheBase
 {
     /**
@@ -13,7 +17,7 @@ class MemcacheBase
 
     function __construct($option)
     {
-        if ( ! extension_loaded('memcache') ) {
+        if (!extension_loaded('memcache')) {
             throw new CoreException('NOT_SUPPORT : memcache');
         }
 
@@ -32,12 +36,12 @@ class MemcacheBase
     public function __call($method, $argv)
     {
         $result = null;
-        if(method_exists($this->link, $method))
-        {
+        if (method_exists($this->link, $method)) {
             $result = ($argv == null)
                 ? $this->link->$method()
                 : call_user_func_array(array($this->link, $method), $argv);
         }
+
         return $result;
     }
 }

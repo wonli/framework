@@ -3,6 +3,8 @@
  * @Auth wonli <wonli@live.com>
  * Class RouterInterface
  */
+namespace cross\i;
+
 interface RouterInterface
 {
     /**

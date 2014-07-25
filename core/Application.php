@@ -1,37 +1,45 @@
 <?php
 /**
  * @Auth: wonli <wonli@live.com>
- * Class Dispatcher
+ * Class Application
  */
-class Dispatcher
+namespace cross\core;
+
+use cross\cache\RequestCache;
+use cross\exception\CoreException;
+use Exception;
+use ReflectionMethod;
+use ReflectionProperty;
+
+class Application
 {
     /**
      * action 名称
      *
      * @var string
      */
-    private static $action;
+    protected static $class_action;
 
     /**
      * 运行时的参数
      *
      * @var mixed
      */
-    private static $params;
-
-    /**
-     * app配置
-     *
-     * @var array
-     */
-    private static $appConfig;
+    protected static $class_params;
 
     /**
      * 控制器名称
      *
      * @var string
      */
-    private static $controller;
+    protected static $controller_class_name;
+
+    /**
+     * app配置
+     *
+     * @var array
+     */
+    protected static $app_config;
 
     /**
      * action 注释
@@ -45,9 +53,9 @@ class Dispatcher
      *
      * @var object
      */
-    public static $instance;
+    private static $instance;
 
-    private function __construct($app_config)
+    private function __construct()
     {
 
     }
@@ -55,79 +63,74 @@ class Dispatcher
     /**
      * 实例化dispatcher
      *
-     * @param $app_name
      * @param $app_config
-     * @return Dispatcher
+     * @return Application
      */
-    public static function init( $app_name, $app_config )
+    public static function init($app_config)
     {
-        self::init_config( $app_config );
-        if(! isset(self::$instance [ $app_name ]) )
-        {
-            self::$instance [ $app_name ] = new Dispatcher( $app_config );
+        if (!isset(self::$instance)) {
+            self::setConfig($app_config);
+            self::$instance = new Application();
         }
 
-        return self::$instance [ $app_name ];
+        return self::$instance;
     }
 
     /**
      * 解析router
      *
-     * @param $router
+     * @param Router|string|array $router
      * @param string $args 当$router类型为string时,指定参数
      * @return array
      */
-    private function getRouter( $router, $args )
+    private function getRouter($router, $args)
     {
         $controller = '';
         $action = '';
         $params = '';
 
         if (is_object($router)) {
-            $controller     = $router->getController();
-            $action         = $router->getAction();
-            $params         = $router->getParams();
-        }
 
-        if (is_array($router)) {
+            $controller = $router->getController();
+            $action = $router->getAction();
+            $params = $router->getParams();
+
+        } elseif (is_array($router)) {
+
             $controller = $router["controller"];
             $action = $router["action"];
             $params = $router["params"];
-        }
 
-        if (is_string($router)) {
-            if (strpos($router,':')) {
+        } elseif (is_string($router)) {
+
+            if (strpos($router, ':')) {
                 list($controller, $action) = explode(':', $router);
             } else {
                 $controller = $router;
-                $action     = 'index';
+                $action = 'index';
             }
 
             $params = $args;
         }
 
-        return array(
-            'controller' =>  ucfirst($controller),
-            'action'     =>  $action,
-            'params'     =>  $params,
-        );
+        return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params,);
     }
 
     /**
      * 初始化request cache
      *
      * @param $request_cache_config
-     * @throws CoreException
-     * @return bool|FileCache|Memcache|RedisCache
+     * @return bool
+     * @throws \cross\exception\CoreException
      */
-    function init_request_cache( $request_cache_config )
+    function init_request_cache($request_cache_config)
     {
-        if (! $request_cache_config) {
+        if (!$request_cache_config) {
             return false;
         }
 
         list($open_cache, $cache_config) = $request_cache_config;
-        if (! $open_cache) {
+        if (!$open_cache) {
             return false;
         }
 
@@ -136,40 +139,49 @@ class Dispatcher
         }
 
         $app_name = $this->getConfig()->get("sys", "app_name");
-        $cache_dot_config = array(
-            1 =>  $this->getConfig()->get('url', 'dot'),
-            2 =>  '.',
-            3 =>  ':',
-        );
+        $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
 
-        if (! isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_PATH.'cache'.DS.'html';
+        if (!isset($cache_config ['cache_path'])) {
+            $cache_config ['cache_path'] = PROJECT_PATH . 'cache' . DS . 'html';
         }
 
-        if (! isset($cache_config ['file_ext'])) {
+        if (!isset($cache_config ['file_ext'])) {
             $cache_config ['file_ext'] = '.html';
         }
 
-        if (! isset($cache_config ['key_dot']))
-        {
-            if (isset($cache_dot_config[ $cache_config['type'] ])) {
-                $cache_config ['key_dot'] = $cache_dot_config[ $cache_config['type'] ];
-            } else {
+        if (!isset($cache_config ['key_dot'])) {
+            if (isset($cache_dot_config[$cache_config['type']])) {
+                $cache_config ['key_dot'] = $cache_dot_config[$cache_config['type']];
+            }
+            else {
                 $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
             }
         }
 
-        $cache_key_conf = array(
-            $app_name,
+        $cache_key_conf = array($app_name,
             strtolower($this->getController()),
             $this->getAction(),
             md5(implode($cache_config ['key_dot'], $this->getParams()))
         );
 
         $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
-        $cache_config['key']   = $cache_key;
+        $cache_config['key'] = $cache_key;
 
-        return RequestCache::factory( $cache_config );
+        return RequestCache::factory($cache_config);
+    }
+
+    /**
+     * 获取控制器的命名空间
+     *
+     * @param $controllerName
+     * @return string
+     */
+    private function get_name_space($controllerName)
+    {
+        $space_params = array('app', APP_NAME, 'controllers');
+        $space_params[] = $controllerName;
+
+        return implode($space_params, '\\');
     }
 
     /**
@@ -179,65 +191,59 @@ class Dispatcher
      * @param string $action 动作
      * @throws CoreException
      */
-    private function init_controller( $controller, $action=null )
+    private function init_controller($controller, $action = null)
     {
-        $app_sys_conf = self::$appConfig->get('sys');
+        $app_sys_conf = $this->getConfig()->get('sys');
         $app_path = $app_sys_conf ['app_path'];
         $app_name = $app_sys_conf ['app_name'];
 
-        $controller_file = implode(array($app_path,'controllers', "{$controller}.php"), DS);
-        if (! file_exists($controller_file))
-        {
+        $controller_file = implode(array($app_path, 'controllers', "{$controller}.php"), DS);
+        if (!file_exists($controller_file)) {
             throw new CoreException("app:{$app_name} 控制器{$controller_file}不存在");
         }
-        $this->setController( $controller );
 
-        if ($action)
-        {
-            try
-            {
+        $this->setController($controller);
+        $controllerSpace = $this->get_name_space($controller);
+
+        if ($action) {
+            try {
                 //会触发autoLoad
-                $is_callable = new ReflectionMethod($controller, $action);
+                $is_callable = new ReflectionMethod($controllerSpace, $action);
 
             } catch (Exception $e) {
 
-                try
-                {
+                try {
                     /**
                      * 判断Controller是否手动处理action
                      */
-                    new ReflectionMethod($controller, '__call');
+                    new ReflectionMethod($controllerSpace, '__call');
                     $this->setAction($action);
+
                     return;
 
                 } catch (Exception $e) {
 
-                    try
-                    {
+                    try {
                         //通过public static $_act_alias_ 指定action的别名
-                        $_property = new ReflectionProperty($controller, '_act_alias_');
+                        $_property = new ReflectionProperty($controllerSpace, '_act_alias_');
 
                     } catch (Exception $e) {
-                        throw new CoreException("app:{$app_name}不能识别的请求{$controller}->{$action}");
+                        throw new CoreException("app:{$app_name}不能识别的请求{$controllerSpace}->{$action}");
                     }
 
                     $act_alias = $_property->getValue();
-                    if (isset($act_alias [$action]))
-                    {
+                    if (isset($act_alias [$action])) {
                         $action = $act_alias [$action];
-                        $is_callable = new ReflectionMethod($controller, $action);
-                    }
-                    else
-                    {
-                        throw new CoreException("app::{$app_name}未指定的方法{$controller}->{$action}");
+                        $is_callable = new ReflectionMethod($controllerSpace, $action);
+                    } else {
+                        throw new CoreException("app::{$app_name}未指定的方法{$controllerSpace}->{$action}");
                     }
                 }
             }
 
-            if ($is_callable->isPublic())
-            {
-                $this->setAction( $action );
-                self::setActionAnnotate( $is_callable->getDocComment() );
+            if ($is_callable->isPublic()) {
+                $this->setAction($action);
+                self::setActionAnnotate($is_callable->getDocComment());
             } else {
                 throw new CoreException("不被允许访问的方法!");
             }
@@ -250,36 +256,9 @@ class Dispatcher
      * @param $params
      * @param array $annotate_params
      */
-    private function init_params( $params, $annotate_params = array() )
+    private function init_params($params, $annotate_params = array())
     {
-        $this->setParams( $params, $annotate_params );
-    }
-
-    /**
-     * 初始化配置文件
-     *
-     * @param $config
-     */
-    private static function init_config( $config )
-    {
-        self::setConfig( $config );
-    }
-
-    /**
-     * 实例化带参数的控制器
-     *
-     * @param $controller
-     * @param null $args 指定的参数
-     * @internal param $router 要解析的路由
-     * @return mixed
-     */
-    public function widget_run($controller, $args = null)
-    {
-        $this->init_controller( $controller );
-        $this->init_params( $args );
-
-        $controller = $this->getController();
-        return new $controller;
+        $this->setParams($params, $annotate_params);
     }
 
     /**
@@ -293,9 +272,9 @@ class Dispatcher
      */
     public function run($router, $args = null, $run_controller = true)
     {
-        $router = $this->getRouter( $router, $args);
+        $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
-        $this->init_controller( $router ['controller'], $action );
+        $this->init_controller($router ['controller'], $action);
 
         $action_config = self::getActionConfig();
         $action_params = array();
@@ -303,21 +282,24 @@ class Dispatcher
         if (isset($action_config['params'])) {
             $action_params = $action_config['params'];
         }
-        $this->init_params( $router ['params'], $action_params );
+        $this->init_params($router ['params'], $action_params);
 
         $cache = false;
         if (isset($action_config['cache'])) {
-            $cache = $this->init_request_cache( $action_config['cache'] );
+            $cache = $this->init_request_cache($action_config['cache']);
         }
 
         if ($cache && $cache->getExtime()) {
             $response = $cache->get();
         } else {
-            $cp = new self::$controller( );
+            $action = $this->getAction();
+            $cpn = $this->get_name_space($this->getController());
+            $cp = new $cpn();
 
-            if (true === $run_controller)
-            {
-                $response = $cp->run( self::$action, self::$params );
+            if (true === $run_controller) {
+                ob_start();
+                $cp->$action();
+                $response = ob_get_clean();
                 if ($cache) {
                     $cache->set(null, $response);
                 }
@@ -326,13 +308,12 @@ class Dispatcher
             }
         }
 
-        $content_type = Response::getInstance( )->get_ContentType();
-        if (! $content_type)
-        {
-            Response::getInstance( )->set_ContentType( $this->getConfig()->get('sys', 'display') );
+        $content_type = Response::getInstance()->get_ContentType();
+        if (!$content_type) {
+            Response::getInstance()->set_ContentType($this->getConfig()->get('sys', 'display'));
         }
 
-        Response::getInstance( )->output( $response );
+        Response::getInstance()->output($response);
     }
 
     /**
@@ -340,9 +321,9 @@ class Dispatcher
      *
      * @param array|object $config 配置
      */
-    private static function setConfig( $config )
+    private static function setConfig($config)
     {
-        self::$appConfig = $config;
+        self::$app_config = $config;
     }
 
     /**
@@ -350,9 +331,9 @@ class Dispatcher
      *
      * @param $controller
      */
-    private function setController( $controller )
+    private function setController($controller)
     {
-        self::$controller = $controller;
+        self::$controller_class_name = $controller;
     }
 
     /**
@@ -360,9 +341,9 @@ class Dispatcher
      *
      * @param $action
      */
-    private function setAction( $action )
+    private function setAction($action)
     {
-        self::$action = $action;
+        self::$class_action = $action;
     }
 
     /**
@@ -371,38 +352,35 @@ class Dispatcher
      * @param null $params
      * @param array $annotate_params
      */
-    private function setParams( $params = null, $annotate_params = array() )
+    private function setParams($params = null, $annotate_params = array())
     {
-        if ($this->getConfig()->get('url', 'type') == 1)
-        {
+        if ($this->getConfig()->get('url', 'type') == 1) {
             $params = self::combineParamsAnnotateConfig($params, $annotate_params);
         }
 
-        self::$params = $params;
+        self::$class_params = $params;
     }
 
     /**
      * 合并参数注释配置
      *
-     * @param null  $params
+     * @param null $params
      * @param array $annotate_params
      * @return array|null
      */
-    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array() )
+    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array())
     {
-        if (empty($annotate_params))
-        {
+        if (empty($annotate_params)) {
             return $params;
         }
 
-        if (! empty($params))
-        {
+        if (!empty($params)) {
             $params_set = array();
-            foreach ($params as $k => $p)
-            {
+            foreach ($params as $k => $p) {
                 if (isset($annotate_params[$k])) {
-                    $params_set [ $annotate_params[$k] ] = $p;
-                } else {
+                    $params_set [$annotate_params[$k]] = $p;
+                }
+                else {
                     $params_set [] = $p;
                 }
             }
@@ -417,7 +395,7 @@ class Dispatcher
      *
      * @param string $annotate
      */
-    private static function setActionAnnotate( $annotate )
+    private static function setActionAnnotate($annotate)
     {
         self::$action_annotate = $annotate;
     }
@@ -439,17 +417,17 @@ class Dispatcher
      */
     public static function getActionConfig()
     {
-        return Annotate::getInstance( self::getActionAnnotate() )->parse();
+        return Annotate::getInstance(self::getActionAnnotate())->parse();
     }
 
     /**
      * 获取配置
      *
-     * @return array
+     * @return Config
      */
     public static function getConfig()
     {
-        return self::$appConfig;
+        return self::$app_config;
     }
 
     /**
@@ -459,7 +437,7 @@ class Dispatcher
      */
     public static function getController()
     {
-        return self::$controller;
+        return self::$controller_class_name;
     }
 
     /**
@@ -469,7 +447,7 @@ class Dispatcher
      */
     public static function getAction()
     {
-        return self::$action;
+        return self::$class_action;
     }
 
     /**
@@ -479,7 +457,7 @@ class Dispatcher
      */
     public static function getParams()
     {
-        return self::$params;
+        return self::$class_params;
     }
 
 }

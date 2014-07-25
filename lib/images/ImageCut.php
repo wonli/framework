@@ -1,4 +1,8 @@
 <?php
+namespace cross\lib\images;
+
+use Exception;
+
 class ImageCut
 {
     /**
@@ -51,23 +55,25 @@ class ImageCut
     protected $images_info;
 
     /**
-     * @var 临时创建的图象
+     * 临时创建的图象
+     *
+     * @var resource
      */
     private $im;
 
-	function __construct($src_images)
+    function __construct($src_images)
     {
         $this->src_images = $src_images;
         $this->images_info = $this->get_image_info($src_images);
         $this->type = $this->images_info['file_type'];
 
-		//初始化图象
-		$this->create_im();
+        //初始化图象
+        $this->create_im();
 
-		//目标图象地址
-		$this->width = $this->images_info['width'];
-		$this->height = $this->images_info['height'];
-	}
+        //目标图象地址
+        $this->width = $this->images_info['width'];
+        $this->height = $this->images_info['height'];
+    }
 
     /**
      * 设置保存路径
@@ -76,10 +82,11 @@ class ImageCut
      * @param $name
      * @return $this
      */
-    function set_save_info( $path, $name )
+    function set_save_info($path, $name)
     {
         $this->save_path = $path;
         $this->save_name = $name;
+
         return $this;
     }
 
@@ -94,31 +101,32 @@ class ImageCut
     {
         $this->resize_width = $width;
         $this->resize_height = $height;
+
         return $this;
     }
 
     /**
      * 生成图象
      */
-    function cut( $coordinate, $return_path = false )
+    function cut($coordinate, $return_path = false)
     {
-        if ( ! isset($coordinate['x']) || ! isset($coordinate['y']) ||
-            ! isset($coordinate['w']) || ! isset($coordinate['h'])
+        if (!isset($coordinate['x']) || !isset($coordinate['y']) ||
+            !isset($coordinate['w']) || !isset($coordinate['h'])
         ) {
             throw new Exception('请设置剪切坐标x, y, w, h');
         }
 
-        $save_path = $this->get_save_path( );
+        $save_path = $this->get_save_path();
 
-		//改变后的图象的比例
-		if(!empty($this->resize_height)) {
-			$resize_ratio = ($this->resize_width) / ($this->resize_height);
-		} else {
-			$resize_ratio = 0;
-		}
+        //改变后的图象的比例
+        if (!empty($this->resize_height)) {
+            $resize_ratio = ($this->resize_width) / ($this->resize_height);
+        } else {
+            $resize_ratio = 0;
+        }
 
-		//实际图象的比例
-		$ratio = ($this->width) / ($this->height);
+        //实际图象的比例
+        $ratio = ($this->width) / ($this->height);
 
         if ($ratio >= $resize_ratio) //高度优先
         {
@@ -166,22 +174,23 @@ class ImageCut
     protected function get_image_info($images)
     {
         $image_info = getimagesize($images);
-        if (false !== $image_info)
-        {
-            $image_ext  = strtolower(image_type_to_extension($image_info[2]));
+        if (false !== $image_info) {
+            $image_ext = strtolower(image_type_to_extension($image_info[2]));
             $image_type = substr($image_ext, 1);
             $image_size = filesize($images);
 
             $info = array(
-                'width'		=>  $image_info[0],
-                'height'	=>  $image_info[1],
-                'ext'       =>  $image_ext,
-                'file_type' =>  $image_type,
-                'size'		=>  $image_size,
-                'mime'      =>  $image_info['mime'],
+                'width' => $image_info[0],
+                'height' => $image_info[1],
+                'ext' => $image_ext,
+                'file_type' => $image_type,
+                'size' => $image_size,
+                'mime' => $image_info['mime'],
             );
+
             return $info;
-        }else {
+        }
+        else {
             return false;
         }
     }
@@ -191,8 +200,7 @@ class ImageCut
      */
     private function create_im()
     {
-        switch($this->type)
-        {
+        switch ($this->type) {
             case 'jpg':
             case 'jpeg':
             case 'pjpeg':
@@ -215,7 +223,7 @@ class ImageCut
                 $this->im = imagecreatefromgd2($this->src_images);
                 break;
         }
-	}
+    }
 
     /**
      * 存储图片
@@ -228,8 +236,7 @@ class ImageCut
      */
     protected function save_image($resource, $save_path, $image_type, $quality = 100)
     {
-        switch($image_type)
-        {
+        switch ($image_type) {
             case 'jpg':
             case 'jpeg':
             case 'pjpeg':
@@ -278,18 +285,18 @@ class ImageCut
      * @throws Exception
      * @return string
      */
-    protected function get_save_path( )
+    protected function get_save_path()
     {
         $name = $this->get_save_name();
-        if (! $name) {
+        if (!$name) {
             throw new Exception('请设置缩略图名称');
         }
 
         $path = $this->get_save_dir();
-        if (! $path || ! is_dir($path)) {
+        if (!$path || !is_dir($path)) {
             throw new Exception('请设置路径');
         }
 
-        return $path.$name.$this->images_info['ext'];
-	}
+        return $path . $name . $this->images_info['ext'];
+    }
 }

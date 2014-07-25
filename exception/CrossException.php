@@ -4,9 +4,14 @@
  * @Auth: wonli <wonli@live.com>
  * Class CrossException
  */
+namespace cross\exception;
+
+use exception;
+use SplFileObject;
+
 abstract class CrossException extends Exception
 {
-    function __construct($message='CP error', $code=null)
+    function __construct($message = 'CP error', $code = null)
     {
         parent::__construct($message, $code);
         set_exception_handler(array($this, "error_handler"));
@@ -23,29 +28,26 @@ abstract class CrossException extends Exception
         $trace = $e->getTrace();
 
         $result = array();
-        $result["main"] = array("file"=>$e->getFile(), "line"=>$e->getLine(), "message"=>$e->getMessage());
+        $result["main"] = array("file" => $e->getFile(), "line" => $e->getLine(), "message" => $e->getMessage());
 
-        foreach($result as &$_i) {
+        foreach ($result as &$_i) {
             $file = new SplFileObject($_i["file"]);
 
-            foreach($file as $line => $code) {
-                if($line < $_i["line"] + 6 && $line > $_i["line"] - 7) {
-                    $hstring = highlight_string( "<?php{$code}", true );
+            foreach ($file as $line => $code) {
+                if ($line < $_i["line"] + 6 && $line > $_i["line"] - 7) {
+                    $hstring = highlight_string("<?php{$code}", true);
                     $_i["source"][$line] = str_replace("&lt;?php", "", $hstring);
                 }
             }
         }
 
-        if( ! empty($trace) )
-        {
-            foreach($trace as $tn => & $t)
-            {
-                if(isset($t['file']))
-                {
+        if (!empty($trace)) {
+            foreach ($trace as $tn => & $t) {
+                if (isset($t['file'])) {
                     $trace_fileinfo = new SplFileObject($t["file"]);
-                    foreach($trace_fileinfo as $t_line => $t_code) {
-                        if($t_line < $t["line"] + 6 && $t_line > $t["line"] - 7) {
-                            $hstring = highlight_string( "<?php{$t_code}", true );
+                    foreach ($trace_fileinfo as $t_line => $t_code) {
+                        if ($t_line < $t["line"] + 6 && $t_line > $t["line"] - 7) {
+                            $hstring = highlight_string("<?php{$t_code}", true);
                             $t["source"][$t_line] = str_replace("&lt;?php", "", $hstring);
                         }
                     }
@@ -64,5 +66,5 @@ abstract class CrossException extends Exception
      * @param exception $e
      * @return mixed
      */
-    abstract protected function error_handler (exception $e);
+    abstract protected function error_handler(exception $e);
 }

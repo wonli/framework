@@ -3,6 +3,8 @@
  * @Auth: wonli <wonli@live.com>
  * Class Response
  */
+namespace cross\core;
+
 class Response
 {
     /**
@@ -29,7 +31,7 @@ class Response
      */
     static $instance;
 
-    private function __construct( )
+    private function __construct()
     {
 
     }
@@ -39,18 +41,20 @@ class Response
      *
      * @return Response
      */
-    static function getInstance( )
+    static function getInstance()
     {
-        if(! self::$instance) {
-            self::$instance = new Response( );
+        if (!self::$instance) {
+            self::$instance = new Response();
         }
+
         return self::$instance;
     }
 
     /**
      * @param $code
      */
-    static function sendStatus($code) {
+    static function sendStatus($code)
+    {
         header("HTTP/1.1 {$code}");
     }
 
@@ -60,14 +64,14 @@ class Response
      * @param $header_type
      * @return $this
      */
-    function set_ContentType( $header_type )
+    function set_ContentType($header_type)
     {
-        if(isset(self::$mime_types [$header_type]))
-        {
+        if (isset(self::$mime_types [$header_type])) {
             $this->content_type = self::$mime_types [$header_type];
         } else {
-            $this->content_type = self::$mime_types [ 'html' ];
+            $this->content_type = self::$mime_types ['html'];
         }
+
         return $this;
     }
 
@@ -75,9 +79,10 @@ class Response
      * @param int $status
      * @return $this
      */
-    function set_response_status( $status = 200 )
+    function set_response_status($status = 200)
     {
         $this->response_status = $status;
+
         return $this;
     }
 
@@ -86,12 +91,11 @@ class Response
      */
     function get_response_status()
     {
-         if (! isset($this->response_status) )
-         {
-             $this->set_response_status();
-         }
+        if (!isset($this->response_status)) {
+            $this->set_response_status();
+        }
 
-         return $this->response_status;
+        return $this->response_status;
     }
 
     /**
@@ -121,7 +125,7 @@ class Response
      */
     function send_response_status($code = 200)
     {
-        if( 200 != $code ) {
+        if (200 != $code) {
             Response::sendStatus($code);
         }
 
@@ -137,8 +141,7 @@ class Response
     private function make_params($content)
     {
         $result = array();
-        if (is_string($content))
-        {
+        if (is_string($content)) {
             $result['CP_PARAMS'] = $content;
         } else {
             $result = $content;
@@ -153,15 +156,13 @@ class Response
      * @param $contents
      * @return $this
      */
-    function send_header( $contents )
+    function send_header($contents)
     {
-        if (! is_array($contents))
-        {
+        if (!is_array($contents)) {
             $contents = array($contents);
         }
 
-        foreach( $contents as $content )
-        {
+        foreach ($contents as $content) {
             header($content);
         }
 
@@ -173,7 +174,7 @@ class Response
      *
      * @param $header
      */
-    function set_header( $header )
+    function set_header($header)
     {
         $this->header = $header;
     }
@@ -181,7 +182,7 @@ class Response
     /**
      * 获取要发送到header信息
      */
-    function get_header( )
+    function get_header()
     {
         return $this->header;
     }
@@ -192,13 +193,13 @@ class Response
      * @param $content
      * @return $this
      */
-    function add_params( $content )
+    function add_params($content)
     {
-        $contents = $this->make_params( $content );
-        foreach( $contents as $c_name => $c_val )
-        {
+        $contents = $this->make_params($content);
+        foreach ($contents as $c_name => $c_val) {
             $_SERVER[$c_name] = $c_val;
         }
+
         return $this;
     }
 
@@ -208,19 +209,17 @@ class Response
      * @param string $contents
      * @return mixed
      */
-    function output( $contents = '' )
+    function output($contents = '')
     {
         $code = $this->get_response_status();
         $this->send_response_status($code);
 
         $header = $this->get_header();
-        if (! empty($header))
-        {
-            $this->send_header( $header );
+        if (!empty($header)) {
+            $this->send_header($header);
         }
 
-        if (! $contents)
-        {
+        if (!$contents) {
             $contents = self::$statusDescriptions [$code];
         }
 
@@ -232,28 +231,29 @@ class Response
      *
      * @param string $message
      * @param string $tpl
-     * @return mixed
+     * @return bool
      */
-    function display( $message = '', $tpl = '' )
+    function display($message = '', $tpl = '')
     {
         $code = $this->get_response_status();
         $this->send_response_status($code);
 
         $header = $this->get_header();
-        if (! empty($header))
-        {
-            $this->send_header( $header );
+        if (!empty($header)) {
+            $this->send_header($header);
         }
 
-        if(! $message ) {
+        if (!$message) {
             $message = self::$statusDescriptions [$code];
         }
 
-        if(null !== $tpl && file_exists($tpl)) {
-            return require $tpl;
+        if (null !== $tpl && file_exists($tpl)) {
+            require $tpl;
         } else {
-            var_export( $message, true);
+            var_export($message, true);
         }
+
+        return true;
     }
 
     /**
@@ -262,7 +262,6 @@ class Response
     static public $statusDescriptions = array(
         100 => 'Continue',
         101 => 'Switching Protocols',
-
         200 => 'OK',
         201 => 'Created',
         202 => 'Accepted',
@@ -270,7 +269,6 @@ class Response
         204 => 'No Content',
         205 => 'Reset Content',
         206 => 'Partial Content',
-
         300 => 'Multiple Choices',
         301 => 'Moved Permanently',
         302 => 'Found',
@@ -278,7 +276,6 @@ class Response
         304 => 'Not Modified',
         305 => 'Use Proxy',
         307 => 'Temporary Redirect',
-
         400 => 'Bad Request',
         401 => 'Unauthorized',
         403 => 'Forbidden',
@@ -296,7 +293,6 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested Range Not Satisfiable',
         417 => 'Expectation Failed',
-
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
@@ -308,7 +304,7 @@ class Response
     /**
      * @var array $mime_types
      */
-    static public $mime_types = array (
+    static public $mime_types = array(
         'ez' => 'application/andrew-inset',
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',

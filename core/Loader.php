@@ -1,137 +1,47 @@
 <?php
 /**
  * @Author:  wonli <wonli@live.com>
- * @Version: $Id: Loader.php 166 2013-11-06 07:52:21Z ideaa $
  */
+namespace cross\core;
+
+use cross\exception\CoreException;
+
 class Loader
 {
     /**
-     * @var array 已加载类
+     * Loader的实例
+     *
+     * @var Loader
      */
-    static private $loaded = array();
+    private static $instance;
 
     /**
-     * @var loader的实体
+     * 已加载类列表
+     *
+     * @var array
      */
-    static private $instance;
-
-    /**
-     * @var array 加载的文件
-     */
-    static private $load_file = array();
-
-    /**
-     * @var array 核心类列表
-     */
-    static private $coreClass;
+    private static $loaded = array();
 
     /**
      * 初始化Loader
      */
-    private function __construct( $app_name )
+    private function __construct()
     {
-        $this->app_name = $app_name;
-        self::$coreClass = self::getCoreClass();
         spl_autoload_register(array($this, "autoLoad"));
     }
 
     /**
      * 单例模式运行Loader
      *
-     * @param $app_name
      * @return Loader
      */
-    public static function init( $app_name )
+    public static function init()
     {
-        if(! isset(self::$instance [$app_name])) {
-            self::$instance [$app_name] = new Loader( $app_name );
+        if (! isset(self::$instance)) {
+            self::$instance = new Loader();
         }
-        return self::$instance [$app_name];
-    }
 
-    /**
-     * 核心类路径配置
-     *
-     * @return array
-     */
-    private static function getCoreClass()
-    {
-        return array
-        (
-            'Rest'            => 'core/Rest.php',
-            'Widget'          => 'core/Widget.php',
-            'Loader'          => 'core/Loader.php',
-            'Dispatcher'      => 'core/Dispatcher.php',
-            'CoreWidget'      => 'core/CoreWidget.php',
-            'FrameBase'       => 'core/FrameBase.php',
-            'Config'          => 'core/Config.php',
-
-            'CoreController'  => 'core/CoreController.php',
-            'CoreModule'      => 'core/CoreModule.php',
-            'CoreView'        => 'core/CoreView.php',
-
-            'CoreModel'       => 'model/CoreModel.php',
-            'MysqlModel'      => 'model/MysqlModel.php',
-            'MongoModel'      => 'model/MongoModel.php',
-            'CouchModel'      => 'model/CouchModel.php',
-
-            'Request'         => 'core/Request.php',
-            'Response'        => 'core/Response.php',
-            'Router'          => 'core/Router.php',
-            'UrlRouter'       => 'core/UrlRouter.php',
-            'Helper'          => 'core/Helper.php',
-            'CrossArray'      => 'core/CrossArray.php',
-            'ArrayMap'        => 'core/ArrayMap.php',
-            'Annotate'        => 'core/Annotate.php',
-            'HttpAuth'        => 'core/HttpAuth.php',
-
-            'CookieAuth'      => 'auth/CookieAuth.php',
-            'SessionAuth'     => 'auth/SessionAuth.php',
-
-            'CoreCache'             =>  'cache/CoreCache.php',
-            'FileCache'             =>  'cache/FileCache.php',
-            'RedisCache'            =>  'cache/RedisCache.php',
-            'RequestCache'          =>  'cache/RequestCache.php',
-            'MemcacheBase'          =>  'cache/MemcacheBase.php',
-            'ControllerCache'       =>  'cache/ControllerCache.php',
-            'RequestMemcache'       =>  'cache/RequestMemcache.php',
-            'RequestRedisCache'     =>  'cache/RequestRedisCache.php',
-
-            'CrossException'    => 'exception/CrossException.php',
-            'CoreException'     => 'exception/CoreException.php',
-            'FrontException'    => 'exception/FrontException.php',
-            'CacheException'    => 'exception/CacheException.php',
-
-            'HttpAuthInterface' =>  'interface/HttpAuthInterface.php',
-            'RouterInterface'   =>  'interface/RouterInterface.php',
-            'CacheInterface'    =>  'interface/CacheInterface.php',
-            'SqlInterface'      =>  'interface/SqlInterface.php',
-
-            //驱动
-            'MysqlSimple'   =>  'lib/driver/MysqlSimple.php',
-            //图片处理
-            'ImageCut'      =>  'lib/images/ImageCut.php', //图片剪裁
-            'ImageThumb'    =>  'lib/images/ImageThumb.php', //生成缩略图
-            'UploadImages'  =>  'lib/images/UploadImages.php', //图片上传
-            'Captcha'       =>  'lib/images/Captcha.php', //验证码
-            //soap
-            'SoapDiscovery' =>  'lib/soap/SoapDiscovery.class.php',
-            //upload
-            'Uploader'	    =>  'lib/upload/Uploader.php',
-            //分页处理
-            'Page'          =>  'lib/pagination/Page.php', //分页
-            //加解密
-            'Mcrypt'        =>  'lib/mcrypt/Mcrypt.php',
-            'DEcode'        =>  'lib/mcrypt/DEcode.php',
-            'HexCrypt'      =>  'lib/mcrypt/HexCrypt.php',
-            'DESMcrypt'     =>  'lib/mcrypt/DESMcrypt.php',
-
-            'Tree'          =>  'lib/array/Tree.php',
-            'Array2XML'     =>  'lib/array/Array2XML.php',
-
-            'Crumb'         =>  'lib/other/Crumb.php', //验证字符串
-            'PYInitials'    =>  'lib/other/PYInitials.php',
-        );
+        return self::$instance;
     }
 
     /**
@@ -142,22 +52,23 @@ class Loader
      * @return mixed
      * @throws CoreException
      */
-    static public function import( $files )
+    static public function import($files)
     {
         $list = Loader::parseFileRealPath($files);
-        foreach($list as $file)
-        {
-            $cache_key = crc32($file);
-            if (isset( self::$loaded [$cache_key] ) ) {
-                return ;
-            }
-
-            if (file_exists($file))
-            {
-                self::$loaded [$cache_key] = 1; //标识已载入
+        foreach ($list as $file) {
+            if (isset(self::$loaded [$file])) {
+                return true;
+            } elseif (file_exists($file)) {
+                self::$loaded [$file] = 1; //标识已载入
                 require $file;
-            } else throw new CoreException("未找到要载入的文件:{$file}");
+
+                return true;
+            } else {
+                throw new CoreException("未找到要载入的文件:{$file}");
+            }
         }
+
+        return true;
     }
 
     /**
@@ -168,59 +79,59 @@ class Loader
      * @return mixed
      * @throws CoreException
      */
-    static public function read( $file, $read_file = true )
+    static public function read($file, $read_file = true)
     {
         if (file_exists($file)) {
             $file_path = $file;
         } else {
-            $file_path = Loader::getFilePath( $file );
+            $file_path = Loader::getFilePath($file);
         }
 
         $key = crc32($file_path);
-        $read_file_flag = $read_file ? 1 : 0;
-        if (isset(self::$loaded [$read_file_flag][ $key ]) ) {
-            return self::$loaded [$read_file_flag][ $key ];
+        $read_file_flag = (int) $read_file;
+        if (isset(self::$loaded [$read_file_flag][$key])) {
+            return self::$loaded [$read_file_flag][$key];
         }
 
-        if (is_readable($file_path) )
-        {
-            if (false === $read_file)
-            {
-                $file_content = file_get_contents( $file_path );
-                self::$loaded [$read_file_flag][ $key ] = $file_content;
+        if (is_readable($file_path)) {
+            if (false === $read_file) {
+                $file_content = file_get_contents($file_path);
+                self::$loaded [$read_file_flag][$key] = $file_content;
+
                 return $file_content;
             }
 
             $ext = Helper::getExt($file_path);
-            switch($ext)
-            {
+            switch ($ext) {
                 case 'php' :
                     $data = require $file_path;
                     self::$loaded [$read_file_flag][$key] = $data;
-                    return $data;
+                    break;
 
                 case 'json' :
-                    $data = json_decode( file_get_contents($file_path), true);
+                    $data = json_decode(file_get_contents($file_path), true);
                     self::$loaded [$read_file_flag][$key] = $data;
-                    return $data;
+                    break;
 
                 case 'ini':
                     $data = parse_ini_file($file_path);
                     self::$loaded [$read_file_flag][$key] = $data;
-                    return $data;
+                    break;
 
                 default :
                     throw new CoreException("不支持的解析格式");
             }
+
+            return $data;
+        } else {
+            throw new CoreException("读取文件失败:{$file}");
         }
-        else throw new CoreException("读取文件失败:{$file}");
     }
 
     /**
      * 根据给定的参数解析文件的绝对路径
      * <pre>
      *  格式如下:
-     *
      *  1 file_name 直接指定文件路径
      *  2 ::[path/]file_name 从当前项目根目录查找
      *  3 app::[path/]file_name 当前app路径
@@ -231,53 +142,39 @@ class Loader
      * @param string $append_file_ext
      * @return array
      */
-    static function parseFileRealPath( $class, $append_file_ext=".php" )
+    static function parseFileRealPath($class, $append_file_ext = ".php")
     {
         $files = $list = array();
-        $_defines = array (
-            'app'       =>  defined("APP_PATH")?APP_PATH:'',
-            'core'      =>  CP_PATH.'core',
-            'static'    =>  defined("STATIC_PATH")?STATIC_PATH:'',
-            'project'   =>  PROJECT_PATH,
+        $_defines = array(
+            'app' => APP_PATH,
+            'static' => defined('STATIC_PATH') ? STATIC_PATH : '',
+            'project' => PROJECT_PATH,
         );
 
-        if (is_array($class))
-        {
+        if (is_array($class)) {
             $files = $class;
-        }
-        else
-        {
-            if (false !== strpos($class, ","))
-            {
-                $files = explode("," , $class);
-            }
-            else
-            {
-                $files[] = $class;
-            }
+        } elseif (false !== strpos($class, ",")) {
+            $files = explode(",", $class);
+        } else {
+            $files[] = $class;
         }
 
-        foreach ($files as $f)
-        {
-            if(false !== strpos($f, '::'))
-            {
+        foreach ($files as $f) {
+            if (false !== strpos($f, '::')) {
+
                 list($path, $file_info) = explode('::', $f);
-                if (! $path)
-                {
+                if (!$path) {
                     $path = "project";
                 }
 
-                $file_real_path = rtrim($_defines[strtolower($path)], DS).DS.str_replace("/", DS, $file_info);
-                $file_path_info = pathinfo( $file_real_path );
-                if (! isset($file_path_info['extension']) )
-                {
+                $file_real_path = rtrim($_defines[strtolower($path)], DS) . DS . str_replace("/", DS, $file_info);
+                $file_path_info = pathinfo($file_real_path);
+                if (!isset($file_path_info['extension'])) {
                     $file_real_path .= $append_file_ext;
                 }
 
                 $list [] = $file_real_path;
-            }
-            else
-            {
+            } else {
                 $list [] = $f;
             }
         }
@@ -287,13 +184,12 @@ class Loader
 
     /**
      * @see Loader::parseFileRealPath
-     *
      * @param $file
      * @return mixed
      */
-    static function getFilePath( $file )
+    static function getFilePath($file)
     {
-        return current( Loader::parseFileRealPath($file, '') );
+        return current(Loader::parseFileRealPath($file, ''));
     }
 
     /**
@@ -304,56 +200,29 @@ class Loader
      */
     function autoLoad($class_name)
     {
-        if (isset(self::$coreClass [$class_name])) {
-            $file_real_path= CP_PATH.self::$coreClass[$class_name];
-        }
-        else
-        {
-            if ( 'Module' === substr($class_name, -6) ) {
-                return spl_autoload_register(array("Loader","module_load"));
-            } elseif( 'View' === substr($class_name, -4) ) {
-                $_file_type = 'views';
-            } else {
-                $_file_type = 'controllers';
-            }
-
-            if (! isset($file_real_path) && $_file_type)
-            {
-                $_file_path = APP_PATH_DIR.DS.$this->app_name.DS.$_file_type.DS;
-                if (false !== strpos($class_name, '\\')) {
-                    $_file_path = PROJECT_PATH.DS;
-                }
-                $file_real_path = $_file_path.$class_name.'.php';
-            }
-
-            if (! is_file($file_real_path)) {
-                return false;
-            }
+        if (isset(self::$loaded[$class_name])) {
+            return true;
         }
 
-        self::$loaded[ $class_name ] = $file_real_path;
+        $pos = strpos($class_name, '\\');
+        $prefix = substr($class_name, 0, $pos);
+
+        $class_name = str_replace('\\', DS, $class_name);
+        if (0 === strcasecmp($prefix, 'cross')) {
+            $file_real_path = CP_PATH . substr($class_name, $pos + 1);
+        } else {
+            $file_real_path = PROJECT_PATH . $class_name;
+        }
+
+        $file_real_path .= '.php';
+        if (! is_file($file_real_path)) {
+            return false;
+        }
+
+        self::$loaded[$class_name] = $file_real_path;
         require $file_real_path;
-    }
 
-    /**
-     * Module自动加载
-     *
-     * @param $module_name
-     * @throws CoreException
-     */
-    static function module_load( $module_name )
-    {
-        $_file_path = PROJECT_PATH."modules".DS;
-        if (false !== strpos($module_name, '\\'))
-        {
-            $module_name = str_replace('\\', DS, ltrim($module_name, DS));
-            $_file_path = PROJECT_PATH;
-        }
-
-        $file_real_path = $_file_path.$module_name.".php";
-        if (file_exists( $file_real_path )) {
-            require($file_real_path);
-        }
+        return true;
     }
 }
 

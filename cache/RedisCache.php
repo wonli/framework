@@ -1,9 +1,13 @@
 <?php
 /**
  * @Auth wonli <wonli@live.com>
- *
  * Class RedisCache
  */
+namespace cross\cache;
+
+use cross\exception\CoreException;
+use Redis;
+
 class RedisCache
 {
     /**
@@ -11,20 +15,25 @@ class RedisCache
      */
     public $link;
 
+    /**
+     * 连接redis
+     * <pre>
+     * unixsocket设置
+     * unixsocket /tmp/redis.sock
+     * unixsocketperm 777
+     * </pre>
+     *
+     * @param $option
+     * @throws \cross\exception\CoreException
+     */
     function __construct($option)
     {
-        if ( ! extension_loaded('redis') ) {
+        if (!extension_loaded('redis')) {
             throw new CoreException('NOT_SUPPORT : redis');
         }
 
-        $obj = new redis();
-
-        if(strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket']))
-        {
-            /**
-             * unixsocket /tmp/redis.sock
-             * unixsocketperm 777
-             */
+        $obj = new Redis();
+        if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
             $obj->connect('/tmp/redis.sock');
         } else {
             $obj->connect($option ['host'], $option ['port']);
@@ -44,12 +53,12 @@ class RedisCache
     public function __call($method, $argv)
     {
         $result = null;
-        if(method_exists($this->link, $method))
-        {
+        if (method_exists($this->link, $method)) {
             $result = ($argv == null)
                 ? $this->link->$method()
                 : call_user_func_array(array($this->link, $method), $argv);
         }
+
         return $result;
     }
 }

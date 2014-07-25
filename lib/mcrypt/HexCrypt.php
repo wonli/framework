@@ -1,9 +1,11 @@
 <?php
 /*16进制编码方式利用0-f进行编码*/
+namespace cross\lib\mcrypt;
+
 class HexCrypt extends DEcode
 {
 
-    public function __construct ()
+    public function __construct()
     {
 
     }
@@ -14,7 +16,7 @@ class HexCrypt extends DEcode
      * @param $data
      * @return array
      */
-    public function enCode ($data)
+    public function enCode($data)
     {
         //return @unpack('H*', $data);
         return bin2hex($data);
@@ -26,7 +28,7 @@ class HexCrypt extends DEcode
      * @param $data
      * @return string
      */
-    public function deCode ($data)
+    public function deCode($data)
     {
         return @pack('H*', $data);
     }

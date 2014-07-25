@@ -1,9 +1,12 @@
 <?php
 /**
  * @Auth wonli <wonli@live.com>
- *
  * Class Memcache
  */
+namespace cross\cache;
+
+use cross\i\CacheInterface;
+
 class RequestMemcache extends MemcacheBase implements CacheInterface
 {
     static private $value_cache;
@@ -11,7 +14,7 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
     function __construct($option)
     {
         parent::__construct($option);
-        $this->cache_key  = $option ['key'];
+        $this->cache_key = $option ['key'];
         $this->expire = time() + $option ['expire_time'];
     }
 
@@ -21,15 +24,13 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
      * @param string $key
      * @return array|mixed|string
      */
-    function get( $key = '' )
+    function get($key = '')
     {
-        if ( self::$value_cache[ $this->cache_key ] )
-        {
-            return self::$value_cache[ $this->cache_key ];
+        if (self::$value_cache[$this->cache_key]) {
+            return self::$value_cache[$this->cache_key];
         }
 
-        if (! $key)
-        {
+        if (!$key) {
             $key = $this->cache_key;
         }
 
@@ -43,14 +44,13 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
      * @param $value
      * @return mixed set
      */
-    function set( $key, $value )
+    function set($key, $value)
     {
-        if (! $key)
-        {
+        if (!$key) {
             $key = $this->cache_key;
         }
 
-        $this->link->set( $key, $value, $this->expire);
+        $this->link->set($key, $value, $this->expire);
     }
 
     /**
@@ -60,15 +60,13 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
      */
     function getExtime()
     {
-        if (isset( self::$value_cache[ $this->cache_key ] ))
-        {
+        if (isset(self::$value_cache[$this->cache_key])) {
             return true;
         }
 
-        $value = $this->link->get( $this->cache_key );
-        if (! empty($value))
-        {
-            self::$value_cache[ $this->cache_key ] = $value;
+        $value = $this->link->get($this->cache_key);
+        if (!empty($value)) {
+            self::$value_cache[$this->cache_key] = $value;
             return true;
         }
 

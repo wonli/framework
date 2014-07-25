@@ -3,7 +3,16 @@
  * @Auth: wonli <wonli@live.com>
  * Class CoreView
  */
-class CoreView extends FrameBase
+namespace cross\mvc;
+
+use cross\core\FrameBase;
+use cross\core\Helper;
+use cross\core\Response;
+use cross\core\Router;
+use cross\exception\CoreException;
+use cross\lib\arrayOperate\Array2XML;
+
+class View extends FrameBase
 {
     /**
      * 模板数据
@@ -64,12 +73,12 @@ class CoreView extends FrameBase
     /**
      * 初始化视图
      */
-    function __construct( )
+    function __construct()
     {
         parent::__construct();
 
-        $this->url_config  = $this->config->get("url");
-        $this->link_base  = $this->config->get("sys", "site_url");
+        $this->url_config = $this->config->get("url");
+        $this->link_base = $this->config->get("sys", "site_url");
         $this->static_url = $this->config->get("sys", "static_url");
 
         $this->set("static_url", $this->static_url);
@@ -83,9 +92,9 @@ class CoreView extends FrameBase
      * @param string $file_ext_name 模板文件扩展名
      * @return string
      */
-    function tpl($tpl_name, $get_content=false, $file_ext_name='.tpl.php')
+    function tpl($tpl_name, $get_content = false, $file_ext_name = '.tpl.php')
     {
-        $file_path = $this->getTplPath().$tpl_name.$file_ext_name;
+        $file_path = $this->getTplPath() . $tpl_name . $file_ext_name;
         if (true === $get_content) {
             return file_get_contents($file_path, true);
         }
@@ -100,7 +109,7 @@ class CoreView extends FrameBase
      * @param null $value
      * @return $this
      */
-    final function set($name, $value=null)
+    final function set($name, $value = null)
     {
         if (is_array($name)) {
             $this->set = array_merge($this->set, $name);
@@ -115,7 +124,7 @@ class CoreView extends FrameBase
      * 生成资源文件路径
      *
      * @param $res_url
-     * @param bool $convert
+     * @param bool $use_static_url
      * @return string
      */
     function res($res_url, $use_static_url = true)
@@ -128,7 +137,7 @@ class CoreView extends FrameBase
             $res_base_url = SITE_URL;
         }
 
-        return rtrim($res_base_url, "/").'/'.$res_url;
+        return rtrim($res_base_url, "/") . '/' . $res_url;
     }
 
     /**
@@ -138,7 +147,7 @@ class CoreView extends FrameBase
      */
     function getTplPath()
     {
-        return rtrim($this->getTplBasePath().$this->getTplDir(), DS).DS;
+        return rtrim($this->getTplBasePath() . $this->getTplDir(), DS) . DS;
     }
 
     /**
@@ -148,7 +157,7 @@ class CoreView extends FrameBase
      */
     function getAppDefaultTplPath()
     {
-        return $this->config->get("sys", "app_path").DS.'templates';
+        return $this->config->get("sys", "app_path") . DS . 'templates';
     }
 
     /**
@@ -158,7 +167,7 @@ class CoreView extends FrameBase
      */
     function setTplBasePath($tpl_base_path)
     {
-        $this->tpl_base_path = rtrim($tpl_base_path, DS).DS;
+        $this->tpl_base_path = rtrim($tpl_base_path, DS) . DS;
     }
 
     /**
@@ -168,8 +177,8 @@ class CoreView extends FrameBase
      */
     function getTplBasePath()
     {
-        if (! $this->tpl_base_path) {
-            $this->setTplBasePath( $this->getAppDefaultTplPath() );
+        if (!$this->tpl_base_path) {
+            $this->setTplBasePath($this->getAppDefaultTplPath());
         }
 
         return $this->tpl_base_path;
@@ -183,7 +192,7 @@ class CoreView extends FrameBase
      * @param bool $sec
      * @return string
      */
-    function link($controller=null, $params=null, $sec = false)
+    function link($controller = null, $params = null, $sec = false)
     {
         $_link_url = $this->link_base;
         if ($controller) {
@@ -208,7 +217,7 @@ class CoreView extends FrameBase
      * @param null $params
      * @return string
      */
-    function slink($_controller=null, $params=null)
+    function slink($_controller = null, $params = null)
     {
         return $this->link($_controller, $params, true);
     }
@@ -238,29 +247,26 @@ class CoreView extends FrameBase
 
         if ($this->url_config ['rewrite']) {
             $_link_url .= $_controller;
-        }
-        else
-        {
+        } else {
             $index = $this->url_config ['index'];
-            if ($this->url_config ['type'] == 2 || $this->url_config ['type'] == 4)
-            {
+            if ($this->url_config ['type'] == 2 || $this->url_config ['type'] == 4) {
                 $_dot = $index;
                 $_ext = $this->url_config['ext'];
             } else {
                 if ($index == 'index.php') {
                     $_dot = '?';
                 } else {
-                    $_dot = $index.'?';
+                    $_dot = $index . '?';
                 }
             }
-            $_link_url .=  $_dot.'/'.$_controller;
+            $_link_url .= $_dot . '/' . $_controller;
         }
 
         if (isset($_action)) {
-            $_link_url .= $this->url_config['dot'].$_action;
+            $_link_url .= $this->url_config['dot'] . $_action;
         }
 
-        return $_link_url.$_ext;
+        return $_link_url . $_ext;
     }
 
     /**
@@ -275,10 +281,8 @@ class CoreView extends FrameBase
         $_params = '';
         $_dot = $this->url_config['dot'];
 
-        if ($params)
-        {
-            switch($this->url_config['type'])
-            {
+        if ($params) {
+            switch ($this->url_config['type']) {
                 case 1:
                     if (is_array($params)) {
                         $_params = implode($this->url_config['dot'], $params);
@@ -300,14 +304,14 @@ class CoreView extends FrameBase
 
                 case 3:
                 case 4:
-                    if (! is_array($params)) {
+                    if (!is_array($params)) {
                         $p = array();
                         parse_str($params, $p);
                     } else {
                         $p = $params;
                     }
 
-                    foreach($p as $p_key => $p_val) {
+                    foreach ($p as $p_key => $p_val) {
                         $_params .= sprintf("%s%s%s", $p_key, $this->url_config['dot'], $p_val);
                     }
                     break;
@@ -318,7 +322,7 @@ class CoreView extends FrameBase
             }
         }
 
-        return $_dot.$_params;
+        return $_dot . $_params;
     }
 
     /**
@@ -330,17 +334,16 @@ class CoreView extends FrameBase
     function display($data = null, $method = null)
     {
         $this->data = $data;
-        if ($method === null)
-        {
+        if ($method === null) {
             $display_type = $this->config->get("sys", "display");
             if ($display_type && $display_type != "HTML") {
-                $method = strtoupper( $display_type );
+                $method = strtoupper($display_type);
             } else {
                 $method = $this->action;
             }
         }
 
-        if (! $method) {
+        if (!$method) {
             $method = Router::$default_action;
         }
 
@@ -353,11 +356,11 @@ class CoreView extends FrameBase
      * @param $data
      * @param $method
      */
-    function obRender( $data, $method )
+    function obRender($data, $method)
     {
         ob_start();
-        $this->$method( $data );
-        $this->loadLayer( ob_get_clean() );
+        $this->$method($data);
+        $this->loadLayer(ob_get_clean());
     }
 
     /**
@@ -365,7 +368,7 @@ class CoreView extends FrameBase
      *
      * @param $dir_name
      */
-    function setTplDir( $dir_name )
+    function setTplDir($dir_name)
     {
         $this->tpl_dir = $dir_name;
     }
@@ -377,19 +380,16 @@ class CoreView extends FrameBase
      */
     function getTplDir()
     {
-        if (! $this->tpl_dir)
-        {
+        if (!$this->tpl_dir) {
             $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
-            if (! $default_tpl_dir)
-            {
+            if (!$default_tpl_dir) {
                 $default_tpl_dir = 'default';
             }
 
-            $this->setTplDir( $default_tpl_dir );
+            $this->setTplDir($default_tpl_dir);
         }
 
-        if ($this->config->get('sys', 'auto_switch_tpl'))
-        {
+        if ($this->config->get('sys', 'auto_switch_tpl')) {
             if ($this->is_robot()) {
                 return 'spider';
             } elseif ($this->is_mobile()) {
@@ -407,24 +407,23 @@ class CoreView extends FrameBase
      */
     function is_robot()
     {
-        $agent= strtolower($_SERVER['HTTP_USER_AGENT']);
-        if (!empty($agent))
-        {
-            $spiderSite= array( "TencentTraveler", "Baiduspider+", "BaiduGame", "Googlebot",
+        $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+        if (!empty($agent)) {
+            $spiderSite = array("TencentTraveler", "Baiduspider+", "BaiduGame", "Googlebot",
                 "msnbot", "Sosospider+", "Sogou web spider", "ia_archiver", "Yahoo! Slurp",
-                "YoudaoBot", "Yahoo Slurp", "MSNBot", "Java (Often spam bot)","BaiDuSpider", "Voila",
-                "Yandex bot", "BSpider", "twiceler", "Sogou Spider","Speedy Spider","Google AdSense",
+                "YoudaoBot", "Yahoo Slurp", "MSNBot", "Java (Often spam bot)", "BaiDuSpider", "Voila",
+                "Yandex bot", "BSpider", "twiceler", "Sogou Spider", "Speedy Spider", "Google AdSense",
                 "Heritrix", "Python-urllib", "Alexa (IA Archiver)", "Ask", "Exabot", "Custo",
                 "OutfoxBot/YodaoBot", "yacy", "SurveyBot", "legs", "lwp-trivial", "Nutch", "StackRambler",
                 "The web archive (IA Archiver)", "Perl tool", "MJ12bot", "Netcraft", "MSIECrawler",
                 "WGet tools", "larbin", "Fish search");
 
-            foreach($spiderSite as $val)
-            {
+            foreach ($spiderSite as $val) {
                 if (stripos($agent, $val) !== false) {
                     return $val;
                 }
             }
+
             return false;
         }
 
@@ -440,18 +439,16 @@ class CoreView extends FrameBase
     {
         if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
             return true;
-        }
-        elseif (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
-       		return true;
-       	}
-       	elseif (strpos(strtoupper($_SERVER['HTTP_ACCEPT']), "VND.WAP.WML") > 0) {
-       		return true;
-        }
-        elseif (preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|
+        } elseif (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
+            return true;
+        } elseif (strpos(strtoupper($_SERVER['HTTP_ACCEPT']), "VND.WAP.WML") > 0) {
+            return true;
+        } elseif (preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|
             elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|
-            phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i', $_SERVER['HTTP_USER_AGENT'])) {
-       		return true;
-       	}
+            phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i', $_SERVER['HTTP_USER_AGENT'])
+        ) {
+            return true;
+        }
 
         return false;
     }
@@ -463,20 +460,21 @@ class CoreView extends FrameBase
      * @param string $location
      * @param bool $convert
      */
-    function addRes($res_url, $location="header", $convert = true)
+    function addRes($res_url, $location = "header", $convert = true)
     {
         $this->res_list [$location][] = array(
-            'url'  =>  $res_url,
-            'convert'    =>  $convert
+            'url' => $res_url,
+            'convert' => $convert
         );
     }
 
     /**
      * 加载 css|js
+     *
      * @param string $location
      * @return string
      */
-    function loadRes($location="header")
+    function loadRes($location = "header")
     {
         $result = '';
         if (empty($this->res_list) || empty($this->res_list[$location])) {
@@ -487,11 +485,9 @@ class CoreView extends FrameBase
             $data = $this->res_list [$location];
         }
 
-        if (! empty($data))
-        {
-            if(is_array($data))
-            {
-                foreach($data as $r) {
+        if (!empty($data)) {
+            if (is_array($data)) {
+                foreach ($data as $r) {
                     $result .= $this->outputResLink($r['url'], $r['convert']);
                 }
             } else {
@@ -509,11 +505,10 @@ class CoreView extends FrameBase
      * @param bool $make_link
      * @return null|string
      */
-    function outputResLink($res_link, $make_link=true)
+    function outputResLink($res_link, $make_link = true)
     {
         $t = Helper::getExt($res_link);
-        switch( strtolower($t) )
-        {
+        switch (strtolower($t)) {
             case 'js' :
                 $tpl = '<script type="text/javascript" src="%s"></script>';
                 break;
@@ -526,13 +521,14 @@ class CoreView extends FrameBase
                 $tpl = null;
         }
 
-        if (null !== $tpl)
-        {
+        if (null !== $tpl) {
             if ($make_link) {
                 $res_link = $this->res($res_link);
             }
+
             return sprintf("{$tpl}\n", $res_link);
         }
+
         return null;
     }
 
@@ -544,10 +540,10 @@ class CoreView extends FrameBase
     function JSON($data)
     {
         $this->set(
-            array("layer"=>"json")
+            array("layer" => "json")
         );
 
-        Response::getInstance()->set_ContentType( 'json' );
+        Response::getInstance()->set_ContentType('json');
         echo json_encode($data);
     }
 
@@ -557,13 +553,13 @@ class CoreView extends FrameBase
      * @param $data
      * @param string $root_name
      */
-    function XML($data, $root_name='root')
+    function XML($data, $root_name = 'root')
     {
         $this->set(
-            array("layer"=>"xml")
+            array("layer" => "xml")
         );
 
-        Response::getInstance()->set_ContentType( 'xml' );
+        Response::getInstance()->set_ContentType('xml');
         $xml = Array2XML::createXML($root_name, $data);
 
         echo $xml->saveXML();
@@ -576,7 +572,7 @@ class CoreView extends FrameBase
      * @param $layer_ext
      * @throws CoreException
      */
-    function loadLayer($content, $layer_ext='.layer.php')
+    function loadLayer($content, $layer_ext = '.layer.php')
     {
         if ($this->set) {
             extract($this->set, EXTR_PREFIX_SAME, "USER_DEFINED");
@@ -584,14 +580,14 @@ class CoreView extends FrameBase
         $_real_path = $this->getTplPath();
 
         //运行时>配置>默认
-        if(isset($layer)) {
-            $layer_file = $_real_path.$layer.$layer_ext;
+        if (isset($layer)) {
+            $layer_file = $_real_path . $layer . $layer_ext;
         } else {
-            $layer_file = $_real_path.'default'.$layer_ext;
+            $layer_file = $_real_path . 'default' . $layer_ext;
         }
 
-        if(! file_exists($layer_file)) {
-            throw new CoreException($layer_file.' layer Not found!');
+        if (!file_exists($layer_file)) {
+            throw new CoreException($layer_file . ' layer Not found!');
         }
 
         include $layer_file;
