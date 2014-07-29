@@ -1,12 +1,20 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class RequestCache
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\cache;
 
 use cross\exception\CoreException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class RequestCache
+ * @package cross\cache
+ */
 class RequestCache extends CoreCache
 {
     /**

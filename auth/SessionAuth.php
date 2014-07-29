@@ -1,12 +1,20 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * SessionAuth.php
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\auth;
 
 use cross\i\HttpAuthInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class SessionAuth
+ * @package cross\auth
+ */
 class SessionAuth implements HttpAuthInterface
 {
     function __construct()

@@ -1,12 +1,20 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class Request
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
 use cross\exception\FrontException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Request
+ * @package cross\core
+ */
 class Request
 {
     /**
@@ -59,7 +67,7 @@ class Request
      * @throws FrontException
      * @return null
      */
-    private function _initScriptUrl()
+    private function initScriptUrl()
     {
         if (($scriptName = $this->_SERVER('SCRIPT_FILENAME')) == null) {
             throw new FrontException('determine the entry script URL failed!!!');
@@ -105,7 +113,7 @@ class Request
     public function getScriptUrl()
     {
         if (!$this->_scriptUrl) {
-            $this->_initScriptUrl();
+            $this->initScriptUrl();
         }
 
         return $this->_scriptUrl;
@@ -122,7 +130,7 @@ class Request
     }
 
     /**
-     * 返回baseurl
+     * 返回当前URL绝对路径
      *
      * @param  boolean $absolute 是否返回带HOST的绝对路径
      * @return string 当前请求的url
@@ -170,7 +178,7 @@ class Request
      */
     public function getHostInfo()
     {
-        if (!$this->_hostInfo) $this->_initHostInfo();
+        if (!$this->_hostInfo) $this->initHostInfo();
         return $this->_hostInfo;
     }
 
@@ -180,7 +188,7 @@ class Request
      * @throws FrontException
      * @return null
      */
-    private function _initHostInfo()
+    private function initHostInfo()
     {
         if (PHP_SAPI === 'cli') {
             return 'cli';
@@ -315,7 +323,7 @@ class Request
      */
     public function isAjaxRequest()
     {
-        return $this->_SERVER('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest';
+        return 0 === strcasecmp($this->_SERVER('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
     }
 
     /**
@@ -325,12 +333,8 @@ class Request
      */
     public function isFlashRequest()
     {
-        return stripos($this->_SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false || stripos(
-                                                                                        $this->_SERVER(
-                                                                                            'HTTP_USER_AGENT'
-                                                                                        ),
-                                                                                        'Flash'
-                                                                                    ) !== false;
+        return stripos($this->_SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false
+               || stripos($this->_SERVER( 'HTTP_USER_AGENT' ), 'Flash') !== false;
     }
 
     /**

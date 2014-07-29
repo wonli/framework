@@ -1,11 +1,20 @@
 <?php
 /**
- * @Author:  wonli <wonli@live.com>
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
 use cross\exception\CoreException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Loader
+ * @package cross\core
+ */
 class Loader
 {
     /**
@@ -27,7 +36,7 @@ class Loader
      */
     private function __construct()
     {
-        spl_autoload_register(array($this, "autoLoad"));
+        spl_autoload_register(array($this, "loadClass"));
     }
 
     /**
@@ -37,7 +46,7 @@ class Loader
      */
     public static function init()
     {
-        if (! isset(self::$instance)) {
+        if (!isset(self::$instance)) {
             self::$instance = new Loader();
         }
 
@@ -148,7 +157,7 @@ class Loader
         $_defines = array(
             'app' => APP_PATH,
             'static' => defined('STATIC_PATH') ? STATIC_PATH : '',
-            'project' => PROJECT_PATH,
+            'project' => PROJECT_REAL_PATH,
         );
 
         if (is_array($class)) {
@@ -198,29 +207,31 @@ class Loader
      * @param $class_name
      * @return bool
      */
-    function autoLoad($class_name)
+    function loadClass($class_name)
     {
         if (isset(self::$loaded[$class_name])) {
             return true;
         }
 
         $pos = strpos($class_name, '\\');
-        $prefix = substr($class_name, 0, $pos);
-
-        $class_name = str_replace('\\', DS, $class_name);
-        if (0 === strcasecmp($prefix, 'cross')) {
-            $file_real_path = CP_PATH . substr($class_name, $pos + 1);
-        } else {
-            $file_real_path = PROJECT_PATH . $class_name;
+        $prefix = '';
+        if ($pos) {
+            $prefix = substr($class_name, 0, $pos);
         }
 
-        $file_real_path .= '.php';
-        if (! is_file($file_real_path)) {
+        $class_name = str_replace('\\', DS, $class_name);
+        if ($prefix && 0 === strcasecmp($prefix, 'cross')) {
+            $class_file = CP_PATH . substr($class_name, $pos + 1) . '.php';
+        } else {
+            $class_file = PROJECT_REAL_PATH . $class_name . '.php';
+        }
+
+        if (!is_file($class_file)) {
             return false;
         }
 
-        self::$loaded[$class_name] = $file_real_path;
-        require $file_real_path;
+        self::$loaded[$class_name] = true;
+        require $class_file;
 
         return true;
     }

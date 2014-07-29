@@ -1,13 +1,21 @@
 <?php
 /**
- * @Auth wonli <wonli@live.com>
- * Class MemcacheBase
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\cache;
 
 use cross\exception\CoreException;
 use Memcache;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class MemcacheBase
+ * @package cross\cache
+ */
 class MemcacheBase
 {
     /**

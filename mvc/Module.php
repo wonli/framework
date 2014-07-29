@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class CoreModule
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\mvc;
 
@@ -12,6 +15,11 @@ use cross\exception\CoreException;
 use cross\exception\FrontException;
 use cross\model\CoreModel;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Module
+ * @package cross\mvc
+ */
 class Module extends FrameBase
 {
     /**
@@ -62,7 +70,7 @@ class Module extends FrameBase
      * 连接数据库
      *
      * @param null $params
-     * @return \cross\cache\RedisCache|\cross\model\CouchModel|\cross\model\MongoModel|mixed
+     * @return \cross\model\MysqlModel|\cross\model\MongoModel|\cross\model\CouchModel|\cross\cache\RedisCache|mixed
      * @throws \cross\exception\CoreException
      */
     function getLink($params = null)
@@ -92,7 +100,7 @@ class Module extends FrameBase
     /**
      * 读取并解析数据库配置
      *
-     * @return array
+     * @return CrossArray
      */
     function linkConfig()
     {

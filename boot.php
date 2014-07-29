@@ -1,27 +1,33 @@
 <?php
 /**
- * @Author:  wonli <wonli@live.com>
- * 定义一些常量和载入框架入口和自动加载类 其中PROJECT_PATH是必须定义的
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
-/**
- * DIRECTORY_SEPARATOR
- */
-defined('DS')or define('DS', DIRECTORY_SEPARATOR);
+use cross\core\Loader;
+use cross\core\CrossFramework;
 
-/**
- * 框架路径
- */
-define('CP_PATH', realpath(dirname(__FILE__)).DS);
+//DIRECTORY_SEPARATOR
+defined('DS') or define('DS', DIRECTORY_SEPARATOR);
 
-/**
- * 项目路径
- */
+//框架路径
+define('CP_PATH', realpath(dirname(__FILE__)) . DS);
+
+//外部定义的项目路径
 defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
 
-/**
- * 项目APP路径
- */
-define('APP_PATH_DIR', rtrim(PROJECT_PATH, DS).DS.'app');
+//项目路径
+define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DS) . DS);
 
-require CP_PATH .'core/Loader.php';
-cross\core\Loader::init();
+//项目APP路径
+define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app');
+
+require CP_PATH . 'core/Loader.php';
+Loader::init();
+
+class Cross extends CrossFramework
+{
+
+}

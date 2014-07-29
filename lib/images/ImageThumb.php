@@ -1,12 +1,13 @@
 <?php
-/**
- * @Auth wonli <wonli@live.com>
- * Class ImageThumb 生成图片缩略图
- */
 namespace cross\lib\images;
 
 use cross\exception\CoreException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class ImageThumb
+ * @package cross\lib\images
+ */
 class ImageThumb
 {
     /**

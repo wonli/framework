@@ -1,20 +1,29 @@
 <?php
 /**
- * @Auth wonli <wonli@live.com>
- * Class MysqlModel
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\model;
 
 use cross\exception\CoreException;
 use cross\exception\FrontException;
+use PDOException;
+use PDOStatement;
 use Exception;
 use PDO;
-use PDOException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class MysqlModel
+ * @package cross\model
+ */
 class MysqlModel
 {
     /**
-     * @var PDO::PDOStatement
+     * @var PDOStatement
      */
     public $stmt;
 
@@ -68,11 +77,9 @@ class MysqlModel
     private function __construct($dsn, $user, $password, $options = array())
     {
         try {
-
             if (empty($options)) {
                 $options = $this->options;
             }
-
             $this->pdo = new PDO($dsn, $user, $password, $options);
         } catch (Exception $e) {
             throw new CoreException($e->getMessage() . ' line:' . $e->getLine() . ' ' . $e->getFile());
@@ -98,19 +105,19 @@ class MysqlModel
     }
 
     /**
-     * @see MysqlModel::prepare_getone
+     * @see MysqlModel::prepareGetOne
      * @param string $table
      * @param string $fields
      * @param string|array $where
      * @return mixed
      */
-    function get($table, $fields, $where)
+    public function get($table, $fields, $where)
     {
-        return $this->prepare_getone($table, $fields, $where);
+        return $this->prepareGetOne($table, $fields, $where);
     }
 
     /**
-     * @see MysqlModel::prepare_get_all
+     * @see MysqlModel::prepareGetAll
      * @param string $table
      * @param string $fields
      * @param string|array $where
@@ -118,26 +125,26 @@ class MysqlModel
      * @param int $group_by
      * @return array
      */
-    function getAll($table, $fields, $where = null, $order = 1, $group_by = 1)
+    public function getAll($table, $fields, $where = null, $order = 1, $group_by = 1)
     {
-        return $this->prepare_get_all($table, $fields, $where, $order, $group_by);
+        return $this->prepareGetAll($table, $fields, $where, $order, $group_by);
     }
 
     /**
-     * @see MysqlModel::prepare_insert
+     * @see MysqlModel::prepareInsert
      * @param string $table
      * @param string $data
      * @param bool $multi
      * @param array $insert_data
      * @return array|bool|mixed
      */
-    function add($table, $data, $multi = false, & $insert_data = array())
+    public function add($table, $data, $multi = false, & $insert_data = array())
     {
-        return $this->prepare_insert($table, $data, $multi, $insert_data);
+        return $this->prepareInsert($table, $data, $multi, $insert_data);
     }
 
     /**
-     * @see MysqlModel::prepare_find
+     * @see MysqlModel::prepareFind
      * @param $table
      * @param $fields
      * @param $where
@@ -146,33 +153,33 @@ class MysqlModel
      * @param int|string $group_by
      * @return array|mixed
      */
-    function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
-        return $this->prepare_find($table, $fields, $where, $order, $page, $group_by);
+        return $this->prepareFind($table, $fields, $where, $order, $page, $group_by);
     }
 
     /**
-     * @see MysqlModel::prepare_update
+     * @see MysqlModel::prepareUpdate
      * @param string $table
      * @param string $data
      * @param string|array $where
      * @return $this|array|string
      */
-    function update($table, $data, $where)
+    public function update($table, $data, $where)
     {
-        return $this->prepare_update($table, $data, $where);
+        return $this->prepareUpdate($table, $data, $where);
     }
 
     /**
-     * @see MysqlModel::prepare_delete
+     * @see MysqlModel::prepareDelete
      * @param string $table
      * @param string $where
      * @param bool $multi
      * @return bool|mixed
      */
-    function del($table, $where, $multi = false)
+    public function del($table, $where, $multi = false)
     {
-        return $this->prepare_delete($table, $where, $multi);
+        return $this->prepareDelete($table, $where, $multi);
     }
 
     /**
@@ -183,7 +190,7 @@ class MysqlModel
      * @throws CoreException
      * @return mixed
      */
-    function fetchOne($sql, $model = PDO::FETCH_ASSOC)
+    public function fetchOne($sql, $model = PDO::FETCH_ASSOC)
     {
         try {
             $data = $this->pdo->query($sql);
@@ -202,7 +209,7 @@ class MysqlModel
      * @throws CoreException
      * @return array
      */
-    function fetchAll($sql, $model = PDO::FETCH_ASSOC)
+    public function fetchAll($sql, $model = PDO::FETCH_ASSOC)
     {
         try {
             $data = $this->pdo->query($sql);
@@ -219,7 +226,7 @@ class MysqlModel
      * @return int
      * @throws CoreException
      */
-    function execute($sql)
+    public function execute($sql)
     {
         try {
             return $this->pdo->exec($sql);
@@ -233,7 +240,7 @@ class MysqlModel
      *
      * @param string $statement
      * @param array $params
-     * @return $this
+     * @return MysqlModel
      * @throws CoreException
      */
     public function prepare($statement, $params = array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY))
@@ -258,7 +265,6 @@ class MysqlModel
     {
         try {
             $this->stmt->execute($args);
-
             return $this;
         } catch (PDOException $e) {
             throw new CoreException($e->getMessage());
@@ -273,7 +279,7 @@ class MysqlModel
      * @return mixed
      * @throws CoreException
      */
-    public function stmt_fetch($_fetchAll = false, $result_type = PDO::FETCH_ASSOC)
+    public function stmtFetch($_fetchAll = false, $result_type = PDO::FETCH_ASSOC)
     {
         if (!$this->stmt) throw new CoreException("stmt init failed!");
         if (true === $_fetchAll) {
@@ -291,16 +297,16 @@ class MysqlModel
      * @param string|array $where
      * @return mixed
      */
-    function prepare_getone($table, $fields, $where)
+    protected function prepareGetOne($table, $fields, $where)
     {
         $one_sql = "SELECT %s FROM {$table} WHERE %s LIMIT 1";
         $params = array();
 
-        $field_str = $this->parse_fields($fields);
-        $where_str = $this->parse_where($where, $params);
+        $field_str = $this->parseFields($fields);
+        $where_str = $this->parseWhere($where, $params);
 
         $this->sql = sprintf($one_sql, $field_str, $where_str);
-        $result = $this->prepare($this->sql)->exec($params)->stmt_fetch();
+        $result = $this->prepare($this->sql)->exec($params)->stmtFetch();
 
         return $result;
     }
@@ -323,13 +329,13 @@ class MysqlModel
      * @return array|bool
      * @throws FrontException
      */
-    function prepare_insert($table, $data, $multi = false, & $insert_data)
+    protected function prepareInsert($table, $data, $multi = false, & $insert_data)
     {
         $insert_sql = "INSERT {$table} (%s) VALUE (%s)";
         $field = $value = '';
 
         if (true === $multi) {
-            $inc_name = $this->get_auto_increment_name($table);
+            $inc_name = $this->getAutoIncrementName($table);
 
             if (empty($data ['fields']) || empty($data ['values'])) {
                 throw new FrontException("data format error!");
@@ -347,7 +353,7 @@ class MysqlModel
                 if ($stmt->exec($data_array)) {
                     $add_data_info = array_combine($data['fields'], $data_array);
                     if ($inc_name) {
-                        $add_data_info[$inc_name] = $this->insert_id();
+                        $add_data_info[$inc_name] = $this->insertId();
                     }
 
                     $insert_data[] = $add_data_info;
@@ -356,15 +362,16 @@ class MysqlModel
 
             return true;
         } else {
+            $params = array();
             foreach ($data as $_field => $_value) {
                 $field .= "{$_field},";
                 $value .= "?,";
-                $r[] = $_value;
+                $params[] = $_value;
             }
 
             $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
             $stmt = $this->prepare($this->sql);
-            $id = $stmt->exec($r)->insert_id();
+            $id = $stmt->exec($params)->insertId();
 
             if ($id) {
                 return $id;
@@ -385,16 +392,16 @@ class MysqlModel
      * @param int|string $group_by
      * @return array
      */
-    function prepare_find($table, $fields, $where = null, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    protected function prepareFind($table, $fields, $where = null, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
 
-        $field_str = $this->parse_fields($fields);
-        $where_str = $this->parse_where($where, $params);
-        $order_str = $this->parse_order($order);
-        $group_str = $this->parse_group($group_by);
+        $field_str = $this->parseFields($fields);
+        $where_str = $this->parseWhere($where, $params);
+        $order_str = $this->parseOrder($order);
+        $group_str = $this->parseGroup($group_by);
 
-        $total = $this->prepare_getone($table, 'COUNT(*) as total', $where);
+        $total = $this->prepareGetOne($table, 'COUNT(*) as total', $where);
 
         $page['result_count'] = (int)$total ['total'];
         $page['limit'] = max(1, (int)$page['limit']);
@@ -411,7 +418,7 @@ class MysqlModel
             $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
         }
 
-        $result = $this->prepare($this->sql)->exec($params)->stmt_fetch(true);
+        $result = $this->prepare($this->sql)->exec($params)->stmtFetch(true);
 
         return $result;
     }
@@ -426,13 +433,13 @@ class MysqlModel
      * @param int $group_by
      * @return array
      */
-    function prepare_get_all($table, $fields, $where = null, $order = 1, $group_by = 1)
+    protected function prepareGetAll($table, $fields, $where = null, $order = 1, $group_by = 1)
     {
         $params = array();
-        $field_str = $this->parse_fields($fields);
-        $where_str = $this->parse_where($where, $params);
-        $order_str = $this->parse_order($order);
-        $group_str = $this->parse_group($group_by);
+        $field_str = $this->parseFields($fields);
+        $where_str = $this->parseWhere($where, $params);
+        $order_str = $this->parseOrder($order);
+        $group_str = $this->parseGroup($group_by);
 
         if (1 !== $group_by) {
             $all_sql = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
@@ -443,7 +450,7 @@ class MysqlModel
             $this->sql = sprintf($all_sql, $field_str, $where_str, $order_str);
         }
 
-        $result = $this->prepare($this->sql)->exec($params)->stmt_fetch(true);
+        $result = $this->prepare($this->sql)->exec($params)->stmtFetch(true);
 
         return $result;
     }
@@ -456,13 +463,13 @@ class MysqlModel
      * @param array|string $where
      * @return $this|array|string
      */
-    function prepare_update($table, $data, $where)
+    protected function prepareUpdate($table, $data, $where)
     {
         $up_sql = "UPDATE {$table} SET %s WHERE %s";
         $params = array();
 
+        $field = '';
         if (!empty($data)) {
-            $field = '';
             if (is_array($data)) {
                 foreach ($data as $d_key => $d_value) {
                     $field .= "{$d_key} = ? ,";
@@ -475,7 +482,7 @@ class MysqlModel
         }
 
         $where_params = array();
-        $where_str = $this->parse_where($where, $where_params);
+        $where_str = $this->parseWhere($where, $where_params);
 
         foreach ($where_params as $wp) {
             $params [] = $wp;
@@ -502,7 +509,7 @@ class MysqlModel
      * @return bool
      * @throws FrontException
      */
-    function prepare_delete($table, $where, $multi = false)
+    protected function prepareDelete($table, $where, $multi = false)
     {
         $del_sql = "DELETE FROM %s WHERE %s";
 
@@ -528,7 +535,7 @@ class MysqlModel
         }
         else {
             $params = array();
-            $where_str = $this->parse_where($where, $params);
+            $where_str = $this->parseWhere($where, $params);
 
             $this->sql = sprintf($del_sql, $table, $where_str);
             $this->prepare($this->sql)->exec($params);
@@ -543,7 +550,7 @@ class MysqlModel
      * @param string|array $fields
      * @return string
      */
-    function parse_fields($fields)
+    public function parseFields($fields)
     {
         if (empty($fields)) {
             $field_str = '*';
@@ -566,10 +573,11 @@ class MysqlModel
      * @param array $params
      * @return string
      */
-    function parse_where($where, & $params)
+    public function parseWhere($where, & $params)
     {
         if (!empty($where)) {
             if (is_array($where)) {
+                $where_str = array();
                 foreach ($where as $w_key => $w_value) {
                     $operator = '=';
                     if (is_array($w_value)) {
@@ -597,7 +605,7 @@ class MysqlModel
      * @param string $order
      * @return int|string
      */
-    function parse_order($order)
+    public function parseOrder($order)
     {
         if (!empty($order)) {
             if (is_array($order)) {
@@ -620,7 +628,7 @@ class MysqlModel
      * @param string $group_by
      * @return int
      */
-    function parse_group($group_by)
+    public function parseGroup($group_by)
     {
         if (!empty($group_by)) {
             $group_str = $group_by;
@@ -638,7 +646,7 @@ class MysqlModel
      * @return array
      * @throws CoreException
      */
-    function get_db_table_info($table_name)
+    public function getTableInfo($table_name)
     {
         $sql = "SHOW COLUMNS FROM {$table_name}";
         $info = $this->fetchAll($sql);
@@ -655,9 +663,9 @@ class MysqlModel
      * @param string $table_name
      * @return bool
      */
-    function get_auto_increment_name($table_name)
+    public function getAutoIncrementName($table_name)
     {
-        $table_info = $this->get_db_table_info($table_name);
+        $table_info = $this->getTableInfo($table_name);
         foreach ($table_info as $ti) {
             if ($ti['Extra'] == 'auto_increment') {
                 return $ti['Field'];
@@ -700,7 +708,7 @@ class MysqlModel
      *
      * @return string
      */
-    function insert_id()
+    public function insertId()
     {
         return $this->pdo->lastInsertId();
     }

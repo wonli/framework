@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class Application
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
@@ -11,6 +14,11 @@ use Exception;
 use ReflectionMethod;
 use ReflectionProperty;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Application
+ * @package cross\core
+ */
 class Application
 {
     /**
@@ -61,12 +69,12 @@ class Application
     }
 
     /**
-     * 实例化dispatcher
+     * 实例化Application
      *
      * @param $app_config
      * @return Application
      */
-    public static function init($app_config)
+    public static function initialization($app_config)
     {
         if (!isset(self::$instance)) {
             self::setConfig($app_config);
@@ -120,10 +128,10 @@ class Application
      * 初始化request cache
      *
      * @param $request_cache_config
-     * @return bool
+     * @return bool|\cross\cache\FileCache|\cross\cache\MemcacheBase|\cross\cache\RedisCache|\cross\cache\RequestMemcache|\cross\cache\RequestRedisCache
      * @throws \cross\exception\CoreException
      */
-    function init_request_cache($request_cache_config)
+    function initRequestCache($request_cache_config)
     {
         if (!$request_cache_config) {
             return false;
@@ -142,7 +150,7 @@ class Application
         $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
 
         if (!isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_PATH . 'cache' . DS . 'html';
+            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DS . 'html';
         }
 
         if (!isset($cache_config ['file_ext'])) {
@@ -173,14 +181,22 @@ class Application
     /**
      * 获取控制器的命名空间
      *
-     * @param $controllerName
      * @return string
      */
-    private function get_name_space($controllerName)
+    protected function getControllerNamespace( )
     {
-        $space_params = array('app', APP_NAME, 'controllers');
-        $space_params[] = $controllerName;
+        $space_params = array('app', APP_NAME, 'controllers', $this->getController());
+        return implode($space_params, '\\');
+    }
 
+    /**
+     * 获取视图的默认命名空间
+     *
+     * @return string
+     */
+    protected function getDefaultViewClassName( )
+    {
+        $space_params = array('app', APP_NAME, 'views', $this->getController() . 'View');
         return implode($space_params, '\\');
     }
 
@@ -191,7 +207,7 @@ class Application
      * @param string $action 动作
      * @throws CoreException
      */
-    private function init_controller($controller, $action = null)
+    private function initController($controller, $action = null)
     {
         $app_sys_conf = $this->getConfig()->get('sys');
         $app_path = $app_sys_conf ['app_path'];
@@ -203,19 +219,17 @@ class Application
         }
 
         $this->setController($controller);
-        $controllerSpace = $this->get_name_space($controller);
+        $controllerSpace = $this->getControllerNamespace();
 
         if ($action) {
             try {
-                //会触发autoLoad
+
                 $is_callable = new ReflectionMethod($controllerSpace, $action);
 
             } catch (Exception $e) {
 
                 try {
-                    /**
-                     * 判断Controller是否手动处理action
-                     */
+                    //控制中是否使用__call处理action
                     new ReflectionMethod($controllerSpace, '__call');
                     $this->setAction($action);
 
@@ -224,7 +238,7 @@ class Application
                 } catch (Exception $e) {
 
                     try {
-                        //通过public static $_act_alias_ 指定action的别名
+                        //是否使用public static $_act_alias_ 指定action别名
                         $_property = new ReflectionProperty($controllerSpace, '_act_alias_');
 
                     } catch (Exception $e) {
@@ -256,7 +270,7 @@ class Application
      * @param $params
      * @param array $annotate_params
      */
-    private function init_params($params, $annotate_params = array())
+    private function initParams($params, $annotate_params = array())
     {
         $this->setParams($params, $annotate_params);
     }
@@ -274,7 +288,7 @@ class Application
     {
         $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
-        $this->init_controller($router ['controller'], $action);
+        $this->initController($router ['controller'], $action);
 
         $action_config = self::getActionConfig();
         $action_params = array();
@@ -282,19 +296,19 @@ class Application
         if (isset($action_config['params'])) {
             $action_params = $action_config['params'];
         }
-        $this->init_params($router ['params'], $action_params);
+        $this->initParams($router ['params'], $action_params);
 
         $cache = false;
         if (isset($action_config['cache'])) {
-            $cache = $this->init_request_cache($action_config['cache']);
+            $cache = $this->initRequestCache($action_config['cache']);
         }
 
         if ($cache && $cache->getExtime()) {
             $response = $cache->get();
         } else {
             $action = $this->getAction();
-            $cpn = $this->get_name_space($this->getController());
-            $cp = new $cpn();
+            $cfn = $this->getControllerNamespace();
+            $cp = new $cfn();
 
             if (true === $run_controller) {
                 ob_start();
@@ -308,9 +322,9 @@ class Application
             }
         }
 
-        $content_type = Response::getInstance()->get_ContentType();
+        $content_type = Response::getInstance()->getContentType();
         if (!$content_type) {
-            Response::getInstance()->set_ContentType($this->getConfig()->get('sys', 'display'));
+            Response::getInstance()->setContentType($this->getConfig()->get('sys', 'display'));
         }
 
         Response::getInstance()->output($response);
@@ -379,8 +393,7 @@ class Application
             foreach ($params as $k => $p) {
                 if (isset($annotate_params[$k])) {
                     $params_set [$annotate_params[$k]] = $p;
-                }
-                else {
+                } else {
                     $params_set [] = $p;
                 }
             }

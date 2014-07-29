@@ -1,9 +1,18 @@
 <?php
 /**
- * @Author:  wonli<wonli@live.com>
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Helper
+ * @package cross\core
+ */
 class Helper
 {
     const AUTH_KEY = "crossphp";
@@ -90,7 +99,7 @@ class Helper
      * @param string $charset 字符编码 默认utf-8
      * @return Array
      */
-    static function str_split($str, $charset = 'utf-8')
+    static function stringToArray($str, $charset = 'utf-8')
     {
         if ($charset != 'utf-8') {
             $str = iconv($charset, 'utf-8', $str);
@@ -199,7 +208,7 @@ class Helper
      * @param string $email
      * @return bool
      */
-    static function valid_email($email)
+    static function validEmail($email)
     {
         // First, we check that there's one @ symbol, and that the lengths are right
         if (!preg_match("/^[^@]{1,64}@[^@]{1,255}$/", $email)) {
@@ -269,7 +278,7 @@ class Helper
      * @param string $disallowable
      * @return mixed
      */
-    static function strip_selected_tags($str, $disallowable = "<script><iframe><style><link>")
+    static function stripSelectedTags($str, $disallowable = "<script><iframe><style><link>")
     {
         $disallowable = trim(str_replace(array(">", "<"), array("", "|"), $disallowable), '|');
         $str = str_replace(array('&lt;', '&gt;'), array('<', '>'), $str);
@@ -284,7 +293,7 @@ class Helper
      * @param string $str
      * @return string
      */
-    static function convert_tags($str)
+    static function convertTags($str)
     {
         if ($str) {
             $str = str_replace(array('<', '>', "'", '"'), array('&lt;', '&gt;', '&#039;', '&quot;'), $str);
@@ -302,35 +311,35 @@ class Helper
      * @param int $expiry
      * @return string
      */
-    static function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
+    static function authCode($string, $operation = 'DECODE', $key = '', $expiry = 0)
     {
-        $ckey_length = 4;
+        $c_key_length = 4;
         $key = md5($key ? $key : self::AUTH_KEY);
 
-        $keya = md5(substr($key, 0, 16));
-        $keyb = md5(substr($key, 16, 16));
-        $keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length) : substr(md5(microtime()), -$ckey_length)) : '';
+        $key_a = md5(substr($key, 0, 16));
+        $key_b = md5(substr($key, 16, 16));
+        $key_c = $c_key_length ? ($operation == 'DECODE' ? substr($string, 0, $c_key_length) : substr(md5(microtime()), - $c_key_length)) : '';
 
-        $cryptkey = $keya . md5($keya . $keyc);
-        $key_length = strlen($cryptkey);
+        $crypt_key = $key_a . md5($key_a . $key_c);
+        $key_length = strlen($crypt_key);
 
         $string = $operation == 'DECODE' ?
-            base64_decode(substr($string, $ckey_length)) :
-            sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $keyb), 0, 16) . $string;
+            base64_decode(substr($string, $c_key_length)) :
+            sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
         $string_length = strlen($string);
 
         $result = '';
         $box = range(0, 255);
 
-        $rndkey = array();
+        $rnd_key = array();
         for ($i = 0; $i <= 255; $i++) {
-            $rndkey[$i] = $cryptkey[$i % $key_length];
+            $rnd_key[$i] = $crypt_key[$i % $key_length];
         }
-        $rndkey = array_map('ord', $rndkey);
+        $rnd_key = array_map('ord', $rnd_key);
 
         for ($j = $i = 0; $i < 256; $i++) {
-            $j = ($j + $box[$i] + $rndkey[$i]) % 256;
+            $j = ($j + $box[$i] + $rnd_key[$i]) % 256;
             $tmp = $box[$i];
             $box[$i] = $box[$j];
             $box[$j] = $tmp;
@@ -353,18 +362,18 @@ class Helper
                 $result[] = $pv ^ $p2[$k];
             }
 
-            unset($p1, $p2, $box, $tmp, $rndkey);
+            unset($p1, $p2, $box, $tmp, $rnd_key);
             $result = implode('', array_map('chr', $result));
         }
 
         if ($operation == 'DECODE') {
-            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26) . $keyb), 0, 16)) {
+            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26) . $key_b), 0, 16)) {
                 return substr($result, 26);
             } else {
                 return '';
             }
         } else {
-            return $keyc . str_replace('=', '', base64_encode($result));
+            return $key_c . str_replace('=', '', base64_encode($result));
         }
     }
 
@@ -376,7 +385,7 @@ class Helper
      * @param string $type
      * @return bool|string
      */
-    static function encode_params($tex, $key, $type = "encode")
+    static function encodeParams($tex, $key, $type = "encode")
     {
         if ($type == "decode") {
             if (strlen($tex) < 5)
@@ -460,9 +469,9 @@ class Helper
      * @param string $path_name
      * @return string
      */
-    static function get_path($id, $path_name = '')
+    static function getPath($id, $path_name = '')
     {
-        $id = (string)abs($id);
+        $id = (string) abs($id);
         $id = str_pad($id, 9, '0', STR_PAD_LEFT);
         $dir1 = substr($id, 0, 3);
         $dir2 = substr($id, 3, 2);
@@ -479,7 +488,7 @@ class Helper
      * @param string $method
      * @return mixed|string
      */
-    static function curl_request($url, $vars = array(), $method = 'post')
+    static function curlRequest($url, $vars = array(), $method = 'post')
     {
         $method = strtoupper($method);
         if (strcmp($method, 'GET') == 0 && !empty($vars)) {
@@ -519,7 +528,7 @@ class Helper
      * @param string|array $value
      * @return array|string
      */
-    static function addslashes_deep($value)
+    static function addslashesDeep($value)
     {
         if (empty($value)) {
             return $value;
@@ -534,7 +543,7 @@ class Helper
      * @param string|array $value
      * @return array|string
      */
-    static function stripslashes_deep($value)
+    static function stripslashesDeep($value)
     {
         if (empty($value)) {
             return $value;
@@ -568,7 +577,7 @@ class Helper
      * @param array $array
      * @return int|bool
      */
-    static function array_random_rate(array $array)
+    static function arrayRandomRate(array $array)
     {
         $max = array_sum($array);
         foreach ($array as $a_key => $a_value) {

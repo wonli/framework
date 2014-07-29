@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class FrameBase
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
@@ -10,6 +13,14 @@ use cross\lib\mcrypt\Mcrypt;
 use Exception;
 use ReflectionClass;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class FrameBase
+ * @package cross\core
+ * @property Request request
+ * @property Response response
+ * @property mixed view
+ */
 class FrameBase extends Application
 {
     /**
@@ -152,7 +163,7 @@ class FrameBase extends Application
     protected function urlEncrypt($tex, $type = "encode")
     {
         $key = $this->getUrlEncryptKey();
-        return Helper::encode_params($tex, $key, $type);
+        return Helper::encodeParams($tex, $key, $type);
     }
 
     /**
@@ -274,30 +285,18 @@ class FrameBase extends Application
     }
 
     /**
-     * 加载视图
+     * 加载视图控制器
      *
-     * @param null $action
-     * @param null $controller_name
      * @return mixed
      */
-    protected function initView($controller_name = null, $action = null)
+    protected function initView( )
     {
-        if (null == $controller_name) {
-            $controller_name = $this->controller;
-        }
-
-        $view_class_name = 'app\\' . APP_NAME . "\\views\\{$controller_name}View";
-        $view = new $view_class_name;
-
-        if (null !== $action) {
-            return $view->$action();
-        }
-
-        return $view;
+        $view = $this->getDefaultViewClassName();
+        return new $view;
     }
 
     /**
-     * 输出结果
+     * 返回一个数组或JSON字符串
      *
      * @param string $ok
      * @param string $msg
@@ -319,10 +318,10 @@ class FrameBase extends Application
     }
 
     /**
-     * 重载 request,response,view
+     * request response view
      *
      * @param $property
-     * @return mixed|object|Response
+     * @return Response|Request|mixed|object
      */
     function __get($property)
     {
@@ -337,7 +336,6 @@ class FrameBase extends Application
                 return $this->view = $this->initView();
 
             default :
-                return null;
                 break;
         }
     }

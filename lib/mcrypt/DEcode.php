@@ -1,12 +1,18 @@
 <?php
 /**
- * 加密解密类
+ * Cross - a micro PHP 5 framework
  *
- * @Auth: wonli <wonli@live.com>
- * Class DEcode
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\lib\mcrypt;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class DEcode
+ * @package cross\lib\mcrypt
+ */
 abstract class DEcode
 {
     /**

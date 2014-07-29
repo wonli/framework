@@ -1,13 +1,21 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * CookieAuth.php
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\auth;
 
 use cross\core\Helper;
 use cross\i\HttpAuthInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class CookieAuth
+ * @package cross\auth
+ */
 class CookieAuth implements HttpAuthInterface
 {
     /**
@@ -78,7 +86,7 @@ class CookieAuth implements HttpAuthInterface
             $params = json_encode($params);
         }
 
-        $str = Helper::authcode($params, "ENCODE", $key);
+        $str = Helper::authCode($params, "ENCODE", $key);
         $expire_time = time() + $exp;
 
         $cookie_domain = null;
@@ -96,7 +104,7 @@ class CookieAuth implements HttpAuthInterface
     /**
      * 从已加密的cookie中取出值
      *
-     * @param $params cookie的key
+     * @param string $params cookie的key
      * @param bool $de
      * @return bool|mixed|string
      */
@@ -117,7 +125,7 @@ class CookieAuth implements HttpAuthInterface
         }
 
         $key = $this->cookieKey($v_key);
-        $result = Helper::authcode($str, "DECODE", $key);
+        $result = Helper::authCode($str, "DECODE", $key);
 
         if (!$result) {
             return false;

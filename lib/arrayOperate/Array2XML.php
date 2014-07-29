@@ -31,6 +31,10 @@
 
 namespace cross\lib\arrayOperate;
 
+use DOMDocument;
+use DOMNode;
+use Exception;
+
 class Array2XML
 {
 

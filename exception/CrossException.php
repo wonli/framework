@@ -1,20 +1,27 @@
 <?php
-
 /**
- * @Auth: wonli <wonli@live.com>
- * Class CrossException
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\exception;
 
 use exception;
 use SplFileObject;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class CrossException
+ * @package cross\exception
+ */
 abstract class CrossException extends Exception
 {
-    function __construct($message = 'CP error', $code = null)
+    function __construct($message = 'Crossphp Framework Exception', $code = null)
     {
         parent::__construct($message, $code);
-        set_exception_handler(array($this, "error_handler"));
+        set_exception_handler(array($this, "errorHandler"));
     }
 
     /**
@@ -23,7 +30,7 @@ abstract class CrossException extends Exception
      * @param exception $e
      * @return array
      */
-    function cp_exception_source(exception $e)
+    function cpExceptionSource(exception $e)
     {
         $trace = $e->getTrace();
 
@@ -35,8 +42,8 @@ abstract class CrossException extends Exception
 
             foreach ($file as $line => $code) {
                 if ($line < $_i["line"] + 6 && $line > $_i["line"] - 7) {
-                    $hstring = highlight_string("<?php{$code}", true);
-                    $_i["source"][$line] = str_replace("&lt;?php", "", $hstring);
+                    $h_string = highlight_string("<?php{$code}", true);
+                    $_i["source"][$line] = str_replace("&lt;?php", "", $h_string);
                 }
             }
         }
@@ -47,8 +54,8 @@ abstract class CrossException extends Exception
                     $trace_fileinfo = new SplFileObject($t["file"]);
                     foreach ($trace_fileinfo as $t_line => $t_code) {
                         if ($t_line < $t["line"] + 6 && $t_line > $t["line"] - 7) {
-                            $hstring = highlight_string("<?php{$t_code}", true);
-                            $t["source"][$t_line] = str_replace("&lt;?php", "", $hstring);
+                            $h_string = highlight_string("<?php{$t_code}", true);
+                            $t["source"][$t_line] = str_replace("&lt;?php", "", $h_string);
                         }
                     }
                     $result ['trace'] [$tn] = $t;
@@ -66,5 +73,5 @@ abstract class CrossException extends Exception
      * @param exception $e
      * @return mixed
      */
-    abstract protected function error_handler(exception $e);
+    abstract protected function errorHandler(exception $e);
 }

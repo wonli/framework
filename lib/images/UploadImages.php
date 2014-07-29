@@ -1,12 +1,13 @@
 <?php
-/**
- * @Auth: wonli <wonli@live.com>
- * UploadImages.php
- */
 namespace cross\lib\images;
 
 use Exception;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class UploadImages
+ * @package cross\lib\images
+ */
 class UploadImages
 {
     /**

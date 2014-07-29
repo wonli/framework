@@ -1,13 +1,21 @@
 <?php
 /**
- * @Auth wonli <wonli@live.com>
- * Class FileCache
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\cache;
 
 use cross\core\Helper;
 use cross\i\CacheInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class FileCache
+ * @package cross\cache
+ */
 class FileCache implements CacheInterface
 {
     /**

@@ -1,12 +1,20 @@
 <?php
 /**
- * AES CBC
+ * Cross - a micro PHP 5 framework
  *
- * @Auth: wonli <wonli@live.com>
- * Class Mcrypt
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\lib\mcrypt;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Mcrypt
+ * AES CBC
+ *
+ * @package cross\lib\mcrypt
+ */
 class Mcrypt extends DEcode
 {
     /**

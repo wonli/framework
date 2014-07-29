@@ -1,10 +1,18 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class Response
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Response
+ * @package cross\core
+ */
 class Response
 {
     /**
@@ -64,7 +72,7 @@ class Response
      * @param $header_type
      * @return $this
      */
-    function set_ContentType($header_type)
+    function setContentType($header_type)
     {
         if (isset(self::$mime_types [$header_type])) {
             $this->content_type = self::$mime_types [$header_type];
@@ -79,7 +87,7 @@ class Response
      * @param int $status
      * @return $this
      */
-    function set_response_status($status = 200)
+    function setResponseStatus($status = 200)
     {
         $this->response_status = $status;
 
@@ -89,10 +97,10 @@ class Response
     /**
      * @return int
      */
-    function get_response_status()
+    function getResponseStatus()
     {
         if (!isset($this->response_status)) {
-            $this->set_response_status();
+            $this->setResponseStatus();
         }
 
         return $this->response_status;
@@ -103,15 +111,15 @@ class Response
      *
      * @return mixed
      */
-    function get_ContentType()
+    function getContentType()
     {
         return $this->content_type;
     }
 
     /**
-     * 发送basic_auth认证
+     * 发送basicAuth认证
      */
-    function basic_auth()
+    function basicAuth()
     {
         header('HTTP/1.1 401 Unauthorized');
         header('WWW-Authenticate: Basic realm="CP Secret"');
@@ -123,7 +131,7 @@ class Response
      *
      * @param int $code
      */
-    function send_response_status($code = 200)
+    function sendResponseStatus($code = 200)
     {
         if (200 != $code) {
             Response::sendStatus($code);
@@ -138,7 +146,7 @@ class Response
      * @param $content
      * @return array
      */
-    private function make_params($content)
+    private function makeParams($content)
     {
         $result = array();
         if (is_string($content)) {
@@ -156,7 +164,7 @@ class Response
      * @param $contents
      * @return $this
      */
-    function send_header($contents)
+    function sendHeader($contents)
     {
         if (!is_array($contents)) {
             $contents = array($contents);
@@ -174,7 +182,7 @@ class Response
      *
      * @param $header
      */
-    function set_header($header)
+    function setHeader($header)
     {
         $this->header = $header;
     }
@@ -182,7 +190,7 @@ class Response
     /**
      * 获取要发送到header信息
      */
-    function get_header()
+    function getHeader()
     {
         return $this->header;
     }
@@ -193,9 +201,9 @@ class Response
      * @param $content
      * @return $this
      */
-    function add_params($content)
+    function addParams($content)
     {
-        $contents = $this->make_params($content);
+        $contents = $this->makeParams($content);
         foreach ($contents as $c_name => $c_val) {
             $_SERVER[$c_name] = $c_val;
         }
@@ -211,12 +219,12 @@ class Response
      */
     function output($contents = '')
     {
-        $code = $this->get_response_status();
-        $this->send_response_status($code);
+        $code = $this->getResponseStatus();
+        $this->sendResponseStatus($code);
 
-        $header = $this->get_header();
+        $header = $this->getHeader();
         if (!empty($header)) {
-            $this->send_header($header);
+            $this->sendHeader($header);
         }
 
         if (!$contents) {
@@ -235,12 +243,12 @@ class Response
      */
     function display($message = '', $tpl = '')
     {
-        $code = $this->get_response_status();
-        $this->send_response_status($code);
+        $code = $this->getResponseStatus();
+        $this->sendResponseStatus($code);
 
-        $header = $this->get_header();
+        $header = $this->getHeader();
         if (!empty($header)) {
-            $this->send_header($header);
+            $this->sendHeader($header);
         }
 
         if (!$message) {

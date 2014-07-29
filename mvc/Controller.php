@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class CoreController
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\mvc;
 
@@ -10,6 +13,11 @@ use cross\core\Response;
 use cross\exception\CoreException;
 use stdClass;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Controller
+ * @package cross\mvc
+ */
 class Controller extends FrameBase
 {
     protected $args;
@@ -21,7 +29,7 @@ class Controller extends FrameBase
      */
     protected function is_post()
     {
-        return isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post';
+        return $this->request->isPostRequest();
     }
 
     /**
@@ -31,7 +39,7 @@ class Controller extends FrameBase
      */
     protected function is_get()
     {
-        return isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'get';
+        return $this->request->isGetRequest();
     }
 
     /**
@@ -54,7 +62,7 @@ class Controller extends FrameBase
      */
     protected function is_ajax_request()
     {
-        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        return $this->request->isAjaxRequest();
     }
 
     /**
@@ -139,7 +147,7 @@ class Controller extends FrameBase
      */
     protected function display($data = null, $method = null, $http_response_status = 200)
     {
-        Response::getInstance()->set_response_status($http_response_status);
+        Response::getInstance()->setResponseStatus($http_response_status);
         return $this->view->display($data, $method);
     }
 
@@ -175,7 +183,7 @@ class Controller extends FrameBase
             }
         }
 
-        Response::getInstance()->set_header($download_header);
+        Response::getInstance()->setHeader($download_header);
     }
 
     /**
@@ -254,6 +262,3 @@ class Controller extends FrameBase
         return $_FILES;
     }
 }
-
-
-

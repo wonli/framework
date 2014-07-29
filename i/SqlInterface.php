@@ -1,11 +1,18 @@
 <?php
-
 /**
- * @Auth wonli <wonli@live.com>
- * Interface SqlInterface
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\i;
 
+/**
+ * Interface SqlInterface
+ *
+ * @package cross\i
+ */
 interface SqlInterface
 {
     /**

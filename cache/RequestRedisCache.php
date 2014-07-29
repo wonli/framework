@@ -1,12 +1,20 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class RequestRedisCache
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\cache;
 
 use cross\i\CacheInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class RequestRedisCache
+ * @package cross\cache
+ */
 class RequestRedisCache extends RedisCache implements CacheInterface
 {
     function __construct($option)

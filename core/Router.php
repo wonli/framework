@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class Router
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
@@ -9,6 +12,11 @@ use cross\exception\CoreException;
 use cross\exception\FrontException;
 use cross\i\RouterInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Router
+ * @package cross\core
+ */
 class Router implements RouterInterface
 {
     /**
@@ -66,7 +74,7 @@ class Router implements RouterInterface
     /**
      * 实例化类
      */
-    static function init(Config $_config)
+    static function initialization(Config $_config)
     {
         if (!self::$instance) {
             self::$instance = new Router($_config);

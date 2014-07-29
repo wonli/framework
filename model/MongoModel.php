@@ -1,13 +1,21 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * MongoModel.php
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\model;
 
 use cross\exception\CoreException;
 use MongoClient;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class MongoModel
+ * @package cross\model
+ */
 class MongoModel
 {
     /**

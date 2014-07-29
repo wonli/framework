@@ -1,7 +1,10 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
- * Class CoreView
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\mvc;
 
@@ -12,6 +15,11 @@ use cross\core\Router;
 use cross\exception\CoreException;
 use cross\lib\arrayOperate\Array2XML;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class View
+ * @package cross\mvc
+ */
 class View extends FrameBase
 {
     /**
@@ -543,7 +551,7 @@ class View extends FrameBase
             array("layer" => "json")
         );
 
-        Response::getInstance()->set_ContentType('json');
+        Response::getInstance()->setContentType('json');
         echo json_encode($data);
     }
 
@@ -559,7 +567,7 @@ class View extends FrameBase
             array("layer" => "xml")
         );
 
-        Response::getInstance()->set_ContentType('xml');
+        Response::getInstance()->setContentType('xml');
         $xml = Array2XML::createXML($root_name, $data);
 
         echo $xml->saveXML();

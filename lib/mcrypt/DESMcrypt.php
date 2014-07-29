@@ -1,12 +1,18 @@
 <?php
 /**
- * DES ECB
+ * Cross - a micro PHP 5 framework
  *
- * @Auth: wonli <wonli@live.com>
- * Class DESMcrypt
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\lib\mcrypt;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class DESMcrypt
+ * @package cross\lib\mcrypt
+ */
 class DESMcrypt extends DEcode
 {
     /**

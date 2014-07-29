@@ -1,12 +1,21 @@
 <?php
 /**
- * @Author: wonli <wonli@live.com>
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\model;
 
 use cross\cache\RedisCache;
 use cross\exception\CoreException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class CoreModel
+ * @package cross\model
+ */
 class CoreModel
 {
     static function factory($link_type, $link_params)

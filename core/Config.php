@@ -1,12 +1,20 @@
 <?php
 /**
- * @Auth wonli <wonli@live.com>
- * Class Config 读取app配置
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
 use cross\exception\CoreException;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class Config
+ * @package cross\core
+ */
 class Config
 {
     /**

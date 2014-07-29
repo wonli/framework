@@ -1,14 +1,22 @@
 <?php
 /**
- * @Author:  wonli <wonli@live.com>
- * @version: $Id: Cross.php 141 2013-09-24 06:43:12Z ideaa $
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     http://www.crossphp.com/license
+ * @version     1.0.1
  */
 namespace cross\core;
 
 use cross\exception\CoreException;
 use cross\i\RouterInterface;
 
-class Cross
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class CrossFramework
+ * @package cross\core
+ */
+class CrossFramework
 {
     /**
      * app 名称
@@ -41,7 +49,7 @@ class Cross
     /**
      * cross instance
      *
-     * @var Cross
+     * @var CrossFramework
      */
     private static $instance;
 
@@ -79,7 +87,7 @@ class Cross
     static function loadApp($app_name, $runtime_config = array())
     {
         if (!isset(self::$instance)) {
-            self::$instance = new Cross($app_name, $runtime_config);
+            self::$instance = new CrossFramework($app_name, $runtime_config);
         }
 
         return self::$instance;
@@ -103,7 +111,7 @@ class Cross
      */
     function router($params = null)
     {
-        return Router::init($this->config)->set_router_params($params)->getRouter();
+        return Router::initialization($this->config)->set_router_params($params)->getRouter();
     }
 
     /**
@@ -137,7 +145,7 @@ class Cross
      */
     public function get($controller, $args = null)
     {
-        Application::init($this->config)->run($controller, $args);
+        Application::initialization($this->config)->run($controller, $args);
     }
 
     /**
@@ -158,7 +166,7 @@ class Cross
      */
     public function run($params = null, $args = null)
     {
-        Application::init($this->config)->run($this->router($params), $args);
+        Application::initialization($this->config)->run($this->router($params), $args);
     }
 
     /**
@@ -169,7 +177,7 @@ class Cross
      */
     public function rrun(RouterInterface $router, $args)
     {
-        Application::init($this->config)->run($router, $args);
+        Application::initialization($this->config)->run($router, $args);
     }
 
     /**
@@ -185,7 +193,7 @@ class Cross
 
         if (isset(self::$map [$req])) {
             $controller = self::$map [$req];
-            Cross::get($controller, $args);
+            CrossFramework::get($controller, $args);
         } else {
             throw new CoreException("Not Specified Uri");
         }
