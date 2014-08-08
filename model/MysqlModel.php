@@ -35,7 +35,7 @@ class MysqlModel
     /**
      * @var string
      */
-    protected $sql;
+    public $sql;
 
     /**
      * 数据库连接实例
