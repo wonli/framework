@@ -11,12 +11,27 @@ namespace cross\core;
 use cross\exception\CoreException;
 use cross\i\RouterInterface;
 
+//DIRECTORY_SEPARATOR
+defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+
+//框架路径
+defined('CP_PATH') or define('CP_PATH', realpath(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR);
+
+//外部定义的项目路径
+defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
+
+//项目路径
+defined('PROJECT_REAL_PATH') or define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DS) . DS);
+
+//项目APP路径
+defined('APP_PATH_DIR') or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app');
+
 /**
  * @Auth: wonli <wonli@live.com>
- * Class CrossFramework
+ * Class Delegate
  * @package cross\core
  */
-class CrossFramework
+class Delegate
 {
     /**
      * app 名称
@@ -49,7 +64,7 @@ class CrossFramework
     /**
      * cross instance
      *
-     * @var CrossFramework
+     * @var Delegate
      */
     private static $instance;
 
@@ -87,7 +102,7 @@ class CrossFramework
     static function loadApp($app_name, $runtime_config = array())
     {
         if (!isset(self::$instance)) {
-            self::$instance = new CrossFramework($app_name, $runtime_config);
+            self::$instance = new Delegate($app_name, $runtime_config);
         }
 
         return self::$instance;
@@ -145,7 +160,7 @@ class CrossFramework
      */
     public function get($controller, $args = null)
     {
-        Application::initialization($this->config)->run($controller, $args);
+        Application::initialization($this->config)->dispatcher($controller, $args);
     }
 
     /**
@@ -166,7 +181,7 @@ class CrossFramework
      */
     public function run($params = null, $args = null)
     {
-        Application::initialization($this->config)->run($this->router($params), $args);
+        Application::initialization($this->config)->dispatcher($this->router($params), $args);
     }
 
     /**
@@ -177,7 +192,7 @@ class CrossFramework
      */
     public function rrun(RouterInterface $router, $args)
     {
-        Application::initialization($this->config)->run($router, $args);
+        Application::initialization($this->config)->dispatcher($router, $args);
     }
 
     /**
@@ -193,7 +208,7 @@ class CrossFramework
 
         if (isset(self::$map [$req])) {
             $controller = self::$map [$req];
-            CrossFramework::get($controller, $args);
+            $this->get($controller, $args);
         } else {
             throw new CoreException("Not Specified Uri");
         }

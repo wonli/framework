@@ -284,7 +284,7 @@ class Application
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function run($router, $args = null, $run_controller = true)
+    public function dispatcher($router, $args = null, $run_controller = true)
     {
         $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
