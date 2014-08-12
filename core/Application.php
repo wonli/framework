@@ -160,13 +160,13 @@ class Application
         if (!isset($cache_config ['key_dot'])) {
             if (isset($cache_dot_config[$cache_config['type']])) {
                 $cache_config ['key_dot'] = $cache_dot_config[$cache_config['type']];
-            }
-            else {
+            } else {
                 $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
             }
         }
 
-        $cache_key_conf = array($app_name,
+        $cache_key_conf = array(
+            $app_name,
             strtolower($this->getController()),
             $this->getAction(),
             md5(implode($cache_config ['key_dot'], $this->getParams()))
@@ -183,21 +183,9 @@ class Application
      *
      * @return string
      */
-    protected function getControllerNamespace( )
+    protected function getControllerNamespace()
     {
-        $space_params = array('app', APP_NAME, 'controllers', $this->getController());
-        return implode($space_params, '\\');
-    }
-
-    /**
-     * 获取视图的默认命名空间
-     *
-     * @return string
-     */
-    protected function getDefaultViewClassName( )
-    {
-        $space_params = array('app', APP_NAME, 'views', $this->getController() . 'View');
-        return implode($space_params, '\\');
+        return 'app\\' . APP_NAME . '\\controllers\\' . $this->getController();
     }
 
     /**

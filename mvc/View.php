@@ -165,7 +165,12 @@ class View extends FrameBase
      */
     function getAppDefaultTplPath()
     {
-        return $this->config->get("sys", "app_path") . DS . 'templates';
+        $current_app_name = $this->config->get('sys', 'current_app_name');
+        if ($current_app_name) {
+            return dirname($this->config->get('sys', 'app_path')) . DS . $current_app_name . DS . 'templates';
+        }
+
+        return $this->config->get('sys', 'app_path') . DS . 'templates';
     }
 
     /**
