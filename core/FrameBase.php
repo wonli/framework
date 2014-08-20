@@ -291,10 +291,16 @@ class FrameBase extends Application
      */
     protected function initView()
     {
-        $view_class_name = str_replace('controllers', 'views', get_called_class()) . 'View';
+        list(, $current_app_name, $type) = explode("\\", get_called_class());
+        if (strcasecmp(APP_NAME, $current_app_name) !== 0) {
+            $this->config->set('sys', array('current_app_name' => $current_app_name));
+        }
 
-        list(, $current_app_name) = explode("\\", $view_class_name);
-        $this->config->set("sys", array('current_app_name' => $current_app_name));
+        if (strcasecmp($type, 'views') !== 0) {
+            $view_class_name = str_replace($type, 'views', get_called_class()) . 'View';
+        } else {
+            $view_class_name = get_called_class();
+        }
 
         return new $view_class_name;
     }

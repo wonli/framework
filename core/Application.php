@@ -243,11 +243,11 @@ class Application
                 }
             }
 
-            if ($is_callable->isPublic()) {
+            if ($is_callable->isPublic() && true !== $is_callable->isAbstract()) {
                 $this->setAction($action);
                 self::setActionAnnotate($is_callable->getDocComment());
             } else {
-                throw new CoreException("不被允许访问的方法!");
+                throw new CoreException("不允许访问的方法");
             }
         }
     }
