@@ -5,6 +5,7 @@
  */
 namespace cross\lib\images;
 
+use cross\core\Helper;
 use cross\exception\CoreException;
 
 class Captcha
@@ -49,7 +50,14 @@ class Captcha
      *
      * @var int
      */
-    public $codeType;
+    public $fontFamily;
+
+    /**
+     * 字体大小
+     *
+     * @var int
+     */
+    public $fontSize;
 
     /**
      * 文字个数
@@ -66,12 +74,12 @@ class Captcha
      * @param int $height
      * @param string $imgType
      */
-    public function __construct($num = 4, $width = 120, $height = 40, $imgType = 'jpeg')
+    public function __construct($width = 120, $height = 40, $fontSize = 20, $imgType = 'jpeg')
     {
         $this->width = $width;
         $this->height = $height;
         $this->imgType = $imgType;
-        $this->num = $num;
+        $this->fontSize = $fontSize;
     }
 
     /**
@@ -80,10 +88,10 @@ class Captcha
      * @param $code
      * @param string $type
      */
-    public function setCheckCode($code, $type = "en")
+    public function setCheckCode($code, $fontFamily = "")
     {
         $this->checkCode = $code;
-        $this->codeType = $type;
+        $this->fontFamily = $fontFamily;
     }
 
     /**
@@ -95,13 +103,15 @@ class Captcha
     private function getCheckCode()
     {
         if ($this->checkCode) {
-            if ($this->codeType == "cn") {
-                $this->checkCode = Helper::str_split($this->checkCode);
+            $this->num = Helper::strLen($this->checkCode);
+            for ($i = 0; $i < $this->num; $i++) {
+                $ret[] = mb_substr($this->checkCode, $i, 1, "UTF-8");
             }
 
-            return $this->checkCode;
+            return $ret;
+        } else {
+            throw new CoreException("error captcha code!");
         }
-        else throw new CoreException("error captcha code!");
     }
 
     /**
@@ -119,7 +129,7 @@ class Captcha
      */
     protected function bgColor()
     {
-        return imagecolorallocate($this->img, mt_rand(200, 255), mt_rand(200, 255), mt_rand(200, 255));
+        return imagecolorallocate($this->img, mt_rand(230, 255), mt_rand(230, 255), mt_rand(230, 255));
     }
 
     /**
@@ -129,7 +139,7 @@ class Captcha
      */
     protected function fontColor()
     {
-        return imagecolorallocate($this->img, mt_rand(0, 120), mt_rand(0, 120), mt_rand(0, 120));
+        return imagecolorallocate($this->img, mt_rand(0, 90), mt_rand(0, 90), mt_rand(0, 90));
     }
 
     /**
@@ -145,7 +155,7 @@ class Captcha
      */
     protected function pix()
     {
-        for ($i = 0; $i < 60; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             imagesetpixel($this->img, mt_rand(0, $this->width), mt_rand(0, $this->height), $this->fontColor());
         }
     }
@@ -156,8 +166,16 @@ class Captcha
     protected function arc()
     {
         for ($i = 0; $i < 5; $i++) {
-            imagearc($this->img, mt_rand(10, $this->width - 10), mt_rand(10, $this->height - 10),
-                200, 50, mt_rand(0, 90), mt_rand(100, 390), $this->fontColor());
+            imagearc(
+                $this->img,
+                mt_rand(10, $this->width - 10),
+                mt_rand(10, $this->height - 10),
+                200,
+                50,
+                mt_rand(0, 90),
+                mt_rand(100, 390),
+                $this->fontColor()
+            );
         }
     }
 
@@ -166,21 +184,31 @@ class Captcha
      */
     protected function write()
     {
-        if (!$this->checkCode) {
-            $this->getCheckCode();
-        }
+        $checkCode = $this->getCheckCode();
+        $y_base = floor($this->height * 0.75);
+        $x_base = ceil($this->width / $this->num);
 
         for ($i = 0; $i < $this->num; $i++) {
-            $x = ceil($this->width / $this->num) * $i + 5;
-            $y = mt_rand(5, $this->height - 25);
-            imagechar($this->img, 5, $x, $y, $this->checkCode[$i], $this->fontColor());
-            /**
-             * if($this->codeType == "cn") {
-             * $angle=mt_rand(-5,1)*mt_rand(1,5);
-             * imagettftext($this->img,16,$angle,5+$i*floor(16*1.8),floor($this->height*0.75),$this->fontColor(),$front, $this->checkCode[$i]);
-             * } else {
-             * }
-             */
+            $x = $x_base * $i + 10;
+            $fontSize = mt_rand($this->fontSize - 5, $this->fontSize + 5);
+
+            if ($this->fontFamily) {
+                $y = mt_rand($y_base - 5, $y_base + 5);
+                $angle = mt_rand(-5, 5) * mt_rand(1, 5);
+                imagettftext(
+                    $this->img,
+                    $fontSize,
+                    $angle,
+                    $x,
+                    $y,
+                    $this->fontColor(),
+                    $this->fontFamily,
+                    $checkCode[$i]
+                );
+            } else {
+                $y = mt_rand(5, $y_base);
+                imagechar($this->img, 5, $x, $y, $checkCode[$i], $this->fontColor());
+            }
         }
     }
 
@@ -194,8 +222,8 @@ class Captcha
         if (function_exists($func)) {
             header("Content-type:image/{$this->imgType}");
             $func($this->img);
-        }
-        else {
+            exit;
+        } else {
             echo '不支持该图片类型';
             exit;
         }
