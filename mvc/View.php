@@ -325,8 +325,9 @@ class View extends FrameBase
                     }
 
                     foreach ($p as $p_key => $p_val) {
-                        $_params .= sprintf("%s%s%s", $p_key, $this->url_config['dot'], $p_val);
+                        $_params .= sprintf("%s%s%s%s", $p_key, $this->url_config['dot'], $p_val, $this->url_config['dot']);
                     }
+                    $_params = rtrim($_params, $this->url_config['dot']);
                     break;
             }
 

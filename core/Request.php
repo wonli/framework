@@ -50,7 +50,7 @@ class Request
     /**
      * 实例化类
      *
-     * @return object SimpleHttpRequest() 类的实例
+     * @return Request
      */
     public static function getInstance()
     {
@@ -137,7 +137,9 @@ class Request
      */
     public function getBaseUrl($absolute = false)
     {
-        if ($this->_baseUrl === null) $this->_baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
+        if ($this->_baseUrl === null) {
+            $this->_baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
+        }
         return $absolute ? $this->getHostInfo() . $this->_baseUrl : $this->_baseUrl;
     }
 
@@ -159,7 +161,9 @@ class Request
      */
     public function getIndexName()
     {
-        if ($this->_indexName === null) return $this->getScriptName();
+        if ($this->_indexName === null) {
+            return $this->getScriptName();
+        }
         return $this->_indexName;
     }
 
@@ -178,7 +182,9 @@ class Request
      */
     public function getHostInfo()
     {
-        if (!$this->_hostInfo) $this->initHostInfo();
+        if (!$this->_hostInfo) {
+            $this->initHostInfo();
+        }
         return $this->_hostInfo;
     }
 
@@ -199,7 +205,9 @@ class Request
             $this->_hostInfo = $http . '://' . $httpHost;
         } elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null) {
             $this->_hostInfo = $http . '://' . $httpHost;
-            if (($port = $this->getServerPort()) != null) $this->_hostInfo .= ':' . $port;
+            if (($port = $this->getServerPort()) != null) {
+                $this->_hostInfo .= ':' . $port;
+            }
         } else {
             throw new FrontException('determine the entry script URL failed!!');
         }
@@ -251,6 +259,12 @@ class Request
         if ($type == 2) {
             return $this->_SERVER('PATH_INFO');
         } else {
+            $request_url = $this->_SERVER('REQUEST_URI');
+            if ($request_url && false !== strpos($request_url, '?')) {
+                list(, $_query_get) = explode('?', $request_url);
+                parse_str($_query_get, $add_get);
+                $_GET = array_merge($_GET, $add_get);
+            }
             return $this->_SERVER('QUERY_STRING');
         }
     }
@@ -334,7 +348,7 @@ class Request
     public function isFlashRequest()
     {
         return stripos($this->_SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false
-               || stripos($this->_SERVER( 'HTTP_USER_AGENT' ), 'Flash') !== false;
+               || stripos($this->_SERVER('HTTP_USER_AGENT'), 'Flash') !== false;
     }
 
     /**

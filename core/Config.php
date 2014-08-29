@@ -202,6 +202,14 @@ class Config
      */
     function set($name, $values = null)
     {
+        if (! isset($this->init[$name])) {
+            if (is_array($values)) {
+                $this->init[$name] = array();
+            } else {
+                return $this->init[$name] = $values;
+            }
+        }
+
         foreach ($values as $k => $v) {
             $this->init[$name][$k] = $v;
         }
