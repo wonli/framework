@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.1
+ * @version     1.0.2
  */
 namespace cross\i;
 

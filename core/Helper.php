@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.1
+ * @version     1.0.2
  */
 namespace cross\core;
 
@@ -15,53 +15,6 @@ namespace cross\core;
  */
 class Helper
 {
-    const AUTH_KEY = "crossphp";
-
-    /**
-     * 星座
-     *
-     * @var array
-     */
-    public static $su = array(1 => '白羊座', 2 => '金牛座', 3 => '双子座', 4 => '巨蟹座', 5 => '狮子座', 6 => '处女座',
-        7 => '天枰座', 8 => '天蝎座', 9 => '射手座', 10 => '摩羯座', 11 => '水瓶座', 12 => '双鱼座');
-
-    /**
-     * 性别类型
-     *
-     * @var array
-     */
-    public static $gender = array(1 => '女', 2 => '男', 3 => '女偏男', 4 => '男偏女',
-        5 => '中性', 6 => '由女变成男', 7 => '由男变成女');
-
-    /**
-     * 显示友好时间格式
-     *
-     * @param int $time 时间戳
-     * @return string
-     */
-    static function ftime($time)
-    {
-        $t = time() - $time;
-        if ($t < 63072000) {
-            $f = array(
-                '31536000' => '年',
-                '2592000' => '个月',
-                '604800' => '星期',
-                '86400' => '天',
-                '3600' => '小时',
-                '60' => '分钟',
-                '1' => '秒'
-            );
-
-            foreach ($f as $k => $v) {
-                if (0 != $c = floor($t / (int)$k)) {
-                    return $c . $v . '前';
-                }
-            }
-        }
-
-        return date('Y-m-d H:i:s', $time);
-    }
 
     /**
      * 截取字符串
@@ -105,35 +58,12 @@ class Helper
             $str = iconv($charset, 'utf-8', $str);
         }
 
-        $split = 1;
-        $array = array();
-
-        for ($i = 0; $i < strlen($str);) {
-            $value = ord($str[$i]);
-            if ($value > 127) {
-                if ($value >= 192 && $value <= 223)
-                    $split = 2;
-                elseif ($value >= 224 && $value <= 239)
-                    $split = 3;
-                elseif ($value >= 240 && $value <= 247)
-                    $split = 4;
-            } else {
-                $split = 1;
-            }
-            $key = null;
-            for ($j = 0; $j < $split; $j++, $i++) {
-                $key .= $str[$i];
-            }
-            array_push($array, $key);
+        $result = array();
+        for ($i = 0, $str_len = mb_strlen($str, 'utf-8'); $i < $str_len; $i++) {
+            $result[] = mb_substr($str, $i, 1, 'utf-8');
         }
 
-        if ($charset != 'utf-8') {
-            foreach ($array as $key => $value) {
-                $array[$key] = iconv('utf-8', $charset, $value);
-            }
-        }
-
-        return $array;
+        return $result;
     }
 
     /**
@@ -156,7 +86,6 @@ class Helper
     static function getExt($file)
     {
         $_info = pathinfo($file);
-
         return $_info['extension'];
     }
 
@@ -184,21 +113,16 @@ class Helper
     {
         if (!file_exists($file_name)) {
             $file_path = dirname($file_name);
-            if (!is_dir($file_path)) {
-                mkdir($file_path, $chmod, true);
-            }
+            self::createFolders($file_path);
 
             $fp = fopen($file_name, 'w+');
             if ($fp) {
                 fclose($fp);
                 chmod($file_name, $chmod);
-
                 return true;
             }
-
             return false;
         }
-
         return true;
     }
 
@@ -206,36 +130,24 @@ class Helper
      * 验证电子邮件格式
      *
      * @param string $email
+     * @param string $add_valid_expr
      * @return bool
      */
-    static function validEmail($email)
+    static function validEmail($email, $add_valid_expr = "/^[^-_0][a-zA-Z0-9._-]+$/")
     {
-        // First, we check that there's one @ symbol, and that the lengths are right
-        if (!preg_match("/^[^@]{1,64}@[^@]{1,255}$/", $email)) {
-            return false;
-        }
-        // Split it into sections to make life easier
-        $email_array = explode("@", $email);
-        $local_array = explode(".", $email_array[0]);
-        for ($i = 0; $i < sizeof($local_array); $i++) {
-            if (!preg_match("/^(([A-Za-z0-9!#$%&'*+\/=?^_`{|}~-][A-Za-z0-9!#$%&'*+\/=?^_`{|}~\.-]{0,63})|(\"[^(\\|\")]{0,62}\"))$/", $local_array[$i])) {
-                return false;
-            }
-        }
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-        if (!preg_match("/^\[?[0-9\.]+\]?$/", $email_array[1])) { // Check if domain is IP. If not, it should be valid domain name
-            $domain_array = explode(".", $email_array[1]);
-            if (sizeof($domain_array) < 2) {
-                return false; // Not enough parts to domain
-            }
-            for ($i = 0; $i < sizeof($domain_array); $i++) {
-                if (!preg_match("/^(([A-Za-z0-9][A-Za-z0-9-]{0,61}[A-Za-z0-9])|([A-Za-z0-9]+))$/", $domain_array[$i])) {
+            if ($add_valid_expr) {
+                list($valid_string,) = explode("@", $email);
+                if (!preg_match($add_valid_expr, $valid_string)) {
                     return false;
                 }
             }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -247,9 +159,13 @@ class Helper
      */
     static function random($length, $numeric = 0)
     {
-        PHP_VERSION < '4.2.0' ? mt_srand((double)microtime() * 1000000) : mt_srand();
-        $seed = base_convert(md5(print_r($_SERVER, 1) . microtime()), 16, $numeric ? 10 : 35);
-        $seed = $numeric ? (str_replace('0', '', $seed) . '012340567890') : ($seed . 'zZ' . strtoupper($seed));
+        $seed = md5(print_r($_SERVER, 1) . microtime(true));
+        if ($numeric) {
+            $seed = str_replace('0', '', base_convert($seed, 16, 10)) . '0123456789';
+        } else {
+            $seed = base_convert($seed, 16, 35) . 'zZz' . strtoupper($seed);
+        }
+
         $hash = '';
         $max = strlen($seed) - 1;
         for ($i = 0; $i < $length; $i++) {
@@ -311,14 +227,15 @@ class Helper
      * @param int $expiry
      * @return string
      */
-    static function authCode($string, $operation = 'DECODE', $key = '', $expiry = 0)
+    static function authCode($string, $operation = 'DECODE', $key = 'crossphp', $expiry = 0)
     {
         $c_key_length = 4;
-        $key = md5($key ? $key : self::AUTH_KEY);
+        $key = md5($key);
 
         $key_a = md5(substr($key, 0, 16));
         $key_b = md5(substr($key, 16, 16));
-        $key_c = $c_key_length ? ($operation == 'DECODE' ? substr($string, 0, $c_key_length) : substr(md5(microtime()), - $c_key_length)) : '';
+        $key_c = $c_key_length ? ($operation == 'DECODE' ? substr($string, 0, $c_key_length) :
+            substr(md5(microtime()), -$c_key_length )) : '';
 
         $crypt_key = $key_a . md5($key_a . $key_c);
         $key_length = strlen($crypt_key);
@@ -327,10 +244,9 @@ class Helper
             base64_decode(substr($string, $c_key_length)) :
             sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
-        $string_length = strlen($string);
-
         $result = '';
         $box = range(0, 255);
+        $string_length = strlen($string);
 
         $rnd_key = array();
         for ($i = 0; $i <= 255; $i++) {
@@ -367,7 +283,9 @@ class Helper
         }
 
         if ($operation == 'DECODE') {
-            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26) . $key_b), 0, 16)) {
+            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) &&
+                substr($result, 10, 16) == substr(md5(substr($result, 26) . $key_b), 0, 16)
+            ) {
                 return substr($result, 26);
             } else {
                 return '';
@@ -380,82 +298,40 @@ class Helper
     /**
      * 简单字符串加解密
      *
-     * @param string $tex
+     * @param string $str
      * @param string $key
-     * @param string $type
+     * @param string $operation
      * @return bool|string
      */
-    static function encodeParams($tex, $key, $type = "encode")
+    static function encodeParams($str, $key, $operation = "encode")
     {
-        if ($type == "decode") {
-            if (strlen($tex) < 5)
-                return false;
-            $verity_str = substr($tex, 0, 3);
-            $tex = substr($tex, 3);
-            if ($verity_str != substr(md5($tex), 0, 3)) {
-                //完整性验证失败
+        if ($operation == "encode") {
+            $str = (string) $str;
+        } else {
+            $verity_str = substr($str, 0, 3);
+            $str = substr($str, 3);
+            //完整性验证
+            if ($verity_str != substr(md5($str), 0, 3)) {
                 return false;
             }
+
+            $str = base64_decode($str);
         }
+
         $rand_key = md5($key);
+        $str_len = strlen($str);
 
-        if ($type == "decode") {
-            $tex = base64_decode($tex);
-        } else {
-            $tex = strval($tex);
-        }
-
-        $text_len = strlen($tex);
         $result_str = "";
-        for ($i = 0; $i < $text_len; $i++) {
-            $result_str .= $tex{$i} ^ $rand_key{$i % 32};
+        for ($i = 0; $i < $str_len; $i++) {
+            $result_str .= chr(ord($str[$i]) ^ ord($rand_key[$i % 32]));
         }
 
-        if ($type != "decode") {
+        if ($operation == "encode") {
             $result_str = trim(base64_encode($result_str), "==");
             $result_str = substr(md5($result_str), 0, 3) . $result_str;
         }
 
         return $result_str;
-    }
-
-    /**
-     * 按类型和长度生成随机字符串
-     *
-     * @param int $type
-     * <pre>
-     * [1] 纯数字
-     * [2] 英文字符
-     * [3] 过滤掉0,O,i,I,1,L这些后的英文字符
-     * [4] 中文字符
-     * </pre>
-     * @param int $length
-     * @return string
-     */
-    public static function getRandomStr($type = 3, $length = 4)
-    {
-        $string = '';
-
-        switch ($type) {
-            case 1:
-                $string = join('', array_rand(range(0, 9), $length));
-                break;
-            case 2:
-                $string = implode('', array_rand(array_flip(range('a', 'z')), $length));
-                break;
-            case 3:
-                $str = 'abcdefghijkmnprstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-                $string = substr(str_shuffle($str), 0, $length);
-                break;
-            case 4:
-                for ($i = 0; $i < $length; $i++) {
-                    $string = $string . chr(rand(0xB0, 0xCC)) . chr(rand(0xA1, 0xBB));
-                }
-                $string = iconv('GB2312', 'UTF-8', $string); //转换编码到utf8
-                break;
-        }
-
-        return $string;
     }
 
     /**
@@ -483,20 +359,20 @@ class Helper
     /**
      * 发送一个http请求
      *
-     * @param $url
+     * @param string $url
      * @param array $vars
      * @param string $method
      * @return mixed|string
      */
     static function curlRequest($url, $vars = array(), $method = 'post')
     {
-        $method = strtoupper($method);
-        if (strcmp($method, 'GET') == 0 && !empty($vars)) {
+        if (strcasecmp($method, 'GET') == 0 && !empty($vars)) {
             if (false === strpos($url, '?')) {
-                $url .= '?' . is_array($vars) ? http_build_query($vars) : $vars;
+                $url .= '?';
             } else {
-                $url .= '&' . is_array($vars) ? http_build_query($vars) : $vars;
+                $url .= '&';
             }
+            $url .= is_array($vars) ? http_build_query($vars) : $vars;
         }
 
         $ch = curl_init();
@@ -507,7 +383,7 @@ class Helper
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-HTTP-Method-Override: {$method}"));
 
-        if (strcmp($method, 'POST') == 0 || strcmp($method, 'PUT') == 0) {
+        if (strcasecmp($method, 'POST') == 0 || strcasecmp($method, 'PUT') == 0) {
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
         }
@@ -520,36 +396,6 @@ class Helper
 
         curl_close($ch);
         return $result;
-    }
-
-    /**
-     * 递归方式的对变量中的特殊字符进行转义以及过滤标签
-     *
-     * @param string|array $value
-     * @return array|string
-     */
-    static function addslashesDeep($value)
-    {
-        if (empty($value)) {
-            return $value;
-        }
-
-        return is_array($value) ? array_map('addslashes_deep', $value) : strip_tags(addslashes($value));
-    }
-
-    /**
-     * 反引用一个字符串引用项
-     *
-     * @param string|array $value
-     * @return array|string
-     */
-    static function stripslashesDeep($value)
-    {
-        if (empty($value)) {
-            return $value;
-        }
-
-        return is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value);
     }
 
     /**
@@ -581,7 +427,7 @@ class Helper
     {
         $max = array_sum($array);
         foreach ($array as $a_key => $a_value) {
-            $rand = rand(0, $max);
+            $rand = mt_rand(0, $max);
 
             if ($rand <= $a_value) {
                 return $a_key;
@@ -601,8 +447,9 @@ class Helper
      */
     static function isChinese($string)
     {
-        if (preg_match("/^[\x{4e00}-\x{9fa5}]+$/u", $string))
+        if (preg_match("/^[\\x{4e00}-\\x{9fa5}]+$/u", $string)) {
             return true;
+        }
 
         return false;
     }
@@ -615,30 +462,11 @@ class Helper
      */
     static function isMobile($mobile)
     {
-        if (preg_match("/^1[3456789]\d{9}$/", $mobile))
+        if (preg_match("/^1[3456789]\\d{9}$/", $mobile)) {
             return true;
+        }
 
         return false;
-    }
-
-    /**
-     * 取得当前日期星期几
-     *
-     * @param int $time
-     * @return mixed
-     */
-    static function dayToWeek($time = 0)
-    {
-        $time = $time ? $time : time();
-        $date[0] = '周日';
-        $date[1] = '周一';
-        $date[2] = '周二';
-        $date[3] = '周三';
-        $date[4] = '周四';
-        $date[5] = '周五';
-        $date[6] = '周六';
-
-        return $date[Date('w', $time)];
     }
 
     /**
@@ -652,7 +480,6 @@ class Helper
     static function encrypt($crypt, $mode = 'DECODE', $key = '!@#6<>?*')
     {
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_DES, MCRYPT_MODE_ECB), MCRYPT_RAND);
-
         if ('ENCODE' == $mode) {
             $pass_crypt = mcrypt_encrypt(MCRYPT_DES, $key, $crypt, MCRYPT_MODE_ECB, $iv);
             $str = str_replace(array('=', '/', '+'), array('', '-', '_'), base64_encode($pass_crypt));
@@ -660,7 +487,6 @@ class Helper
             $decoded = base64_decode(str_replace(array('-', '_'), array('/', '+'), $crypt));
             $str = mcrypt_decrypt(MCRYPT_DES, $key, $decoded, MCRYPT_MODE_ECB, $iv);
         }
-
         return $str;
     }
 
@@ -678,7 +504,11 @@ class Helper
             $ip = getenv('HTTP_X_FORWARDED_FOR');
         } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
             $ip = getenv('REMOTE_ADDR');
-        } elseif (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
+        } elseif (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp(
+                $_SERVER['REMOTE_ADDR'],
+                'unknown'
+            )
+        ) {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
 
@@ -699,7 +529,37 @@ class Helper
             $ip = self::getIp();
         }
 
-        return sprintf("%u", $ip);
+        return sprintf("%u", ip2long($ip));
+    }
+
+    /**
+     * 显示友好时间格式
+     *
+     * @param int $time 时间戳
+     * @return string
+     */
+    static function ftime($time)
+    {
+        $t = time() - $time;
+        if ($t < 63072000) {
+            $f = array(
+                '31536000' => '年',
+                '2592000' => '个月',
+                '604800' => '星期',
+                '86400' => '天',
+                '3600' => '小时',
+                '60' => '分钟',
+                '1' => '秒'
+            );
+
+            foreach ($f as $k => $v) {
+                if (0 != $c = floor($t / (int) $k)) {
+                    return $c . $v . '前';
+                }
+            }
+        }
+
+        return date('Y-m-d H:i:s', $time);
     }
 
     /**
@@ -712,22 +572,5 @@ class Helper
     {
         $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
         return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
-    }
-
-    /**
-     * 计算 excel 某列对应的 字符串编号
-     *
-     * @param int $pColumnIndex
-     * @return string
-     */
-    static function stringFromXlsColumnIndex($pColumnIndex = 0)
-    {
-        if ($pColumnIndex < 26) {
-            return chr(65 + $pColumnIndex);
-        } elseif ($pColumnIndex < 702) {
-            return chr(64 + ($pColumnIndex / 26)) . chr(65 + $pColumnIndex % 26);
-        }
-
-        return chr(64 + (($pColumnIndex - 26) / 676)) . chr(65 + ((($pColumnIndex - 26) % 676) / 26)) . chr(65 + $pColumnIndex % 26);
     }
 }
