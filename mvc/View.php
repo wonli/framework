@@ -79,6 +79,13 @@ class View extends FrameBase
     protected $static_url;
 
     /**
+     * 模版扩展文件名
+     *
+     * @var string
+     */
+    protected $tpl_file_ext_name = '.tpl.php';
+
+    /**
      * 初始化视图
      */
     function __construct()
@@ -97,17 +104,27 @@ class View extends FrameBase
      *
      * @param $tpl_name
      * @param bool $get_content 是否读取模板内容
-     * @param string $file_ext_name 模板文件扩展名
      * @return string
      */
-    function tpl($tpl_name, $get_content = false, $file_ext_name = '.tpl.php')
+    function tpl($tpl_name, $get_content = false)
     {
-        $file_path = $this->getTplPath() . $tpl_name . $file_ext_name;
+        $file_path = $this->getTplPath() . $tpl_name . $this->tpl_file_ext_name;
         if (true === $get_content) {
             return file_get_contents($file_path, true);
         }
 
         return $file_path;
+    }
+
+    /**
+     * 载入模板, 并输出$data变量中的数据
+     *
+     * @param $tpl_name
+     * @param array $data
+     */
+    function renderTpl($tpl_name, $data = array())
+    {
+        include $this->tpl($tpl_name);
     }
 
     /**
@@ -247,8 +264,8 @@ class View extends FrameBase
     {
         $_ext = '';
         $_link_url = '/';
-        if (false !== strpos($controller, ":")) {
-            list($_controller, $_action) = explode(":", $controller);
+        if (false !== strpos($controller, ':')) {
+            list($_controller, $_action) = explode(':', $controller);
         } else {
             $_controller = $controller;
         }
@@ -262,16 +279,27 @@ class View extends FrameBase
             $_link_url .= $_controller;
         } else {
             $index = $this->url_config ['index'];
-            if ($this->url_config ['type'] == 2 || $this->url_config ['type'] == 4) {
-                $_dot = $index;
-                $_ext = $this->url_config['ext'];
-            } else {
-                if ($index == 'index.php') {
-                    $_dot = '?';
-                } else {
-                    $_dot = $index . '?';
-                }
+
+            switch ($this->url_config['type']) {
+                case 1:
+                case 3:
+                    if (strcasecmp($index, 'index.php') == 0) {
+                        $_dot = '?';
+                    } else {
+                        $_dot = $index . '?';
+                    }
+                    break;
+
+                case 2:
+                case 4:
+                    $_dot = $index;
+                    $_ext = $this->url_config['ext'];
+                    break;
+
+                default:
+                    throw new CoreException('不支持的url type');
             }
+
             $_link_url .= $_dot . '/' . $_controller;
         }
 

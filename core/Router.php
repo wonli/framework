@@ -113,33 +113,29 @@ class Router implements RouterInterface
     /**
      * 初始化参数 按类型返回要解析的url字符串
      *
-     * @return $this
+     * @return array|string
+     * @throws \cross\exception\CoreException
      */
     function initParams()
     {
         $url_config = $this->config->get("url");
         switch ($url_config ['type']) {
-            case 1 :
-            case 3 :
+            case 1:
+            case 3:
                 $request = Request::getInstance()->getUrlRequest(1);
+                return self::parseString(htmlentities($request), $url_config, true);
 
-                return self::parseString($request, $url_config, true);
-
-            case 2 :
-            case 4 :
+            case 2:
+            case 4:
                 $path_info = Request::getInstance()->getUrlRequest(2);
-                $request = self::parseString($path_info, $url_config);
+                $request = self::parseString(htmlentities($path_info), $url_config);
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }
-
                 return $request;
 
-            default :
-                $request = array($_REQUEST["c"], $_REQUEST["a"]);
-                unset($_REQUEST["c"], $_REQUEST["a"]);
-
-                return array_merge($request, $_REQUEST);
+            default:
+                throw new CoreException('不支持的 url type');
         }
     }
 

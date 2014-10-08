@@ -203,7 +203,7 @@ class Application
 
         $controller_file = implode(array($app_path, 'controllers', "{$controller}.php"), DS);
         if (!file_exists($controller_file)) {
-            throw new CoreException("app:{$app_name} 控制器{$controller_file}不存在");
+            throw new CoreException("app:{$app_name}/controller/{$controller} 控制器不存在!");
         }
 
         $this->setController($controller);
@@ -238,7 +238,7 @@ class Application
                         $action = $act_alias [$action];
                         $is_callable = new ReflectionMethod($controllerSpace, $action);
                     } else {
-                        throw new CoreException("app::{$app_name}未指定的方法{$controllerSpace}->{$action}");
+                        throw new CoreException("app:{$app_name}未指定的方法{$controllerSpace}->{$action}");
                     }
                 }
             }
