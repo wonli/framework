@@ -4,14 +4,14 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\i;
+namespace Cross\I;
 
 /**
  * Interface HttpAuthInterface
  *
- * @package cross\i
+ * @package Cross\I
  */
 interface HttpAuthInterface
 {

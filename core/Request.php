@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\exception\FrontException;
+use Cross\Exception\FrontException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Request
- * @package cross\core
+ * @package Cross\Core
  */
 class Request
 {
@@ -192,7 +192,7 @@ class Request
      * 设置Host信息
      *
      * @throws FrontException
-     * @return null
+     * @return null|string
      */
     private function initHostInfo()
     {
@@ -211,6 +211,8 @@ class Request
         } else {
             throw new FrontException('determine the entry script URL failed!!');
         }
+
+        return "";
     }
 
     /**

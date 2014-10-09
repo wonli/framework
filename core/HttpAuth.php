@@ -4,17 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\auth\CookieAuth;
-use cross\auth\SessionAuth;
+use Cross\Auth\CookieAuth;
+use Cross\Auth\SessionAuth;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class HttpAuth
- * @package cross\core
+ * @package Cross\Core
  */
 class HttpAuth
 {

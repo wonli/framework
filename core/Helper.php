@@ -4,18 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Helper
- * @package cross\core
+ * @package Cross\Core
  */
 class Helper
 {
-
     /**
      * 截取字符串
      *

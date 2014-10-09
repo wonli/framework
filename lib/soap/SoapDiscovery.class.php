@@ -44,7 +44,7 @@
  * @version $Id: SoapDiscovery.class.php 92 2013-07-30 06:06:22Z ideaa $
  * @access public
  * */
-namespace cross\lib\soap;
+namespace Cross\Lib\SOAP;
 
 class SoapDiscovery {
 

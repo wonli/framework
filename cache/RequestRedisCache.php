@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\cache;
+namespace Cross\Cache;
 
-use cross\i\CacheInterface;
+use Cross\I\CacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestRedisCache
- * @package cross\cache
+ * @package Cross\Cache
  */
 class RequestRedisCache extends RedisCache implements CacheInterface
 {

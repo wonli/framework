@@ -9,7 +9,7 @@
  *  $py = new PYInitials();
  *  $result = $py->getInitials('王小明');
  */
-namespace cross\lib\other;
+namespace Cross\Lib\Other;
 
 class PYInitials
 {

@@ -1,5 +1,5 @@
 <?php
-namespace cross\lib\other;
+namespace Cross\Lib\Other;
 
 class Crumb
 {

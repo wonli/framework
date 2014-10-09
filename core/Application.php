@@ -4,12 +4,12 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\cache\RequestCache;
-use cross\exception\CoreException;
+use Cross\Cache\RequestCache;
+use Cross\Exception\CoreException;
 use Exception;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -17,7 +17,7 @@ use ReflectionProperty;
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Application
- * @package cross\core
+ * @package Cross\Core
  */
 class Application
 {

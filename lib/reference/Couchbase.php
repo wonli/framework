@@ -3,7 +3,7 @@
  * The content of this file is a description of the Couchbase API, so that you
  * may configure your IDE for code completion, documentation and constants.
  */
-namespace cross\lib\reference;
+namespace Cross\Lib\Reference;
 
 ////////////////////////////////////////////////////////
 //                                                    //

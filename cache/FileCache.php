@@ -4,17 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\cache;
+namespace Cross\Cache;
 
-use cross\core\Helper;
-use cross\i\CacheInterface;
+use Cross\Core\Helper;
+use Cross\I\CacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class FileCache
- * @package cross\cache
+ * @package Cross\Cache
  */
 class FileCache implements CacheInterface
 {

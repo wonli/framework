@@ -4,12 +4,12 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\auth;
+namespace Cross\Auth;
 
-use cross\core\Helper;
-use cross\i\HttpAuthInterface;
+use Cross\Core\Helper;
+use Cross\I\HttpAuthInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>

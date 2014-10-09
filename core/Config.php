@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Config
- * @package cross\core
+ * @package Cross\Core
  */
 class Config
 {
@@ -198,7 +198,7 @@ class Config
      *
      * @param string $name 要设定的项
      * @param array|string $values 设定的项的值
-     * @return null
+     * @return bool|null
      */
     function set($name, $values = null)
     {
@@ -213,6 +213,8 @@ class Config
         foreach ($values as $k => $v) {
             $this->init[$name][$k] = $v;
         }
+
+        return true;
     }
 
     /**

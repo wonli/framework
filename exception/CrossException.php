@@ -4,17 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\exception;
+namespace Cross\Exception;
 
-use exception;
+use Exception;
 use SplFileObject;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class CrossException
- * @package cross\exception
+ * @package Cross\Exception
  */
 abstract class CrossException extends Exception
 {
@@ -27,10 +27,10 @@ abstract class CrossException extends Exception
     /**
      * 提取错误文件源代码
      *
-     * @param exception $e
+     * @param Exception $e
      * @return array
      */
-    function cpExceptionSource(exception $e)
+    function cpExceptionSource(Exception $e)
     {
         $trace = $e->getTrace();
 
@@ -70,8 +70,8 @@ abstract class CrossException extends Exception
     /**
      * 错误处理抽象方法
      *
-     * @param exception $e
+     * @param Exception $e
      * @return mixed
      */
-    abstract protected function errorHandler(exception $e);
+    abstract protected function errorHandler(Exception $e);
 }

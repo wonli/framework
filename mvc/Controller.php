@@ -4,19 +4,19 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\mvc;
+namespace Cross\MVC;
 
-use cross\core\FrameBase;
-use cross\core\Response;
-use cross\exception\CoreException;
+use Cross\Core\FrameBase;
+use Cross\Core\Response;
+use Cross\Exception\CoreException;
 use stdClass;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Controller
- * @package cross\mvc
+ * @package Cross\MVC
  */
 class Controller extends FrameBase
 {

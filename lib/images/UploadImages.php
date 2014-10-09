@@ -1,12 +1,12 @@
 <?php
-namespace cross\lib\images;
+namespace Cross\Lib\Images;
 
 use Exception;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class UploadImages
- * @package cross\lib\images
+ * @package Cross\Lib\Images
  */
 class UploadImages
 {
@@ -79,6 +79,12 @@ class UploadImages
         7 => '文件写入失败',
     );
 
+    /**
+     * 构造函数
+     *
+     * @param $upload_file_name
+     * @param string $save_name
+     */
     function __construct($upload_file_name, $save_name = '')
     {
         if (empty($upload_file_name)) {
@@ -91,6 +97,7 @@ class UploadImages
 
         $this->save_name = $save_name;
         $this->upload_file_name = $upload_file_name;
+        return $this;
     }
 
     /**

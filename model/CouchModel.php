@@ -4,18 +4,18 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\model;
+namespace Cross\Model;
 
-use cross\exception\CoreException;
-use cross\lib\reference\Couchbase;
+use Cross\Exception\CoreException;
+use Cross\Lib\Reference\Couchbase;
 use Exception;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class CouchModel
- * @package cross\model
+ * @package Cross\Model
  */
 class CouchModel
 {

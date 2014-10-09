@@ -4,20 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\lib\mcrypt;
+namespace Cross\Lib\Mcrypt;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class HexCrypt
- * 16进制编码方式利用0-f进行编码
- *
- * @package cross\lib\mcrypt
+ * @package Cross\Lib\Mcrypt
  */
 class HexCrypt extends DEcode
 {
-
     public function __construct()
     {
 
@@ -31,7 +28,6 @@ class HexCrypt extends DEcode
      */
     public function enCode($data)
     {
-        //return @unpack('H*', $data);
         return bin2hex($data);
     }
 

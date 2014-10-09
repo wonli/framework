@@ -4,24 +4,27 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\exception\CoreException;
-use cross\i\RouterInterface;
+use Cross\Exception\CoreException;
+use Cross\I\RouterInterface;
 
-//DIRECTORY_SEPARATOR
-defined('DS') or define('DS', DIRECTORY_SEPARATOR);
-
-//框架路径
-defined('CP_PATH') or define('CP_PATH', realpath(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR);
+//检查环境版本
+! version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
 
+//DIRECTORY_SEPARATOR
+defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+
 //项目路径
 defined('PROJECT_REAL_PATH') or define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DS) . DS);
+
+//框架路径
+defined('CP_PATH') or define('CP_PATH', realpath(dirname(dirname(__FILE__))) . DS);
 
 //项目APP路径
 defined('APP_PATH_DIR') or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app');
@@ -29,7 +32,7 @@ defined('APP_PATH_DIR') or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app');
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Delegate
- * @package cross\core
+ * @package Cross\Core
  */
 class Delegate
 {

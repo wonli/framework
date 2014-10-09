@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\lib\upload;
+namespace Cross\Lib\Upload;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Uploader
- * @package cross\lib\upload
+ * @package Cross\Lib\Upload
  */
 class Uploader
 {

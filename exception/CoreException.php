@@ -4,25 +4,25 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\exception;
+namespace Cross\Exception;
 
-use exception;
-use cross\core\Response;
+use Cross\Core\Response;
+use Exception;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class CoreException
- * @package cross\exception
+ * @package Cross\Exception
  */
 class CoreException extends CrossException
 {
-    function errorHandler( exception $e )
+    function errorHandler( Exception $e )
     {
         $cp_error = $this->cpExceptionSource($e);
         $code = $e->getCode() ? $e->getCode() : 500;
 
-        return Response::getInstance()->setResponseStatus($code)->display($cp_error, CP_PATH . 'exception/_tpl/fronterror.php');
+        return Response::getInstance()->setResponseStatus($code)->display($cp_error, CP_PATH . 'exception/_tpl/front_error.php');
     }
 }

@@ -1,12 +1,12 @@
 <?php
-namespace cross\lib\images;
+namespace Cross\Lib\Images;
 
 use cross\exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class ImageThumb
- * @package cross\lib\images
+ * @package Cross\Lib\Images
  */
 class ImageThumb
 {

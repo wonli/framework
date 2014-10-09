@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
 use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Rest
- * @package cross\core
+ * @package Cross\Core
  */
 class Rest
 {

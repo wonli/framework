@@ -4,7 +4,7 @@
  * @author Max Kamashev <max.kamashev@gmail.com>
  * @link https://github.com/ukko/phpredis-phpdoc
  */
-namespace cross\lib\reference;
+namespace Cross\Lib\Reference;
 
 class Redis {
 	const AFTER = '';

@@ -4,19 +4,19 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\exception\CoreException;
-use cross\lib\mcrypt\Mcrypt;
+use Cross\Exception\CoreException;
+use Cross\Lib\Mcrypt\Mcrypt;
 use Exception;
 use ReflectionClass;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class FrameBase
- * @package cross\core
+ * @package Cross\Core
  * @property Request request
  * @property Response response
  * @property mixed view

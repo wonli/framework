@@ -4,17 +4,17 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\cache;
+namespace Cross\Cache;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 use Redis;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RedisCache
- * @package cross\cache
+ * @package Cross\Cache
  */
 class RedisCache
 {

@@ -4,21 +4,21 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\mvc;
+namespace Cross\MVC;
 
-use cross\core\FrameBase;
-use cross\core\Helper;
-use cross\core\Response;
-use cross\core\Router;
-use cross\exception\CoreException;
-use cross\lib\arrayOperate\Array2XML;
+use Cross\Core\FrameBase;
+use Cross\Core\Helper;
+use Cross\Core\Response;
+use Cross\Core\Router;
+use Cross\Exception\CoreException;
+use Cross\Lib\ArrayOperate\Array2XML;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class View
- * @package cross\mvc
+ * @package Cross\MVC
  */
 class View extends FrameBase
 {
@@ -120,7 +120,7 @@ class View extends FrameBase
      * 载入模板, 并输出$data变量中的数据
      *
      * @param $tpl_name
-     * @param array $data
+     * @param array|mixed $data
      */
     function renderTpl($tpl_name, $data = array())
     {
@@ -610,8 +610,8 @@ class View extends FrameBase
     /**
      * 加载布局
      *
-     * @param $content
-     * @param $layer_ext
+     * @param string $content
+     * @param string $layer_ext
      * @throws CoreException
      */
     function loadLayer($content, $layer_ext = '.layer.php')

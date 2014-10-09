@@ -4,21 +4,21 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\mvc;
+namespace Cross\MVC;
 
-use cross\core\CrossArray;
-use cross\core\FrameBase;
-use cross\core\Loader;
-use cross\exception\CoreException;
-use cross\exception\FrontException;
-use cross\model\CoreModel;
+use Cross\Core\CrossArray;
+use Cross\Core\FrameBase;
+use Cross\Core\Loader;
+use Cross\Exception\CoreException;
+use Cross\Exception\FrontException;
+use Cross\Model\CoreModel;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Module
- * @package cross\mvc
+ * @package Cross\MVC
  */
 class Module extends FrameBase
 {

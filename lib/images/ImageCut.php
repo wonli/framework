@@ -1,5 +1,5 @@
 <?php
-namespace cross\lib\images;
+namespace Cross\Lib\Images;
 
 use Exception;
 
@@ -120,7 +120,7 @@ class ImageCut
 
         //改变后的图象的比例
         if (!empty($this->resize_height)) {
-            $resize_ratio = ($this->resize_width) / ($this->resize_height);
+            $resize_ratio = ($this->width) / ($this->height);
         } else {
             $resize_ratio = 0;
         }
@@ -139,9 +139,9 @@ class ImageCut
 
         //创建缩略图
         if ($this->images_info['file_type'] != 'gif' && function_exists('imagecreatetruecolor')) {
-            $thumb_images = imagecreatetruecolor($this->resize_width, $this->resize_height);
+            $thumb_images = imagecreatetruecolor($this->width, $this->height);
         } else {
-            $thumb_images = imagecreate($this->resize_width, $this->resize_height);
+            $thumb_images = imagecreate($this->width, $this->height);
         }
 
         imagecopyresampled(

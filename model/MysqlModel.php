@@ -4,12 +4,12 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\model;
+namespace Cross\Model;
 
-use cross\exception\CoreException;
-use cross\exception\FrontException;
+use Cross\Exception\CoreException;
+use Cross\Exception\FrontException;
 use PDOException;
 use PDOStatement;
 use Exception;
@@ -18,7 +18,7 @@ use PDO;
 /**
  * @Auth: wonli <wonli@live.com>
  * Class MysqlModel
- * @package cross\model
+ * @package Cross\Model
  */
 class MysqlModel
 {

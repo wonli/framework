@@ -3,7 +3,7 @@
  * Class Tree
  * crossphp 优化返回数据
  */
-namespace cross\lib\arrayOperate;
+namespace Cross\Lib\ArrayOperate;
 
 class Tree
 {

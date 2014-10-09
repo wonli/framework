@@ -4,16 +4,14 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\lib\mcrypt;
+namespace Cross\Lib\Mcrypt;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Mcrypt
- * AES CBC
- *
- * @package cross\lib\mcrypt
+ * @package Cross\Lib\Mcrypt
  */
 class Mcrypt extends DEcode
 {

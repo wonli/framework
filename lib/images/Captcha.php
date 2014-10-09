@@ -3,10 +3,10 @@
  * @Auth crossphp 优化
  * Class Captcha 验证码
  */
-namespace cross\lib\images;
+namespace Cross\Lib\Images;
 
-use cross\core\Helper;
-use cross\exception\CoreException;
+use Cross\Core\Helper;
+use Cross\Exception\CoreException;
 
 class Captcha
 {
@@ -69,9 +69,9 @@ class Captcha
     /**
      * 构造方法，初使化各个成员属性包括根据文字类型，产生文字
      *
-     * @param int $num
      * @param int $width
      * @param int $height
+     * @param int $fontSize
      * @param string $imgType
      */
     public function __construct($width = 120, $height = 40, $fontSize = 20, $imgType = 'jpeg')
@@ -85,8 +85,8 @@ class Captcha
     /**
      * 外部设置code
      *
-     * @param $code
-     * @param string $type
+     * @param string $code
+     * @param string $fontFamily
      */
     public function setCheckCode($code, $fontFamily = "")
     {
@@ -103,6 +103,7 @@ class Captcha
     private function getCheckCode()
     {
         if ($this->checkCode) {
+            $ret = array();
             $this->num = Helper::strLen($this->checkCode);
             for ($i = 0; $i < $this->num; $i++) {
                 $ret[] = mb_substr($this->checkCode, $i, 1, "UTF-8");

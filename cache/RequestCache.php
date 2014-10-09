@@ -4,16 +4,16 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\cache;
+namespace Cross\Cache;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestCache
- * @package cross\cache
+ * @package Cross\Cache
  */
 class RequestCache extends CoreCache
 {

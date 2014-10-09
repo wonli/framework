@@ -4,18 +4,18 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.2
+ * @version     1.0.3
  */
-namespace cross\core;
+namespace Cross\Core;
 
-use cross\exception\CoreException;
-use cross\exception\FrontException;
-use cross\i\RouterInterface;
+use Cross\Exception\CoreException;
+use Cross\Exception\FrontException;
+use Cross\I\RouterInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Router
- * @package cross\core
+ * @package Cross\Core
  */
 class Router implements RouterInterface
 {
