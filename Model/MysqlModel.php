@@ -571,24 +571,81 @@ class MysqlModel
      *
      * @param string|array $where
      * @param array $params
+     * @throws \Cross\Exception\CoreException
      * @return string
      */
     public function parseWhere($where, & $params)
     {
+        $condition = array();
         if (!empty($where)) {
             if (is_array($where)) {
-                $where_str = array();
                 foreach ($where as $w_key => $w_value) {
                     $operator = '=';
                     if (is_array($w_value)) {
                         list($operator, $n_value) = $w_value;
+                        $operator = strtoupper(trim($operator));
                         $w_value = $n_value;
                     }
 
-                    $where_str  [] = "{$w_key} {$operator} ?";
-                    $params [] = $w_value;
+                    switch($operator)
+                    {
+                        case 'OR':
+
+                            if (! is_array($w_value) ) {
+                                throw new CoreException('OR need a array parameter');
+                            }
+                            foreach($w_value as $or_exp_val) {
+                                $ex_operator = '=';
+                                if (is_array($or_exp_val)) {
+                                    list($ex_operator, $n_value) = $or_exp_val;
+                                    $or_exp_val = $n_value;
+                                }
+
+                                $condition[' OR '][] = "{$w_key} {$ex_operator} ?";
+                                $params [] = $or_exp_val;
+                            }
+                            break;
+
+                        case 'IN':
+                        case 'NOT IN':
+                            if (! is_array($w_value) ) {
+                                throw new CoreException('IN or NOT IN need a array parameter');
+                            }
+
+                            $in_where_condition = array();
+                            foreach($w_value as $in_exp_val) {
+                                $params[] = $in_exp_val;
+                                $in_where_condition [] = '?';
+                            }
+
+                            $condition[' AND '][] = sprintf('%s %s (%s)', $w_key, $operator, implode(',', $in_where_condition));
+                            break;
+
+                        case 'BETWEEN':
+                        case 'NOT BETWEEN':
+                            if (! is_array($w_value) ) {
+                                throw new CoreException('BETWEEN need a array parameter');
+                            }
+
+                            if (! isset($w_value[0]) || ! isset($w_value[1])) {
+                                throw new CoreException('BETWEEN parameter error!');
+                            }
+
+                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $w_key, $operator, $w_value[0], $w_value[1]);
+                            break;
+
+                        default:
+                            $condition[' AND '][] = "{$w_key} {$operator} ?";
+                            $params [] = $w_value;
+                    }
                 }
-                $where_str = implode(" AND ", $where_str);
+
+                $r = array();
+                foreach($condition as $sql_opt => $where_condition) {
+                    $r[] = implode($sql_opt, $where_condition);
+                }
+
+                $where_str = implode(' AND ', $r);
             } else {
                 $where_str = $where;
             }

@@ -11,4 +11,3 @@ CrossPHP是一个高效, 轻量, 易扩展的PHP5开发框架.
 4.支持layer布局, 支持从action注释读取配置等, module易扩展, 目前已支持redis, mongodb, memcache, couchbase等
 
 官方网站: [http://www.crossphp.com](http://www.crossphp.com "www.crossphp.com")
-
