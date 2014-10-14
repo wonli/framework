@@ -35,13 +35,14 @@ abstract class CrossException extends Exception
         $trace = $e->getTrace();
 
         $result = array();
-        $result["main"] = array("file" => $e->getFile(), "line" => $e->getLine(), "message" => $e->getMessage());
+        $result['main'] = array('file' => $e->getFile(), 'line' => $e->getLine(), 'message' => $e->getMessage());
+        $result['main']['show_file'] = $this->hiddenFileRealPath($result['main']['file']);
 
         foreach ($result as &$_i) {
             $file = new SplFileObject($_i["file"]);
 
             foreach ($file as $line => $code) {
-                if ($line < $_i["line"] + 6 && $line > $_i["line"] - 7) {
+                if ($line < $_i['line'] + 6 && $line > $_i['line'] - 7) {
                     $h_string = highlight_string("<?php{$code}", true);
                     $_i["source"][$line] = str_replace("&lt;?php", "", $h_string);
                 }
@@ -51,11 +52,12 @@ abstract class CrossException extends Exception
         if (!empty($trace)) {
             foreach ($trace as $tn => & $t) {
                 if (isset($t['file'])) {
-                    $trace_fileinfo = new SplFileObject($t["file"]);
+                    $trace_fileinfo = new SplFileObject($t['file']);
+                    $t['show_file'] = $this->hiddenFileRealPath($t['file']);
                     foreach ($trace_fileinfo as $t_line => $t_code) {
-                        if ($t_line < $t["line"] + 6 && $t_line > $t["line"] - 7) {
+                        if ($t_line < $t['line'] + 6 && $t_line > $t['line'] - 7) {
                             $h_string = highlight_string("<?php{$t_code}", true);
-                            $t["source"][$t_line] = str_replace("&lt;?php", "", $h_string);
+                            $t['source'][$t_line] = str_replace("&lt;?php", "", $h_string);
                         }
                     }
                     $result ['trace'] [$tn] = $t;
@@ -63,8 +65,18 @@ abstract class CrossException extends Exception
             }
         }
 
-
         return $result;
+    }
+
+    /**
+     * 隐藏异常中的真实文件路径
+     *
+     * @param $path
+     * @return mixed
+     */
+    protected function hiddenFileRealPath($path)
+    {
+        return str_replace(array(PROJECT_REAL_PATH, CP_PATH), array('Project\\', 'Cross\\'), $path);
     }
 
     /**

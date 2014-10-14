@@ -43,7 +43,7 @@
 <header>
     <div class="exception">
         <h3 class="exc-title">
-            <?php printf("File: %s Line: %s", $message["main"]["file"], $message["main"]["line"] ); ?>
+            <?php printf("File: %s Line: %s", $message["main"]["show_file"], $message["main"]["line"] ); ?>
         </h3>
 
         <p class="exc-message">
@@ -88,14 +88,13 @@
 
     <div>
         <h1>Exception File</h1>
-
         <div class="frame active" id="frame_active"
-             onclick="cp_exception.main(null)"><?php echo $message["main"]["file"] ?></div>
+             onclick="cp_exception.main(null)"><?php echo $message["main"]["show_file"] ?></div>
         <?php if (!empty($message["trace"])) : ?>
             <h1>Trace</h1>
             <?php foreach ($message["trace"] as $k => $m) : ?>
                 <div class="frame" onclick="cp_exception.track(<?php echo $k ?>, this)" style="display:block">
-                    <?php echo $m["file"] ?> Line: <?php echo $m["line"] ?>
+                    <?php echo $m["show_file"] ?> Line: <?php echo $m["line"] ?>
                 </div>
             <?php endforeach ?>
         <?php endif ?>
@@ -104,7 +103,7 @@
 
 <div class="data-table-container" id="data-tables">
     <div class="data-table" id="sg-request-data">
-        <label>CrossParams Data</label>
+        <label>Cross URL Params</label>
         <?php
         $params = Cross\Core\Application::getParams();
         $controller = Cross\Core\Application::getController();

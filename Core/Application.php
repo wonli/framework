@@ -203,7 +203,7 @@ class Application
 
         $controller_file = implode(array($app_path, 'controllers', "{$controller}.php"), DS);
         if (!file_exists($controller_file)) {
-            throw new CoreException("app:{$app_name}/controller/{$controller} 控制器不存在!");
+            throw new CoreException("{$app_name}/controller/{$controller} 控制器不存在");
         }
 
         $this->setController($controller);
@@ -230,7 +230,7 @@ class Application
                         $_property = new ReflectionProperty($controllerSpace, '_act_alias_');
 
                     } catch (Exception $e) {
-                        throw new CoreException("app:{$app_name}不能识别的请求{$controllerSpace}->{$action}");
+                        throw new CoreException("不能识别的请求: {$controllerSpace}->{$action}");
                     }
 
                     $act_alias = $_property->getValue();
@@ -238,7 +238,7 @@ class Application
                         $action = $act_alias [$action];
                         $is_callable = new ReflectionMethod($controllerSpace, $action);
                     } else {
-                        throw new CoreException("app:{$app_name}未指定的方法{$controllerSpace}->{$action}");
+                        throw new CoreException("未指定的方法: {$controllerSpace}->{$action}");
                     }
                 }
             }
