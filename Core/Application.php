@@ -351,13 +351,28 @@ class Application
     /**
      * 设置params
      *
-     * @param null $params
+     * @param null $url_params
      * @param array $annotate_params
      */
-    private function setParams($params = null, $annotate_params = array())
+    private function setParams($url_params = null, $annotate_params = array())
     {
-        if ($this->getConfig()->get('url', 'type') == 1) {
-            $params = self::combineParamsAnnotateConfig($params, $annotate_params);
+        $url_type = $this->getConfig()->get('url', 'type');
+        switch($url_type)
+        {
+            case 1:
+                $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
+                break;
+
+            case 3:
+            case 4:
+                $params = self::oneDimensionalToAssociativeArray($url_params);
+                if (empty($params)) {
+                    $params = $url_params;
+                }
+                break;
+            default:
+                $params = $url_params;
+                break;
         }
 
         self::$class_params = $params;
@@ -389,6 +404,35 @@ class Application
         }
 
         return $params;
+    }
+
+    /**
+     * 字符类型的参数转换为一个关联数组
+     *
+     * @param $stringParams
+     * @return array
+     */
+    public static function stringParamsToAssociativeArray($stringParams) {
+        $paramsArray = explode(self::$app_config->get('url', 'dot'), $stringParams);
+        return self::oneDimensionalToAssociativeArray($paramsArray);
+    }
+
+    /**
+     * 一维数组按顺序转换为关联数组
+     *
+     * @param array $oneDimensional
+     * @return array
+     */
+    public static function oneDimensionalToAssociativeArray($oneDimensional) {
+        $result = array();
+        for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
+            if (isset($oneDimensional[$i]) && isset($oneDimensional[$i + 1])) {
+                $result[$oneDimensional[$i]] = $oneDimensional[$i + 1];
+            }
+            array_shift($oneDimensional);
+        }
+
+        return $result;
     }
 
     /**

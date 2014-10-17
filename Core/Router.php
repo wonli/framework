@@ -173,7 +173,7 @@ class Router implements RouterInterface
             if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len))) {
                 $_query_string = substr($_query_string, 0, -$_url_ext_len);
             } else {
-                throw new FrontException("找不到该页面");
+                throw new FrontException("Page not found !");
             }
         }
 
@@ -349,21 +349,7 @@ class Router implements RouterInterface
      */
     private function setParams($params)
     {
-        switch ($this->config->get('url', 'type')) {
-            case 3:
-            case 4:
-                $p = array();
-                for ($max = count($params), $i = 0; $i < $max; $i++) {
-                    if (!empty($params[$i]) && !empty($params[$i + 1])) {
-                        $p[$params[$i]] = $params[$i + 1];
-                        array_shift($params);
-                    }
-                }
-                $this->params = $p;
-                break;
-            default:
-                $this->params = $params;
-        }
+        $this->params = $params;
     }
 
     /**

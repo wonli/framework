@@ -171,7 +171,7 @@ class FrameBase extends Application
      *
      * @param $key
      */
-    private function setUrlEncryptKey($key)
+    protected function setUrlEncryptKey($key)
     {
         $this->url_crypt_key = $key;
     }
@@ -183,7 +183,7 @@ class FrameBase extends Application
     {
         if (!$this->url_crypt_key) {
             $url_crypt_key = $this->config->get('url', 'crypto_key');
-            if (!$url_crypt_key) {
+            if (! $url_crypt_key) {
                 $url_crypt_key = 'crossphp';
             }
 
@@ -202,15 +202,24 @@ class FrameBase extends Application
     protected function sParams($params = null)
     {
         $url_type = $this->config->get('url', 'type');
-
         if (null === $params) {
-            if ($url_type == 2) {
-                $params = current(array_keys($this->params));
-            } else {
-                $params = $this->params;
-                if (is_array($this->params)) {
-                    $params = current(array_values($this->params));
-                }
+            switch($url_type)
+            {
+                case 1:
+                    $params = $this->params;
+                    if (is_array($this->params)) {
+                        $params = current(array_values($this->params));
+                    }
+                    break;
+
+                case 2:
+                    $params = current(array_keys($this->params));
+                    break;
+
+                case 3:
+                case 4:
+                    $params = current($this->params);
+                    break;
             }
         }
 
@@ -224,12 +233,20 @@ class FrameBase extends Application
             return $this->params;
         }
 
-        if ($url_type == 2) {
-            parse_str($decode_params_str, $result);
-        } else {
-            $result_array = explode($this->config->get('url', 'dot'), $decode_params_str);
-            $annotate = parent::getActionConfig();
-            $result = parent::combineParamsAnnotateConfig($result_array, $annotate['params']);
+        switch($url_type)
+        {
+            case 1:
+                $result_array = explode($this->config->get('url', 'dot'), $decode_params_str);
+                $annotate = parent::getActionConfig();
+                $result = parent::combineParamsAnnotateConfig($result_array, $annotate['params']);
+                break;
+            case 2:
+                parse_str($decode_params_str, $result);
+                break;
+            case 3:
+            case 4:
+                $result = parent::stringParamsToAssociativeArray($decode_params_str);
+                break;
         }
 
         return $result;

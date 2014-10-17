@@ -149,7 +149,7 @@ class Response
     private function makeParams($content)
     {
         $result = array();
-        if (is_string($content)) {
+        if (! is_array($content)) {
             $result['CP_PARAMS'] = $content;
         } else {
             $result = $content;

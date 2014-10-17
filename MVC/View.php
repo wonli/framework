@@ -224,20 +224,35 @@ class View extends FrameBase
      */
     function link($controller = null, $params = null, $sec = false)
     {
-        $_link_url = $this->link_base;
+        $url = $this->link_base;
+        $_url_ext = $this->url_config['ext'];
+        $url_controller = '';
         if ($controller) {
-            $_link_url .= $this->makeController($controller);
+            $url_controller = $this->makeController($controller);
         }
 
+        $url_params = '';
         if ($params != null) {
-            $_link_url .= $this->makeParams($params, $sec);
+            $url_params = $this->makeParams($params, $sec);
         }
 
-        if ($controller && ($this->url_config['type'] == 1 || $this->url_config['type'] == 3) && $this->url_config['ext']) {
-            $_link_url .= $this->url_config['ext'];
+        if ($_url_ext) {
+            switch($this->url_config['type'])
+            {
+                case 2:
+                    $url .= $url_controller.$_url_ext.$url_params;
+                    break;
+                case 1:
+                case 3:
+                case 4:
+                    $url .= $url_controller.$url_params.$_url_ext;
+                    break;
+            }
+        } else {
+            $url .= $url_controller.$url_params;
         }
 
-        return $_link_url;
+        return $url;
     }
 
     /**
@@ -258,11 +273,11 @@ class View extends FrameBase
      * @param $controller
      * @param string $r_controller
      * @param string $r_action
+     * @throws \Cross\Exception\CoreException
      * @return string
      */
     private function makeController($controller, &$r_controller = '', &$r_action = '')
     {
-        $_ext = '';
         $_link_url = '/';
         if (false !== strpos($controller, ':')) {
             list($_controller, $_action) = explode(':', $controller);
@@ -293,7 +308,6 @@ class View extends FrameBase
                 case 2:
                 case 4:
                     $_dot = $index;
-                    $_ext = $this->url_config['ext'];
                     break;
 
                 default:
@@ -307,7 +321,7 @@ class View extends FrameBase
             $_link_url .= $this->url_config['dot'] . $_action;
         }
 
-        return $_link_url . $_ext;
+        return $_link_url;
     }
 
     /**
@@ -360,7 +374,7 @@ class View extends FrameBase
             }
 
             if (true === $sec) {
-                $_params = $this->urlEncrypt($_params, "crossphp");
+                $_params = $this->urlEncrypt($_params);
             }
         }
 
