@@ -79,6 +79,8 @@ class Delegate
         define('APP_NAME', $app_name);
         define('APP_PATH', APP_PATH_DIR . DS . APP_NAME);
 
+        Loader::init();
+
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
         $this->config = $this->getConfig();
