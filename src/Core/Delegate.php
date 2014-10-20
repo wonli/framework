@@ -17,17 +17,14 @@ use Cross\I\RouterInterface;
 //外部定义的项目路径
 defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
 
-//DIRECTORY_SEPARATOR
-defined('DS') or define('DS', DIRECTORY_SEPARATOR);
-
-//框架路径
-defined('CP_PATH') or define('CP_PATH', realpath(dirname(dirname(__FILE__))) . DS);
-
 //项目路径
-define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DS) . DS);
+define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 
 //项目APP路径
-define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app');
+defined('APP_PATH_DIR')or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
+
+//框架路径
+define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -77,11 +74,11 @@ class Delegate
     private function __construct($app_name, $runtime_config)
     {
         define('APP_NAME', $app_name);
-        define('APP_PATH', APP_PATH_DIR . DS . APP_NAME);
+        define('APP_PATH', APP_PATH_DIR . APP_NAME . DIRECTORY_SEPARATOR);
 
         Loader::init();
 
-        $this->app_name = $app_name;
+        $this->app_name = APP_NAME;
         $this->runtime_config = $runtime_config;
         $this->config = $this->getConfig();
         $this->appInit();

@@ -146,11 +146,10 @@ class Application
             throw new CoreException('请用使用type项指定cache类型');
         }
 
-        $app_name = $this->getConfig()->get("sys", "app_name");
         $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
 
         if (!isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DS . 'html';
+            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'html';
         }
 
         if (!isset($cache_config ['file_ext'])) {
@@ -166,7 +165,7 @@ class Application
         }
 
         $cache_key_conf = array(
-            $app_name,
+            APP_NAME,
             strtolower($this->getController()),
             $this->getAction(),
             md5(implode($cache_config ['key_dot'], $this->getParams()))
@@ -197,17 +196,14 @@ class Application
      */
     private function initController($controller, $action = null)
     {
-        $app_sys_conf = $this->getConfig()->get('sys');
-        $app_path = $app_sys_conf ['app_path'];
-        $app_name = $app_sys_conf ['app_name'];
-
-        $controller_file = implode(array($app_path, 'controllers', "{$controller}.php"), DS);
-        if (!file_exists($controller_file)) {
-            throw new CoreException("{$app_name}/controller/{$controller} 控制器不存在");
-        }
-
         $this->setController($controller);
+
         $controllerSpace = $this->getControllerNamespace();
+        $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace). '.php';
+
+        if (! file_exists($controllerRealFile)) {
+            throw new CoreException("{$controllerSpace} 控制器不存在");
+        }
 
         if ($action) {
             try {

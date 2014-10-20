@@ -10,7 +10,6 @@ namespace Cross\MVC;
 
 use Cross\Core\FrameBase;
 use Cross\Core\Response;
-use Cross\Exception\CoreException;
 use stdClass;
 
 /**
@@ -117,24 +116,6 @@ class Controller extends FrameBase
         $url = $this->view->link($_controller, $params, $sec);
         header("Location: {$url}");
         exit(0);
-    }
-
-    /**
-     * 加载缓存的文件
-     *
-     * @param $cache_name
-     * @throws CoreException
-     * @return mixed
-     */
-    protected function loadCache($cache_name)
-    {
-        if (file_exists($data_file = APP_PATH . DS . 'cache' . DS . $cache_name . '.php')) {
-            $helper = require $data_file;
-
-            return $helper;
-        } else {
-            throw new CoreException($cache_name . ' is not found!');
-        }
     }
 
     /**

@@ -4,15 +4,9 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.3
+ * @version     1.0.4
  */
+require __DIR__ . '/src/Core/Loader.php';
+require __DIR__ . '/src/Core/Delegate.php';
 
-//DIRECTORY_SEPARATOR
-define('DS', DIRECTORY_SEPARATOR);
-
-//框架路径
-define('CP_PATH', realpath(dirname(__FILE__)) . DS . 'src' . DS);
-
-require CP_PATH . 'Core/Loader.php';
-Cross\Core\Loader::init();
 class_alias('Cross\Core\Delegate', 'Cross');

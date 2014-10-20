@@ -170,10 +170,8 @@ class Config
             'host' => $host,
             'base_url' => $base_url,
             'site_url' => $host . $base_url,
-            'app_name' => APP_NAME,
-            'app_path' => APP_PATH,
             'static_url' => $base_url . '/static/',
-            'static_path' => $script_path . DS . 'static' . DS,
+            'static_path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
         );
 
         return $_sys;

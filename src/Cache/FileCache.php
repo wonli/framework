@@ -35,7 +35,7 @@ class FileCache implements CacheInterface
     function __construct($cache_config)
     {
         $file_ext = isset($cache_config['file_ext']) ? $cache_config['file_ext'] : '.html';
-        $this->cache_file = $cache_config['cache_path'] . DS . $cache_config['key'] . $file_ext;
+        $this->cache_file = $cache_config['cache_path'] . DIRECTORY_SEPARATOR . $cache_config['key'] . $file_ext;
         $this->expire_time = isset($cache_config ['expire_time']) ? $cache_config ['expire_time'] : 3600;
     }
 

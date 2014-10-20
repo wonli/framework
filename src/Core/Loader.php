@@ -176,7 +176,7 @@ class Loader
                     $path = "project";
                 }
 
-                $file_real_path = rtrim($_defines[strtolower($path)], DS) . DS . str_replace("/", DS, $file_info);
+                $file_real_path = $_defines[strtolower($path)] . str_replace("/", DIRECTORY_SEPARATOR, $file_info);
                 $file_path_info = pathinfo($file_real_path);
                 if (!isset($file_path_info['extension'])) {
                     $file_real_path .= $append_file_ext;
@@ -219,7 +219,7 @@ class Loader
             $prefix = substr($class_name, 0, $pos);
         }
 
-        $class_name = str_replace('\\', DS, $class_name);
+        $class_name = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
         if ($prefix && 0 === strcasecmp($prefix, 'cross')) {
             $class_file = CP_PATH . substr($class_name, $pos + 1) . '.php';
         } else {

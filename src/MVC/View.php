@@ -69,7 +69,7 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $link_base;
+    protected $link_base = null;
 
     /**
      * 静态资源路径
@@ -93,7 +93,6 @@ class View extends FrameBase
         parent::__construct();
 
         $this->url_config = $this->config->get("url");
-        $this->link_base = $this->config->get("sys", "site_url");
         $this->static_url = $this->config->get("sys", "static_url");
 
         $this->set("static_url", $this->static_url);
@@ -166,13 +165,37 @@ class View extends FrameBase
     }
 
     /**
+     * 获取生成连接的基础路径
+     *
+     * @return string
+     */
+    function getLinkBase()
+    {
+        if (null === $this->link_base) {
+            $this->setLinkBase($this->config->get("sys", "site_url"));
+        }
+
+        return $this->link_base;
+    }
+
+    /**
+     * 设置生成的连接基础路径
+     *
+     * @param $link_base
+     */
+    function setLinkBase($link_base)
+    {
+        $this->link_base = $link_base;
+    }
+
+    /**
      * 模板路径
      *
      * @return string 要加载的模板路径
      */
     function getTplPath()
     {
-        return rtrim($this->getTplBasePath() . $this->getTplDir(), DS) . DS;
+        return rtrim($this->getTplBasePath() . $this->getTplDir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -184,10 +207,10 @@ class View extends FrameBase
     {
         $current_app_name = $this->config->get('sys', 'current_app_name');
         if ($current_app_name) {
-            return dirname($this->config->get('sys', 'app_path')) . DS . $current_app_name . DS . 'templates';
+            return APP_PATH_DIR . $current_app_name . DIRECTORY_SEPARATOR . 'templates';
         }
 
-        return $this->config->get('sys', 'app_path') . DS . 'templates';
+        return APP_PATH . 'templates';
     }
 
     /**
@@ -197,7 +220,7 @@ class View extends FrameBase
      */
     function setTplBasePath($tpl_base_path)
     {
-        $this->tpl_base_path = rtrim($tpl_base_path, DS) . DS;
+        $this->tpl_base_path = rtrim($tpl_base_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -224,7 +247,7 @@ class View extends FrameBase
      */
     function link($controller = null, $params = null, $sec = false)
     {
-        $url = $this->link_base;
+        $url = $this->getLinkBase();
         $_url_ext = $this->url_config['ext'];
         $url_controller = '';
         if ($controller) {
