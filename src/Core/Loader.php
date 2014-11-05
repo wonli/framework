@@ -66,12 +66,10 @@ class Loader
         $list = Loader::parseFileRealPath($files);
         foreach ($list as $file) {
             if (isset(self::$loaded [$file])) {
-                return true;
+                continue;
             } elseif (file_exists($file)) {
-                self::$loaded [$file] = 1; //标识已载入
+                self::$loaded [$file] = 1;
                 require $file;
-
-                return true;
             } else {
                 throw new CoreException("未找到要载入的文件:{$file}");
             }
@@ -163,7 +161,7 @@ class Loader
         if (is_array($class)) {
             $files = $class;
         } elseif (false !== strpos($class, ",")) {
-            $files = explode(",", $class);
+            $files = array_map('trim', explode(",", $class));
         } else {
             $files[] = $class;
         }
