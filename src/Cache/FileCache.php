@@ -69,7 +69,7 @@ class FileCache implements CacheInterface
      *
      * @return bool
      */
-    function getExtime()
+    function getExpireTime()
     {
         if (!file_exists($this->cache_file)) {
             return false;

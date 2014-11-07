@@ -66,7 +66,7 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
      *
      * @return bool
      */
-    function getExtime()
+    function getExpireTime()
     {
         if (isset(self::$value_cache[$this->cache_key])) {
             return true;

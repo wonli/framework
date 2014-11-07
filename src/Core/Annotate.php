@@ -20,6 +20,12 @@ class Annotate
         $this->content = $annotate;
     }
 
+    /**
+     * 生成解析注释配置单例对象
+     *
+     * @param $annotate
+     * @return Annotate
+     */
     public static function getInstance($annotate)
     {
         return new Annotate($annotate);

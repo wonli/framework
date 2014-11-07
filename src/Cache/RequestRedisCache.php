@@ -41,7 +41,7 @@ class RequestRedisCache extends RedisCache implements CacheInterface
      *
      * @return bool
      */
-    function getExtime()
+    function getExpireTime()
     {
         return $this->link->ttl($this->cache_key) > 0;
     }

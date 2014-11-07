@@ -42,7 +42,7 @@ class RedisCache
 
         $obj = new Redis();
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
-            $obj->connect('/tmp/redis.sock');
+            $obj->connect($option['unix_socket']);
         } else {
             $obj->connect($option ['host'], $option ['port']);
         }

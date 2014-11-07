@@ -287,7 +287,7 @@ class Application
             $cache = $this->initRequestCache($action_config['cache']);
         }
 
-        if ($cache && $cache->getExtime()) {
+        if ($cache && $cache->getExpireTime()) {
             $response = $cache->get();
         } else {
             $action = $this->getAction();
