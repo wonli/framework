@@ -1,8 +1,21 @@
-# 概述
+# CrossPHP 框架功能及特点
 
-## APP目录结构及基本介绍
+##### 一. 支持PSR标准,支持composer安装.
 
-在 `Cross` 框架中, 一个项目被拆分为多个app, 放在app目录下, 每个app都包含独立的控制器,视图及模板, 分别用于控制项目的具体部分, 一个常见的项目结构如下:
+##### 二. 一个项目多个app,便于多人分工.写好web后不用为api再写一次逻辑
+
+##### 三. 视图层采用原生php.支持layer布局,不同的页面风格只需指定不同的layer即可.
+![layer示意图](http://document.crossphp.com/static/images/layer.gif)
+
+##### 四. 通过解析url运行,不用写url路由,使用路由配置可以为控制器指定别名
+![url生成及别名指定](http://document.crossphp.com/static/images/url.gif)
+
+##### 五. 全局的异常处理系统及错误展示,在开发中可以快速定位到具体的代码行数
+![异常显示](http://document.crossphp.com/static/images/exception.png)
+
+# 一. 项目基本结构
+
+在一个 `Cross` 项目中, 一个项目被拆分为多个app, 放在app目录下, 每个app都包含独立的控制器,视图及模板, 分别用于控制项目的具体部分, 一个常见的项目结构如下:
 
 	├─app 应用模块目录    
 	│  ├─admin 后台模块  
@@ -26,8 +39,6 @@
 	  ├─admin  
 	  └─home
 
-## 项目配置文件
-
 每个app的根目录下面,都有一个名为 `init.php` 的PHP文件, 该配置文件返回一个PHP数组,这个数组默认分为三个部分
 
 	├─app 应用模块目录    
@@ -42,14 +53,14 @@
 	│     └─view 
 
 
-### 一. sys
+### sys
 app默认配置,用于指定默认模板目录等
 
 1. `auth` 默认的认证方式, 使用SESSION或COOKIE.
 2. `default_tpl_dir` 默认模板文件夹路径,可以在控制器中通过 `$this->config->set('sys', array('default_tpl_dir'=>'name'))` 来指定controller项目使用的模板.
 3. `display` 默认的视图处理方法, 默认 `HTML` 使用视图控制器对应的方法来处理, `JSON` / `XML` 直接使用视图控制器中的JSON / XML方法来处理数据.
 
-### 二. url
+### url
 为每个app指定独立的url风格
 
 1. `*` 指定默认的控制器和方法.
@@ -93,7 +104,7 @@ app默认配置,用于指定默认模板目录等
 
 6. `index` 索引文件名称即htdocs目录对应app文件夹中的默认文件, 默认是 `index.php` 如果要使用其他的索引文件请修改此处. 
 
-### 三. router 
+### router 
 router用于指定控制器的别名, 以以下配置为例:
 
 	'router'    => array(
@@ -110,9 +121,8 @@ router用于指定控制器的别名, 以以下配置为例:
 
 也可以在控制器中用静态属性 `_act_alias_` 来指定别名, 但优先级低于配置
 
-## 启动框架
+# 二. 启动框架
 
-### 一： 启动框架的准备工作 
 Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 1. 告诉框架项目路径
@@ -126,7 +136,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 	载入框架引导文件，该文件位于框架的根目录，名为 `boot.php`, 框架可以放在计算机的任意路径，只要正确的包含进该文件即可。
 
-### 二： 指定要启动的APP
+### 指定要启动的APP
 
 1. 解析url运行
 
@@ -143,10 +153,9 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	
 		Cross::loadApp('web')->get("main:index", $args);
 
-## 创建控制器
+# 三. 控制器
 
-### 一. 创建一个控制器
-以web为例, 在app\web\controllers中创建一个User.php文件,文件内容如下:
+在app\web\controllers目录下创建一个User.php文件,文件内容如下:
 
 	namespace app\web\controllers;
 	
@@ -162,7 +171,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 通过浏览器 `http://domain/skeleton/htdocs/web/user` 来访问,这时页面会输出 `hello`
 
 
-### 二. 基本使用方法
+### 父类提供的方法
 
 1. 判断请求类型
 
@@ -187,10 +196,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 >建议: 每个app对应该有一个基类控制器,基类控制器继承至`Cross\MVC\Controller`, 其余控制器从基类继承, 这样更灵活.
 
-##使用app配置文件
-
-### 一 读取
-基本使用方法为：
+### 读取app配置
 	
 	namespace app\web\controllers;
 	
@@ -206,7 +212,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 在控制器中可以通过`$this->config->get()`方法来读取`app\web\init.php`中的配置项的值，`key`为配置数组中的键， 如果不指定`val`则返回该键对应的所有配置。
 
-### 二 设置
+### 设置或更改配置项
 
 	namespace app\web\controllers;
 	
@@ -222,8 +228,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	
 如果app配置文件中有对应的键、值存在，那么修改为指定的值， 没有则添加一项
 
-## 获取URL参数
-
+### 获取URL参数
 
 假设当前的url为 `http://domain/skeleton/htdocs/web/controller/action[/p1/1/p2/2]`, 在方法内部使用控制器的 `$this->params` 属性可以获得参数的值:
 
@@ -245,9 +250,9 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 > 要还原参数的key,请参见使用注释配置一节
 
-## 使用注释配置
+### 使用注释配置
 
-### 一. 还原参数的key
+###### 1. 还原参数的key
 
 在app配置文件url字段字段部分，当type=1时, 在方法体内部使用 `$this->params` 属性默认获得的参数是一个数字索引数组,这时可以在方法体的注释中使用 `@cp_params` 指定了参数的key,格式为 `@cp_params 参数1, 参数2...` 如下例:
 
@@ -277,7 +282,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 >`@cp_params` 只有`type=1`时生效， 为保持程序的一致性使用`@cp_params`时，指定的参数应与生成的连接的参数保存一致 
 
-### 二. 为Action配置缓存
+###### 2. 为Action配置缓存
 
 在注释中使用 `@cp_cache` 字段指定该Action的缓存
 
@@ -300,7 +305,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 配置的格式为 `true/false(key=value, key=value...)` 多个key和value用逗号分隔 `true` 或 `false` 分别代表配置的开关.
 
-1. 使用文件缓存 `true(type=1, expire_time=864000)`
+a. 使用文件缓存 `true(type=1, expire_time=864000)`
 
 		type = 1
 		expire_time = 86400 表示缓存过期时间为1天
@@ -309,14 +314,14 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	
 	>项目根目录下的cache目录需设置为可以读写
 
-2. 使用memcache缓存 `true(type=2, host=127.0.0.1, port=11211, expire_time=30)`
+b. 使用memcache缓存 `true(type=2, host=127.0.0.1, port=11211, expire_time=30)`
 				
 		type=2
 		host=127.0.0.1
 		port=11211
 		expire_time=30
 
-3. 使用redis缓存 `true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)`
+c. 使用redis缓存 `true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)`
 
 		type=3, 
 		host=127.0.0.1, 
@@ -328,7 +333,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 >使用op_cache的时候注意与注释相关参数的设置
 
-## 在控制器中使用modules
+### 在控制器中使用modules
 
 在控制器中使用modules,以使用UserModules为例:
 
@@ -371,9 +376,9 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 然后就可以在控制器中调用modules提供的方法了. 
 
-## 在控制器中使用view
+### 在控制器中使用view
 
-### 一. 基本使用方式
+###### 1. 基本使用方式
 	namespace app\web\controllers;
 	
 	use Cross\MVC\Controller;
@@ -399,7 +404,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 从Modules取出数据和分页信息, 放进变量 `$result` 中, 传给视图控制器的同名方法处理, 在视图控制器中整理数据, 调用模版, 赋值给布局文件中的 `$content` 变量, 生成最终的结果页面一起返回到 `Dispatcher` 中,如果有请求缓存则把结果存进缓存中, 然后通过 `Response->output()` 方法发送给用户, 下次请求的时候先检查是否有缓存, 如果有缓存并且还在缓存的有效期, 直接从缓存把结果返回给用户.
 
-### 二. 不使用默认的视图控制器
+###### 2. 使用视图控制器中指定的Action
 
 	namespace app\web\controllers;
 	
@@ -427,7 +432,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 使用视图控制器提供的 `JSON` 方法,返回一个JSON结果.
 
 
-### 三. 只返回视图控制器的内容.
+###### 3. 不使用layer布局.
 
 	class Main extends CoreController
 	{
@@ -453,9 +458,9 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 		}
 	}
 
-如果是ajax请求不输出layer的内容.
+如果是ajax请求不包含layer中的内容.
 
-## 模型系统简介
+# 四. Module系统
 
 	├─modules modules文件夹
 	│   ├─admin
@@ -474,9 +479,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 > 不支持不同类型数据库之间切换
 
-## 创建module
-
-### 一. 连接默认数据库
+### 连接默认数据库
 
 在项目的根目录下的modules文件夹中创建web文件夹, 在web文件夹下创建 `ApiModule.php` 内容如下:
 	
@@ -492,7 +495,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 		}
 	}
 
-### 二. 连接其他数据库
+### 连接指定数据库
 
 
 `parent::__construct()` 中的参数为要连接的数据库的配置的名称,默认连接的数据库为`mysql:db`,参数格式为:
@@ -516,7 +519,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
   
 >modules默认不建立与任何数据库系统的连接,只需覆盖默认的构造函数 或不从CoreModule继承.
 
-## MySQL查询
+### MySQL查询
 
 假设 `modules\web\UserModule.php` 中的代码如下：
 
@@ -536,176 +539,174 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 连接数据库后, 在module的方法中就可以使用 `$this->link` 属性使用连接类提供的方法查询了,以MySql类默认提供的查询为例.
 
+###### 查询单条记录
 
-## 一 查询
-
-1. 查询单条记录
-
-		function getUser() 
-		{
-			return $this->link->get($this->t_user, '*', 'score=1')
-		}
+	function getUser() 
+	{
+		return $this->link->get($this->t_user, '*', 'score=1')
+	}
 	
-	也可以用数组表示
+也可以用数组表示
 	
-		function getUser() 
-		{
-			return $this->link->get($this->t_user, '*', array(
-				'score' => 1
+	function getUser() 
+	{
+		return $this->link->get($this->t_user, '*', array(
+			'score' => 1
+		));
+	}
+
+###### 查询多条记录
+
+	function getUser() 
+	{
+		return $this->link->getAll($this->t_user, '*');
+	}
+
+###### 条件查询
+
+	function getUser() 
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+			'score' => array('>', 1)
+		));
+	｝
+
+查询score 大于 1的用户 类似的操作还可以使用`>`, `<>`等。
+
+	function getUser() 
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+			'name' => array('like', 'john')
+		));
+	｝
+使用like查询
+
+###### 使用IN、OR查询
+
+	function getUser()
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+			'id' => array('in', array(1,2,3))
+		));
+	}
+
+对应的sql语句为 `SELECT * FROM back_acl_menu WHERE id IN (?,?,?)`
+
+	function getUser()
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+				'id' => array('or', array(1, 2, 3))
 			));
-		}
+	}
+对应的sql语句为： `SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ?`
 
-2. 查询多条记录
+###### 为OR中的某一项指定条件
 
-		function getUser() 
-		{
-			return $this->link->getAll($this->t_user, '*');
-		}
-
-3. 使用条件查询
-
-		function getUser() 
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-				'score' => array('>', 1)
+	function getUser()
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+				'id' => array('or', array(1, 2, 3, array('>', 5) ))
 			));
-		｝
-
-	查询score 大于 1的用户 类似的操作还可以使用`>`, `<>`等。
-
-		function getUser() 
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-				'name' => array('like', 'john')
-			));
-		｝
-	使用like查询
-
-4. 使用IN、OR查询
-	
-		function getUser()
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-				'id' => array('in', array(1,2,3))
-			));
-		}
-
-	对应的sql语句为 `SELECT * FROM back_acl_menu WHERE id IN (?,?,?)`
-
-		function getUser()
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-					'id' => array('or', array(1, 2, 3))
-				));
-		}
-	对应的sql语句为： `SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ?`
-
-5. 为OR中的某一项指定条件
-
-		function getUser()
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-					'id' => array('or', array(1, 2, 3, array('>', 5) ))
-				));
-		}
-	此时生成的sql语句为 `SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ? OR id > ?`
+	}
+此时生成的sql语句为 `SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ? OR id > ?`
 
 
-6. 使用BETWEEN
+###### 使用BETWEEN
 
-		function getUser()
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-				'id'    =>  array('between', array(1, 2))
-			));
-		}
-	生成的SQL语句模板为 `SELECT * FROM front_user WHERE id BETWEEN 1 AND 2`
+	function getUser()
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+			'id'    =>  array('between', array(1, 2))
+		));
+	}
+生成的SQL语句模板为 `SELECT * FROM front_user WHERE id BETWEEN 1 AND 2`
 
-7. 带分页数据的查询
+###### 带分页数据的查询
 
-		function getUser(& $page = array('p'=>1, 'limit'=>30))
-		{
-			$this->link->find($this->t_user, '*', array(
-				'score'	=> array('>', 1),
-			), 'id DESC', $page);
-		｝
+	function getUser(& $page = array('p'=>1, 'limit'=>30))
+	{
+		$this->link->find($this->t_user, '*', array(
+			'score'	=> array('>', 1),
+		), 'id DESC', $page);
+	｝
 
-8. 混合使用
+###### 混合使用
 
-		function getUser()
-		{
-			return $this->link->getAll($this->t_user, '*', array(
-	            'id'    =>  array('in', array(7, 2, 3)),
-	            'pid'   =>  array('or', array(1, 2 => array('>', 2)))
-			));
-		}
-	生成的sql语句为 `SELECT * FROM front_user WHERE id IN (?,?,?) AND pid = ? OR pid > ?`
+	function getUser()
+	{
+		return $this->link->getAll($this->t_user, '*', array(
+            'id'    =>  array('in', array(7, 2, 3)),
+            'pid'   =>  array('or', array(1, 2 => array('>', 2)))
+		));
+	}
+生成的sql语句为 `SELECT * FROM front_user WHERE id IN (?,?,?) AND pid = ? OR pid > ?`
 
-9. 左右连接
+###### 左右连接
 
-		function getUser()
-		{
-			return $this->link->getAll("{$this->t_user} tu LEFT JOIN front_user_base fub ON tu.id=fub.id", '*', array(
-	            'id'    =>  1
-			));
-		}
+	function getUser()
+	{
+		return $this->link->getAll("{$this->t_user} tu LEFT JOIN front_user_base fub ON tu.id=fub.id", '*', array(
+            'id'    =>  1
+		));
+	}
 
-## 二. 添加记录
+### 添加数据
 
 添加单条记录
 		
-		function getUser()
-		{
-			$this->link->add($this->t_user, array(
-				'score'	=> 5,
-				'group'	=>	1,
-			));
-		｝
+	function getUser()
+	{
+		$this->link->add($this->t_user, array(
+			'score'	=> 5,
+			'group'	=>	1,
+		));
+	｝
 
 >如果主键是id返回id, 否则总是返回 `true`
 
 批量添加 
-		function getUser()
-		{		
-			$insert_data = array();
-		
-			$this->link->add($this->t_user, array(
-				'fields' = array('score', 'group'),
-				'values' = array(
-					array(5, 1),	
-					array(5, 2),
-					array(5, 3),
-				)
-			), true, $insert_data);
-		｝
+
+	function getUser()
+	{		
+		$insert_data = array();
+	
+		$this->link->add($this->t_user, array(
+			'fields' = array('score', 'group'),
+			'values' = array(
+				array(5, 1),	
+				array(5, 2),
+				array(5, 3),
+			)
+		), true, $insert_data);
+	｝
 
 >`insert_data` 返回的值为添加以后结果.
 
-## 三. 删除记录
+### 删除记录
 
 删除单条记录
 
-		function getUser()
-		{
-			$this->link->del($this->t_user, array(
-				'id'=>1
-			));
-		｝
+	function getUser()
+	{
+		$this->link->del($this->t_user, array(
+			'id'=>1
+		));
+	｝
 
 批量删除id等于1和id等于2的用户
 
-		function getUser()
-		{
-			$this->link->del($this->t_user, array(
-		        'fields' => array('id'),
-		        'values' => array(
-		            array(1),
-		            array(2),
-		        ),
-			), true);
-		｝
+	function getUser()
+	{
+		$this->link->del($this->t_user, array(
+	        'fields' => array('id'),
+	        'values' => array(
+	            array(1),
+	            array(2),
+	        ),
+		), true);
+	｝
 
-### 四. 直接执行sql语句
+### 直接执行sql语句
 返回单条记录
 
 	function getUser($sql)
@@ -722,14 +723,14 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 > 适用于不带参数的sql查询
 
-### 五. 手动绑定参数
+### 手动绑定参数
 
 >$sql =  "select fri.*, fue.* from ( select * from front_user where uid = ?) fri  
 >left join front_user_extend fue on fri.id=fue.uid"
 
 	$this->link->prepare($sql)->exec(array(1))->stmt_fetch(true);
 
-## 视图概述
+# 五.视图概述
 
 	├─crossboot.php  
     │
@@ -753,7 +754,7 @@ CrossPHP框架中的视图由两个部分组成,即视图控制器和模板系�
 
 2. 模板系统包含模板和布局系统,模板系统中输出的内容先包含进布局中,再输出到浏览器
 
-##模板结构
+### 模板结构
 
 CrossPHP默认的模板语言为PHP本身,一个app模板结构如下:
 
@@ -779,7 +780,7 @@ CrossPHP默认的模板语言为PHP本身,一个app模板结构如下:
 1. 模板命名方式为目录和控制器中的类一一对应, 模板文件和控制器中的方法对应,即模板名称/控制器名称/方法名称.
 2. 布局文件放在模板文件的根目录下.
 
-## 视图控制器
+### 视图控制器
 
 视图控制器文件夹位于 `app\web\views` 目录下， 访问控制器中的类的时候，会自动去视图控制器目录下查找视图控制器文件比如`Main`控制器默认的视图控制器类名为`MainView`，文件内容如下:
 
@@ -799,9 +800,9 @@ CrossPHP默认的模板语言为PHP本身,一个app模板结构如下:
 
 > ajax返回的时候,不用返回公共的layer文件内容
 
-##使用布局
+### 使用布局
 
-### 一. 基本用法
+###### 1. 基本用法
 
 在控制器中使用`$this->display()`方法,必须包含默认的布局文件default.layer.php, 一个空白的布局文件内容如下:
 
@@ -840,9 +841,9 @@ CrossPHP默认的模板语言为PHP本身,一个app模板结构如下:
 index方法输出的内容至布局文件中的变量`$content`,然后合并输出到浏览器.
 
 
-### 二. 在视图控制器中控制布局的内容
+###### 2. 在视图控制器中控制布局的内容
 
-1. 更改网站标题,keywords,和description
+a. 更改网站标题,keywords,和description
 
 		namespace app\web\views;
 		
@@ -865,7 +866,7 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 	布局文件中的所有变量均可以在action中,调用基类中的`$this->set()`替换.参数为一个数组,数组的key即为变量名.
 
 
-2. 添加静态资源文件,如css,js等,需在layer中指定位置添加`$this->loadRes()`方法
+b. 添加静态资源文件,如css,js等,需在layer中指定位置添加`$this->loadRes()`方法
 	
 		namespace app\web\views;
 		
@@ -882,34 +883,31 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 	
 >自定义app中的视图控制器基类的基类而不是直接继承`CoreView`,这样更灵活易扩展.
 
-## 模板的使用
+### 模板的使用
 
 根据使用的模板引擎选择支持的语法,这里以CrossPHP框架的原生视图为例.
 
-### 一. 使用默认视图控制器中的方法.
+###### 1. 使用默认视图控制器中的方法.
 
-1. 生成连接
+a. 生成连接
 
-		$this->link("controller:action", array('key'=>'value'));
+	$this->link("controller:action", array('key'=>'value'));	
+> 生成后的url中的连接由模块配置文件init.php中的url中type和dot控制  
+
+b. 生成加密连接
 	
-	> 生成后的url中的连接由模块配置文件init.php中的url中type和dot控制  
+	$this->slink("controller:action", array('key'=>'value'));
 
-2. 生成加密连接
+唯一不同的是`array('key'=>'value')` 部分是加密的	
+>在控制器中调用 `$this->sparams()` 来还原加密前的参数
 	
-		$this->slink("controller:action", array('key'=>'value'));
+c. 包含其他模板文件
 
-	唯一不同的是`array('key'=>'value')` 部分是加密的	
-	>在控制器中调用 `$this->sparams()` 来还原加密前的参数
-	
-3. 包含其他模板文件
-
-		$this->tpl("page/p1");
-	>引入page目录下的p1.tpl.php文件
+	$this->tpl("page/p1");
+>引入page目录下的p1.tpl.php文件
 	
 
-### 二. 在对应的视图控制器中的扩展
-
-如
+##### 2. 在视图控制器中扩展
 
     private function threadList( $data = array() )
     {
@@ -926,7 +924,7 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 在模板文件中用 `$this->threadList($data)` 调用.
 >重复使用的,公共的的tpl可以放在app视图控制器自定义的基类中,保持模板代码的整洁
 
-## 使用第三方model
+#六. 使用第三方Model
 
 以使用[http://medoo.in/](http://medoo.in/ "medoo")为例，先下载medoo.min.php文件到lib目录， 使用Loader类中的import方法载入该类， 在控制器中重新指定`TestModule`的link属性为Medoo类的实例，然后就可以在action中调用`$this->link`来使用medoo提供的接口了。
 
@@ -963,9 +961,9 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 
 使用其他第三方model类似
 
-## 扩展模板系统
+#七.扩展模板系统
 
-### 一. 使用第三方PHP模版系统
+### 使用第三方PHP模版系统
 
 以添加Smarty为例,从[http://www.smarty.net/download](http://www.smarty.net/download "http://www.smarty.net/download")下载你熟悉的smarty版本到项目根目录的lib中,本例以Smarty-3.1.17为例,新建一个SmartyView控制器继在你的视图控制器目录,使之承至CoreView类
 
@@ -1008,7 +1006,7 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 		}
 
 
-### 二. 使用JS模板引擎
+### 使用JS模板引擎
 
 以添加artTemplate模板引擎为例, 从[https://github.com/aui/artTemplate](https://github.com/aui/artTemplate "https://github.com/aui/artTemplate")下载最新版本,放在htdocs/static/lib目录下.
 
@@ -1049,9 +1047,9 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 
 >以上两种方式都保留了CrossPHP视图的layer功能.
 
-## 与第三方程序交互
+#八.与第三方程序交互
 
-### 一. Yar
+### Yar
 
 	require '../../crossboot.php';
 	
@@ -1067,7 +1065,7 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 	$service->handle();
 	
 
-### 二. ZMQ
+### ZMQ
 
 	require '../../crossboot.php';
 	
@@ -1117,3 +1115,5 @@ index方法输出的内容至布局文件中的变量`$content`,然后合并输�
 	    $req = ob_get_clean();
 	    $responder->send( $req );
 	}
+
+更多使用方法请在使用中去发现,如有疑问请加QQ群:120801063

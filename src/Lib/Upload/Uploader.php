@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.4
+ * @version     1.0.5
  */
 namespace Cross\Lib\Upload;
 

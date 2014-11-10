@@ -1,0 +1,1 @@
+phpunit ../../tests/MainTest.php

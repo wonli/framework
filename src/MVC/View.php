@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.4
+ * @version     1.0.5
  */
 namespace Cross\MVC;
 
@@ -84,6 +84,13 @@ class View extends FrameBase
      * @var string
      */
     protected $tpl_file_ext_name = '.tpl.php';
+
+    /**
+     * 路由别名配置
+     *
+     * @var array
+     */
+    protected static $router_alias = array();
 
     /**
      * 初始化视图
@@ -294,24 +301,13 @@ class View extends FrameBase
      * 生成控制器连接
      *
      * @param $controller
-     * @param string $r_controller
-     * @param string $r_action
      * @throws \Cross\Exception\CoreException
      * @return string
      */
-    private function makeController($controller, &$r_controller = '', &$r_action = '')
+    private function makeController($controller)
     {
         $_link_url = '/';
-        if (false !== strpos($controller, ':')) {
-            list($_controller, $_action) = explode(':', $controller);
-        } else {
-            $_controller = $controller;
-        }
-
-        $r_controller = $_controller;
-        if (isset($_action)) {
-            $r_action = $_action;
-        }
+        $this->getControllerAlias($controller, $_controller, $_action);
 
         if ($this->url_config ['rewrite']) {
             $_link_url .= $_controller;
@@ -340,11 +336,64 @@ class View extends FrameBase
             $_link_url .= $_dot . '/' . $_controller;
         }
 
-        if (isset($_action)) {
+        if (null != $_action) {
             $_link_url .= $this->url_config['dot'] . $_action;
         }
 
         return $_link_url;
+    }
+
+    /**
+     * 解析控制器别名
+     *
+     * @param string $controller
+     * @param string $_controller
+     * @param string $_action
+     */
+    private function getControllerAlias($controller, & $_controller, & $_action)
+    {
+        $alias_config = $this->parseControllerAlias();
+
+        if (isset($alias_config[$controller])) {
+            $_controller = $alias_config[$controller];
+        } else {
+            $_action = null;
+            if (false !== strpos($controller, ':')) {
+                list($_controller, $_action) = explode(':', $controller);
+            } else {
+                $_controller = $controller;
+            }
+
+            if (isset($alias_config[$_controller])) {
+                $controller_action_alias_config = $alias_config[$_controller];
+                if (isset($controller_action_alias_config[$_action])) {
+                    $_action = $controller_action_alias_config[$_action];
+                }
+            }
+        }
+    }
+
+    /**
+     * 解析路由别名配置
+     *
+     * @return array
+     */
+    private function parseControllerAlias()
+    {
+        if (empty(self::$router_alias)) {
+            $router = $this->config->get('router');
+            if (! empty($router)) {
+                foreach($router as $controller_alias => $real_controller) {
+                    if (is_array($real_controller)) {
+                        self::$router_alias[$controller_alias] = array_flip($real_controller);
+                    } else {
+                        self::$router_alias[$real_controller] = $controller_alias;
+                    }
+                }
+            }
+        }
+
+        return self::$router_alias;
     }
 
     /**

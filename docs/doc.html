@@ -291,9 +291,17 @@ img {
 </style>
 </head>
 <body>
-<h1>概述</h1>
-<h2>APP目录结构及基本介绍</h2>
-<p>在 <code>Cross</code> 框架中, 一个项目被拆分为多个app, 放在app目录下, 每个app都包含独立的控制器,视图及模板, 分别用于控制项目的具体部分, 一个常见的项目结构如下:</p>
+<h1>CrossPHP 框架功能及特点</h1>
+<h5>一. 支持PSR标准,支持composer安装.</h5>
+<h5>二. 一个项目多个app,便于多人分工.写好web后不用为api再写一次逻辑</h5>
+<h5>三. 视图层采用原生php.支持layer布局,不同的页面风格只需指定不同的layer即可.</h5>
+<p><img src="http://document.crossphp.com/static/images/layer.gif" alt="layer示意图" /></p>
+<h5>四. 通过解析url运行,不用写url路由,使用路由配置可以为控制器指定别名</h5>
+<p><img src="http://document.crossphp.com/static/images/url.gif" alt="url生成及别名指定" /></p>
+<h5>五. 全局的异常处理系统及错误展示,在开发中可以快速定位到具体的代码行数</h5>
+<p><img src="http://document.crossphp.com/static/images/exception.png" alt="异常显示" /></p>
+<h1>一. 项目基本结构</h1>
+<p>在一个 <code>Cross</code> 项目中, 一个项目被拆分为多个app, 放在app目录下, 每个app都包含独立的控制器,视图及模板, 分别用于控制项目的具体部分, 一个常见的项目结构如下:</p>
 <pre><code>├─app 应用模块目录    
 │  ├─admin 后台模块  
 │  │  ├─templates 模板文件夹
@@ -317,7 +325,6 @@ img {
   └─home
 </code></pre>
 
-<h2>项目配置文件</h2>
 <p>每个app的根目录下面,都有一个名为 <code>init.php</code> 的PHP文件, 该配置文件返回一个PHP数组,这个数组默认分为三个部分</p>
 <pre><code>├─app 应用模块目录    
 │  └─web 网站模块  
@@ -331,14 +338,14 @@ img {
 │     └─view 
 </code></pre>
 
-<h3>一. sys</h3>
+<h3>sys</h3>
 <p>app默认配置,用于指定默认模板目录等</p>
 <ol>
 <li><code>auth</code> 默认的认证方式, 使用SESSION或COOKIE.</li>
 <li><code>default_tpl_dir</code> 默认模板文件夹路径,可以在控制器中通过 <code>$this-&gt;config-&gt;set('sys', array('default_tpl_dir'=&gt;'name'))</code> 来指定controller项目使用的模板.</li>
 <li><code>display</code> 默认的视图处理方法, 默认 <code>HTML</code> 使用视图控制器对应的方法来处理, <code>JSON</code> / <code>XML</code> 直接使用视图控制器中的JSON / XML方法来处理数据.</li>
 </ol>
-<h3>二. url</h3>
+<h3>url</h3>
 <p>为每个app指定独立的url风格</p>
 <ol>
 <li>
@@ -390,7 +397,7 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 <p><code>index</code> 索引文件名称即htdocs目录对应app文件夹中的默认文件, 默认是 <code>index.php</code> 如果要使用其他的索引文件请修改此处. </p>
 </li>
 </ol>
-<h3>三. router</h3>
+<h3>router</h3>
 <p>router用于指定控制器的别名, 以以下配置为例:</p>
 <pre><code>'router'    =&gt; array(
     'hi'    =&gt;  'main:index',
@@ -404,8 +411,7 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 <p>当请求的url是 <code>skeleton/htdocs/web/?/hi</code> 的时, 实际响应的是 <code>main</code> 控制器中的 <code>index</code> 方法</p>
 <p>当请求的url是 <code>skeleton/htdocs/web/?/article/page</code> 的时, 实际响应的控制是 <code>article</code> 的 <code>index</code> 方法  </p>
 <p>也可以在控制器中用静态属性 <code>_act_alias_</code> 来指定别名, 但优先级低于配置</p>
-<h2>启动框架</h2>
-<h3>一： 启动框架的准备工作</h3>
+<h1>二. 启动框架</h1>
 <p>Cross项目 框架和项目 独立， 所以启动框架前需要做两件事</p>
 <ol>
 <li>
@@ -423,7 +429,7 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 <p>载入框架引导文件，该文件位于框架的根目录，名为 <code>boot.php</code>, 框架可以放在计算机的任意路径，只要正确的包含进该文件即可。</p>
 </li>
 </ol>
-<h3>二： 指定要启动的APP</h3>
+<h3>指定要启动的APP</h3>
 <ol>
 <li>
 <p>解析url运行</p>
@@ -443,9 +449,8 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 
 </li>
 </ol>
-<h2>创建控制器</h2>
-<h3>一. 创建一个控制器</h3>
-<p>以web为例, 在app\web\controllers中创建一个User.php文件,文件内容如下:</p>
+<h1>三. 控制器</h1>
+<p>在app\web\controllers目录下创建一个User.php文件,文件内容如下:</p>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -460,7 +465,7 @@ class User extends Controller
 </code></pre>
 
 <p>通过浏览器 <code>http://domain/skeleton/htdocs/web/user</code> 来访问,这时页面会输出 <code>hello</code></p>
-<h3>二. 基本使用方法</h3>
+<h3>父类提供的方法</h3>
 <ol>
 <li>
 <p>判断请求类型</p>
@@ -490,9 +495,7 @@ $this-&gt;is_ajax_request()
 <blockquote>
 <p>建议: 每个app对应该有一个基类控制器,基类控制器继承至<code>Cross\MVC\Controller</code>, 其余控制器从基类继承, 这样更灵活.</p>
 </blockquote>
-<h2>使用app配置文件</h2>
-<h3>一 读取</h3>
-<p>基本使用方法为：</p>
+<h3>读取app配置</h3>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -507,7 +510,7 @@ class User extends Controller
 </code></pre>
 
 <p>在控制器中可以通过<code>$this-&gt;config-&gt;get()</code>方法来读取<code>app\web\init.php</code>中的配置项的值，<code>key</code>为配置数组中的键， 如果不指定<code>val</code>则返回该键对应的所有配置。</p>
-<h3>二 设置</h3>
+<h3>设置或更改配置项</h3>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -522,7 +525,7 @@ class User extends Controller
 </code></pre>
 
 <p>如果app配置文件中有对应的键、值存在，那么修改为指定的值， 没有则添加一项</p>
-<h2>获取URL参数</h2>
+<h3>获取URL参数</h3>
 <p>假设当前的url为 <code>http://domain/skeleton/htdocs/web/controller/action[/p1/1/p2/2]</code>, 在方法内部使用控制器的 <code>$this-&gt;params</code> 属性可以获得参数的值:</p>
 <pre><code>namespace app\web\controllers;
 
@@ -544,8 +547,8 @@ class User extends Controller
 <blockquote>
 <p>要还原参数的key,请参见使用注释配置一节</p>
 </blockquote>
-<h2>使用注释配置</h2>
-<h3>一. 还原参数的key</h3>
+<h3>使用注释配置</h3>
+<h6>1. 还原参数的key</h6>
 <p>在app配置文件url字段字段部分，当type=1时, 在方法体内部使用 <code>$this-&gt;params</code> 属性默认获得的参数是一个数字索引数组,这时可以在方法体的注释中使用 <code>@cp_params</code> 指定了参数的key,格式为 <code>@cp_params 参数1, 参数2...</code> 如下例:</p>
 <pre><code>namespace app\web\controllers;
 
@@ -575,7 +578,7 @@ class User extends Controller
 <blockquote>
 <p><code>@cp_params</code> 只有<code>type=1</code>时生效， 为保持程序的一致性使用<code>@cp_params</code>时，指定的参数应与生成的连接的参数保存一致 </p>
 </blockquote>
-<h3>二. 为Action配置缓存</h3>
+<h6>2. 为Action配置缓存</h6>
 <p>在注释中使用 <code>@cp_cache</code> 字段指定该Action的缓存</p>
 <pre><code>namespace app\web\controllers;
 
@@ -596,44 +599,35 @@ class User extends Controller
 </code></pre>
 
 <p>配置的格式为 <code>true/false(key=value, key=value...)</code> 多个key和value用逗号分隔 <code>true</code> 或 <code>false</code> 分别代表配置的开关.</p>
-<ol>
-<li>
-<p>使用文件缓存 <code>true(type=1, expire_time=864000)</code></p>
-<pre><code>type = 1
-expire_time = 86400 表示缓存过期时间为1天
-cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/html文件夹下
-file_ext 缓存文件扩展名 默认为.html
+<p>a. 使用文件缓存 <code>true(type=1, expire_time=864000)</code></p>
+<pre><code>    type = 1
+    expire_time = 86400 表示缓存过期时间为1天
+    cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/html文件夹下
+    file_ext 缓存文件扩展名 默认为.html
+
+&gt;项目根目录下的cache目录需设置为可以读写
 </code></pre>
 
-<blockquote>
-<p>项目根目录下的cache目录需设置为可以读写</p>
-</blockquote>
-</li>
-<li>
-<p>使用memcache缓存 <code>true(type=2, host=127.0.0.1, port=11211, expire_time=30)</code></p>
-<pre><code>type=2
-host=127.0.0.1
-port=11211
-expire_time=30
+<p>b. 使用memcache缓存 <code>true(type=2, host=127.0.0.1, port=11211, expire_time=30)</code></p>
+<pre><code>    type=2
+    host=127.0.0.1
+    port=11211
+    expire_time=30
 </code></pre>
 
-</li>
-<li>
-<p>使用redis缓存 <code>true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)</code></p>
-<pre><code>type=3, 
-host=127.0.0.1, 
-port=6379, 
-db=3 使用的db id
-expire_time=864000 key的生存时间
+<p>c. 使用redis缓存 <code>true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)</code></p>
+<pre><code>    type=3, 
+    host=127.0.0.1, 
+    port=6379, 
+    db=3 使用的db id
+    expire_time=864000 key的生存时间
 </code></pre>
 
-</li>
-</ol>
 <p>使用缓存后Dispatcher流程会跳过app模型中该Action的逻辑,直接从缓存读取数据返回给客户端, 合理的使用缓存能大幅度提高应用性能.</p>
 <blockquote>
 <p>使用op_cache的时候注意与注释相关参数的设置</p>
 </blockquote>
-<h2>在控制器中使用modules</h2>
+<h3>在控制器中使用modules</h3>
 <p>在控制器中使用modules,以使用UserModules为例:</p>
 <pre><code>namespace app\web\controllers;
 
@@ -674,8 +668,8 @@ class User extends Controller
 </code></pre>
 
 <p>然后就可以在控制器中调用modules提供的方法了. </p>
-<h2>在控制器中使用view</h2>
-<h3>一. 基本使用方式</h3>
+<h3>在控制器中使用view</h3>
+<h6>1. 基本使用方式</h6>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -701,7 +695,7 @@ class User extends Controller
 </code></pre>
 
 <p>从Modules取出数据和分页信息, 放进变量 <code>$result</code> 中, 传给视图控制器的同名方法处理, 在视图控制器中整理数据, 调用模版, 赋值给布局文件中的 <code>$content</code> 变量, 生成最终的结果页面一起返回到 <code>Dispatcher</code> 中,如果有请求缓存则把结果存进缓存中, 然后通过 <code>Response-&gt;output()</code> 方法发送给用户, 下次请求的时候先检查是否有缓存, 如果有缓存并且还在缓存的有效期, 直接从缓存把结果返回给用户.</p>
-<h3>二. 不使用默认的视图控制器</h3>
+<h6>2. 使用视图控制器中指定的Action</h6>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -727,7 +721,7 @@ class User extends Controller
 </code></pre>
 
 <p>使用视图控制器提供的 <code>JSON</code> 方法,返回一个JSON结果.</p>
-<h3>三. 只返回视图控制器的内容.</h3>
+<h6>3. 不使用layer布局.</h6>
 <pre><code>class Main extends CoreController
 {
     function index()
@@ -753,8 +747,8 @@ class User extends Controller
 }
 </code></pre>
 
-<p>如果是ajax请求不输出layer的内容.</p>
-<h2>模型系统简介</h2>
+<p>如果是ajax请求不包含layer中的内容.</p>
+<h1>四. Module系统</h1>
 <pre><code>├─modules modules文件夹
 │   ├─admin
 │   ├─space
@@ -774,8 +768,7 @@ class User extends Controller
 <blockquote>
 <p>不支持不同类型数据库之间切换</p>
 </blockquote>
-<h2>创建module</h2>
-<h3>一. 连接默认数据库</h3>
+<h3>连接默认数据库</h3>
 <p>在项目的根目录下的modules文件夹中创建web文件夹, 在web文件夹下创建 <code>ApiModule.php</code> 内容如下:</p>
 <pre><code>namespace modules\web;
 
@@ -790,7 +783,7 @@ class ApiModule extends Module
 }
 </code></pre>
 
-<h3>二. 连接其他数据库</h3>
+<h3>连接指定数据库</h3>
 <p><code>parent::__construct()</code> 中的参数为要连接的数据库的配置的名称,默认连接的数据库为<code>mysql:db</code>,参数格式为:</p>
 <pre><code>数据库类型:配置名称  
 </code></pre>
@@ -813,7 +806,7 @@ class ApiModule extends Module
 <blockquote>
 <p>modules默认不建立与任何数据库系统的连接,只需覆盖默认的构造函数 或不从CoreModule继承.</p>
 </blockquote>
-<h2>MySQL查询</h2>
+<h3>MySQL查询</h3>
 <p>假设 <code>modules\web\UserModule.php</code> 中的代码如下：</p>
 <pre><code>namespace modules\web;
 
@@ -831,10 +824,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>连接数据库后, 在module的方法中就可以使用 <code>$this-&gt;link</code> 属性使用连接类提供的方法查询了,以MySql类默认提供的查询为例.</p>
-<h2>一 查询</h2>
-<ol>
-<li>
-<p>查询单条记录</p>
+<h6>查询单条记录</h6>
 <pre><code>function getUser() 
 {
     return $this-&gt;link-&gt;get($this-&gt;t_user, '*', 'score=1')
@@ -850,18 +840,14 @@ class UserModule extends Module
 }
 </code></pre>
 
-</li>
-<li>
-<p>查询多条记录</p>
+<h6>查询多条记录</h6>
 <pre><code>function getUser() 
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*');
 }
 </code></pre>
 
-</li>
-<li>
-<p>使用条件查询</p>
+<h6>条件查询</h6>
 <pre><code>function getUser() 
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*', array(
@@ -880,9 +866,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>使用like查询</p>
-</li>
-<li>
-<p>使用IN、OR查询</p>
+<h6>使用IN、OR查询</h6>
 <pre><code>function getUser()
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*', array(
@@ -901,9 +885,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>对应的sql语句为： <code>SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ?</code></p>
-</li>
-<li>
-<p>为OR中的某一项指定条件</p>
+<h6>为OR中的某一项指定条件</h6>
 <pre><code>function getUser()
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*', array(
@@ -913,9 +895,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>此时生成的sql语句为 <code>SELECT * FROM front_user WHERE id = ? OR id = ? OR id = ? OR id &gt; ?</code></p>
-</li>
-<li>
-<p>使用BETWEEN</p>
+<h6>使用BETWEEN</h6>
 <pre><code>function getUser()
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*', array(
@@ -925,9 +905,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>生成的SQL语句模板为 <code>SELECT * FROM front_user WHERE id BETWEEN 1 AND 2</code></p>
-</li>
-<li>
-<p>带分页数据的查询</p>
+<h6>带分页数据的查询</h6>
 <pre><code>function getUser(&amp; $page = array('p'=&gt;1, 'limit'=&gt;30))
 {
     $this-&gt;link-&gt;find($this-&gt;t_user, '*', array(
@@ -936,9 +914,7 @@ class UserModule extends Module
 ｝
 </code></pre>
 
-</li>
-<li>
-<p>混合使用</p>
+<h6>混合使用</h6>
 <pre><code>function getUser()
 {
     return $this-&gt;link-&gt;getAll($this-&gt;t_user, '*', array(
@@ -949,9 +925,7 @@ class UserModule extends Module
 </code></pre>
 
 <p>生成的sql语句为 <code>SELECT * FROM front_user WHERE id IN (?,?,?) AND pid = ? OR pid &gt; ?</code></p>
-</li>
-<li>
-<p>左右连接</p>
+<h6>左右连接</h6>
 <pre><code>function getUser()
 {
     return $this-&gt;link-&gt;getAll(&quot;{$this-&gt;t_user} tu LEFT JOIN front_user_base fub ON tu.id=fub.id&quot;, '*', array(
@@ -960,64 +934,63 @@ class UserModule extends Module
 }
 </code></pre>
 
-</li>
-</ol>
-<h2>二. 添加记录</h2>
+<h3>添加数据</h3>
 <p>添加单条记录</p>
-<pre><code>    function getUser()
-    {
-        $this-&gt;link-&gt;add($this-&gt;t_user, array(
-            'score' =&gt; 5,
-            'group' =&gt;  1,
-        ));
-    ｝
+<pre><code>function getUser()
+{
+    $this-&gt;link-&gt;add($this-&gt;t_user, array(
+        'score' =&gt; 5,
+        'group' =&gt;  1,
+    ));
+｝
 </code></pre>
 
 <blockquote>
 <p>如果主键是id返回id, 否则总是返回 <code>true</code></p>
 </blockquote>
-<p>批量添加 
-		function getUser()
-		{		
-			$insert_data = array();</p>
-<pre><code>        $this-&gt;link-&gt;add($this-&gt;t_user, array(
-            'fields' = array('score', 'group'),
-            'values' = array(
-                array(5, 1),    
-                array(5, 2),
-                array(5, 3),
-            )
-        ), true, $insert_data);
-    ｝
+<p>批量添加 </p>
+<pre><code>function getUser()
+{       
+    $insert_data = array();
+
+    $this-&gt;link-&gt;add($this-&gt;t_user, array(
+        'fields' = array('score', 'group'),
+        'values' = array(
+            array(5, 1),    
+            array(5, 2),
+            array(5, 3),
+        )
+    ), true, $insert_data);
+｝
 </code></pre>
 
 <blockquote>
 <p><code>insert_data</code> 返回的值为添加以后结果.</p>
 </blockquote>
-<h2>三. 删除记录</h2>
+<h3>删除记录</h3>
 <p>删除单条记录</p>
-<pre><code>    function getUser()
-    {
-        $this-&gt;link-&gt;del($this-&gt;t_user, array(
-            'id'=&gt;1
-        ));
-    ｝
+<pre><code>function getUser()
+{
+    $this-&gt;link-&gt;del($this-&gt;t_user, array(
+        'id'=&gt;1
+    ));
+｝
 </code></pre>
 
 <p>批量删除id等于1和id等于2的用户</p>
-<pre><code>    function getUser()
-    {
-        $this-&gt;link-&gt;del($this-&gt;t_user, array(
-            'fields' =&gt; array('id'),
-            'values' =&gt; array(
-                array(1),
-                array(2),
-            ),
-        ), true);
-    ｝
+<pre><code>function getUser()
+{
+    $this-&gt;link-&gt;del($this-&gt;t_user, array(
+        'fields' =&gt; array('id'),
+        'values' =&gt; array(
+            array(1),
+            array(2),
+        ),
+    ), true);
+｝
 </code></pre>
 
-<h3>四. 直接执行sql语句</h3>
+<h3>直接执行sql语句</h3>
 <p>返回单条记录</p>
 <pre><code>function getUser($sql)
 {
@@ -1035,7 +1008,7 @@ class UserModule extends Module
 <blockquote>
 <p>适用于不带参数的sql查询</p>
 </blockquote>
-<h3>五. 手动绑定参数</h3>
+<h3>手动绑定参数</h3>
 <blockquote>
 <p>$sql =  &quot;select fri.<em>, fue.</em> from ( select * from front_user where uid = ?) fri<br />
 left join front<em>user</em>extend fue on fri.id=fue.uid&quot;</p>
@@ -1043,7 +1016,7 @@ left join front<em>user</em>extend fue on fri.id=fue.uid&quot;</p>
 <pre><code>$this-&gt;link-&gt;prepare($sql)-&gt;exec(array(1))-&gt;stmt_fetch(true);
 </code></pre>
 
-<h2>视图概述</h2>
+<h1>五.视图概述</h1>
 <pre><code>├─crossboot.php  
 │
 ├─app     
@@ -1070,7 +1043,7 @@ left join front<em>user</em>extend fue on fri.id=fue.uid&quot;</p>
 <p>模板系统包含模板和布局系统,模板系统中输出的内容先包含进布局中,再输出到浏览器</p>
 </li>
 </ol>
-<h2>模板结构</h2>
+<h3>模板结构</h3>
 <p>CrossPHP默认的模板语言为PHP本身,一个app模板结构如下:</p>
 <pre><code>├─templates 模板文件夹
 │  ├─default
@@ -1095,7 +1068,7 @@ left join front<em>user</em>extend fue on fri.id=fue.uid&quot;</p>
 <li>模板命名方式为目录和控制器中的类一一对应, 模板文件和控制器中的方法对应,即模板名称/控制器名称/方法名称.</li>
 <li>布局文件放在模板文件的根目录下.</li>
 </ol>
-<h2>视图控制器</h2>
+<h3>视图控制器</h3>
 <p>视图控制器文件夹位于 <code>app\web\views</code> 目录下， 访问控制器中的类的时候，会自动去视图控制器目录下查找视图控制器文件比如<code>Main</code>控制器默认的视图控制器类名为<code>MainView</code>，文件内容如下:</p>
 <pre><code>namespace app\web\views;
 
@@ -1114,8 +1087,8 @@ class MainView extends View
 <blockquote>
 <p>ajax返回的时候,不用返回公共的layer文件内容</p>
 </blockquote>
-<h2>使用布局</h2>
-<h3>一. 基本用法</h3>
+<h3>使用布局</h3>
+<h6>1. 基本用法</h6>
 <p>在控制器中使用<code>$this-&gt;display()</code>方法,必须包含默认的布局文件default.layer.php, 一个空白的布局文件内容如下:</p>
 <pre><code>&lt;?php echo isset($content)?$content:'' ?&gt;
 </code></pre>
@@ -1151,68 +1124,59 @@ class MainView extends View
 </code></pre>
 
 <p>index方法输出的内容至布局文件中的变量<code>$content</code>,然后合并输出到浏览器.</p>
-<h3>二. 在视图控制器中控制布局的内容</h3>
-<ol>
-<li>
-<p>更改网站标题,keywords,和description</p>
-<pre><code>namespace app\web\views;
+<h6>2. 在视图控制器中控制布局的内容</h6>
+<p>a. 更改网站标题,keywords,和description</p>
+<pre><code>    namespace app\web\views;
 
-use Cross\MVC\View;
+    use Cross\MVC\View;
 
-class MainView extends View
-{
-    function index($data = array())
-    {   
-        $this-&gt;set(array(
-            'title' =&gt;  'hi',
-            'keywords'   =&gt;  'crossphp',
-            'description'   =&gt;  '轻量高效php开发框架',
-        ));
+    class MainView extends View
+    {
+        function index($data = array())
+        {   
+            $this-&gt;set(array(
+                'title' =&gt;  'hi',
+                'keywords'   =&gt;  'crossphp',
+                'description'   =&gt;  '轻量高效php开发框架',
+            ));
 
-        include $this-&gt;tpl(&quot;main/index&quot;);
+            include $this-&gt;tpl(&quot;main/index&quot;);
+        }
     }
-}
+
+布局文件中的所有变量均可以在action中,调用基类中的`$this-&gt;set()`替换.参数为一个数组,数组的key即为变量名.
 </code></pre>
 
-<p>布局文件中的所有变量均可以在action中,调用基类中的<code>$this-&gt;set()</code>替换.参数为一个数组,数组的key即为变量名.</p>
-</li>
-<li>
-<p>添加静态资源文件,如css,js等,需在layer中指定位置添加<code>$this-&gt;loadRes()</code>方法</p>
-<pre><code>namespace app\web\views;
+<p>b. 添加静态资源文件,如css,js等,需在layer中指定位置添加<code>$this-&gt;loadRes()</code>方法</p>
+<pre><code>    namespace app\web\views;
 
-use Cross\MVC\View;
+    use Cross\MVC\View;
 
-class MainView extends View
-{
-    function index($data = array())
-    {   
-        $this-&gt;addRes(&quot;css/style.css&quot;); 
-        include $this-&gt;tpl(&quot;main/index&quot;);
+    class MainView extends View
+    {
+        function index($data = array())
+        {   
+            $this-&gt;addRes(&quot;css/style.css&quot;); 
+            include $this-&gt;tpl(&quot;main/index&quot;);
+        }
     }
-}
 </code></pre>
 
-</li>
-</ol>
 <blockquote>
 <p>自定义app中的视图控制器基类的基类而不是直接继承<code>CoreView</code>,这样更灵活易扩展.</p>
 </blockquote>
-<h2>模板的使用</h2>
+<h3>模板的使用</h3>
 <p>根据使用的模板引擎选择支持的语法,这里以CrossPHP框架的原生视图为例.</p>
-<h3>一. 使用默认视图控制器中的方法.</h3>
-<ol>
-<li>
-<p>生成连接</p>
-<pre><code>$this-&gt;link(&quot;controller:action&quot;, array('key'=&gt;'value'));
+<h6>1. 使用默认视图控制器中的方法.</h6>
+<p>a. 生成连接</p>
+<pre><code>$this-&gt;link(&quot;controller:action&quot;, array('key'=&gt;'value'));    
 </code></pre>
 
 <blockquote>
 <p>生成后的url中的连接由模块配置文件init.php中的url中type和dot控制  
 </p>
 </blockquote>
-</li>
-<li>
-<p>生成加密连接</p>
+<p>b. 生成加密连接</p>
 <pre><code>$this-&gt;slink(&quot;controller:action&quot;, array('key'=&gt;'value'));
 </code></pre>
 
@@ -1220,19 +1184,14 @@ class MainView extends View
 <blockquote>
 <p>在控制器中调用 <code>$this-&gt;sparams()</code> 来还原加密前的参数</p>
 </blockquote>
-</li>
-<li>
-<p>包含其他模板文件</p>
+<p>c. 包含其他模板文件</p>
 <pre><code>$this-&gt;tpl(&quot;page/p1&quot;);
 </code></pre>
 
 <blockquote>
 <p>引入page目录下的p1.tpl.php文件</p>
 </blockquote>
-</li>
-</ol>
-<h3>二. 在对应的视图控制器中的扩展</h3>
-<p>如</p>
+<h5>2. 在视图控制器中扩展</h5>
 <pre><code>private function threadList( $data = array() )
 {
     foreach($data as $d)
@@ -1250,7 +1209,7 @@ class MainView extends View
 <blockquote>
 <p>重复使用的,公共的的tpl可以放在app视图控制器自定义的基类中,保持模板代码的整洁</p>
 </blockquote>
-<h2>使用第三方model</h2>
+<h1>六. 使用第三方Model</h1>
 <p>以使用<a href="http://medoo.in/" title="medoo">http://medoo.in/</a>为例，先下载medoo.min.php文件到lib目录， 使用Loader类中的import方法载入该类， 在控制器中重新指定<code>TestModule</code>的link属性为Medoo类的实例，然后就可以在action中调用<code>$this-&gt;link</code>来使用medoo提供的接口了。</p>
 <pre><code>namespace modules\web;
 
@@ -1285,8 +1244,8 @@ class TestModule extends Module
 </code></pre>
 
 <p>使用其他第三方model类似</p>
-<h2>扩展模板系统</h2>
-<h3>一. 使用第三方PHP模版系统</h3>
+<h1>七.扩展模板系统</h1>
+<h3>使用第三方PHP模版系统</h3>
 <p>以添加Smarty为例,从<a href="http://www.smarty.net/download" title="http://www.smarty.net/download">http://www.smarty.net/download</a>下载你熟悉的smarty版本到项目根目录的lib中,本例以Smarty-3.1.17为例,新建一个SmartyView控制器继在你的视图控制器目录,使之承至CoreView类</p>
 <ol>
 <li>
@@ -1332,7 +1291,7 @@ class SmartyView extends View
 
 </li>
 </ol>
-<h3>二. 使用JS模板引擎</h3>
+<h3>使用JS模板引擎</h3>
 <p>以添加artTemplate模板引擎为例, 从<a href="https://github.com/aui/artTemplate" title="https://github.com/aui/artTemplate">https://github.com/aui/artTemplate</a>下载最新版本,放在htdocs/static/lib目录下.</p>
 <ol>
 <li>
@@ -1378,8 +1337,8 @@ class MainView extends View
 <blockquote>
 <p>以上两种方式都保留了CrossPHP视图的layer功能.</p>
 </blockquote>
-<h2>与第三方程序交互</h2>
-<h3>一. Yar</h3>
+<h1>八.与第三方程序交互</h1>
+<h3>Yar</h3>
 <pre><code>require '../../crossboot.php';
 
 $conf = array(
@@ -1394,7 +1353,7 @@ $service = new Yar_Server( Cross::loadApp( 'api', $conf ) );
 $service-&gt;handle();
 </code></pre>
 
-<h3>二. ZMQ</h3>
+<h3>ZMQ</h3>
 <pre><code>require '../../crossboot.php';
 
 $conf = array(
@@ -1445,6 +1404,7 @@ while (true) {
 }
 </code></pre>
 
+<p>更多使用方法请在使用中去发现,如有疑问请加QQ群:120801063</p>
 
 </body>
 </html>
