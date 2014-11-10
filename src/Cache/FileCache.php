@@ -96,6 +96,6 @@ class FileCache implements CacheInterface
             }
         }
 
-        file_put_contents($key, $value);
+        file_put_contents($key, $value, LOCK_EX);
     }
 }
