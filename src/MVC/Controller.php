@@ -10,7 +10,6 @@ namespace Cross\MVC;
 
 use Cross\Core\FrameBase;
 use Cross\Core\Response;
-use stdClass;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -19,8 +18,6 @@ use stdClass;
  */
 class Controller extends FrameBase
 {
-    protected $args;
-
     /**
      * 判断一个链接是否为post请求
      *
@@ -62,35 +59,6 @@ class Controller extends FrameBase
     protected function is_ajax_request()
     {
         return $this->request->isAjaxRequest();
-    }
-
-    /**
-     * 取得通过POST传递的参数
-     *
-     * @param bool $p
-     * @return array|bool
-     */
-    protected function getArgs($p = false)
-    {
-        if ($p) {
-            var_dump($_POST);
-
-            return true;
-        }
-
-        $args = array();
-        if (count($_POST) > 0) {
-            foreach ($_POST as $k => $v) {
-                if (!empty($v) && is_string($v)) {
-                    $args[$k] = addslashes(trim($v));
-                } else {
-                    $args[$k] = $v;
-                }
-            }
-        }
-        unset($_POST);
-
-        return $args;
     }
 
     /**
@@ -168,16 +136,6 @@ class Controller extends FrameBase
     }
 
     /**
-     * 设置参数
-     *
-     * @param $debug
-     */
-    protected function setArgs($debug)
-    {
-        $this->args = $this->getArgs($debug);
-    }
-
-    /**
      * 重设视图action名称
      *
      * @param $action_name
@@ -187,59 +145,5 @@ class Controller extends FrameBase
     {
         $this->view->action = $action_name;
         return $this;
-    }
-
-    /**
-     * 来自app的参数
-     *
-     * @param bool $obj
-     * @return stdClass
-     */
-    protected function args($obj = false)
-    {
-        if ($obj) {
-            $obj = new stdClass();
-            foreach ($this->args as $k => $value) {
-                $obj->{$k} = $value;
-            }
-
-            return $obj;
-        }
-
-        return $this->args;
-    }
-
-    /**
-     * $_GET
-     * @return mixed
-     */
-    protected function _GET()
-    {
-        return $_GET;
-    }
-
-    /**
-     * $_POST
-     * @param bool $debug
-     * @return bool
-     */
-    protected function _POST($debug = false)
-    {
-        if ($this->is_post()) {
-            $this->setArgs($debug);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * $_FILE
-     * @return mixed
-     */
-    protected function _FILE()
-    {
-        return $_FILES;
     }
 }
