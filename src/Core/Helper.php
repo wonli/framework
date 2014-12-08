@@ -424,6 +424,7 @@ class Helper
      */
     static function arrayRandomRate(array $array)
     {
+        asort($array);
         $max = array_sum($array);
         foreach ($array as $a_key => $a_value) {
             $rand = mt_rand(0, $max);
