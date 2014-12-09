@@ -23,6 +23,7 @@ class CacheException extends CrossException
         $cp_error = $this->cpExceptionSource($e);
         $code = $e->getCode() ? $e->getCode() : 200;
 
-        return Response::getInstance()->setResponseStatus($code)->display($cp_error, CP_PATH . 'exception/_tpl/front_error.php');
+        return Response::getInstance()->setResponseStatus($code)
+            ->display($cp_error, __DIR__ . '/_tpl/front_error.tpl.php');
     }
 }

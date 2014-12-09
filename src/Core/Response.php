@@ -239,7 +239,7 @@ class Response
      *
      * @param string $message
      * @param string $tpl
-     * @return bool
+     * @return string
      */
     function display($message = '', $tpl = '')
     {
@@ -261,7 +261,7 @@ class Response
             var_export($message, true);
         }
 
-        return true;
+        return '';
     }
 
     /**
