@@ -49,13 +49,6 @@ class Module extends FrameBase
     protected static $link_config;
 
     /**
-     * 缓存文件
-     *
-     * @var object
-     */
-    protected static $cache_file;
-
-    /**
      * 实例化module
      *
      * @param null $params 指定数据库配置
@@ -69,26 +62,22 @@ class Module extends FrameBase
     /**
      * 连接数据库
      *
-     * @param null $params
+     * @param string $params
      * @return \cross\model\MysqlModel|\cross\model\MongoModel|\cross\model\CouchModel|\cross\cache\RedisCache|mixed
      * @throws \cross\exception\CoreException
      */
-    function getLink($params = null)
+    function getLink($params = "")
     {
-        $db_config = $this->linkConfig();
-        $controller_config = null;
-
         if ($params) {
             list($link_type, $link_config) = explode(":", $params);
-            $link_params = $db_config->get($link_type, $link_config);
+            $link_params = $this->linkConfig()->get($link_type, $link_config);
 
             if (empty($link_params)) {
                 throw new CoreException("未配置的数据库: {$link_type}:{$link_config}");
             }
         } else {
-            if ($db_config->get("mysql", "db")) {
+            if ($link_params = $this->linkConfig()->get("mysql", "db")) {
                 $link_type = 'mysql';
-                $link_params = $db_config->get("mysql", "db");
             } else {
                 throw new CoreException("未找到数据库默认配置");
             }
@@ -139,38 +128,5 @@ class Module extends FrameBase
         }
 
         return $this->db_config_file;
-    }
-
-    /**
-     * 取缓存key
-     *
-     * @param $key_name
-     * @param null $key_value
-     * @throws FrontException
-     * @return mixed
-     */
-    static function cache_key($key_name, $key_value = null)
-    {
-        if (!self::$cache_file) {
-            self::$cache_file = Loader::read("::config/cachekey.php");
-        }
-        $cache_key_object = CrossArray::init(self::$cache_file);
-
-        if (is_array($key_name)) {
-            list($key_name, $child_name) = $key_name;
-            $cache_key = $cache_key_object->get($key_name, $child_name);
-        } else {
-            $cache_key = $cache_key_object->get($key_name);
-        }
-
-        if (!empty($cache_key)) {
-            if (null !== $key_value) {
-                return "{$cache_key}:{$key_value}";
-            }
-
-            return $cache_key;
-        } else {
-            throw new FrontException("缓存key {$key_name} 未定义");
-        }
     }
 }
