@@ -34,14 +34,7 @@ class View extends FrameBase
      *
      * @var array
      */
-    protected $set;
-
-    /**
-     * url配置
-     *
-     * @var array
-     */
-    protected $url_config;
+    protected $set = array();
 
     /**
      * 资源配置
@@ -58,6 +51,20 @@ class View extends FrameBase
     protected $tpl_dir;
 
     /**
+     * 模版文件夹路径
+     *
+     * @var string
+     */
+    protected static $tpl_path;
+
+    /**
+     * url 配置
+     *
+     * @var array
+     */
+    protected static $url_config;
+
+    /**
      * 默认模板路径
      *
      * @var string
@@ -72,13 +79,6 @@ class View extends FrameBase
     protected $link_base = null;
 
     /**
-     * 静态资源路径
-     *
-     * @var string
-     */
-    protected $static_url;
-
-    /**
      * 模版扩展文件名
      *
      * @var string
@@ -91,19 +91,6 @@ class View extends FrameBase
      * @var array
      */
     protected static $router_alias = array();
-
-    /**
-     * 初始化视图
-     */
-    function __construct()
-    {
-        parent::__construct();
-
-        $this->url_config = $this->config->get("url");
-        $this->static_url = $this->config->get("sys", "static_url");
-
-        $this->set("static_url", $this->static_url);
-    }
 
     /**
      * 模板的绝对路径
@@ -163,12 +150,12 @@ class View extends FrameBase
         if (defined('RES_BASE_URL')) {
             $res_base_url = RES_BASE_URL;
         } elseif ($use_static_url) {
-            $res_base_url = $this->static_url;
+            $res_base_url = $this->config->get('sys', 'static_url');
         } else {
             $res_base_url = SITE_URL;
         }
 
-        return rtrim($res_base_url, "/") . '/' . $res_url;
+        return rtrim($res_base_url, '/') . '/' . $res_url;
     }
 
     /**
@@ -179,7 +166,7 @@ class View extends FrameBase
     function getLinkBase()
     {
         if (null === $this->link_base) {
-            $this->setLinkBase($this->config->get("sys", "site_url"));
+            $this->setLinkBase($this->config->get('sys', 'site_url'));
         }
 
         return $this->link_base;
@@ -202,7 +189,10 @@ class View extends FrameBase
      */
     function getTplPath()
     {
-        return rtrim($this->getTplBasePath() . $this->getTplDir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if (! self::$tpl_path) {
+            self::$tpl_path = $this->getTplBasePath() . $this->getTplDir();
+        }
+        return self::$tpl_path;
     }
 
     /**
@@ -255,27 +245,31 @@ class View extends FrameBase
     function link($controller = null, $params = null, $sec = false)
     {
         $url = $this->getLinkBase();
-        $_url_ext = $this->url_config['ext'];
+
         $url_controller = '';
+        if (! self::$url_config) {
+            self::$url_config = $this->config->get('url');
+        }
+
         if ($controller) {
-            $url_controller = $this->makeController($controller);
+            $url_controller = $this->makeController($controller, self::$url_config);
         }
 
         $url_params = '';
         if ($params != null) {
-            $url_params = $this->makeParams($params, $sec);
+            $url_params = $this->makeParams($params, self::$url_config, $sec);
         }
 
-        if ($_url_ext) {
-            switch($this->url_config['type'])
+        if (! empty($url_config['ext'])) {
+            switch($url_config['type'])
             {
                 case 2:
-                    $url .= $url_controller.$_url_ext.$url_params;
+                    $url .= $url_controller.self::$url_config['ext'].$url_params;
                     break;
                 case 1:
                 case 3:
                 case 4:
-                    $url .= $url_controller.$url_params.$_url_ext;
+                    $url .= $url_controller.$url_params.self::$url_config['ext'];
                     break;
             }
         } else {
@@ -300,47 +294,105 @@ class View extends FrameBase
     /**
      * 生成控制器连接
      *
-     * @param $controller
+     * @param string $controller
+     * @param array $url_config
      * @throws \Cross\Exception\CoreException
      * @return string
      */
-    private function makeController($controller)
+    private function makeController($controller, $url_config)
     {
         $_link_url = '/';
         $this->getControllerAlias($controller, $_controller, $_action);
 
-        if ($this->url_config ['rewrite']) {
+        if ($url_config ['rewrite']) {
             $_link_url .= $_controller;
         } else {
-            $index = $this->url_config ['index'];
-
-            switch ($this->url_config['type']) {
+            $index_file_name = $url_config ['index'];
+            switch ($url_config['type']) {
                 case 1:
                 case 3:
-                    if (strcasecmp($index, 'index.php') == 0) {
-                        $_dot = '?';
+                    if (strcasecmp($index_file_name, 'index.php') == 0) {
+                        $_dot = '?/';
                     } else {
-                        $_dot = $index . '?';
+                        $_dot = $index_file_name . '?';
                     }
                     break;
 
                 case 2:
                 case 4:
-                    $_dot = $index;
+                    $_dot = $index_file_name . '/';
                     break;
 
                 default:
                     throw new CoreException('不支持的url type');
             }
 
-            $_link_url .= $_dot . '/' . $_controller;
+            $_link_url .= $_dot . $_controller;
         }
 
         if (null != $_action) {
-            $_link_url .= $this->url_config['dot'] . $_action;
+            $_link_url .= $url_config['dot'] . $_action;
         }
 
         return $_link_url;
+    }
+
+    /**
+     * 生成link参数
+     *
+     * @param array|string $params
+     * @param array $url_config
+     * @param bool $sec
+     * @return string
+     */
+    private function makeParams($params, $url_config, $sec = false)
+    {
+        $_params = '';
+        $_dot = $url_config['dot'];
+
+        if ($params) {
+            switch ($url_config['type']) {
+                case 1:
+                    if (is_array($params)) {
+                        $_params = implode($_dot, $params);
+                    } else {
+                        $url_str = array();
+                        parse_str($params, $url_str);
+                        $_params = implode($_dot, $url_str);
+                    }
+                    break;
+
+                case 2:
+                    $_dot = '?';
+                    if (is_array($params)) {
+                        $_params = http_build_query($params);
+                    } else {
+                        $_params = $params;
+                    }
+                    break;
+
+                case 3:
+                case 4:
+                    if (!is_array($params)) {
+                        $p = array();
+                        parse_str($params, $p);
+                    } else {
+                        $p = $params;
+                    }
+
+                    foreach ($p as $p_key => $p_val) {
+                        $_params .= $p_key.$_dot.$p_val.$_dot;
+                    }
+                    $_params = rtrim($_params, $_dot);
+                    break;
+            }
+
+            if (true === $sec) {
+                $_params = $this->urlEncrypt($_params);
+            }
+        }
+
+        return $_dot . $_params;
     }
 
     /**
@@ -394,63 +446,6 @@ class View extends FrameBase
         }
 
         return self::$router_alias;
-    }
-
-    /**
-     * 生成link参数
-     *
-     * @param $params
-     * @param bool $sec
-     * @return string
-     */
-    private function makeParams($params, $sec = false)
-    {
-        $_params = '';
-        $_dot = $this->url_config['dot'];
-
-        if ($params) {
-            switch ($this->url_config['type']) {
-                case 1:
-                    if (is_array($params)) {
-                        $_params = implode($this->url_config['dot'], $params);
-                    } else {
-                        $url_str = array();
-                        parse_str($params, $url_str);
-                        $_params = implode($this->url_config['dot'], $url_str);
-                    }
-                    break;
-
-                case 2:
-                    $_dot = '?';
-                    if (is_array($params)) {
-                        $_params = http_build_query($params);
-                    } else {
-                        $_params = $params;
-                    }
-                    break;
-
-                case 3:
-                case 4:
-                    if (!is_array($params)) {
-                        $p = array();
-                        parse_str($params, $p);
-                    } else {
-                        $p = $params;
-                    }
-
-                    foreach ($p as $p_key => $p_val) {
-                        $_params .= sprintf("%s%s%s%s", $p_key, $this->url_config['dot'], $p_val, $this->url_config['dot']);
-                    }
-                    $_params = rtrim($_params, $this->url_config['dot']);
-                    break;
-            }
-
-            if (true === $sec) {
-                $_params = $this->urlEncrypt($_params);
-            }
-        }
-
-        return $_dot . $_params;
     }
 
     /**
@@ -510,19 +505,21 @@ class View extends FrameBase
     {
         if (!$this->tpl_dir) {
             $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
-            if (!$default_tpl_dir) {
+            if ($default_tpl_dir) {
+                $default_tpl_dir = rtrim($default_tpl_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            } else {
                 $default_tpl_dir = 'default';
             }
 
-            $this->setTplDir($default_tpl_dir);
-        }
-
-        if ($this->config->get('sys', 'auto_switch_tpl')) {
-            if ($this->is_robot()) {
-                return 'spider';
-            } elseif ($this->is_mobile()) {
-                return 'mobile';
+            if ($this->config->get('sys', 'auto_switch_tpl')) {
+                if ($this->is_spider()) {
+                    $default_tpl_dir = 'spider';
+                } elseif ($this->is_mobile()) {
+                    $default_tpl_dir = 'mobile';
+                }
             }
+
+            $this->setTplDir($default_tpl_dir);
         }
 
         return $this->tpl_dir;
@@ -533,7 +530,7 @@ class View extends FrameBase
      *
      * @return bool
      */
-    function is_robot()
+    function is_spider()
     {
         $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
         if (!empty($agent)) {
