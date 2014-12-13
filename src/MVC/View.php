@@ -76,7 +76,7 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $link_base = null;
+    protected $link_base = '';
 
     /**
      * 模版扩展文件名
@@ -165,7 +165,7 @@ class View extends FrameBase
      */
     function getLinkBase()
     {
-        if (null === $this->link_base) {
+        if ('' === $this->link_base) {
             $this->setLinkBase($this->config->get('sys', 'site_url'));
         }
 
