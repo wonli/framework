@@ -3,7 +3,7 @@ namespace Cross\Lib\Other;
 
 class Crumb
 {
-    CONST SALT = "!@c#r$!o>s<s&*";
+    CONST SALT = '!@c#r$!o>s<s&*';
     static $ttl = 1800; //过期时间
 
     static public function oath_hotp($data)

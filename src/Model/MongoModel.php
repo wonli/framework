@@ -40,7 +40,7 @@ class MongoModel
             $this->db = $m->$link_params['db'];
         }
         else {
-            throw new CoreException("please use PCEL MongoDB extends");
+            throw new CoreException('please use PCEL MongoDB extends');
         }
     }
 

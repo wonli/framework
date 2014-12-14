@@ -62,7 +62,7 @@ class MysqlModel
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
     );
 
     /**
@@ -281,7 +281,7 @@ class MysqlModel
      */
     public function stmtFetch($_fetchAll = false, $result_type = PDO::FETCH_ASSOC)
     {
-        if (!$this->stmt) throw new CoreException("stmt init failed!");
+        if (!$this->stmt) throw new CoreException('stmt init failed!');
         if (true === $_fetchAll) {
             return $this->stmt->fetchAll($result_type);
         }
@@ -338,15 +338,15 @@ class MysqlModel
             $inc_name = $this->getAutoIncrementName($table);
 
             if (empty($data ['fields']) || empty($data ['values'])) {
-                throw new FrontException("data format error!");
+                throw new FrontException('data format error!');
             }
 
             foreach ($data ['fields'] as $d) {
                 $field .= "{$d},";
-                $value .= "?,";
+                $value .= '?,';
             }
 
-            $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
+            $this->sql = sprintf($insert_sql, rtrim($field, ','), rtrim($value, ','));
             $stmt = $this->prepare($this->sql);
 
             foreach ($data ['values'] as $data_array) {
@@ -365,11 +365,11 @@ class MysqlModel
             $params = array();
             foreach ($data as $_field => $_value) {
                 $field .= "{$_field},";
-                $value .= "?,";
+                $value .= '?,';
                 $params[] = $_value;
             }
 
-            $this->sql = sprintf($insert_sql, rtrim($field, ","), rtrim($value, ","));
+            $this->sql = sprintf($insert_sql, rtrim($field, ','), rtrim($value, ','));
             $stmt = $this->prepare($this->sql);
             $id = $stmt->exec($params)->insertId();
 
@@ -488,7 +488,7 @@ class MysqlModel
             $params [] = $wp;
         }
 
-        $this->sql = sprintf($up_sql, trim($field, ","), $where_str);
+        $this->sql = sprintf($up_sql, trim($field, ','), $where_str);
         $this->prepare($this->sql)->exec($params);
 
         return true;
@@ -515,7 +515,7 @@ class MysqlModel
 
         if (true === $multi) {
             if (empty($where ['fields']) || empty($where ['values'])) {
-                throw new FrontException("data format error!");
+                throw new FrontException('data format error!');
             }
 
             $where_condition = array();
@@ -523,7 +523,7 @@ class MysqlModel
                 $where_condition[] = "{$d} = ?";
             }
 
-            $where_str = implode(" AND ", $where_condition);
+            $where_str = implode(' AND ', $where_condition);
             $this->sql = sprintf($del_sql, $table, $where_str);
 
             $stmt = $this->prepare($this->sql);
@@ -556,7 +556,7 @@ class MysqlModel
             $field_str = '*';
         } else {
             if (is_array($fields)) {
-                $field_str = implode(",", $fields);
+                $field_str = implode(',', $fields);
             }
             else {
                 $field_str = $fields;
@@ -666,7 +666,7 @@ class MysqlModel
     {
         if (!empty($order)) {
             if (is_array($order)) {
-                $order_str = implode(",", $order);
+                $order_str = implode(',', $order);
             }
             else {
                 $order_str = $order;

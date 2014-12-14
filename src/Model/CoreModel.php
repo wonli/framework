@@ -34,7 +34,7 @@ class CoreModel
                     $dsn = "mysql:host={$link_params['host']};dbname={$link_params['name']};port={$port};charset={$char_set}";
                 }
 
-                return MysqlModel::getInstance($dsn, $link_params["user"], $link_params["pass"], $options);
+                return MysqlModel::getInstance($dsn, $link_params['user'], $link_params['pass'], $options);
 
             case 'mongo':
                 return new MongoModel($link_params);
@@ -46,7 +46,7 @@ class CoreModel
                 return new CouchModel($link_params);
 
             default:
-                throw new CoreException("不支持的数据库扩展!");
+                throw new CoreException('不支持的数据库扩展!');
         }
     }
 }

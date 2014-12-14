@@ -137,7 +137,7 @@ class Helper
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
             if ($add_valid_expr) {
-                list($valid_string,) = explode("@", $email);
+                list($valid_string,) = explode('@', $email);
                 if (!preg_match($add_valid_expr, $valid_string)) {
                     return false;
                 }
@@ -193,9 +193,9 @@ class Helper
      * @param string $disallowable
      * @return mixed
      */
-    static function stripSelectedTags($str, $disallowable = "<script><iframe><style><link>")
+    static function stripSelectedTags($str, $disallowable = '<script><iframe><style><link>')
     {
-        $disallowable = trim(str_replace(array(">", "<"), array("", "|"), $disallowable), '|');
+        $disallowable = trim(str_replace(array('>', '<'), array('', '|'), $disallowable), '|');
         $str = str_replace(array('&lt;', '&gt;'), array('<', '>'), $str);
         $str = preg_replace("~<({$disallowable})[^>]*>(.*?<\s*\/(\\1)[^>]*>)?~is", '$2', $str);
 
@@ -302,9 +302,9 @@ class Helper
      * @param string $operation
      * @return bool|string
      */
-    static function encodeParams($str, $key, $operation = "encode")
+    static function encodeParams($str, $key, $operation = 'encode')
     {
-        if ($operation == "encode") {
+        if ($operation == 'encode') {
             $str = (string) $str;
         } else {
             $verity_str = substr($str, 0, 3);
@@ -320,13 +320,13 @@ class Helper
         $rand_key = md5($key);
         $str_len = strlen($str);
 
-        $result_str = "";
+        $result_str = '';
         for ($i = 0; $i < $str_len; $i++) {
             $result_str .= chr(ord($str[$i]) ^ ord($rand_key[$i % 32]));
         }
 
-        if ($operation == "encode") {
-            $result_str = trim(base64_encode($result_str), "==");
+        if ($operation == 'encode') {
+            $result_str = trim(base64_encode($result_str), '==');
             $result_str = substr(md5($result_str), 0, 3) . $result_str;
         }
 
@@ -523,9 +523,9 @@ class Helper
      * @param string $ip
      * @return string
      */
-    static function getLongIp($ip = "")
+    static function getLongIp($ip = '')
     {
-        if ($ip == "") {
+        if ($ip == '') {
             $ip = self::getIp();
         }
 

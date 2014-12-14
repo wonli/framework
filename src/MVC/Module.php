@@ -66,20 +66,20 @@ class Module extends FrameBase
      * @return \cross\model\MysqlModel|\cross\model\MongoModel|\cross\model\CouchModel|\cross\cache\RedisCache|mixed
      * @throws \cross\exception\CoreException
      */
-    function getLink($params = "")
+    function getLink($params = '')
     {
         if ($params) {
-            list($link_type, $link_config) = explode(":", $params);
+            list($link_type, $link_config) = explode(':', $params);
             $link_params = $this->linkConfig()->get($link_type, $link_config);
 
             if (empty($link_params)) {
                 throw new CoreException("未配置的数据库: {$link_type}:{$link_config}");
             }
         } else {
-            if ($link_params = $this->linkConfig()->get("mysql", "db")) {
+            if ($link_params = $this->linkConfig()->get('mysql', 'db')) {
                 $link_type = 'mysql';
             } else {
-                throw new CoreException("未找到数据库默认配置");
+                throw new CoreException('未找到数据库默认配置');
             }
         }
 

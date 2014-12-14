@@ -45,7 +45,7 @@ class Router implements RouterInterface
      *
      * @var string
      */
-    public static $default_action = "index";
+    public static $default_action = 'index';
 
     /**
      * @var array;
@@ -118,7 +118,7 @@ class Router implements RouterInterface
      */
     function initParams()
     {
-        $url_config = $this->config->get("url");
+        $url_config = $this->config->get('url');
         switch ($url_config ['type']) {
             case 1:
             case 3:
@@ -161,19 +161,19 @@ class Router implements RouterInterface
             unset($add_params[$_query_string]);
         }
 
-        $_query_string = trim(trim($_query_string, "/"), $url_config['dot']);
+        $_query_string = trim(trim($_query_string, '/'), $url_config['dot']);
         $router_params = array();
 
         if (!$_query_string) {
             return $router_params;
         }
 
-        $_url_ext = $url_config["ext"];
+        $_url_ext = $url_config['ext'];
         if (isset($_url_ext[1]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0) {
             if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len))) {
                 $_query_string = substr($_query_string, 0, -$_url_ext_len);
             } else {
-                throw new FrontException("Page not found !");
+                throw new FrontException('Page not found !');
             }
         }
 
@@ -200,26 +200,26 @@ class Router implements RouterInterface
     private function getDefaultRouter($init_default)
     {
         if ($init_default) {
-            list($_defController, $_defAction) = explode(":", $init_default);
+            list($_defController, $_defAction) = explode(':', $init_default);
             $_defaultRouter = array();
 
             if (isset($_defController)) {
                 $_defaultRouter['controller'] = $_defController;
             } else {
-                throw new CoreException("please define the default controller in the APP_PATH/APP_NAME/init.php file!");
+                throw new CoreException('please define the default controller in the APP_PATH/APP_NAME/init.php file!');
             }
 
             if (isset($_defAction)) {
                 $_defaultRouter['action'] = $_defAction;
             } else {
-                throw new CoreException("please define the default action in the APP_PATH/APP_NAME/init.php file!");
+                throw new CoreException('please define the default action in the APP_PATH/APP_NAME/init.php file!');
             }
 
             $_defaultRouter['params'] = $_REQUEST;
 
             return $_defaultRouter;
         } else {
-            throw new CoreException("undefined default router!");
+            throw new CoreException('undefined default router!');
         }
     }
 
@@ -233,7 +233,7 @@ class Router implements RouterInterface
     {
         $_router = $this->get_router_params();
         if (empty($_router)) {
-            $_defaultRouter = $this->getDefaultRouter($this->config->get("url", "*"));
+            $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
 
             $this->setController($_defaultRouter['controller']);
             $this->setAction($_defaultRouter['action']);
@@ -254,7 +254,7 @@ class Router implements RouterInterface
     function setRouter($request)
     {
         //router配置
-        $router_config = $this->config->get("router");
+        $router_config = $this->config->get('router');
         $_controller = $request [0];
         $this->config->set('url', array('ori_controller' => $_controller));
         array_shift($request);
@@ -268,8 +268,8 @@ class Router implements RouterInterface
                     array_shift($request);
 
                     if (isset($controller_alias [$_action])) {
-                        if (false !== strpos($controller_alias [$_action], ":")) {
-                            $controller_alias_ = explode(":", $controller_alias [$_action]);
+                        if (false !== strpos($controller_alias [$_action], ':')) {
+                            $controller_alias_ = explode(':', $controller_alias [$_action]);
                             $_action = $controller_alias_[0];
                             array_shift($controller_alias_);
                             $alias_params = $controller_alias_;
@@ -281,8 +281,8 @@ class Router implements RouterInterface
                     $_action = self::$default_action;
                 }
             } else {
-                if (false !== strpos($controller_alias, ":")) {
-                    $_user_alias = explode(":", $controller_alias);
+                if (false !== strpos($controller_alias, ':')) {
+                    $_user_alias = explode(':', $controller_alias);
                     $_controller = $_user_alias [0];
                     array_shift($_user_alias);
 

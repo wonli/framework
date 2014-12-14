@@ -125,7 +125,7 @@ class ImageThumb
     function thumb($interlace = true, $return_full_path = false)
     {
         if (!$this->save_dir || !$this->src_images) {
-            throw new CoreException("请设置文件路径和文件名");
+            throw new CoreException('请设置文件路径和文件名');
         }
 
         // 获取原图信息
@@ -162,7 +162,7 @@ class ImageThumb
         }
 
         // 复制图片
-        if (function_exists("imagecopyresampled")) {
+        if (function_exists('imagecopyresampled')) {
             imagecopyresampled($thumb_images, $src_images, 0, 0, 0, 0, $width, $height, $src_width, $src_height);
         } else {
             imagecopyresized($thumb_images, $src_images, 0, 0, 0, 0, $width, $height, $src_width, $src_height);

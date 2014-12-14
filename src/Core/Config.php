@@ -77,7 +77,7 @@ class Config
      * @param string $file
      * @return Config
      */
-    static function load($file = "init.php")
+    static function load($file = 'init.php')
     {
         if (!isset(self::$instance)) {
             self::$instance = new Config($file);

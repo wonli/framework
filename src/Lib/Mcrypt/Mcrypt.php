@@ -48,7 +48,7 @@ class Mcrypt extends DEcode
      *
      * @var string
      */
-    private $default_key = "corssphp(*)9<>@$12v";
+    private $default_key = 'corssphp(*)9<>@$12v';
 
     /**
      * @var string

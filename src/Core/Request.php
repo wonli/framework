@@ -150,7 +150,7 @@ class Request
      */
     public function getScriptName()
     {
-        $s = explode("/", $this->_SERVER('SCRIPT_NAME'));
+        $s = explode('/', $this->_SERVER('SCRIPT_NAME'));
         return end($s);
     }
 
@@ -200,7 +200,7 @@ class Request
             return 'cli';
         }
 
-        $http = $this->_SERVER("HTTPS") == 'on' ? 'https' : 'http';
+        $http = $this->_SERVER('HTTPS') == 'on' ? 'https' : 'http';
         if (($httpHost = $this->_SERVER('HTTP_HOST')) != null) {
             $this->_hostInfo = $http . '://' . $httpHost;
         } elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null) {
@@ -212,7 +212,7 @@ class Request
             throw new FrontException('determine the entry script URL failed!!');
         }
 
-        return "";
+        return '';
     }
 
     /**
@@ -222,7 +222,7 @@ class Request
      */
     public function getServerPort()
     {
-        $_default = $this->_SERVER("HTTPS") == 'on' ? 443 : 80;
+        $_default = $this->_SERVER('HTTPS') == 'on' ? 443 : 80;
 
         return $_default;
     }

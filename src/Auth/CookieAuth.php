@@ -28,7 +28,7 @@ class CookieAuth implements HttpAuthInterface
      *
      * @var string
      */
-    private $default_key = "!wl<@>c(r#%o*s&s";
+    private $default_key = '!wl<@>c(r#%o*s&s';
 
     /**
      * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
@@ -86,15 +86,15 @@ class CookieAuth implements HttpAuthInterface
             $params = json_encode($params);
         }
 
-        $str = Helper::authCode($params, "ENCODE", $key);
+        $str = Helper::authCode($params, 'ENCODE', $key);
         $expire_time = time() + $exp;
 
         $cookie_domain = null;
-        if (defined("COOKIE_DOMAIN")) {
+        if (defined('COOKIE_DOMAIN')) {
             $cookie_domain = COOKIE_DOMAIN;
         }
 
-        if (setcookie($name, $str, $expire_time, "/", $cookie_domain, null, true)) {
+        if (setcookie($name, $str, $expire_time, '/', $cookie_domain, null, true)) {
             return true;
         }
 
@@ -111,8 +111,8 @@ class CookieAuth implements HttpAuthInterface
     function get($params, $de = false)
     {
         $de_json = false;
-        if (false !== strpos($params, ":")) {
-            list($v_key, $c_key) = explode(":", $params);
+        if (false !== strpos($params, ':')) {
+            list($v_key, $c_key) = explode(':', $params);
             $de_json = true;
         } else {
             $v_key = $params;
@@ -125,7 +125,7 @@ class CookieAuth implements HttpAuthInterface
         }
 
         $key = $this->cookieKey($v_key);
-        $result = Helper::authCode($str, "DECODE", $key);
+        $result = Helper::authCode($str, 'DECODE', $key);
 
         if (!$result) {
             return false;

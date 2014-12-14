@@ -88,7 +88,7 @@ class Captcha
      * @param string $code
      * @param string $fontFamily
      */
-    public function setCheckCode($code, $fontFamily = "")
+    public function setCheckCode($code, $fontFamily = '')
     {
         $this->checkCode = $code;
         $this->fontFamily = $fontFamily;
@@ -106,12 +106,12 @@ class Captcha
             $ret = array();
             $this->num = Helper::strLen($this->checkCode);
             for ($i = 0; $i < $this->num; $i++) {
-                $ret[] = mb_substr($this->checkCode, $i, 1, "UTF-8");
+                $ret[] = mb_substr($this->checkCode, $i, 1, 'UTF-8');
             }
 
             return $ret;
         } else {
-            throw new CoreException("error captcha code!");
+            throw new CoreException('error captcha code!');
         }
     }
 

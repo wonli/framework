@@ -33,7 +33,7 @@ class CoreCache
      */
     static function factory($cache_config)
     {
-        switch ($cache_config["type"]) {
+        switch ($cache_config['type']) {
             case 1:
                 return new FileCache($cache_config);
 
@@ -44,7 +44,7 @@ class CoreCache
                 return new RedisCache($cache_config);
 
             default :
-                throw new CoreException("不支持的缓存");
+                throw new CoreException('不支持的缓存');
         }
     }
 }

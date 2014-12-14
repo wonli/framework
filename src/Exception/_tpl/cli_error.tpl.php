@@ -17,7 +17,7 @@ if (! empty($message)) {
      * @param string $text
      */
     if (! function_exists('line')) {
-        function line($txtTableInfo, $text = "")
+        function line($txtTableInfo, $text = '')
         {
             $line_length = array_sum($txtTableInfo) + count($txtTableInfo) + 1;
 

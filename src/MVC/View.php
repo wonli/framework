@@ -458,8 +458,8 @@ class View extends FrameBase
     {
         $this->data = $data;
         if ($method === null) {
-            $display_type = $this->config->get("sys", "display");
-            if ($display_type && $display_type != "HTML") {
+            $display_type = $this->config->get('sys', 'display');
+            if ($display_type && $display_type != 'HTML') {
                 $method = strtoupper($display_type);
             } else {
                 $method = $this->action;
@@ -523,7 +523,7 @@ class View extends FrameBase
      * @param string $location
      * @param bool $convert
      */
-    function addRes($res_url, $location = "header", $convert = true)
+    function addRes($res_url, $location = 'header', $convert = true)
     {
         $this->res_list [$location][] = array(
             'url' => $res_url,
@@ -537,7 +537,7 @@ class View extends FrameBase
      * @param string $location
      * @return string
      */
-    function loadRes($location = "header")
+    function loadRes($location = 'header')
     {
         $result = '';
         if (empty($this->res_list) || empty($this->res_list[$location])) {
@@ -603,7 +603,7 @@ class View extends FrameBase
     function JSON($data)
     {
         $this->set(
-            array("layer" => "json")
+            array('layer' => 'json')
         );
 
         Response::getInstance()->setContentType('json');
@@ -619,7 +619,7 @@ class View extends FrameBase
     function XML($data, $root_name = 'root')
     {
         $this->set(
-            array("layer" => "xml")
+            array('layer' => 'xml')
         );
 
         Response::getInstance()->setContentType('xml');
@@ -638,7 +638,7 @@ class View extends FrameBase
     function loadLayer($content, $layer_ext = '.layer.php')
     {
         if ($this->set) {
-            extract($this->set, EXTR_PREFIX_SAME, "USER_DEFINED");
+            extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
         }
         $_real_path = $this->getTplPath();
 

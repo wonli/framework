@@ -15,7 +15,7 @@ use Cross\I\RouterInterface;
 ! version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
 
 //外部定义的项目路径
-defined('PROJECT_PATH') or die("undefined PROJECT_PATH");
+defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
 
 //项目路径
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
@@ -136,7 +136,7 @@ class Delegate
      */
     private function appInit()
     {
-        $sys_config = $this->config->get("sys");
+        $sys_config = $this->config->get('sys');
 
         defined('SITE_URL') or define('SITE_URL', $sys_config['site_url']);
         defined('STATIC_URL') or define('STATIC_URL', $sys_config['static_url']);
@@ -212,7 +212,7 @@ class Delegate
             $controller = self::$map [$req];
             $this->get($controller, $args);
         } else {
-            throw new CoreException("Not Specified Uri");
+            throw new CoreException('Not Specified Uri');
         }
     }
 }

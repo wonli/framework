@@ -93,7 +93,7 @@ class Uploader
         $file['filename'] = $pathinfo['basename'];
 
         if (!$pathinfo || !$this->_is_allowd_type($file['extension'])) {
-            throw new CoreException("不支持的类型");
+            throw new CoreException('不支持的类型');
         }
 
         if (!$this->_is_allowd_size($file['size'])) {
@@ -195,7 +195,7 @@ class Uploader
 
         if (!file_exists($dirname)) {
             if (!mkdir($dirname, 0666, true)) {
-                throw new CoreException("保存文件的目录不存在");
+                throw new CoreException('保存文件的目录不存在');
 
                 return false;
             }

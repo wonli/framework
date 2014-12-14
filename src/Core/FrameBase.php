@@ -136,7 +136,7 @@ class FrameBase extends Application
      */
     protected function setAuth($key, $value, $exp = 86400)
     {
-        $auth_type = $this->config->get("sys", "auth");
+        $auth_type = $this->config->get('sys', 'auth');
         return HttpAuth::factory($auth_type)->set($key, $value, $exp);
     }
 
@@ -149,7 +149,7 @@ class FrameBase extends Application
      */
     protected function getAuth($key, $de = false)
     {
-        $auth_type = $this->config->get("sys", "auth");
+        $auth_type = $this->config->get('sys', 'auth');
         return HttpAuth::factory($auth_type)->get($key, $de);
     }
 
@@ -160,7 +160,7 @@ class FrameBase extends Application
      * @param string $type
      * @return bool|string
      */
-    protected function urlEncrypt($tex, $type = "encode")
+    protected function urlEncrypt($tex, $type = 'encode')
     {
         $key = $this->getUrlEncryptKey();
         return Helper::encodeParams($tex, $key, $type);
@@ -226,7 +226,7 @@ class FrameBase extends Application
         $result = array();
         $decode_params_str = false;
         if (is_string($params)) {
-            $decode_params_str = $this->urlEncrypt($params, "decode");
+            $decode_params_str = $this->urlEncrypt($params, 'decode');
         }
 
         if (false == $decode_params_str) {
@@ -330,14 +330,14 @@ class FrameBase extends Application
      * @param string $type
      * @return array|string
      */
-    function result($ok = "1", $msg = "ok", $type = "")
+    function result($ok = '1', $msg = 'ok', $type = '')
     {
         $result = array();
 
-        $result["status"] = $ok;
-        $result["message"] = $msg;
+        $result['status'] = $ok;
+        $result['message'] = $msg;
 
-        if ($type == "JSON") {
+        if ($type == 'JSON') {
             $result = json_encode($result);
         }
 

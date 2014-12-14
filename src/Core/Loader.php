@@ -36,7 +36,7 @@ class Loader
      */
     private function __construct()
     {
-        spl_autoload_register(array($this, "loadClass"));
+        spl_autoload_register(array($this, 'loadClass'));
     }
 
     /**
@@ -126,7 +126,7 @@ class Loader
                     break;
 
                 default :
-                    throw new CoreException("不支持的解析格式");
+                    throw new CoreException('不支持的解析格式');
             }
 
             return $data;
@@ -149,7 +149,7 @@ class Loader
      * @param string $append_file_ext
      * @return array
      */
-    static function parseFileRealPath($class, $append_file_ext = ".php")
+    static function parseFileRealPath($class, $append_file_ext = '.php')
     {
         $files = $list = array();
         $_defines = array(
@@ -160,8 +160,8 @@ class Loader
 
         if (is_array($class)) {
             $files = $class;
-        } elseif (false !== strpos($class, ",")) {
-            $files = array_map('trim', explode(",", $class));
+        } elseif (false !== strpos($class, ',')) {
+            $files = array_map('trim', explode(',', $class));
         } else {
             $files[] = $class;
         }
@@ -171,10 +171,10 @@ class Loader
 
                 list($path, $file_info) = explode('::', $f);
                 if (!$path) {
-                    $path = "project";
+                    $path = 'project';
                 }
 
-                $file_real_path = $_defines[strtolower($path)] . str_replace("/", DIRECTORY_SEPARATOR, $file_info);
+                $file_real_path = $_defines[strtolower($path)] . str_replace('/', DIRECTORY_SEPARATOR, $file_info);
                 $file_path_info = pathinfo($file_real_path);
                 if (!isset($file_path_info['extension'])) {
                     $file_real_path .= $append_file_ext;

@@ -43,18 +43,18 @@
 <header>
     <div class="exception">
         <h3 class="exc-title">
-            <?php printf("File: %s Line: %s", $message["main"]["show_file"], $message["main"]["line"] ); ?>
+            <?php printf('File: %s Line: %s', $message['main']['show_file'], $message['main']['line'] ); ?>
         </h3>
 
         <p class="exc-message">
-            <?php echo $message["main"]["message"] ?>
+            <?php echo $message['main']['message'] ?>
         </p>
     </div>
 </header>
 
 <div class="frame-code-container">
-    <?php if (!empty($message["trace"])) : ?>
-        <?php foreach ($message["trace"] as $k => $m) : ?>
+    <?php if (!empty($message['trace'])) : ?>
+        <?php foreach ($message['trace'] as $k => $m) : ?>
             <div id="trace_info_<?php echo $k ?>" class="trace_info_div" style="display:none">
                 <div style="background: #333;" class="code-block frame-file"></div>
                 <div style="margin:10px;padding-left:30px;">
@@ -74,7 +74,7 @@
         <div class="code-block" style="background: #333;"></div>
         <div style="margin:10px;padding-left:30px;">
             <?php
-            foreach ($message["main"]["source"] as $s_line => $s_source) {
+            foreach ($message['main']['source'] as $s_line => $s_source) {
                 printf('<span class="line">%s</span>&nbsp;&nbsp;%s', $s_line, $s_source);
             }
             ?>
@@ -90,11 +90,11 @@
         <h1>Exception File</h1>
         <div class="frame active" id="frame_active"
              onclick="cp_exception.main(null)"><?php echo $message["main"]["show_file"] ?></div>
-        <?php if (!empty($message["trace"])) : ?>
+        <?php if (!empty($message['trace'])) : ?>
             <h1>Trace</h1>
-            <?php foreach ($message["trace"] as $k => $m) : ?>
+            <?php foreach ($message['trace'] as $k => $m) : ?>
                 <div class="frame" onclick="cp_exception.track(<?php echo $k ?>, this)" style="display:block">
-                    <?php echo $m["show_file"] ?> Line: <?php echo $m["line"] ?>
+                    <?php echo $m['show_file'] ?> Line: <?php echo $m['line'] ?>
                 </div>
             <?php endforeach ?>
         <?php endif ?>

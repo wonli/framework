@@ -161,7 +161,7 @@ class Rest
      */
     function checkRequest($request_url, & $params)
     {
-        $url_dot = $this->config->get("url", "dot");
+        $url_dot = $this->config->get('url', 'dot');
         $params_key = array();
         $params_value = array();
 

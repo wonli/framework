@@ -45,7 +45,7 @@ class Application
     /**
      * app配置
      *
-     * @var array
+     * @var CrossArray
      */
     protected static $app_config;
 
@@ -105,9 +105,9 @@ class Application
 
         } elseif (is_array($router)) {
 
-            $controller = $router["controller"];
-            $action = $router["action"];
-            $params = $router["params"];
+            $controller = $router['controller'];
+            $action = $router['action'];
+            $params = $router['params'];
 
         } elseif (is_string($router)) {
 
@@ -243,7 +243,7 @@ class Application
                 $this->setAction($action);
                 self::setActionAnnotate($is_callable->getDocComment());
             } else {
-                throw new CoreException("不允许访问的方法");
+                throw new CoreException('不允许访问的方法');
             }
         }
     }

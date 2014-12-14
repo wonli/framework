@@ -44,12 +44,12 @@ abstract class CrossException extends Exception
         $result['main']['show_file'] = $this->hiddenFileRealPath($result['main']['file']);
 
         foreach ($result as &$_i) {
-            $file = new SplFileObject($_i["file"]);
+            $file = new SplFileObject($_i['file']);
 
             foreach ($file as $line => $code) {
                 if ($line < $_i['line'] + 6 && $line > $_i['line'] - 7) {
                     $h_string = highlight_string("<?php{$code}", true);
-                    $_i["source"][$line] = str_replace("&lt;?php", "", $h_string);
+                    $_i['source'][$line] = str_replace("&lt;?php", "", $h_string);
                 }
             }
         }

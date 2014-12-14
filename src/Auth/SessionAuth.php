@@ -48,8 +48,8 @@ class SessionAuth implements HttpAuthInterface
      */
     function get($key, $de = false)
     {
-        if (false !== strpos($key, ":")) {
-            list($v_key, $c_key) = explode(":", $key);
+        if (false !== strpos($key, ':')) {
+            list($v_key, $c_key) = explode(':', $key);
         } else {
             $v_key = $key;
         }

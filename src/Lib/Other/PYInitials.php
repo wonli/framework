@@ -86,7 +86,7 @@ class PYInitials
     private function _cutWord($str)
     {
         $words = array();
-        while ($str != "") {
+        while ($str != '') {
             if ($this->_isAscii($str)) { //非中文
                 $words[] = $str[0];
                 $str = substr($str, strlen($str[0]));
