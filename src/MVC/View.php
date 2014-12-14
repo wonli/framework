@@ -30,7 +30,7 @@ class View extends FrameBase
     protected $data;
 
     /**
-     * layer字面量
+     * 设置layer中变量的值
      *
      * @var array
      */
@@ -510,72 +510,10 @@ class View extends FrameBase
             } else {
                 $default_tpl_dir = 'default';
             }
-
-            if ($this->config->get('sys', 'auto_switch_tpl')) {
-                if ($this->is_spider()) {
-                    $default_tpl_dir = 'spider';
-                } elseif ($this->is_mobile()) {
-                    $default_tpl_dir = 'mobile';
-                }
-            }
-
             $this->setTplDir($default_tpl_dir);
         }
 
         return $this->tpl_dir;
-    }
-
-    /**
-     * 判断是否是蜘蛛
-     *
-     * @return bool
-     */
-    function is_spider()
-    {
-        $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-        if (!empty($agent)) {
-            $spiderSite = array("TencentTraveler", "Baiduspider+", "BaiduGame", "Googlebot",
-                "msnbot", "Sosospider+", "Sogou web spider", "ia_archiver", "Yahoo! Slurp",
-                "YoudaoBot", "Yahoo Slurp", "MSNBot", "Java (Often spam bot)", "BaiDuSpider", "Voila",
-                "Yandex bot", "BSpider", "twiceler", "Sogou Spider", "Speedy Spider", "Google AdSense",
-                "Heritrix", "Python-urllib", "Alexa (IA Archiver)", "Ask", "Exabot", "Custo",
-                "OutfoxBot/YodaoBot", "yacy", "SurveyBot", "legs", "lwp-trivial", "Nutch", "StackRambler",
-                "The web archive (IA Archiver)", "Perl tool", "MJ12bot", "Netcraft", "MSIECrawler",
-                "WGet tools", "larbin", "Fish search");
-
-            foreach ($spiderSite as $val) {
-                if (stripos($agent, $val) !== false) {
-                    return $val;
-                }
-            }
-
-            return false;
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断是否是移动设备
-     *
-     * @return bool
-     */
-    function is_mobile()
-    {
-        if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
-            return true;
-        } elseif (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
-            return true;
-        } elseif (strpos(strtoupper($_SERVER['HTTP_ACCEPT']), "VND.WAP.WML") > 0) {
-            return true;
-        } elseif (preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|
-            elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|
-            phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i', $_SERVER['HTTP_USER_AGENT'])
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
