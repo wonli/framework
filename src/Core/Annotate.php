@@ -15,9 +15,26 @@ namespace Cross\Core;
  */
 class Annotate
 {
-    function __construct($annotate)
+    /**
+     * 参数前缀
+     *
+     * @var string
+     */
+    private $prefix = 'cp_';
+
+    /**
+     * @var Annotate
+     */
+    private static $instance;
+
+    /**
+     * @param $annotate
+     */
+    private function __construct($annotate)
     {
         $this->content = $annotate;
+        $this->annotate_content_key = md5($this->content);
+        stream_register_wrapper('annotate', 'Cross\Lib\Other\StringToPHPStream');
     }
 
     /**
@@ -28,7 +45,11 @@ class Annotate
      */
     public static function getInstance($annotate)
     {
-        return new Annotate($annotate);
+        if (! self::$instance) {
+            self::$instance = new Annotate($annotate);
+        }
+
+        return self::$instance;
     }
 
     /**
@@ -38,7 +59,7 @@ class Annotate
      */
     public function parse()
     {
-        $flag = preg_match_all('/@cp_(.*?)\s+(.*?)\n/', $this->content, $content);
+        $flag = preg_match_all(sprintf('/@%s(.*?)\s+(.*?)\n/', $this->prefix), $this->content, $content);
 
         if (!$flag) {
             return true;
@@ -59,15 +80,14 @@ class Annotate
     private function parseAnnotate($conf)
     {
         $result = array();
-        foreach ($conf as $func => $params) {
-            switch ($func) {
+        foreach ($conf as $conf_name => $params) {
+            switch ($conf_name) {
                 case 'params':
                     $result['params'] = $this->parseConfigValue($params);
                     break;
 
-                case 'cache':
-                    $result['cache'] = $this->parseAnnotateCacheConfig($params);
-                    break;
+                default:
+                    $result[$conf_name] = $this->parseAnnotateConfig($params);
             }
         }
 
@@ -75,36 +95,20 @@ class Annotate
     }
 
     /**
-     * 配置参数转二维数组
-     * <pre>
-     *  如: true(...)
-     *  将被转换为
-     *  array(
-     *      true,
-     *      array(...)
-     *  )
-     * </pre>
+     * php字符串代码通过wrapper转换为php代码
      *
-     * @param $params
-     * @return array
+     * @param string $params
+     * @return mixed
      */
-    private function parseAnnotateCacheConfig($params)
+    protected function parseAnnotateConfig($params)
     {
-        $result = array();
-        $flag = preg_match_all('/(.*?)\((.*?)\)/', $params, $params);
-
-        if ($flag) {
-            $result[] = $params[1][0] === 'true' ? true : false;
-            $result[] = $this->parseConfigValue($params[2][0]);
-        }
-
-        return $result;
+        return include("annotate://{$params}");
     }
 
     /**
      * 配置参数值解析
      * <pre>
-     * 如: 1, type:file, 300 会被解析为
+     * 如: 1, type=file, 300 会被解析为
      * array(
      *      1,
      *      'type'  => file,
