@@ -320,10 +320,20 @@ class Helper
         $rand_key = md5($key);
         $str_len = strlen($str);
 
-        $result_str = '';
+        $op['left'] = array();
+        $op['right'] = array();
         for ($i = 0; $i < $str_len; $i++) {
-            $result_str .= chr(ord($str[$i]) ^ ord($rand_key[$i % 32]));
+            $op['left'][] = $str[$i];
+            $op['right'][] = $rand_key[$i % 32];
         }
+
+        $result_array = array();
+        $params_res_array = array_combine(array_map('ord', $op['left']), array_map('ord', $op['right']));
+        foreach($params_res_array as $k=>$v) {
+            $result_array[] = $k ^ $v;
+        }
+        $result_str = implode('', array_map('chr', $result_array));
+        unset($op, $result_array);
 
         if ($operation == 'encode') {
             $result_str = trim(base64_encode($result_str), '==');
