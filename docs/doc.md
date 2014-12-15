@@ -284,7 +284,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 
 ###### 2. 为Action配置缓存
 
-在注释中使用 `@cp_cache` 字段指定该Action的缓存
+在注释中使用 `@cp_cache` 字段指定该Action的缓存,直接使用php数组进行配置
 
  	namespace app\web\controllers;
 
@@ -294,34 +294,34 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	{
 	    /**
 	     * 默认控制器
-	     * @cp_params p1, p2, p3
-	     * @cp_cache false(type=1, expire_time=864000)
+	     * 
+	     * @cp_cache array(true, array('type'=>1, 'expire_time'=>864000))
 	     */
 		function index()
 		{
-			print_r($this->params);
+			
 		}
 	}
 
-配置的格式为 `true/false(key=value, key=value...)` 多个key和value用逗号分隔 `true` 或 `false` 分别代表配置的开关.
+配置的格式为一个二维数组 `array(true/false, array(key=>val...))` `true` 或 `false` 分别代表配置的开关.
 
-a. 使用文件缓存 `true(type=1, expire_time=864000)`
+a. 使用文件缓存 `array(true, array('type'=>1, 'expire_time'=>864000))`
 
 		type = 1
 		expire_time = 86400 表示缓存过期时间为1天
 		cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/html文件夹下
 		file_ext 缓存文件扩展名 默认为.html
 	
-	>项目根目录下的cache目录需设置为可以读写
+>项目根目录下的cache目录需设置为可以读写
 
-b. 使用memcache缓存 `true(type=2, host=127.0.0.1, port=11211, expire_time=30)`
+b. 使用memcache缓存 `array(true, array('type'=>2, 'host'=>'127.0.0.1', 'port'=>11211, 'expire_time'=>600))`
 				
 		type=2
 		host=127.0.0.1
 		port=11211
 		expire_time=30
 
-c. 使用redis缓存 `true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)`
+c. 使用redis缓存 `array(true, array('type'=>1, 'host'=>'127.0.0.1', 'db'=>3, 'port'=>6379, expire_time=86400))`
 
 		type=3, 
 		host=127.0.0.1, 
