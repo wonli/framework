@@ -125,59 +125,6 @@ class Application
     }
 
     /**
-     * 初始化request cache
-     *
-     * @param $request_cache_config
-     * @return bool|\cross\cache\FileCache|\cross\cache\MemcacheBase|\cross\cache\RedisCache|\cross\cache\RequestMemcache|\cross\cache\RequestRedisCache
-     * @throws \cross\exception\CoreException
-     */
-    function initRequestCache($request_cache_config)
-    {
-        if (!$request_cache_config) {
-            return false;
-        }
-
-        list($open_cache, $cache_config) = $request_cache_config;
-        if (!$open_cache) {
-            return false;
-        }
-
-        if (empty($cache_config['type'])) {
-            throw new CoreException('请用使用type项指定cache类型');
-        }
-
-        $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
-
-        if (!isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'html';
-        }
-
-        if (!isset($cache_config ['file_ext'])) {
-            $cache_config ['file_ext'] = '.html';
-        }
-
-        if (!isset($cache_config ['key_dot'])) {
-            if (isset($cache_dot_config[$cache_config['type']])) {
-                $cache_config ['key_dot'] = $cache_dot_config[$cache_config['type']];
-            } else {
-                $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
-            }
-        }
-
-        $cache_key_conf = array(
-            APP_NAME,
-            strtolower($this->getController()),
-            $this->getAction(),
-            md5(implode($cache_config ['key_dot'], $this->getParams()))
-        );
-
-        $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
-        $cache_config['key'] = $cache_key;
-
-        return RequestCache::factory($cache_config);
-    }
-
-    /**
      * 获取控制器的命名空间
      *
      * @return string
@@ -199,9 +146,9 @@ class Application
         $this->setController($controller);
 
         $controllerSpace = $this->getControllerNamespace();
-        $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace). '.php';
+        $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace) . '.php';
 
-        if (! file_exists($controllerRealFile)) {
+        if (!file_exists($controllerRealFile)) {
             throw new CoreException("{$controllerSpace} 控制器不存在");
         }
 
@@ -276,7 +223,6 @@ class Application
 
         $action_config = self::getActionConfig();
         $action_params = array();
-
         if (isset($action_config['params'])) {
             $action_params = $action_config['params'];
         }
@@ -306,9 +252,8 @@ class Application
             }
         }
 
-        $content_type = Response::getInstance()->getContentType();
-        if (!$content_type) {
-            Response::getInstance()->setContentType($this->getConfig()->get('sys', 'display'));
+        if (! empty($action_config['response'])) {
+            $this->setResponseConfig($action_config['response']);
         }
 
         Response::getInstance()->output($response);
@@ -353,8 +298,7 @@ class Application
     private function setParams($url_params = null, $annotate_params = array())
     {
         $url_type = $this->getConfig()->get('url', 'type');
-        switch($url_type)
-        {
+        switch ($url_type) {
             case 1:
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
@@ -408,7 +352,8 @@ class Application
      * @param $stringParams
      * @return array
      */
-    public static function stringParamsToAssociativeArray($stringParams) {
+    public static function stringParamsToAssociativeArray($stringParams)
+    {
         $paramsArray = explode(self::$app_config->get('url', 'dot'), $stringParams);
         return self::oneDimensionalToAssociativeArray($paramsArray);
     }
@@ -419,7 +364,8 @@ class Application
      * @param array $oneDimensional
      * @return array
      */
-    public static function oneDimensionalToAssociativeArray($oneDimensional) {
+    public static function oneDimensionalToAssociativeArray($oneDimensional)
+    {
         $result = array();
         for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
             if (isset($oneDimensional[$i]) && isset($oneDimensional[$i + 1])) {
@@ -429,6 +375,84 @@ class Application
         }
 
         return $result;
+    }
+
+    /**
+     * 初始化request cache
+     *
+     * @param $request_cache_config
+     * @return bool|\cross\cache\FileCache|\cross\cache\MemcacheBase|\cross\cache\RedisCache|\cross\cache\RequestMemcache|\cross\cache\RequestRedisCache
+     * @throws \cross\exception\CoreException
+     */
+    private function initRequestCache($request_cache_config)
+    {
+        if (!is_array($request_cache_config) || count($request_cache_config) != 2) {
+            throw new CoreException('Request Cache配置为一个二维数组');
+        }
+
+        list($cache_enable, $cache_config) = $request_cache_config;
+        if (!$cache_enable) {
+            return false;
+        }
+
+        if (empty($cache_config['type'])) {
+            throw new CoreException('请指定Cache类型');
+        }
+
+        if (!isset($cache_config ['cache_path'])) {
+            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'html';
+        }
+
+        if (!isset($cache_config ['file_ext'])) {
+            $cache_config ['file_ext'] = '.html';
+        }
+
+        if (!isset($cache_config ['key'])) {
+            $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
+
+            if (!isset($cache_config ['key_dot'])) {
+                if (isset($cache_dot_config[$cache_config['type']])) {
+                    $cache_config ['key_dot'] = $cache_dot_config[$cache_config['type']];
+                } else {
+                    $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
+                }
+            }
+
+            $cache_key_conf = array(
+                APP_NAME,
+                strtolower($this->getController()),
+                $this->getAction()
+            );
+
+            $params = self::getParams();
+            if (!empty($params)) {
+                $cache_key_conf[] = md5(implode($cache_config ['key_dot'], $params));
+            }
+            $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
+            $cache_config['key'] = $cache_key;
+        }
+
+        return RequestCache::factory($cache_config);
+    }
+
+    /**
+     * 设置Response
+     *
+     * @param $config
+     */
+    private function setResponseConfig($config)
+    {
+        if (! empty($config['basic_auth'])) {
+            Response::getInstance()->basicAuth($config['basic_auth']);
+        }
+
+        if (isset($config['content_type'])) {
+            Response::getInstance()->setContentType($config['content_type']);
+        }
+
+        if (isset($config['status'])) {
+            Response::getInstance()->setResponseStatus($config['status']);
+        }
     }
 
     /**

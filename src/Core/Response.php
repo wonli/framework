@@ -16,6 +16,11 @@ namespace Cross\Core;
 class Response
 {
     /**
+     * @var array
+     */
+    protected $header;
+
+    /**
      * 返回头http类型
      *
      * @var string
@@ -26,11 +31,6 @@ class Response
      * @var int
      */
     protected $response_status;
-
-    /**
-     * @var array
-     */
-    protected $header;
 
     /**
      * Response instance
@@ -59,38 +59,12 @@ class Response
     }
 
     /**
-     * @param $code
-     */
-    static function sendStatus($code)
-    {
-        header("HTTP/1.1 {$code}");
-    }
-
-    /**
-     * 设置返回头类型
-     *
-     * @param $header_type
-     * @return $this
-     */
-    function setContentType($header_type)
-    {
-        if (isset(self::$mime_types [$header_type])) {
-            $this->content_type = self::$mime_types [$header_type];
-        } else {
-            $this->content_type = self::$mime_types ['html'];
-        }
-
-        return $this;
-    }
-
-    /**
      * @param int $status
      * @return $this
      */
     function setResponseStatus($status = 200)
     {
         $this->response_status = $status;
-
         return $this;
     }
 
@@ -99,11 +73,41 @@ class Response
      */
     function getResponseStatus()
     {
-        if (!isset($this->response_status)) {
+        if (!$this->response_status) {
             $this->setResponseStatus();
         }
 
         return $this->response_status;
+    }
+
+    /**
+     * 设置header信息
+     *
+     * @param $header
+     */
+    function setHeader($header)
+    {
+        $this->header = $header;
+    }
+
+    /**
+     * 获取要发送到header信息
+     */
+    function getHeader()
+    {
+        return $this->header;
+    }
+
+    /**
+     * 设置返回头类型
+     *
+     * @param string $content_type
+     * @return $this
+     */
+    function setContentType($content_type = 'html')
+    {
+        $this->content_type = strtolower($content_type);
+        return $this;
     }
 
     /**
@@ -113,17 +117,33 @@ class Response
      */
     function getContentType()
     {
+        if (!$this->content_type) {
+            $this->setContentType();
+        }
         return $this->content_type;
     }
 
     /**
      * 发送basicAuth认证
      */
-    function basicAuth()
+    function basicAuth($config)
     {
-        header('HTTP/1.1 401 Unauthorized');
-        header('WWW-Authenticate: Basic realm="CP Secret"');
-        print 'Auth Faile';
+        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+            if ((isset($config['user']) && $_SERVER['PHP_AUTH_USER'] == $config['user'])
+                && (isset($config['pw']) && $_SERVER['PHP_AUTH_PW'] == $config['pw'])) {
+                return true;
+            }
+        }
+
+        $realm = isset($config['realm']) ? $config['realm'] : 'Basic Auth';
+        $failed_msg = isset($config['failed_msg']) ? $config['failed_msg'] : 'Auth Failed';
+
+        $this->setContentType();
+        $this->sendResponseStatus(401);
+        $this->setHeader(sprintf('WWW-Authenticate: Basic realm="%s"', $realm));
+        $this->sendResponseHeader();
+        print $failed_msg;
+        exit(0);
     }
 
     /**
@@ -133,11 +153,39 @@ class Response
      */
     function sendResponseStatus($code = 200)
     {
-        if (200 != $code) {
-            Response::sendStatus($code);
+        $descriptions = self::$statusDescriptions[$code];
+        header("HTTP/1.1 {$code} {$descriptions}");
+    }
+
+    /**
+     * 发送ContentType
+     */
+    function sendContentType()
+    {
+        $content_type_name = $this->getContentType();
+        if (isset(self::$mime_types [$content_type_name])) {
+            $content_type = self::$mime_types [$content_type_name];
+        } else {
+            $content_type = self::$mime_types ['html'];
         }
 
-        header("Content-Type: {$this->content_type};charset=utf-8");
+        header("Content-Type: {$content_type};charset=utf-8");
+    }
+
+    /**
+     * 为response附加返回参数
+     *
+     * @param $content
+     * @return $this
+     */
+    function addParams($content)
+    {
+        $contents = $this->makeParams($content);
+        foreach ($contents as $c_name => $c_val) {
+            $_SERVER[$c_name] = $c_val;
+        }
+
+        return $this;
     }
 
     /**
@@ -161,54 +209,31 @@ class Response
     /**
      * 发送header
      *
-     * @param $contents
      * @return $this
      */
-    function sendHeader($contents)
+    private function sendHeader()
     {
-        if (!is_array($contents)) {
-            $contents = array($contents);
-        }
+        $contents = $this->getHeader();
+        if (! empty($contents)) {
+            if (!is_array($contents)) {
+                $contents = array($contents);
+            }
 
-        foreach ($contents as $content) {
-            header($content);
+            foreach ($contents as $content) {
+                header($content);
+            }
         }
 
         return $this;
     }
 
     /**
-     * 设置header信息
-     *
-     * @param $header
+     * 发送Response头
      */
-    function setHeader($header)
+    private function sendResponseHeader()
     {
-        $this->header = $header;
-    }
-
-    /**
-     * 获取要发送到header信息
-     */
-    function getHeader()
-    {
-        return $this->header;
-    }
-
-    /**
-     * 为response附加返回参数
-     *
-     * @param $content
-     * @return $this
-     */
-    function addParams($content)
-    {
-        $contents = $this->makeParams($content);
-        foreach ($contents as $c_name => $c_val) {
-            $_SERVER[$c_name] = $c_val;
-        }
-
-        return $this;
+        $this->sendContentType();
+        $this->sendHeader();
     }
 
     /**
@@ -221,11 +246,7 @@ class Response
     {
         $code = $this->getResponseStatus();
         $this->sendResponseStatus($code);
-
-        $header = $this->getHeader();
-        if (!empty($header)) {
-            $this->sendHeader($header);
-        }
+        $this->sendResponseHeader();
 
         if (!$contents) {
             $contents = self::$statusDescriptions [$code];
@@ -245,11 +266,7 @@ class Response
     {
         $code = $this->getResponseStatus();
         $this->sendResponseStatus($code);
-
-        $header = $this->getHeader();
-        if (!empty($header)) {
-            $this->sendHeader($header);
-        }
+        $this->sendResponseHeader();
 
         if (!$message) {
             $message = self::$statusDescriptions [$code];
