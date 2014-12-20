@@ -123,12 +123,12 @@ class Router implements RouterInterface
             case 1:
             case 3:
                 $request = Request::getInstance()->getUrlRequest(1);
-                return self::parseString(htmlspecialchars($request, ENT_QUOTES), $url_config, true);
+                return self::parseString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config, true);
 
             case 2:
             case 4:
                 $path_info = Request::getInstance()->getUrlRequest(2);
-                $request = self::parseString(htmlspecialchars($path_info, ENT_QUOTES), $url_config);
+                $request = self::parseString(htmlspecialchars(urldecode($path_info), ENT_QUOTES), $url_config);
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }
