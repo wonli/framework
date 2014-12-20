@@ -12,6 +12,7 @@ use Cross\Auth\CookieAuth;
 use Cross\Auth\SessionAuth;
 use Cross\Exception\CoreException;
 use Cross\I\HttpAuthInterface;
+use ReflectionClass;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -21,7 +22,7 @@ use Cross\I\HttpAuthInterface;
 class HttpAuth
 {
     /**
-     * @var object
+     * @var CookieAuth|SessionAuth|HttpAuthInterface|object
      */
     static $obj;
 
@@ -30,9 +31,10 @@ class HttpAuth
      *
      * @param string|object $type
      * <pre>
-     *  type 默认为字符串(COOKIE)
+     *  type 默认为字符串(COOKIE|SESSION|包含命名空间的类的路径)
      *  也可以是一个实现了HttpAuthInterface接口的对象
      * </pre>
+     *
      * @return CookieAuth|SessionAuth|HttpAuthInterface|object
      * @throws \Cross\Exception\CoreException
      */
@@ -40,26 +42,26 @@ class HttpAuth
     {
         if (! self::$obj) {
             if (is_string($type)) {
-                $type = strtoupper($type);
-                switch ($type) {
-                    case 'COOKIE' :
-                        self::$obj = new CookieAuth();
-                        break;
-
-                    case 'SESSION' :
-                        self::$obj = new SessionAuth();
-                        break;
-
-                    default:
-                        self::$obj = new CookieAuth();
-                        break;
+                if (strcasecmp($type, 'cookie') == 0) {
+                    self::$obj = new CookieAuth();
+                } elseif (strcasecmp($type, 'session') == 0) {
+                    self::$obj = new SessionAuth();
+                } else {
+                    $object = new ReflectionClass($type);
+                    if ($object->implementsInterface('Cross\I\HttpAuthInterface')) {
+                        self::$obj = $object->newInstance();
+                    } else {
+                        throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
+                    }
                 }
             } elseif (is_object($type)) {
                 if ($type instanceof HttpAuthInterface) {
                     self::$obj = $type;
                 } else {
-                    throw new CoreException('必须实现HttpAuthInterface接口');
+                    throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
                 }
+            } else {
+                throw new CoreException('无法识别的会话管理类');
             }
         }
         return self::$obj;
