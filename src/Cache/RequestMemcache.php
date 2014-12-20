@@ -8,20 +8,34 @@
  */
 namespace Cross\Cache;
 
-use Cross\I\CacheInterface;
+use Cross\I\RequestCacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestMemcache
  * @package Cross\Cache
  */
-class RequestMemcache extends MemcacheBase implements CacheInterface
+class RequestMemcache extends MemcacheBase implements RequestCacheInterface
 {
+    /**
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * @var string
+     */
     static private $value_cache;
 
+    /**
+     * 初始化key和过期时间
+     *
+     * @param $option
+     */
     function __construct($option)
     {
         parent::__construct($option);
+        $this->setConfig($option);
         $this->cache_key = $option ['key'];
         $this->expire = time() + $option ['expire_time'];
     }
@@ -79,5 +93,26 @@ class RequestMemcache extends MemcacheBase implements CacheInterface
         }
 
         return false;
+    }
+
+    /**
+     * 设置配置
+     *
+     * @param array $config
+     * @return mixed
+     */
+    function setConfig($config = array())
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * 获取缓存配置
+     *
+     * @return mixed
+     */
+    function getConfig()
+    {
+        return $this->config;
     }
 }

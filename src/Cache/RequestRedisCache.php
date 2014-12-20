@@ -8,18 +8,29 @@
  */
 namespace Cross\Cache;
 
-use Cross\I\CacheInterface;
+use Cross\I\RequestCacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestRedisCache
  * @package Cross\Cache
  */
-class RequestRedisCache extends RedisCache implements CacheInterface
+class RequestRedisCache extends RedisCache implements RequestCacheInterface
 {
+    /**
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * 设置缓存key和缓存有效期
+     *
+     * @param $option
+     */
     function __construct($option)
     {
         parent::__construct($option);
+        $this->setConfig($option);
         $this->cache_key = $option ['key'];
         $this->key_ttl = $option ['expire_time'];
     }
@@ -59,5 +70,26 @@ class RequestRedisCache extends RedisCache implements CacheInterface
         }
 
         return $this->link->get($key);
+    }
+
+    /**
+     * 设置配置
+     *
+     * @param array $config
+     * @return mixed
+     */
+    function setConfig($config = array())
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * 获取缓存配置
+     *
+     * @return mixed
+     */
+    function getConfig()
+    {
+        return $this->config;
     }
 }

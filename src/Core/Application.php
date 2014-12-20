@@ -400,7 +400,7 @@ class Application
         }
 
         if (!isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'html';
+            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request';
         }
 
         if (!isset($cache_config ['file_ext'])) {
@@ -408,16 +408,7 @@ class Application
         }
 
         if (!isset($cache_config ['key'])) {
-            $cache_dot_config = array(1 => $this->getConfig()->get('url', 'dot'), 2 => '.', 3 => ':',);
-
-            if (!isset($cache_config ['key_dot'])) {
-                if (isset($cache_dot_config[$cache_config['type']])) {
-                    $cache_config ['key_dot'] = $cache_dot_config[$cache_config['type']];
-                } else {
-                    $cache_config ['key_dot'] = $this->getConfig()->get('url', 'dot');
-                }
-            }
-
+            $cache_config ['key_dot'] = DIRECTORY_SEPARATOR;
             $cache_key_conf = array(
                 APP_NAME,
                 strtolower($this->getController()),
