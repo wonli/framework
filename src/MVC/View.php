@@ -152,7 +152,7 @@ class View extends FrameBase
         } elseif ($use_static_url) {
             $res_base_url = $this->config->get('sys', 'static_url');
         } else {
-            $res_base_url = SITE_URL;
+            $res_base_url = $this->config->get('sys', 'site_url');
         }
 
         return rtrim($res_base_url, '/') . '/' . $res_url;
@@ -251,7 +251,7 @@ class View extends FrameBase
             self::$url_config = $this->config->get('url');
         }
 
-        if ($controller) {
+        if ($controller !== null) {
             $url_controller = $this->makeController($controller, self::$url_config);
         }
 
@@ -312,7 +312,10 @@ class View extends FrameBase
                 case 1:
                 case 3:
                     if (strcasecmp($index_file_name, 'index.php') == 0) {
-                        $_dot = '?/';
+                        $_dot = '?';
+                        if ($_controller) {
+                            $_dot .= '/';
+                        }
                     } else {
                         $_dot = $index_file_name . '?';
                     }

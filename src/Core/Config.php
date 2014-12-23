@@ -162,19 +162,20 @@ class Config
      */
     private function getSysSet()
     {
-        $host = Request::getInstance()->getHostInfo();
-        $base_url = Request::getInstance()->getBaseUrl();
-        $script_path = Request::getInstance()->getScriptFilePath();
+        $request = Request::getInstance();
+        $host = $request->getHostInfo();
+        $base_url = $request->getBaseUrl();
+        $index_name = $request->getIndexName();
+        $script_path = $request->getScriptFilePath();
 
-        $_sys = array(
+        return array(
             'host' => $host,
+            'index' =>  $index_name,
             'base_url' => $base_url,
             'site_url' => $host . $base_url,
             'static_url' => $base_url . '/static/',
             'static_path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
         );
-
-        return $_sys;
     }
 
     /**

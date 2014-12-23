@@ -137,9 +137,8 @@ class Delegate
     private function appInit()
     {
         $sys_config = $this->config->get('sys');
+        $this->config->set('url', array('index' => $sys_config['index']));
 
-        defined('SITE_URL') or define('SITE_URL', $sys_config['site_url']);
-        defined('STATIC_URL') or define('STATIC_URL', $sys_config['static_url']);
         defined('STATIC_PATH') or define('STATIC_PATH', $sys_config['static_path']);
     }
 
