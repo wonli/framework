@@ -116,9 +116,38 @@ class Delegate
      */
     function initConfig()
     {
-        return Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
+        $config = Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
             $this->runtime_config
         );
+
+        $request = Request::getInstance();
+        $host = $request->getHostInfo();
+        $index_name = $request->getIndexName();
+
+        $request_url = $request->getBaseUrl();
+        $base_script_path = $request->getScriptFilePath();
+
+        //设置app名称和路径
+        $config->set('app', array(
+            'name'  =>  $this->app_name,
+            'path'  =>  APP_PATH_DIR.$this->app_name.DIRECTORY_SEPARATOR
+        ));
+
+        //静态文件url和绝对路径
+        $config->set('static', array(
+            'url'   =>  $host.$request_url.'/static/',
+            'path'  =>  $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+        ));
+
+        //url相关设置
+        $config->set('url', array(
+            'index' => $index_name,
+            'host'  =>  $host,
+            'request'   =>  $request_url,
+            'full_request'  =>  $host.$request_url,
+        ));
+
+        return $config;
     }
 
     /**
@@ -136,32 +165,7 @@ class Delegate
      */
     private function appInit()
     {
-        $request = Request::getInstance();
-        $host = $request->getHostInfo();
-        $index_name = $request->getIndexName();
 
-        $request_url = $request->getBaseUrl();
-        $base_script_path = $request->getScriptFilePath();
-
-        //设置app名称和路径
-        $this->config->set('app', array(
-            'name'  =>  $this->app_name,
-            'path'  =>  APP_PATH_DIR.$this->app_name.DIRECTORY_SEPARATOR
-        ));
-
-        //静态文件url和绝对路径
-        $this->config->set('static', array(
-            'url'   =>  $host.$request_url.'/static/',
-            'path'  =>  $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
-        ));
-
-        //url相关设置
-        $this->config->set('url', array(
-            'index' => $index_name,
-            'host'  =>  $host,
-            'request'   =>  $request_url,
-            'full_request'  =>  $host.$request_url,
-        ));
     }
 
     /**
