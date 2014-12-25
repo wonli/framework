@@ -33,6 +33,13 @@ class Response
     protected $response_status;
 
     /**
+     * 防止重复发送header头
+     *
+     * @var bool
+     */
+    static $is_send_header = false;
+
+    /**
      * Response instance
      *
      * @var object
@@ -125,6 +132,9 @@ class Response
 
     /**
      * 发送basicAuth认证
+     *
+     * @param array $config
+     * @return bool
      */
     function basicAuth($config)
     {
@@ -244,9 +254,12 @@ class Response
      */
     function output($contents = '')
     {
-        $code = $this->getResponseStatus();
-        $this->sendResponseStatus($code);
-        $this->sendResponseHeader();
+        if(false == self::$is_send_header) {
+            $code = $this->getResponseStatus();
+            $this->sendResponseStatus($code);
+            $this->sendResponseHeader();
+            self::$is_send_header = true;
+        }
 
         if (!$contents) {
             $contents = self::$statusDescriptions [$code];
@@ -264,9 +277,12 @@ class Response
      */
     function display($message = '', $tpl = '')
     {
-        $code = $this->getResponseStatus();
-        $this->sendResponseStatus($code);
-        $this->sendResponseHeader();
+        if(false == self::$is_send_header) {
+            $code = $this->getResponseStatus();
+            $this->sendResponseStatus($code);
+            $this->sendResponseHeader();
+            self::$is_send_header = true;
+        }
 
         if (!$message) {
             $message = self::$statusDescriptions [$code];

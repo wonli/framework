@@ -12,7 +12,6 @@ use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Loader;
 use Cross\Exception\CoreException;
-use Cross\Exception\FrontException;
 use Cross\Model\CoreModel;
 
 /**
@@ -119,7 +118,7 @@ class Module extends FrameBase
     function getLinkConfigFile()
     {
         if (!$this->db_config_file) {
-            $db_config_file = $this->config->get('sys', 'db_config');
+            $db_config_file = parent::getConfig()->get('sys', 'db_config');
             if (!$db_config_file) {
                 $db_config_file = 'db.config.php';
             }

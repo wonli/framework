@@ -76,7 +76,7 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $link_base = '';
+    protected $link_base = null;
 
     /**
      * 模版扩展文件名
@@ -147,12 +147,12 @@ class View extends FrameBase
      */
     function res($res_url, $use_static_url = true)
     {
-        if (defined('RES_BASE_URL')) {
-            $res_base_url = RES_BASE_URL;
+        if ($this->config->get('res_url')) {
+            $res_base_url = $this->config->get('res_url');
         } elseif ($use_static_url) {
-            $res_base_url = $this->config->get('sys', 'static_url');
+            $res_base_url = $this->config->get('static', 'url');
         } else {
-            $res_base_url = $this->config->get('sys', 'site_url');
+            $res_base_url = $this->config->get('url', 'request');
         }
 
         return rtrim($res_base_url, '/') . '/' . $res_url;
@@ -165,8 +165,8 @@ class View extends FrameBase
      */
     function getLinkBase()
     {
-        if ('' === $this->link_base) {
-            $this->setLinkBase($this->config->get('sys', 'site_url'));
+        if (null === $this->link_base) {
+            $this->setLinkBase($this->config->get('url', 'request'));
         }
 
         return $this->link_base;
@@ -189,25 +189,11 @@ class View extends FrameBase
      */
     function getTplPath()
     {
-        if (! self::$tpl_path) {
-            self::$tpl_path = $this->getTplBasePath() . $this->getTplDir();
+        $app_name = $this->config->get('app', 'name');
+        if (! isset(self::$tpl_path[$app_name])) {
+            self::$tpl_path[$app_name] = $this->getTplBasePath().$this->getTplDir();
         }
-        return self::$tpl_path;
-    }
-
-    /**
-     * app 默认模板路径
-     *
-     * @return string
-     */
-    function getAppDefaultTplPath()
-    {
-        $current_app_name = $this->config->get('sys', 'current_app_name');
-        if ($current_app_name) {
-            return APP_PATH_DIR . $current_app_name . DIRECTORY_SEPARATOR . 'templates';
-        }
-
-        return APP_PATH . 'templates';
+        return self::$tpl_path[$app_name];
     }
 
     /**
@@ -228,7 +214,7 @@ class View extends FrameBase
     function getTplBasePath()
     {
         if (!$this->tpl_base_path) {
-            $this->setTplBasePath($this->getAppDefaultTplPath());
+            $this->setTplBasePath($this->config->get('app', 'path') . 'templates' . DIRECTORY_SEPARATOR);
         }
 
         return $this->tpl_base_path;
@@ -247,29 +233,27 @@ class View extends FrameBase
         $url = $this->getLinkBase();
 
         $url_controller = '';
-        if (! self::$url_config) {
-            self::$url_config = $this->config->get('url');
-        }
+        $url_config = $this->config->get('url');
 
         if ($controller !== null) {
-            $url_controller = $this->makeController($controller, self::$url_config);
+            $url_controller = $this->makeController($controller, $url_config);
         }
 
         $url_params = '';
         if ($params != null) {
-            $url_params = $this->makeParams($params, self::$url_config, $sec);
+            $url_params = $this->makeParams($params, $url_config, $sec);
         }
 
         if (! empty($url_config['ext'])) {
             switch($url_config['type'])
             {
                 case 2:
-                    $url .= $url_controller.self::$url_config['ext'].$url_params;
+                    $url .= $url_controller.$url_config['ext'].$url_params;
                     break;
                 case 1:
                 case 3:
                 case 4:
-                    $url .= $url_controller.$url_params.self::$url_config['ext'];
+                    $url .= $url_controller.$url_params.$url_config['ext'];
                     break;
             }
         } else {

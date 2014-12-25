@@ -136,7 +136,7 @@ class FrameBase extends Application
      */
     protected function setAuth($key, $value, $exp = 86400)
     {
-        $auth_type = $this->config->get('sys', 'auth');
+        $auth_type = parent::getConfig()->get('sys', 'auth');
         return HttpAuth::factory($auth_type)->set($key, $value, $exp);
     }
 
@@ -149,7 +149,7 @@ class FrameBase extends Application
      */
     protected function getAuth($key, $de = false)
     {
-        $auth_type = $this->config->get('sys', 'auth');
+        $auth_type = parent::getConfig()->get('sys', 'auth');
         return HttpAuth::factory($auth_type)->get($key, $de);
     }
 
@@ -182,7 +182,7 @@ class FrameBase extends Application
     protected function getUrlEncryptKey()
     {
         if (!$this->url_crypt_key) {
-            $url_crypt_key = $this->config->get('url', 'crypto_key');
+            $url_crypt_key = parent::getConfig()->get('url', 'crypto_key');
             if (! $url_crypt_key) {
                 $url_crypt_key = 'crossphp';
             }
@@ -201,7 +201,7 @@ class FrameBase extends Application
      */
     protected function sParams($params = null)
     {
-        $url_type = $this->config->get('url', 'type');
+        $url_type = parent::getConfig()->get('url', 'type');
         if (null === $params) {
             switch($url_type)
             {
@@ -236,7 +236,7 @@ class FrameBase extends Application
         switch($url_type)
         {
             case 1:
-                $result_array = explode($this->config->get('url', 'dot'), $decode_params_str);
+                $result_array = explode(parent::getConfig()->get('url', 'dot'), $decode_params_str);
                 $annotate = parent::getActionConfig();
                 $result = parent::combineParamsAnnotateConfig($result_array, $annotate['params']);
                 break;
@@ -308,18 +308,16 @@ class FrameBase extends Application
      */
     protected function initView()
     {
-        list(, $current_app_name, $type) = explode("\\", get_called_class());
-        if (strcasecmp(APP_NAME, $current_app_name) !== 0) {
-            $this->config->set('sys', array('current_app_name' => $current_app_name));
-        }
-
+        list(,,$type) = explode("\\", get_called_class());
         if (strcasecmp($type, 'views') !== 0) {
             $view_class_name = str_replace($type, 'views', get_called_class()) . 'View';
         } else {
             $view_class_name = get_called_class();
         }
 
-        return new $view_class_name;
+        $view = new $view_class_name;
+        $view->config = $this->config;
+        return $view;
     }
 
     /**

@@ -18,6 +18,13 @@ use Cross\Exception\CoreException;
 class Loader
 {
     /**
+     * 当前运行的app所在路径
+     *
+     * @var string
+     */
+    private static $app_path;
+
+    /**
      * Loader的实例
      *
      * @var Loader
@@ -33,24 +40,28 @@ class Loader
 
     /**
      * 初始化Loader
+     *
+     * @param string $app_name
      */
-    private function __construct()
+    private function __construct($app_name)
     {
+        self::$app_path = APP_PATH_DIR.$app_name.DIRECTORY_SEPARATOR;
         spl_autoload_register(array($this, 'loadClass'));
     }
 
     /**
      * 单例模式运行Loader
      *
-     * @return Loader
+     * @param string $app_name
+     * @return mixed
      */
-    public static function init()
+    public static function init($app_name)
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new Loader();
+        if (!isset(self::$instance[$app_name])) {
+            self::$instance[$app_name] = new Loader($app_name);
         }
 
-        return self::$instance;
+        return self::$instance[$app_name];
     }
 
     /**
@@ -81,7 +92,7 @@ class Loader
     /**
      * 读取指定的单一文件
      *
-     * @param $file Loader::parseFileRealPath()
+     * @param string $file Loader::parseFileRealPath()
      * @param bool $read_file 是否读取文件内容
      * @return mixed
      * @throws CoreException
@@ -153,8 +164,8 @@ class Loader
     {
         $files = $list = array();
         $_defines = array(
-            'app' => APP_PATH,
-            'static' => defined('STATIC_PATH') ? STATIC_PATH : '',
+            'app' => self::$app_path,
+            'static' => Request::getInstance()->getScriptFilePath().DIRECTORY_SEPARATOR.'static'.DIRECTORY_SEPARATOR,
             'project' => PROJECT_REAL_PATH,
         );
 

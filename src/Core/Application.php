@@ -57,31 +57,15 @@ class Application
     private static $action_annotate;
 
     /**
-     * 以单例模式运行
-     *
-     * @var object
-     */
-    private static $instance;
-
-    private function __construct()
-    {
-
-    }
-
-    /**
      * 实例化Application
      *
-     * @param $app_config
+     * @param Config $app_config
      * @return Application
      */
     public static function initialization($app_config)
     {
-        if (!isset(self::$instance)) {
-            self::setConfig($app_config);
-            self::$instance = new Application();
-        }
-
-        return self::$instance;
+        self::setConfig($app_config);
+        return new Application();
     }
 
     /**
@@ -131,7 +115,7 @@ class Application
      */
     protected function getControllerNamespace()
     {
-        return 'app\\' . APP_NAME . '\\controllers\\' . $this->getController();
+        return 'app\\' . $this->getConfig()->get('app', 'name') . '\\controllers\\' . $this->getController();
     }
 
     /**
@@ -410,7 +394,7 @@ class Application
         if (!isset($cache_config ['key'])) {
             $cache_config ['key_dot'] = DIRECTORY_SEPARATOR;
             $cache_key_conf = array(
-                APP_NAME,
+                $this->getConfig()->get('app', 'name'),
                 strtolower($this->getController()),
                 $this->getAction()
             );

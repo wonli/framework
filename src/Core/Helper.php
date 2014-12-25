@@ -304,7 +304,7 @@ class Helper
      */
     static function encodeParams($str, $key, $operation = 'encode')
     {
-        if ($operation == 'encode') {
+        if ($operation == "encode") {
             $str = (string) $str;
         } else {
             $verity_str = substr($str, 0, 3);
@@ -320,23 +320,13 @@ class Helper
         $rand_key = md5($key);
         $str_len = strlen($str);
 
-        $op['left'] = array();
-        $op['right'] = array();
+        $result_str = "";
         for ($i = 0; $i < $str_len; $i++) {
-            $op['left'][] = $str[$i];
-            $op['right'][] = $rand_key[$i % 32];
+            $result_str .= chr(ord($str[$i]) ^ ord($rand_key[$i % 32]));
         }
 
-        $result_array = array();
-        $params_res_array = array_combine(array_map('ord', $op['left']), array_map('ord', $op['right']));
-        foreach($params_res_array as $k=>$v) {
-            $result_array[] = $k ^ $v;
-        }
-        $result_str = implode('', array_map('chr', $result_array));
-        unset($op, $result_array);
-
-        if ($operation == 'encode') {
-            $result_str = trim(base64_encode($result_str), '==');
+        if ($operation == "encode") {
+            $result_str = trim(base64_encode($result_str), "==");
             $result_str = substr(md5($result_str), 0, 3) . $result_str;
         }
 

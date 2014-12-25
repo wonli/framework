@@ -110,7 +110,7 @@ class Controller extends FrameBase
     protected function sendDownloadHeader($file_name = null, $add_header = array(), $only_add_header = false)
     {
         if (null === $file_name) {
-            $file_name = $this->controller . '_' . $this->action;
+            $file_name = parent::getController() . '_' . parent::getAction();
         }
 
         $download_header = array(

@@ -18,39 +18,11 @@ use Cross\Exception\CoreException;
 class Config
 {
     /**
-     * 默认追加的系统配置项
-     *
-     * @var array
-     */
-    protected $sys;
-
-    /**
-     * app名称
-     *
-     * @var string
-     */
-    protected $appName;
-
-    /**
      * 配置资源文件地址
      *
      * @var string
      */
     protected $res_file;
-
-    /**
-     * 基础路径
-     *
-     * @var string
-     */
-    protected $base_path;
-
-    /**
-     * 避免重复加载
-     *
-     * @var array
-     */
-    protected static $loaded;
 
     /**
      * 单例模式
@@ -68,7 +40,11 @@ class Config
 
     private function __construct($res_file)
     {
-        $this->res_file = Loader::getFilePath('app::' . $res_file);
+        if (! file_exists($res_file)) {
+            throw new CoreException("读取配置文件失败");
+        }
+
+        $this->res_file = $res_file;
     }
 
     /**
@@ -77,36 +53,24 @@ class Config
      * @param string $file
      * @return Config
      */
-    static function load($file = 'init.php')
+    static function load($file)
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new Config($file);
+        if (!isset(self::$instance[$file])) {
+            self::$instance[$file] = new Config($file);
         }
 
-        return self::$instance;
+        return self::$instance[$file];
     }
 
     /**
      * 解析配置文件和自定义参数
      *
      * @param null $user_config 用户自定义参数
-     * @param bool $append_sys 是否附加系统默认参数
      * @return $this
      */
-    function parse($user_config = null, $append_sys = true)
+    function parse($user_config = null)
     {
         $config_data = $this->readConfigFile();
-
-        if (true === $append_sys) {
-            $this->sys = $this->getSysSet();
-
-            if (isset($config_data ['sys'])) {
-                $config_data ['sys'] = array_merge($this->sys, array_filter($config_data ['sys']));
-            } else {
-                $config_data ['sys'] = $this->sys;
-            }
-        }
-
         if (null !== $user_config) {
             if (!is_array($user_config) && is_file($user_config)) {
                 $config_set = require $user_config;
@@ -129,7 +93,6 @@ class Config
         }
 
         $this->setData($config_data);
-
         return $this;
     }
 
@@ -153,29 +116,6 @@ class Config
     function readConfigFile()
     {
         return Loader::read($this->res_file);
-    }
-
-    /**
-     * 设置默认追加的系统参数
-     *
-     * @return array
-     */
-    private function getSysSet()
-    {
-        $request = Request::getInstance();
-        $host = $request->getHostInfo();
-        $base_url = $request->getBaseUrl();
-        $index_name = $request->getIndexName();
-        $script_path = $request->getScriptFilePath();
-
-        return array(
-            'host' => $host,
-            'index' =>  $index_name,
-            'base_url' => $base_url,
-            'site_url' => $host . $base_url,
-            'static_url' => $base_url . '/static/',
-            'static_path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
-        );
     }
 
     /**

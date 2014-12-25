@@ -12,7 +12,7 @@ use Cross\Exception\CoreException;
 use Cross\I\RouterInterface;
 
 //检查环境版本
-! version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
+!version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
@@ -21,7 +21,7 @@ defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 
 //项目APP路径
-defined('APP_PATH_DIR')or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
+defined('APP_PATH_DIR') or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 
 //框架路径
 define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
@@ -70,17 +70,16 @@ class Delegate
 
     /**
      * 初始化框架
+     *
+     * @param string $app_name 要加载的app名称
+     * @param array $runtime_config 运行时指定的配置
      */
     private function __construct($app_name, $runtime_config)
     {
-        define('APP_NAME', $app_name);
-        define('APP_PATH', APP_PATH_DIR . APP_NAME . DIRECTORY_SEPARATOR);
-
-        Loader::init();
-
-        $this->app_name = APP_NAME;
+        Loader::init($app_name);
+        $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
-        $this->config = $this->getConfig();
+        $this->config = $this->initConfig();
         $this->appInit();
     }
 
@@ -103,21 +102,66 @@ class Delegate
      */
     static function loadApp($app_name, $runtime_config = array())
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new Delegate($app_name, $runtime_config);
+        if (!isset(self::$instance[$app_name])) {
+            self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
         }
 
-        return self::$instance;
+        return self::$instance[$app_name];
     }
 
     /**
-     * 返回配置类对象
+     * 初始化App配置
+     *
+     * @return Config
+     */
+    function initConfig()
+    {
+        return Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
+            $this->runtime_config
+        );
+    }
+
+    /**
+     * 获取app配置
      *
      * @return Config
      */
     function getConfig()
     {
-        return Config::load()->parse($this->runtime_config);
+        return $this->config;
+    }
+
+    /**
+     * 初始化配置参数,定义常量
+     */
+    private function appInit()
+    {
+        $request = Request::getInstance();
+        $host = $request->getHostInfo();
+        $index_name = $request->getIndexName();
+
+        $request_url = $request->getBaseUrl();
+        $base_script_path = $request->getScriptFilePath();
+
+        //设置app名称和路径
+        $this->config->set('app', array(
+            'name'  =>  $this->app_name,
+            'path'  =>  APP_PATH_DIR.$this->app_name.DIRECTORY_SEPARATOR
+        ));
+
+        //静态文件url和绝对路径
+        $this->config->set('static', array(
+            'url'   =>  $host.$request_url.'/static/',
+            'path'  =>  $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+        ));
+
+        //url相关设置
+        $this->config->set('url', array(
+            'index' => $index_name,
+            'host'  =>  $host,
+            'request'   =>  $request_url,
+            'full_request'  =>  $host.$request_url,
+        ));
     }
 
     /**
@@ -129,17 +173,6 @@ class Delegate
     function router($params = null)
     {
         return Router::initialization($this->config)->set_router_params($params)->getRouter();
-    }
-
-    /**
-     * 初始化配置参数,定义常量
-     */
-    private function appInit()
-    {
-        $sys_config = $this->config->get('sys');
-        $this->config->set('url', array('index' => $sys_config['index']));
-
-        defined('STATIC_PATH') or define('STATIC_PATH', $sys_config['static_path']);
     }
 
     /**
