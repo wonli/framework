@@ -39,6 +39,7 @@ class Rest
 
     /**
      * 初始化request
+     * @param Config $config
      */
     private function __construct($config)
     {

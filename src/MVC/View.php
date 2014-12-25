@@ -58,13 +58,6 @@ class View extends FrameBase
     protected static $tpl_path;
 
     /**
-     * url 配置
-     *
-     * @var array
-     */
-    protected static $url_config;
-
-    /**
      * 默认模板路径
      *
      * @var string

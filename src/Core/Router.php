@@ -72,7 +72,10 @@ class Router implements RouterInterface
     }
 
     /**
-     * 实例化类
+     * 创建一个Router的实例
+     *
+     * @param Config $_config
+     * @return Router
      */
     static function initialization(Config $_config)
     {
