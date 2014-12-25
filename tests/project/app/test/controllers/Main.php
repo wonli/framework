@@ -14,7 +14,7 @@ class Main extends Controller
      */
     function getAppConfig()
     {
-        $this->display($this->config->get('url'));
+        $this->display($this->config->get('router'));
     }
 
     /**
@@ -34,18 +34,19 @@ class Main extends Controller
     function makeLink()
     {
         $params = $this->params;
-        $link_type = $this->params['link_type'];
+        $type = $this->params['type'];
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
-
-        unset($params['link_type'], $params['dot'], $params['ext']);
-
-        $this->config->set('url', array('ext'=>$ext));
-        $this->config->set('url', array('dot'=>$dot));
-        $this->config->set('url', array('type'=>$link_type));
+        $index = $this->params['index'];
+        unset($params['type'], $params['dot'], $params['ext'], $params['index']);
+        $this->config->set('url', array(
+            'ext'   =>  $ext,
+            'dot'   =>  $dot,
+            'type'  =>  $type,
+            'index' =>  $index,
+        ));
 
         $this->view->setLinkBase('');
-
         echo $this->view->link("Main:getUrlSecurityParams", $params);
     }
 
@@ -55,18 +56,19 @@ class Main extends Controller
     function makeEncryptLink()
     {
         $params = $this->params;
-        $link_type = $this->params['link_type'];
+        $type = $this->params['type'];
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
-
-        unset($params['link_type'], $params['dot'], $params['ext']);
-
-        $this->config->set('url', array('ext'=>$ext));
-        $this->config->set('url', array('dot'=>$dot));
-        $this->config->set('url', array('type'=>$link_type));
+        $index = $this->params['index'];
+        unset($params['type'], $params['dot'], $params['ext'], $params['index']);
+        $this->config->set('url', array(
+            'ext'   =>  $ext,
+            'dot'   =>  $dot,
+            'type'  =>  $type,
+            'index' =>  $index,
+        ));
 
         $this->view->setLinkBase('');
-
         echo $this->view->slink("Main:getUrlSecurityParams", $params);
     }
 

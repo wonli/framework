@@ -26,9 +26,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     function testReadAppConfig()
     {
         $result = $this->getAppResponse("Main:getAppConfig");
-
         $ori_file = Loader::read("::app/test/init.php");
-        $ori_string = json_encode($ori_file['url'], true);
+        $ori_string = json_encode($ori_file['router'], true);
 
         $this->assertJsonStringEqualsJsonString($result, $ori_string, 'read app/init.php error...');
     }
@@ -54,9 +53,10 @@ class MainTest extends PHPUnit_Framework_TestCase
         $params = array('p1'=>1, 'p2'=>2, 'p3'=>3);
         $params['dot'] = $dot;
         $params['ext'] = $ext;
+        $params['index'] = 'index.php';
 
         for($link_type=1; $link_type <= 4; $link_type ++) {
-            $params['link_type'] = $link_type;
+            $params['type'] = $link_type;
             $result = $this->getAppResponse("Main:makeLink", $params);
 
             switch($link_type)
@@ -88,9 +88,10 @@ class MainTest extends PHPUnit_Framework_TestCase
         $params = array('p1'=>1, 'p2'=>2, 'p3'=>3);
         $params['dot'] = $dot;
         $params['ext'] = $ext;
+        $params['index'] = 'index.php';
 
         for($link_type=1; $link_type <= 4; $link_type ++) {
-            $params['link_type'] = $link_type;
+            $params['type'] = $link_type;
             $result = $this->getAppResponse("Main:makeEncryptLink", $params);
 
             switch($link_type)
