@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.0.6
+ * @version     1.1.0
  */
 namespace Cross\Cache;
 
