@@ -143,7 +143,7 @@ class Delegate
         $config->set('url', array(
             'index' => $index_name,
             'host'  =>  $host,
-            'request'   =>  $request_url,
+            'request'   =>  $request_url ? $request_url : '/',
             'full_request'  =>  $host.$request_url,
         ));
 
