@@ -254,8 +254,8 @@ class Response
      */
     function output($contents = '')
     {
+        $code = $this->getResponseStatus();
         if(false == self::$is_send_header) {
-            $code = $this->getResponseStatus();
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
             self::$is_send_header = true;
@@ -277,8 +277,8 @@ class Response
      */
     function display($message = '', $tpl = '')
     {
+        $code = $this->getResponseStatus();
         if(false == self::$is_send_header) {
-            $code = $this->getResponseStatus();
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
             self::$is_send_header = true;
