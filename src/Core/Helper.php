@@ -536,9 +536,10 @@ class Helper
      * 显示友好时间格式
      *
      * @param int $time 时间戳
+     * @param string $format
      * @return string
      */
-    static function ftime($time)
+    static function ftime($time, $format='Y-m-d H:i:s')
     {
         $t = time() - $time;
         if ($t < 63072000) {
@@ -559,7 +560,7 @@ class Helper
             }
         }
 
-        return date('Y-m-d H:i:s', $time);
+        return date($format, $time);
     }
 
     /**
