@@ -226,8 +226,11 @@ class Application
 
             if (true === $run_controller) {
                 ob_start();
-                $cp->$action();
-                $response = ob_get_clean();
+                $response = $cp->$action();
+                if(! $response) {
+                    $response = ob_get_contents();
+                }
+                ob_end_clean();
                 if ($cache) {
                     $cache->set(null, $response);
                 }
