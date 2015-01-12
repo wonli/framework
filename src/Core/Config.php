@@ -81,9 +81,7 @@ class Config
                 foreach ($user_config as $key => $_config) {
                     if (is_array($_config)) {
                         foreach ($_config as $_config_key => $_config_value) {
-                            if ($_config_value) {
-                                $config_data [$key] [$_config_key] = $_config_value;
-                            }
+                            $config_data [$key] [$_config_key] = $_config_value;
                         }
                     } else {
                         $config_data [$key] = $_config;
