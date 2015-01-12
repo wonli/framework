@@ -145,7 +145,7 @@ class View extends FrameBase
         } elseif ($use_static_url) {
             $res_base_url = $this->config->get('static', 'url');
         } else {
-            $res_base_url = $this->config->get('url', 'request');
+            $res_base_url = $this->config->get('url', 'full_request');
         }
 
         return rtrim($res_base_url, '/') . '/' . $res_url;
