@@ -179,7 +179,7 @@ class Response
             $content_type = self::$mime_types ['html'];
         }
 
-        header("Content-Type: {$content_type};charset=utf-8");
+        header("Content-Type: {$content_type}; charset=utf-8");
     }
 
     /**
