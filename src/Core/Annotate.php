@@ -23,17 +23,22 @@ class Annotate
     private $prefix = 'cp_';
 
     /**
+     * 要解析的字符串
+     *
+     * @var string
+     */
+    private $content;
+
+    /**
      * @var Annotate
      */
     private static $instance;
 
     /**
-     * @param $annotate
+     * 注册一个wrapper
      */
-    private function __construct($annotate)
+    private function __construct()
     {
-        $this->content = $annotate;
-        $this->annotate_content_key = md5($this->content);
         stream_register_wrapper('annotate', 'Cross\Lib\Other\StringToPHPStream');
     }
 
@@ -46,10 +51,22 @@ class Annotate
     public static function getInstance($annotate)
     {
         if (! self::$instance) {
-            self::$instance = new Annotate($annotate);
+            self::$instance = new Annotate();
         }
 
-        return self::$instance;
+        return self::$instance->setContent($annotate);
+    }
+
+    /**
+     * 设置要解析的字符串
+     *
+     * @param $annotate
+     * @return $this
+     */
+    function setContent($annotate)
+    {
+        $this->content = $annotate;
+        return $this;
     }
 
     /**
