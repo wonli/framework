@@ -30,7 +30,7 @@ class MysqlModule extends Module
     protected static $instance;
 
     /**
-     * 静态延迟绑定的方式实例化当前类的子类
+     * 实例化当前类的子类
      *
      * @param array $args
      * @return static::get_called_class()
