@@ -6,17 +6,17 @@
  * @license     http://www.crossphp.com/license
  * @version     1.1.1
  */
-namespace Cross\Model;
+namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
 use MongoClient;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class MongoModel
- * @package Cross\Model
+ * Class MongoDriver
+ * @package Cross\DB\Drivers
  */
-class MongoModel
+class MongoDriver
 {
     /**
      * @var MongoClient

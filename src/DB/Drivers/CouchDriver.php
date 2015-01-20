@@ -6,7 +6,7 @@
  * @license     http://www.crossphp.com/license
  * @version     1.1.1
  */
-namespace Cross\Model;
+namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
 use Cross\Lib\Reference\Couchbase;
@@ -14,10 +14,10 @@ use Exception;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class CouchModel
- * @package Cross\Model
+ * Class CouchDriver
+ * @package Cross\DB\Drivers
  */
-class CouchModel
+class CouchDriver
 {
     /**
      * @param $link_params

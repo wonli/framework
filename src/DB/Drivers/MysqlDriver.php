@@ -6,7 +6,7 @@
  * @license     http://www.crossphp.com/license
  * @version     1.1.1
  */
-namespace Cross\Model;
+namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
@@ -17,10 +17,10 @@ use PDO;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class MysqlModel
- * @package Cross\Model
+ * Class MysqlDriver
+ * @package Cross\DB\Drivers
  */
-class MysqlModel
+class MysqlDriver
 {
     /**
      * @var PDOStatement
