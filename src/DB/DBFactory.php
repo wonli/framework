@@ -16,8 +16,8 @@ use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class Factory
- * @package Cross\Model
+ * Class DBFactory
+ * @package Cross\DB
  */
 class DBFactory
 {
