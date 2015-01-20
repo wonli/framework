@@ -11,8 +11,8 @@ namespace Cross\MVC;
 use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Loader;
+use Cross\DB\DBFactory;
 use Cross\Exception\CoreException;
-use Cross\Model\CoreModel;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -22,7 +22,7 @@ use Cross\Model\CoreModel;
 class Module extends FrameBase
 {
     /**
-     * @var \cross\cache\RedisCache|\cross\model\CouchModel|\cross\model\MongoModel|mixed
+     * @var \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\MySqlDriver
      */
     public $link;
 
@@ -59,11 +59,9 @@ class Module extends FrameBase
     }
 
     /**
-     * 连接数据库
-     *
      * @param string $params
-     * @return \cross\model\MysqlModel|\cross\model\MongoModel|\cross\model\CouchModel|\cross\cache\RedisCache|mixed
-     * @throws \cross\exception\CoreException
+     * @return \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\MySqlDriver
+     * @throws CoreException
      */
     function getLink($params = '')
     {
@@ -82,7 +80,7 @@ class Module extends FrameBase
             }
         }
 
-        return CoreModel::factory($link_type, $link_params);
+        return DBFactory::make($link_type, $link_params);
     }
 
     /**
