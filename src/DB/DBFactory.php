@@ -21,6 +21,12 @@ use Cross\Exception\CoreException;
  */
 class DBFactory
 {
+    /**
+     * @param $link_type
+     * @param $link_params
+     * @return RedisCache|CouchDriver|MongoDriver|MysqlDriver|mixed
+     * @throws CoreException
+     */
     static function make($link_type, $link_params)
     {
         switch (strtolower($link_type)) {
