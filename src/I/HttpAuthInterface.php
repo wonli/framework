@@ -15,7 +15,6 @@ namespace Cross\I;
  */
 interface HttpAuthInterface
 {
-
     /**
      * 设置
      *
