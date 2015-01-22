@@ -218,32 +218,33 @@ class Application
         }
 
         if ($cache && $cache->getExpireTime()) {
-            $response = $cache->get();
+            return Response::getInstance()->display($cache->get());
         } else {
             $action = $this->getAction();
             $cfn = $this->getControllerNamespace();
             $cp = new $cfn();
 
-            if (true === $run_controller) {
-                ob_start();
-                $response = $cp->$action();
-                if(! $response) {
-                    $response = ob_get_contents();
+            if (! Response::getInstance()->isEndFlush()) {
+                if (true === $run_controller) {
+                    ob_start();
+                    $response_content = $cp->$action();
+                    if(! $response_content) {
+                        $response_content = ob_get_contents();
+                    }
+                    ob_end_clean();
+                    if ($cache) {
+                        $cache->set(null, $response_content);
+                    }
+                } else {
+                    return $cp;
                 }
-                ob_end_clean();
-                if ($cache) {
-                    $cache->set(null, $response);
+
+                if (! empty($action_config['response'])) {
+                    $this->setResponseConfig($action_config['response']);
                 }
-            } else {
-                return $cp;
+                return Response::getInstance()->display($response_content);
             }
         }
-
-        if (! empty($action_config['response'])) {
-            $this->setResponseConfig($action_config['response']);
-        }
-
-        Response::getInstance()->output($response);
     }
 
     /**

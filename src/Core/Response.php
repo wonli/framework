@@ -16,6 +16,8 @@ namespace Cross\Core;
 class Response
 {
     /**
+     * http头
+     *
      * @var array
      */
     protected $header;
@@ -28,9 +30,18 @@ class Response
     protected $content_type;
 
     /**
+     * http 状态代码
+     *
      * @var int
      */
     protected $response_status;
+
+    /**
+     * 停止发送标识
+     *
+     * @var bool
+     */
+    protected $is_end_flush = false;
 
     /**
      * 防止重复发送header头
@@ -249,33 +260,48 @@ class Response
     /**
      * 输出内容
      *
-     * @param string $contents
-     * @return mixed
+     * @param string $message
+     * @param string $tpl
+     * @return bool
      */
-    function output($contents = '')
+    private function flushContent($message, $tpl = '')
     {
-        $code = $this->getResponseStatus();
-        if(false == self::$is_send_header) {
-            $this->sendResponseStatus($code);
-            $this->sendResponseHeader();
-            self::$is_send_header = true;
+        if (null !== $tpl && file_exists($tpl)) {
+            require $tpl;
+        } else {
+            echo $message;
         }
 
-        if (!$contents) {
-            $contents = self::$statusDescriptions [$code];
-        }
+        return true;
+    }
 
-        print $contents;
+    /**
+     * 标识停止输出
+     */
+    function setEndFlush()
+    {
+        $this->is_end_flush = true;
+        return $this;
+    }
+
+    /**
+     * 获取标识状态,是否终止输出
+     *
+     * @return bool
+     */
+    function isEndFlush()
+    {
+        return $this->is_end_flush;
     }
 
     /**
      * 调用模板输出信息
      *
-     * @param string $message
+     * @param string $content
      * @param string $tpl
      * @return string
      */
-    function display($message = '', $tpl = '')
+    function display($content = '', $tpl = '')
     {
         $code = $this->getResponseStatus();
         if(false == self::$is_send_header) {
@@ -284,17 +310,24 @@ class Response
             self::$is_send_header = true;
         }
 
-        if (!$message) {
-            $message = self::$statusDescriptions [$code];
+        if (!$content) {
+            $content = self::$statusDescriptions [$code];
         }
 
-        if (null !== $tpl && file_exists($tpl)) {
-            require $tpl;
-        } else {
-            var_export($message, true);
-        }
+        $this->flushContent($content, $tpl);
+    }
 
-        return '';
+    /**
+     * 输出当前内容并结束
+     *
+     * @param string $content
+     * @param string $tpl
+     * @return string
+     */
+    function displayOver($content = '', $tpl = '')
+    {
+        $this->setEndFlush();
+        return $this->display($content, $tpl);
     }
 
     /**
