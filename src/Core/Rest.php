@@ -200,6 +200,6 @@ class Rest
      */
     function response($rep)
     {
-        Response::getInstance()->output($rep);
+        Response::getInstance()->display($rep);
     }
 }

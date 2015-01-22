@@ -98,7 +98,7 @@ class Delegate
      *
      * @param string $app_name app名称
      * @param array $runtime_config 运行时加载的设置
-     * @return mixed
+     * @return self
      */
     static function loadApp($app_name, $runtime_config = array())
     {

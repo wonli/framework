@@ -323,19 +323,19 @@ class FrameBase extends Application
     /**
      * 返回一个数组或JSON字符串
      *
-     * @param string $ok
-     * @param string $msg
+     * @param int $status
+     * @param string $message
      * @param string $type
      * @return array|string
      */
-    function result($ok = '1', $msg = 'ok', $type = '')
+    function result($status = 1, $message = 'ok', $type = '')
     {
-        $result = array();
+        $result = array(
+            'status'  =>  $status,
+            'message'   =>  $message,
+        );
 
-        $result['status'] = $ok;
-        $result['message'] = $msg;
-
-        if ($type == 'JSON') {
+        if (strcasecmp($type, 'json') == 0) {
             $result = json_encode($result);
         }
 
