@@ -62,7 +62,7 @@ class Application
      * @param Config $app_config
      * @return Application
      */
-    public static function initialization($app_config)
+    final public static function initialization($app_config)
     {
         self::setConfig($app_config);
         return new Application();
@@ -217,34 +217,45 @@ class Application
             $cache = $this->initRequestCache($action_config['cache']);
         }
 
+        if (isset($action_config['before'])) {
+            $this->getClassInstanceByName($action_config['before']);
+        }
+
         if ($cache && $cache->getExpireTime()) {
-            return Response::getInstance()->display($cache->get());
+            $response_content = $cache->get();
         } else {
             $action = $this->getAction();
-            $cfn = $this->getControllerNamespace();
-            $cp = new $cfn();
+            $full_class_name = $this->getControllerNamespace();
+            $controller = new $full_class_name();
 
-            if (! Response::getInstance()->isEndFlush()) {
-                if (true === $run_controller) {
-                    ob_start();
-                    $response_content = $cp->$action();
-                    if(! $response_content) {
-                        $response_content = ob_get_contents();
-                    }
-                    ob_end_clean();
-                    if ($cache) {
-                        $cache->set(null, $response_content);
-                    }
-                } else {
-                    return $cp;
-                }
+            if (Response::getInstance()->isEndFlush()) {
+                return true;
+            }
 
-                if (! empty($action_config['response'])) {
-                    $this->setResponseConfig($action_config['response']);
+            if (true === $run_controller) {
+                ob_start();
+                $response_content = $controller->$action();
+                if(! $response_content) {
+                    $response_content = ob_get_contents();
                 }
-                return Response::getInstance()->display($response_content);
+                ob_end_clean();
+                if ($cache) {
+                    $cache->set(null, $response_content);
+                }
+            } else {
+                return $controller;
             }
         }
+
+        if (! empty($action_config['response'])) {
+            $this->setResponseConfig($action_config['response']);
+        }
+        Response::getInstance()->display($response_content);
+        if (isset($action_config['after'])) {
+            $this->getClassInstanceByName($action_config['after']);
+        }
+
+        return true;
     }
 
     /**
@@ -431,6 +442,32 @@ class Application
 
         if (isset($config['status'])) {
             Response::getInstance()->setResponseStatus($config['status']);
+        }
+    }
+
+    /**
+     * 实例化一个数组中指定的所有类
+     *
+     * @param string|array $class_name
+     * @throws CoreException
+     */
+    private function getClassInstanceByName($class_name)
+    {
+        if (! is_array($class_name)) {
+            $class_array = array($class_name);
+        } else {
+            $class_array = $class_name;
+        }
+
+        foreach($class_array as $class) {
+            try {
+                if (is_string($class)) {
+                    $obj = new \ReflectionClass($class);
+                    $obj->newInstance();
+                }
+            } catch (Exception $e) {
+                throw new CoreException('初始化类失败');
+            }
         }
     }
 
