@@ -237,7 +237,7 @@ class View extends FrameBase
             $url_params = $this->makeParams($params, $url_config, $sec);
         }
 
-        if (! empty($url_config['ext'])) {
+        if (! empty($url_config['ext']) && ! empty($url_controller)) {
             switch($url_config['type'])
             {
                 case 2:
