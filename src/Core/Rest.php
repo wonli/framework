@@ -99,7 +99,8 @@ class Rest
             return;
         }
 
-        $data = file_get_contents("php://input");
+        $php_data = file_get_contents("php://input");
+        parse_str($php_data, $data);
         $this->response($process_func, $data);
     }
 
@@ -119,7 +120,8 @@ class Rest
             return;
         }
 
-        $data = file_get_contents("php://input");
+        $php_data = file_get_contents("php://input");
+        parse_str($php_data, $data);
         $this->response($process_func, $data);
     }
 
@@ -192,6 +194,10 @@ class Rest
     {
         $ref_func = new \ReflectionFunction($process_func);
         if (count($ref_func->getParameters()) == count($params)) {
+            if (! is_array($params)) {
+                $params = array($params);
+            }
+
             $rep = call_user_func_array($process_func, $params);
             if (null != $rep) {
                 Response::getInstance()->display($rep);
