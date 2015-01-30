@@ -46,8 +46,8 @@ class Rest
         $this->request = Request::getInstance();
         $this->config = $config;
 
-        $url_type = $this->config->get('url', 'type');
-        $this->request_string = $this->request->getUrlRequest($url_type);
+        $url_request = $this->request->getUrlRequest($this->config->get('url', 'type'));
+        $this->request_string = empty($url_request) ? '/' : $url_request;
     }
 
     /**
@@ -79,10 +79,7 @@ class Rest
 
         $params = array();
         if (true === $this->checkRequest($request_url, $params)) {
-            $rep = call_user_func_array($process_func, $params);
-            if (null != $rep) {
-                $this->response($rep);
-            }
+            $this->response($process_func, $params);
         }
     }
 
@@ -103,10 +100,7 @@ class Rest
         }
 
         $data = file_get_contents("php://input");
-        $rep = call_user_func($process_func, $data);
-        if (null != $rep) {
-            $this->response($rep);
-        }
+        $this->response($process_func, $data);
     }
 
     /**
@@ -126,10 +120,7 @@ class Rest
         }
 
         $data = file_get_contents("php://input");
-        $rep = call_user_func($process_func, $data);
-        if (null != $rep) {
-            $this->response($rep);
-        }
+        $this->response($process_func, $data);
     }
 
     /**
@@ -146,10 +137,7 @@ class Rest
 
         $params = array();
         if (true === $this->checkRequest($request_url, $params)) {
-            $rep = call_user_func_array($process_func, $params);
-            if (null != $rep) {
-                $this->response($rep);
-            }
+            $this->response($process_func, $params);
         }
     }
 
@@ -194,12 +182,20 @@ class Rest
     }
 
     /**
-     * 返回结果
+     * 输出结果
      *
-     * @param $rep
+     * @param Closure $process_func
+     * @param array $params
+     * @internal param $rep
      */
-    function response($rep)
+    function response(Closure $process_func, $params)
     {
-        Response::getInstance()->display($rep);
+        $ref_func = new \ReflectionFunction($process_func);
+        if (count($ref_func->getParameters()) == count($params)) {
+            $rep = call_user_func_array($process_func, $params);
+            if (null != $rep) {
+                Response::getInstance()->display($rep);
+            }
+        }
     }
 }
