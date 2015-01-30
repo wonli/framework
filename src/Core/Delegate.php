@@ -195,16 +195,18 @@ class Delegate
      *
      * @param string $controller "控制器:方法"
      * @param null $args 参数
+     * @param bool $return_content 是输出还是直接返回结果
+     * @return array|mixed|string
      */
-    public function get($controller, $args = null)
+    public function get($controller, $args = null, $return_content = false)
     {
-        Application::initialization($this->config)->dispatcher($controller, $args);
+        return Application::initialization($this->config)->dispatcher($controller, $args, true, $return_content);
     }
 
     /**
      * REST
      *
-     * @return $this
+     * @return Rest
      */
     public function rest()
     {

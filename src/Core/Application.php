@@ -196,10 +196,11 @@ class Application
      * @param object|string $router 要解析的理由
      * @param null $args 指定参数
      * @param bool $run_controller 是否只返回控制器实例
+     * @param bool $return_response_content 是输出还是直接返回结果
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function dispatcher($router, $args = null, $run_controller = true)
+    public function dispatcher($router, $args = null, $run_controller = true, $return_response_content = false)
     {
         $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
@@ -250,7 +251,13 @@ class Application
         if (! empty($action_config['response'])) {
             $this->setResponseConfig($action_config['response']);
         }
-        Response::getInstance()->display($response_content);
+
+        if ($return_response_content) {
+            return $response_content;
+        } else {
+            Response::getInstance()->display($response_content);
+        }
+
         if (isset($action_config['after'])) {
             $this->getClassInstanceByName($action_config['after']);
         }
