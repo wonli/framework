@@ -356,16 +356,21 @@ class Helper
     }
 
     /**
-     * 发送一个http请求
+     * 发送一个curl请求
      *
      * @param string $url
-     * @param array $vars
+     * @param array|string $vars
      * @param string $method
-     * @return mixed|string
+     * @param int $timeout
+     * @param bool $CA
+     * @param string $cacert http://curl.haxx.se/ca/cacert.pem
+     * @return int|mixed|string
      */
-    static function curlRequest($url, $vars = array(), $method = 'post')
+    static function curlRequest($url, $vars = array(), $method = 'POST', $timeout = 10, $CA = false, $cacert = '')
     {
-        if (strcasecmp($method, 'GET') == 0 && !empty($vars)) {
+        $method = strtoupper($method);
+        $SSL = substr($url, 0, 8) == "https://" ? true : false;
+        if ($method == 'GET' && !empty($vars)) {
             if (false === strpos($url, '?')) {
                 $url .= '?';
             } else {
@@ -376,21 +381,33 @@ class Helper
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout - 3);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-HTTP-Method-Override: {$method}"));
 
-        if (strcasecmp($method, 'POST') == 0 || strcasecmp($method, 'PUT') == 0) {
+        if ($SSL && $CA && $cacert) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_CAINFO, $cacert);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        } else if ($SSL && !$CA) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        }
+
+        if ($method == 'POST' || $method == 'PUT') {
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); //避免data数据过长
         }
         $result = curl_exec($ch);
-        if (!curl_errno($ch)) {
+        $error_no = curl_errno($ch);
+        if (! $error_no) {
             $result = trim($result);
         } else {
-            $result = '[error：1]';
+            $result = $error_no;
         }
 
         curl_close($ch);
@@ -537,11 +554,17 @@ class Helper
      *
      * @param int $time 时间戳
      * @param string $format
+     * @param int $start_time
+     * @param string $suffix
      * @return string
      */
-    static function ftime($time, $format='Y-m-d H:i:s')
+    static function ftime($time, $format='Y-m-d H:i:s', $start_time = 0, $suffix = '前')
     {
-        $t = time() - $time;
+        if ($start_time == 0) {
+            $start_time = time();
+        }
+        
+        $t = $start_time - $time;
         if ($t < 63072000) {
             $f = array(
                 '31536000' => '年',
@@ -555,7 +578,7 @@ class Helper
 
             foreach ($f as $k => $v) {
                 if (0 != $c = floor($t / (int) $k)) {
-                    return $c . $v . '前';
+                    return $c . $v . $suffix;
                 }
             }
         }
