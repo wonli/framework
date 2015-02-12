@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.1.1
+ * @version     1.1.2
  */
 namespace Cross\Core;
 
@@ -563,7 +563,7 @@ class Helper
         if ($start_time == 0) {
             $start_time = time();
         }
-        
+
         $t = $start_time - $time;
         if ($t < 63072000) {
             $f = array(
