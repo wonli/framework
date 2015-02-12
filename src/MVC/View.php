@@ -159,7 +159,7 @@ class View extends FrameBase
     function getLinkBase()
     {
         if (null === $this->link_base) {
-            $this->setLinkBase($this->config->get('url', 'request'));
+            $this->setLinkBase($this->config->get('url', 'full_request'));
         }
 
         return $this->link_base;
