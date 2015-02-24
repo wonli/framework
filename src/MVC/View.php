@@ -51,13 +51,6 @@ class View extends FrameBase
     protected $tpl_dir;
 
     /**
-     * 模版文件夹路径
-     *
-     * @var string
-     */
-    protected static $tpl_path;
-
-    /**
      * 默认模板路径
      *
      * @var string
@@ -65,7 +58,7 @@ class View extends FrameBase
     protected $tpl_base_path;
 
     /**
-     * 默认连接
+     * 默认url
      *
      * @var string
      */
@@ -79,11 +72,32 @@ class View extends FrameBase
     protected $tpl_file_ext_name = '.tpl.php';
 
     /**
-     * 路由别名配置
+     * 模版文件夹路径
+     *
+     * @var string
+     */
+    protected static $tpl_path;
+
+    /**
+     * 控制器解析缓存
      *
      * @var array
      */
-    protected static $router_alias = array();
+    protected static $controller_cache = array();
+
+    /**
+     * url配置缓存
+     *
+     * @var array
+     */
+    protected static $url_config_cache = array();
+
+    /**
+     * 路由别名配置缓存
+     *
+     * @var array
+     */
+    protected static $router_alias_cache = array();
 
     /**
      * 模板的绝对路径
@@ -224,12 +238,23 @@ class View extends FrameBase
     function link($controller = null, $params = null, $sec = false)
     {
         $url = $this->getLinkBase();
+        $app_name = $this->config->get('app', 'name');
+        if (! isset(self::$url_config_cache[$app_name])) {
+            $url_config = $this->config->get('url');
+            self::$url_config_cache[$app_name] = $url_config;
+        } else {
+            $url_config = self::$url_config_cache[$app_name];
+        }
 
-        $url_controller = '';
-        $url_config = $this->config->get('url');
+        if (! isset(self::$controller_cache[$app_name][$controller])) {
+            $url_controller = '';
+            if ($controller !== null) {
+                $url_controller = $this->makeController($app_name, $controller, $url_config);
+            }
 
-        if ($controller !== null) {
-            $url_controller = $this->makeController($controller, $url_config);
+            self::$controller_cache[$app_name][$controller] = $url_controller;
+        } else {
+            $url_controller = self::$controller_cache[$app_name][$controller];
         }
 
         $url_params = '';
@@ -271,15 +296,16 @@ class View extends FrameBase
     /**
      * 生成控制器连接
      *
+     * @param string $app_name
      * @param string $controller
      * @param array $url_config
      * @throws \Cross\Exception\CoreException
      * @return string
      */
-    private function makeController($controller, $url_config)
+    private function makeController($app_name, $controller, $url_config)
     {
         $_link_url = '/';
-        $this->getControllerAlias($controller, $_controller, $_action);
+        $this->getControllerAlias($app_name, $controller, $_controller, $_action);
 
         if ($url_config ['rewrite']) {
             $_link_url .= $_controller;
@@ -378,14 +404,14 @@ class View extends FrameBase
     /**
      * 解析控制器别名
      *
+     * @param string $app_name
      * @param string $controller
      * @param string $_controller
      * @param string $_action
      */
-    private function getControllerAlias($controller, & $_controller, & $_action)
+    private function getControllerAlias($app_name, $controller, & $_controller, & $_action)
     {
-        $alias_config = $this->parseControllerAlias();
-
+        $alias_config = $this->parseControllerAlias($app_name);
         if (isset($alias_config[$controller])) {
             $_controller = $alias_config[$controller];
         } else {
@@ -408,25 +434,25 @@ class View extends FrameBase
     /**
      * 解析路由别名配置
      *
+     * @param string $app_name
      * @return array
      */
-    private function parseControllerAlias()
+    private function parseControllerAlias($app_name)
     {
-        $app_name = $this->config->get('app', 'name');
-        if (empty(self::$router_alias[$app_name])) {
+        if (empty(self::$router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
             if (! empty($router)) {
                 foreach($router as $controller_alias => $real_controller) {
                     if (is_array($real_controller)) {
-                        self::$router_alias[$app_name][$controller_alias] = array_flip($real_controller);
+                        self::$router_alias_cache[$app_name][$controller_alias] = array_flip($real_controller);
                     } else {
-                        self::$router_alias[$app_name][$real_controller] = $controller_alias;
+                        self::$router_alias_cache[$app_name][$real_controller] = $controller_alias;
                     }
                 }
             }
         }
 
-        return self::$router_alias[$app_name];
+        return self::$router_alias_cache[$app_name];
     }
 
     /**
