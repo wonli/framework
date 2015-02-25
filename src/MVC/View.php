@@ -8,7 +8,6 @@
  */
 namespace Cross\MVC;
 
-use Closure;
 use Cross\Core\FrameBase;
 use Cross\Core\Helper;
 use Cross\Core\Response;
