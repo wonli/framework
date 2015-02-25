@@ -8,6 +8,7 @@
  */
 namespace Cross\MVC;
 
+use Closure;
 use Cross\Core\FrameBase;
 use Cross\Core\Helper;
 use Cross\Core\Response;
@@ -225,6 +226,22 @@ class View extends FrameBase
         }
 
         return $this->tpl_base_path;
+    }
+
+    /**
+     * 安全的输出数组中的值
+     *
+     * @param array $data
+     * @param string|int $key
+     * @param string $default_value
+     */
+    function e($data, $key, $default_value = '')
+    {
+        if (isset($data[$key])) {
+            echo $data[$key];
+        } else {
+            echo $default_value;
+        }
     }
 
     /**
