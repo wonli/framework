@@ -455,8 +455,9 @@ class View extends FrameBase
      */
     private function parseControllerAlias($app_name)
     {
-        if (empty(self::$router_alias_cache[$app_name])) {
+        if (! isset(self::$router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
+            self::$router_alias_cache[$app_name] = array();
             if (! empty($router)) {
                 foreach($router as $controller_alias => $real_controller) {
                     if (is_array($real_controller)) {
