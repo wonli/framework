@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.1.2
+ * @version     1.1.3
  */
 namespace Cross\Auth;
 
