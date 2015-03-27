@@ -50,22 +50,7 @@ class CrossArray
      */
     function get($config, $name = null)
     {
-        if (is_string($config)) {
-            if (isset($this->data[$config])) {
-                if ($name) {
-                    if (isset($this->data[$config][$name])) {
-                        return $this->data[$config][$name];
-                    }
-
-                    return false;
-                }
-
-                return $this->data[$config];
-            }
-
-        }
-        else {
-
+        if (is_array($config)) {
             if ($name === true) {
                 foreach ($config as $item) {
                     if (isset($this->data[$item])) {
@@ -84,6 +69,18 @@ class CrossArray
             }
 
             return $_returnArr;
+        } else {
+            if (isset($this->data[$config])) {
+                if ($name) {
+                    if (isset($this->data[$config][$name])) {
+                        return $this->data[$config][$name];
+                    }
+
+                    return false;
+                }
+
+                return $this->data[$config];
+            }
         }
 
         return null;
@@ -91,7 +88,6 @@ class CrossArray
 
     /**
      * 返回全部数据
-     *
      * @param bool| $obj 是否返回对象
      * @return array/object
      */
@@ -106,14 +102,13 @@ class CrossArray
 
     /**
      * 数组转对象
-     *
      * @param $d
      * @return object
      */
     function arrayToObject($d)
     {
         if (is_array($d)) {
-            return (object)array_map(array($this, __FUNCTION__), $d);
+            return (object) array_map(array($this, __FUNCTION__), $d);
         } else {
             return $d;
         }
