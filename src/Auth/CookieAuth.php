@@ -44,7 +44,7 @@ class CookieAuth implements HttpAuthInterface
             $agent = 'agent';
         }
 
-        return sha1(Helper::getIp() . $agent . $this->getKey() . $params);
+        return sha1($agent . $this->getKey() . $params);
     }
 
     /**
