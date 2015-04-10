@@ -30,6 +30,12 @@ class CookieAuth implements HttpAuthInterface
      */
     private $default_key = '!wl<@>c(r#%o*s&s';
 
+    function __construct($key = '') {
+        if ($key) {
+            $this->key = $key;
+        }
+    }
+
     /**
      * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
      *
@@ -45,16 +51,6 @@ class CookieAuth implements HttpAuthInterface
         }
 
         return sha1($agent . $this->getKey() . $params);
-    }
-
-    /**
-     * 设置key
-     *
-     * @param $key
-     */
-    protected function setKey($key)
-    {
-        $this->key = $key;
     }
 
     /**
