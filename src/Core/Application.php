@@ -22,6 +22,11 @@ use ReflectionProperty;
 class Application
 {
     /**
+     * @var array
+     */
+    protected static $di;
+
+    /**
      * action 名称
      *
      * @var string
@@ -62,9 +67,10 @@ class Application
      * @param Config $app_config
      * @return Application
      */
-    final public static function initialization($app_config)
+    final public static function initialization($app_config, $di = array())
     {
         self::setConfig($app_config);
+        self::setDi($di);
         return new Application();
     }
 
@@ -273,6 +279,16 @@ class Application
     private static function setConfig($config)
     {
         self::$app_config = $config;
+    }
+
+    /**
+     * 设置di
+     *
+     * @param $di
+     */
+    private static function setDi($di)
+    {
+        self::$di = $di;
     }
 
     /**
@@ -516,6 +532,21 @@ class Application
     public static function getConfig()
     {
         return self::$app_config;
+    }
+
+    /**
+     * 获取依赖
+     *
+     * @param string $name
+     * @param array $params
+     * @return mixed
+     * @throws CoreException
+     */
+    function getDi($name, $params = array()) {
+        if (isset(self::$di[$name])) {
+            return call_user_func_array(self::$di[$name], $params);
+        }
+        throw new CoreException("未定义的依赖 {$name}");
     }
 
     /**

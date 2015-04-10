@@ -10,6 +10,7 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\I\RouterInterface;
+use Closure;
 
 //检查环境版本
 !version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
@@ -46,6 +47,13 @@ class Delegate
      * @var array
      */
     public static $map;
+
+    /**
+     * 依赖列表
+     *
+     * @var array
+     */
+    private $di;
 
     /**
      * app配置文件
@@ -169,6 +177,19 @@ class Delegate
     }
 
     /**
+     * 依赖注入
+     *
+     * @param string $name
+     * @param Closure $f
+     * @return mixed
+     */
+    function di($name, Closure $f) {
+        $app = self::$instance[$this->app_name];
+        $app->di[$name] = $f;
+        return $app;
+    }
+
+    /**
      * 解析请求
      *
      * @param null $params 参见router->initParams();
@@ -200,7 +221,7 @@ class Delegate
      */
     public function get($controller, $args = null, $return_content = false)
     {
-        return Application::initialization($this->config)->dispatcher($controller, $args, true, $return_content);
+        return Application::initialization($this->config, $this->di)->dispatcher($controller, $args, true, $return_content);
     }
 
     /**
@@ -210,7 +231,7 @@ class Delegate
      */
     public function rest()
     {
-        return Rest::getInstance($this->config);
+        return Rest::getInstance($this->config, $this->di);
     }
 
     /**
@@ -221,7 +242,7 @@ class Delegate
      */
     public function run($params = null, $args = null)
     {
-        Application::initialization($this->config)->dispatcher($this->router($params), $args);
+        Application::initialization($this->config, $this->di)->dispatcher($this->router($params), $args);
     }
 
     /**
@@ -232,7 +253,7 @@ class Delegate
      */
     public function rrun(RouterInterface $router, $args)
     {
-        Application::initialization($this->config)->dispatcher($router, $args);
+        Application::initialization($this->config, $this->di)->dispatcher($router, $args);
     }
 
     /**
