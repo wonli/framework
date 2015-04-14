@@ -590,7 +590,7 @@ class MysqlDriver
                     switch($operator)
                     {
                         case 'OR':
-
+                        case 'AND':
                             if (! is_array($w_value) ) {
                                 throw new CoreException('OR need a array parameter');
                             }
@@ -601,7 +601,7 @@ class MysqlDriver
                                     $or_exp_val = $n_value;
                                 }
 
-                                $condition[' OR '][] = "{$w_key} {$ex_operator} ?";
+                                $condition[" {$operator} "][] = "{$w_key} {$ex_operator} ?";
                                 $params [] = $or_exp_val;
                             }
                             break;
