@@ -38,8 +38,7 @@ class MongoDriver
         if (class_exists('MongoClient')) {
             $m = new MongoClient($link_params['dsn'], $link_params['options']);
             $this->db = $m->$link_params['db'];
-        }
-        else {
+        } else {
             throw new CoreException('please use PCEL MongoDB extends');
         }
     }

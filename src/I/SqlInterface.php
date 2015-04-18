@@ -16,52 +16,64 @@ namespace Cross\I;
 interface SqlInterface
 {
     /**
-     * get one data
+     * 获取一条数据
      *
-     * @param string $table database table
-     * @param string $fields fields
-     * @param string $where conditions
+     * @param string $table 表名
+     * @param string $fields 字段
+     * @param string|array $where 条件(建议只使用字符串常量,包含变量时请使用数组)
      * @return mixed
      */
     function get($table, $fields, $where);
 
     /**
-     * find data
+     * 批量获取表中的数据
      *
-     * @param string $table
-     * @param string $fields
-     * @param string $where
-     * @param string|int $order
-     * @param array $page array('p', 'page');
+     * @param string $table 表名
+     * @param string $fields 要获取的字段名
+     * @param string|array $where 条件(建议只使用字符串常量,包含变量时请使用数组)
+     * @param int|string $order 排序
+     * @param int|string $group_by 分组
+     * @return mixed
+     */
+    function getAll($table, $fields, $where = '', $order = 1, $group_by = 1);
+
+    /**
+     * 带分页的查询
+     *
+     * @param string $table 表名
+     * @param string $fields 字段名
+     * @param string|array $where 条件(建议只使用字符串常量,包含变量时请使用数组)
+     * @param string|int $order 排序
+     * @param array $page array('p', 'limit'); p表示当前页数, limit表示要取出的条数
      * @return mixed
      */
     function find($table, $fields, $where, $order = 1, & $page = array('p', 'limit'));
 
     /**
-     * add data
+     * 添加数据
      *
-     * @param string $table
-     * @param string $data
-     * @param bool $multi
+     * @param string $table 表名
+     * @param string $data 要插入的数据
+     * @param bool $multi 是否批量插入
      * @return mixed
      */
     function add($table, $data, $multi = false);
 
     /**
-     * update
+     * 更新数据
      *
-     * @param string $table
-     * @param string $data
-     * @param string $where
+     * @param string $table 表名
+     * @param string $data 要更新的数据
+     * @param string $where 筛选条件
      * @return mixed
      */
     function update($table, $data, $where);
 
     /**
-     * del
+     * 删除数据
      *
-     * @param string $table
-     * @param string $where
+     * @param string $table 表名
+     * @param string $where 条件
      * @return mixed
      */
     function del($table, $where);

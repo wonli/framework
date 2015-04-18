@@ -9,10 +9,17 @@
 namespace Cross\DB;
 
 use Cross\Cache\RedisCache;
+use Cross\DB\Connecter\MySQLConnecter;
+use Cross\DB\Connecter\PgSQLConnecter;
+use Cross\DB\Connecter\SQLiteConnecter;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
-use Cross\DB\Drivers\MysqlDriver;
+use Cross\DB\Drivers\PDOSqlDriver;
+use Cross\DB\SQLAssembler\MySQLAssembler;
+use Cross\DB\SQLAssembler\PgSQLAssembler;
+use Cross\DB\SQLAssembler\SQLiteAssembler;
 use Cross\Exception\CoreException;
+use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -22,37 +29,61 @@ use Cross\Exception\CoreException;
 class DBFactory
 {
     /**
-     * @param $link_type
-     * @param $link_params
-     * @return RedisCache|CouchDriver|MongoDriver|MysqlDriver|mixed
+     * @param $link
+     * @param $params
+     * @param $config
+     * @return RedisCache|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      */
-    static function make($link_type, $link_params)
+    static function make($link, $params, $config)
     {
-        switch (strtolower($link_type)) {
-            case 'mysql' :
-                $port = isset($link_params['port']) ? $link_params['port'] : 3306;
-                $char_set = isset($link_params['charset']) ? $link_params['charset'] : 'utf8';
-                $options = isset($link_params['options']) ? $link_params['options'] : array();
+        if ($params instanceof Closure) {
+            return call_user_func_array($params, array($config));
+        } else {
+            switch (strtolower($link)) {
+                case 'mysql' :
+                    $port = isset($params['port']) ? $params['port'] : 3306;
+                    $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
+                    $options = isset($params['options']) ? $params['options'] : array();
 
-                if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($link_params['unix_socket'])) {
-                    $dsn = "mysql:dbname={$link_params['name']};unix_socket={$link_params['unix_socket']}";
-                } else {
-                    $dsn = "mysql:host={$link_params['host']};dbname={$link_params['name']};port={$port};charset={$char_set}";
-                }
-                return MysqlDriver::getInstance($dsn, $link_params['user'], $link_params['pass'], $options);
+                    if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($params['unix_socket'])) {
+                        $dsn = "mysql:dbname={$params['name']};unix_socket={$params['unix_socket']}";
+                    } else {
+                        $dsn = "mysql:host={$params['host']};dbname={$params['name']};port={$port};charset={$char_set}";
+                    }
 
-            case 'mongo':
-                return new MongoDriver($link_params);
+                    $connecter = MySQLConnecter::getInstance($dsn, $params['user'], $params['pass'], $options);
+                    return new PDOSqlDriver($connecter, new MySQLAssembler());
 
-            case 'redis':
-                return new RedisCache($link_params);
+                case 'sqlite':
+                    $connecter = SQLiteConnecter::getInstance($params['dsn']);
+                    return new PDOSqlDriver($connecter, new SQLiteAssembler());
 
-            case 'couch':
-                return new CouchDriver($link_params);
+                case 'pgsql':
+                    $port = isset($params['port']) ? $params['port'] : 5432;
+                    $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
+                    $options = isset($params['options']) ? $params['options'] : array();
+                    if (! isset($params['dsn'])) {
+                        $dsn = "mysql:host={$params['host']};dbname={$params['name']};port={$port};charset={$char_set}";
+                    } else {
+                        $dsn = $params['dsn'];
+                    }
 
-            default:
-                throw new CoreException('不支持的数据库扩展!');
+                    $connecter = PgSqlConnecter::getInstance($dsn, $params['user'], $params['pass'], $options);
+                    return new PDOSqlDriver($connecter, new PgSQLAssembler());
+
+                case 'mongo':
+                    return new MongoDriver($params);
+
+                case 'redis':
+                    return new RedisCache($params);
+
+                case 'couch':
+                    return new CouchDriver($params);
+
+                default:
+                    throw new CoreException('不支持的数据库扩展!');
+            }
         }
     }
 }

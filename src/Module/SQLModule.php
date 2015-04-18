@@ -12,13 +12,13 @@ use Cross\Exception\CoreException;
 use Cross\MVC\Module;
 
 /**
- * mysql模块,提供简单的CRUD功能
+ * 提供简单的CRUD功能
  *
  * @Auth: wonli <wonli@live.com>
  * Class MysqlModule
  * @package Cross\Module
  */
-class MysqlModule extends Module
+class SQLModule extends Module
 {
     /**
      * 要操作的数据表名
@@ -44,7 +44,7 @@ class MysqlModule extends Module
         $called_class_name = get_called_class();
         if (empty(self::$instance[$called_class_name])) {
             $obj = new \ReflectionClass($called_class_name);
-            if($obj->hasProperty('t')) {
+            if ($obj->hasProperty('t')) {
                 self::$instance[$called_class_name] = $obj->newInstance($args);
             } else {
                 throw new CoreException('请定义一个成员属性t指定默认表名');
@@ -67,19 +67,19 @@ class MysqlModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::get()
+     * @see Cross\DB\Drivers\PDOSqlDriver::get()
      *
      * @param $condition
      * @param string $fields
      * @return mixed
      */
-    function get($condition, $fields='*')
+    function get($condition, $fields = '*')
     {
         return $this->link->get($this->t, $fields, $condition);
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::getAll()
+     * @see Cross\DB\Drivers\PDOSqlDriver::getAll()
      *
      * @param null $where
      * @param int $order
@@ -93,7 +93,7 @@ class MysqlModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::find()
+     * @see Cross\DB\Drivers\PDOSqlDriver::find()
      *
      * @param $condition
      * @param array $page
@@ -102,13 +102,13 @@ class MysqlModule extends Module
      * @param string $fields
      * @return array|mixed
      */
-    function find($condition, & $page = array(), $order=1, $group_by = 1, $fields='*')
+    function find($condition, & $page = array(), $order = 1, $group_by = 1, $fields = '*')
     {
         return $this->link->find($this->t, $fields, $condition, $order, $page, $group_by);
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::add()
+     * @see Cross\DB\Drivers\PDOSqlDriver::add()
      *
      * @param $data
      * @param bool $multi
@@ -121,7 +121,7 @@ class MysqlModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::update()
+     * @see Cross\DB\Drivers\PDOSqlDriver::update()
      *
      * @param $data
      * @param $where
@@ -133,7 +133,7 @@ class MysqlModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\MysqlDriver::del()
+     * @see Cross\DB\Drivers\PDOSqlDriver::del()
      *
      * @param $where
      * @param bool $multi
