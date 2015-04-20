@@ -255,6 +255,10 @@ class View extends FrameBase
     {
         $url = $this->getLinkBase();
         $app_name = $this->config->get('app', 'name');
+
+        //用来缓存当前运行中config中的url项配置
+        //在运行过程中,如果url的配置有变化,可能会产生意料之外的结果,这时候需要调用
+        //cleanLinkCache() 来刷新缓存
         if (! isset(self::$url_config_cache[$app_name])) {
             $url_config = $this->config->get('url');
             self::$url_config_cache[$app_name] = $url_config;
@@ -470,6 +474,14 @@ class View extends FrameBase
         }
 
         return self::$router_alias_cache[$app_name];
+    }
+
+    /**
+     * 清除link中使用到的缓存(config->url配置在运行过程中发生变动时先清除缓存)
+     */
+    function cleanLinkCache() {
+        $app_name = $this->config->get('app', 'name');
+        unset(self::$url_config_cache[$app_name], self::$controller_cache[$app_name]);
     }
 
     /**
