@@ -70,7 +70,6 @@ class MainTest extends PHPUnit_Framework_TestCase
                 case 3:
                     $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}p1{$dot}1{$dot}p2{$dot}2{$dot}p3{$dot}3{$ext}", $result, 'url->type=>3 make link error');
                     break;
-
                 case 4:
                     $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}p1{$dot}1{$dot}p2{$dot}2{$dot}p3{$dot}3{$ext}", $result, 'url->type=>4 make link error');
                     break;
@@ -79,7 +78,7 @@ class MainTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * 生成机密连接测试
+     * 生成加密连接测试
      */
     function testMakeEncryptLink()
     {

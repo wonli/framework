@@ -38,7 +38,8 @@ class Main extends Controller
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
         $index = $this->params['index'];
-        unset($params['type'], $params['dot'], $params['ext'], $params['index']);
+
+        $this->view->cleanLinkCache();
         $this->config->set('url', array(
             'ext'   =>  $ext,
             'dot'   =>  $dot,
@@ -47,7 +48,11 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        echo $this->view->link("Main:getUrlSecurityParams", $params);
+        echo $this->view->link("Main:getUrlSecurityParams", array(
+            'p1'    =>  $params['p1'],
+            'p2'    =>  $params['p2'],
+            'p3'    =>  $params['p3']
+        ));
     }
 
     /**
@@ -60,7 +65,8 @@ class Main extends Controller
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
         $index = $this->params['index'];
-        unset($params['type'], $params['dot'], $params['ext'], $params['index']);
+
+        $this->view->cleanLinkCache();
         $this->config->set('url', array(
             'ext'   =>  $ext,
             'dot'   =>  $dot,
@@ -69,7 +75,11 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        echo $this->view->slink("Main:getUrlSecurityParams", $params);
+        echo $this->view->slink("Main:getUrlSecurityParams", array(
+            'p1'    =>  $params['p1'],
+            'p2'    =>  $params['p2'],
+            'p3'    =>  $params['p3']
+        ));
     }
 
     /**
@@ -82,23 +92,27 @@ class Main extends Controller
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
 
-        unset($params['link_type'], $params['dot'], $params['ext']);
-
-        $this->config->set('url', array('rewrite'=>false));
-        $this->config->set('url', array('ext'=>$ext));
-        $this->config->set('url', array('dot'=>$dot));
-        $this->config->set('url', array('type'=>$link_type));
+        $this->view->cleanLinkCache();
+        $this->config->set('url', array(
+            'rewrite'   =>  false,
+            'ext'   =>  $ext,
+            'dot'   =>  $dot,
+            'type'  =>  $link_type
+        ));
 
         $this->view->setLinkBase('');
+        $link = $this->view->slink("Main:getUrlSecurityParams", array(
+            'p1'    =>  $params['p1'],
+            'p2'    =>  $params['p2'],
+            'p3'    =>  $params['p3']
+        ));
 
-        $link = $this->view->slink("Main:getUrlSecurityParams", $params);
         $url_start = 0;
         switch($link_type)
         {
             case 1:
             case 3:
                 $url_start = 2;
-
                 $index_file_name = $this->config->get('url', 'index');
                 if (strcasecmp($index_file_name, 'index.php') != 0) {
                     $url_start += strlen($index_file_name);
