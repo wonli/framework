@@ -371,12 +371,13 @@ class Helper
         $method = strtoupper($method);
         $SSL = substr($url, 0, 8) == "https://" ? true : false;
         if ($method == 'GET' && !empty($vars)) {
-            if (false === strpos($url, '?')) {
-                $url .= '?';
+            $params = is_array($vars) ? http_build_query($vars) : $vars;
+            $url = rtrim($url, '?');
+            if (false === strpos($url.$params, '?')) {
+                $url = $url.'?'.ltrim($params, '&');
             } else {
-                $url .= '&';
+                $url = $url.$params;
             }
-            $url .= is_array($vars) ? http_build_query($vars) : $vars;
         }
 
         $ch = curl_init();
