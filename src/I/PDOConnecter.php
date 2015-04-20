@@ -47,5 +47,5 @@ interface PDOConnecter
      *
      * @return mixed
      */
-    function lastInsertID();
+    function lastInsertId();
 }

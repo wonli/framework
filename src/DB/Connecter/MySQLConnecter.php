@@ -110,7 +110,7 @@ class MySQLConnecter extends BaseConnecter
      *
      * @return string
      */
-    function lastInsertID()
+    function lastInsertId()
     {
         return $this->pdo->lastInsertId();
     }

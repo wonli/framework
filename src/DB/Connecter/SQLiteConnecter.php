@@ -84,7 +84,7 @@ class SQLiteConnecter extends BaseConnecter
     /**
      * 最后插入的id
      */
-    function lastInsertID()
+    function lastInsertId()
     {
         return $this->pdo->lastInsertId();
     }

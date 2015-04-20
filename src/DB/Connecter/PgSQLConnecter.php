@@ -115,7 +115,7 @@ class PgSQLConnecter extends BaseConnecter
      *
      * @return mixed
      */
-    public function lastInsertID()
+    public function lastInsertId()
     {
         $sql = "SELECT LASTVAL() as insert_id";
         try {
