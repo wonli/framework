@@ -201,7 +201,7 @@ class Delegate
     }
 
     /**
-     * 配置uri 参见mrun()
+     * 配置uri 参见mRun()
      *
      * @param string $uri 指定uri
      * @param null $controller "控制器:方法"
@@ -251,7 +251,7 @@ class Delegate
      * @param RouterInterface $router RouterInterface的实现
      * @param string $args 参数
      */
-    public function rrun(RouterInterface $router, $args)
+    public function rRun(RouterInterface $router, $args)
     {
         Application::initialization($this->config, $this->di)->dispatcher($router, $args);
     }
@@ -262,7 +262,7 @@ class Delegate
      * @param null $args 参数
      * @throws CoreException
      */
-    public function mrun($args = null)
+    public function mRun($args = null)
     {
         $url_type = $this->config->get('url', 'type');
         $req = Request::getInstance()->getUrlRequest($url_type);
