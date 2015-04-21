@@ -317,6 +317,9 @@ class FrameBase extends Application
 
         $view = new $view_class_name;
         $view->config = $this->config;
+        $view->controller = $this->controller;
+        $view->action = $this->action;
+        $view->params = $this->params;
         return $view;
     }
 
