@@ -65,12 +65,13 @@ class Application
      * 实例化Application
      *
      * @param Config $app_config
+     * @param array $di
      * @return Application
      */
     final public static function initialization($app_config, $di = array())
     {
-        self::setConfig($app_config);
         self::setDi($di);
+        self::setConfig($app_config);
         return new Application();
     }
 
