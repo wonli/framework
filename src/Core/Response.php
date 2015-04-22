@@ -102,10 +102,12 @@ class Response
      * 设置header信息
      *
      * @param $header
+     * @return $this
      */
     function setHeader($header)
     {
         $this->header = $header;
+        return $this;
     }
 
     /**
