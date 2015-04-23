@@ -39,16 +39,13 @@ class Controller extends FrameBase
     }
 
     /**
-     * 是否是cli方式
+     * 是否cli方式发起请求
      *
      * @return bool
      */
     protected function is_cli()
     {
-        define('IS_CLI', PHP_SAPI === 'cli');
-        if (IS_CLI) return true;
-
-        return false;
+        return PHP_SAPI === 'cli';
     }
 
     /**
@@ -64,26 +61,37 @@ class Controller extends FrameBase
     /**
      * 返回执行的前一页
      *
-     * @return void
+     * @return string
      */
     protected function return_referer()
     {
-        header('location:' . $_SERVER['HTTP_REFERER']);
-        exit(0);
+        return $this->redirect($_SERVER['HTTP_REFERER']);
     }
 
     /**
-     * 跳转到指定页面
+     * 先生成连接再redirect
      *
-     * @param null $_controller
-     * @param null $params
+     * @param string|null $_controller
+     * @param string|array $params
      * @param bool $sec
+     * @return string
      */
     protected function to($_controller = null, $params = null, $sec = false)
     {
         $url = $this->view->link($_controller, $params, $sec);
-        header("Location: {$url}");
-        exit(0);
+        return $this->redirect($url);
+    }
+
+    /**
+     * @see Response::redirect
+     *
+     * @param string $url
+     * @param int $http_response_status
+     * @return string
+     */
+    protected function redirect($url, $http_response_status = 200)
+    {
+        return $this->response->redirect($url, $http_response_status);
     }
 
     /**

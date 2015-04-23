@@ -153,20 +153,17 @@ class Response
     {
         if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
             if ((isset($config['user']) && $_SERVER['PHP_AUTH_USER'] == $config['user'])
-                && (isset($config['pw']) && $_SERVER['PHP_AUTH_PW'] == $config['pw'])) {
+                && (isset($config['pw']) && $_SERVER['PHP_AUTH_PW'] == $config['pw'])
+            ) {
                 return true;
             }
         }
 
         $realm = isset($config['realm']) ? $config['realm'] : 'Basic Auth';
         $failed_msg = isset($config['failed_msg']) ? $config['failed_msg'] : 'Auth Failed';
-
-        $this->setContentType();
-        $this->sendResponseStatus(401);
-        $this->setHeader(sprintf('WWW-Authenticate: Basic realm="%s"', $realm));
-        $this->sendResponseHeader();
-        print $failed_msg;
-        exit(0);
+        return $this->setHeader(401)
+            ->setHeader(sprintf('WWW-Authenticate: Basic realm="%s"', $realm))
+            ->displayOver($failed_msg);
     }
 
     /**
@@ -220,7 +217,7 @@ class Response
     private function makeParams($content)
     {
         $result = array();
-        if (! is_array($content)) {
+        if (!is_array($content)) {
             $result['CP_PARAMS'] = $content;
         } else {
             $result = $content;
@@ -237,7 +234,7 @@ class Response
     private function sendHeader()
     {
         $contents = $this->getHeader();
-        if (! empty($contents)) {
+        if (!empty($contents)) {
             if (!is_array($contents)) {
                 $contents = array($contents);
             }
@@ -297,6 +294,18 @@ class Response
     }
 
     /**
+     * 重定向
+     *
+     * @param $url
+     * @param int $status
+     * @return string
+     */
+    function redirect($url, $status = 200)
+    {
+        return $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
+    }
+
+    /**
      * 调用模板输出信息
      *
      * @param string $content
@@ -306,7 +315,7 @@ class Response
     function display($content = '', $tpl = '')
     {
         $code = $this->getResponseStatus();
-        if(false == self::$is_send_header) {
+        if (false == self::$is_send_header) {
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
             self::$is_send_header = true;
