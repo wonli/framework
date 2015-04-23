@@ -8,7 +8,11 @@
  */
 namespace Cross\DB\SQLAssembler;
 
-
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class MySQLAssembler
+ * @package Cross\DB\SQLAssembler
+ */
 class MySQLAssembler extends SQLAssembler
 {
 

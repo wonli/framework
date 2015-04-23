@@ -12,6 +12,11 @@ use Cross\Exception\CoreException;
 use Exception;
 use PDO;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class MySQLConnecter
+ * @package Cross\DB\Connecter
+ */
 class MySQLConnecter extends BaseConnecter
 {
 
@@ -23,7 +28,7 @@ class MySQLConnecter extends BaseConnecter
     private static $instance;
 
     /**
-     * 创建数据库连接
+     * 创建Mysql的PDO连接
      *
      * @param string $dsn dsn
      * @param string $user 数据库用户名
@@ -42,6 +47,7 @@ class MySQLConnecter extends BaseConnecter
 
     /**
      * @see MysqlModel::__construct
+     *
      * @param string $dsn
      * @param string $user
      * @param string $password
@@ -51,12 +57,12 @@ class MySQLConnecter extends BaseConnecter
     static function getInstance($dsn, $user, $password, $option = array())
     {
         //同时建立多个连接时候已dsn的md5值为key
-        $_instance = md5($dsn);
-        if (!isset(self::$instance[$_instance])) {
-            self::$instance [$_instance] = new self($dsn, $user, $password, $option);
+        $key = md5($dsn);
+        if (!isset(self::$instance[$key])) {
+            self::$instance [$key] = new self($dsn, $user, $password, $option);
         }
 
-        return self::$instance [$_instance];
+        return self::$instance [$key];
     }
 
     /**

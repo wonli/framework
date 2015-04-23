@@ -27,7 +27,3 @@ class FrontException extends CrossException
             ->display($cp_error, __DIR__ . '/_tpl/front_error.tpl.php');
     }
 }
-
-
-
-

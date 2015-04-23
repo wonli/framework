@@ -34,10 +34,8 @@ class RequestCache extends CoreCache
     static function factory($cache_config)
     {
         $cache = $cache_config['type'];
-        if (! self::$cache_object)
-        {
-            if (is_int($cache))
-            {
+        if (!self::$cache_object) {
+            if (is_int($cache)) {
                 switch ($cache) {
                     case 1:
                         self::$cache_object = new FileCache($cache_config);

@@ -18,7 +18,7 @@ use Exception;
  */
 class CacheException extends CrossException
 {
-    function errorHandler( Exception $e )
+    function errorHandler(Exception $e)
     {
         $cp_error = $this->cpExceptionSource($e);
         $code = $e->getCode() ? $e->getCode() : 200;

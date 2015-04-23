@@ -50,7 +50,7 @@ class Annotate
      */
     public static function getInstance($annotate)
     {
-        if (! self::$instance) {
+        if (!self::$instance) {
             self::$instance = new Annotate();
         }
 

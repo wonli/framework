@@ -8,7 +8,11 @@
  */
 namespace Cross\DB\SQLAssembler;
 
-
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class PgSQLAssembler
+ * @package Cross\DB\SQLAssembler
+ */
 class PgSQLAssembler extends SQLAssembler
 {
     /**

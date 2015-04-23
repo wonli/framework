@@ -183,7 +183,7 @@ class FrameBase extends Application
     {
         if (!$this->url_crypt_key) {
             $url_crypt_key = parent::getConfig()->get('url', 'crypto_key');
-            if (! $url_crypt_key) {
+            if (!$url_crypt_key) {
                 $url_crypt_key = 'crossphp';
             }
 
@@ -203,8 +203,7 @@ class FrameBase extends Application
     {
         $url_type = parent::getConfig()->get('url', 'type');
         if (null === $params) {
-            switch($url_type)
-            {
+            switch ($url_type) {
                 case 1:
                     $params = $this->params;
                     if (is_array($this->params)) {
@@ -233,8 +232,7 @@ class FrameBase extends Application
             return $this->params;
         }
 
-        switch($url_type)
-        {
+        switch ($url_type) {
             case 1:
                 $result_array = explode(parent::getConfig()->get('url', 'dot'), $decode_params_str);
                 $annotate = parent::getActionConfig();
@@ -308,7 +306,7 @@ class FrameBase extends Application
      */
     protected function initView()
     {
-        list(,,$type) = explode("\\", get_called_class());
+        list(, , $type) = explode("\\", get_called_class());
         if (strcasecmp($type, 'views') !== 0) {
             $view_class_name = str_replace($type, 'views', get_called_class()) . 'View';
         } else {
@@ -334,8 +332,8 @@ class FrameBase extends Application
     function result($status = 1, $message = 'ok', $type = '')
     {
         $result = array(
-            'status'  =>  $status,
-            'message'   =>  $message,
+            'status' => $status,
+            'message' => $message,
         );
 
         if (strcasecmp($type, 'json') == 0) {

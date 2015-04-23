@@ -30,7 +30,8 @@ class CookieAuth implements HttpAuthInterface
      */
     private $default_key = '!wl<@>c(r#%o*s&s';
 
-    function __construct($key = '') {
+    function __construct($key = '')
+    {
         if ($key) {
             $this->key = $key;
         }

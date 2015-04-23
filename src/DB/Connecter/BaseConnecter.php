@@ -8,13 +8,16 @@
  */
 namespace Cross\DB\Connecter;
 
-
 use Cross\I\PDOConnecter;
 use PDO;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class BaseConnecter
+ * @package Cross\DB\Connecter
+ */
 abstract class BaseConnecter implements PDOConnecter
 {
-
     /**
      * @var PDO
      */

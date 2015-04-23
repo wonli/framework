@@ -194,7 +194,7 @@ class Rest
     {
         $ref_func = new \ReflectionFunction($process_func);
         if (count($ref_func->getParameters()) == count($params)) {
-            if (! is_array($params)) {
+            if (!is_array($params)) {
                 $params = array($params);
             }
 

@@ -234,7 +234,7 @@ class Helper
         $key_a = md5(substr($key, 0, 16));
         $key_b = md5(substr($key, 16, 16));
         $key_c = $c_key_length ? ($operation == 'DECODE' ? substr($string, 0, $c_key_length) :
-            substr(md5(microtime()), -$c_key_length )) : '';
+            substr(md5(microtime()), -$c_key_length)) : '';
 
         $crypt_key = $key_a . md5($key_a . $key_c);
         $key_length = strlen($crypt_key);
@@ -305,7 +305,7 @@ class Helper
     static function encodeParams($str, $key, $operation = 'encode')
     {
         if ($operation == "encode") {
-            $str = (string) $str;
+            $str = (string)$str;
         } else {
             $verity_str = substr($str, 0, 3);
             $str = substr($str, 3);
@@ -346,7 +346,7 @@ class Helper
      */
     static function getPath($id, $path_name = '')
     {
-        $id = (string) abs($id);
+        $id = (string)abs($id);
         $id = str_pad($id, 9, '0', STR_PAD_LEFT);
         $dir1 = substr($id, 0, 3);
         $dir2 = substr($id, 3, 2);
@@ -373,10 +373,10 @@ class Helper
         if ($method == 'GET' && !empty($vars)) {
             $params = is_array($vars) ? http_build_query($vars) : $vars;
             $url = rtrim($url, '?');
-            if (false === strpos($url.$params, '?')) {
-                $url = $url.'?'.ltrim($params, '&');
+            if (false === strpos($url . $params, '?')) {
+                $url = $url . '?' . ltrim($params, '&');
             } else {
-                $url = $url.$params;
+                $url = $url . $params;
             }
         }
 
@@ -405,7 +405,7 @@ class Helper
         }
         $result = curl_exec($ch);
         $error_no = curl_errno($ch);
-        if (! $error_no) {
+        if (!$error_no) {
             $result = trim($result);
         } else {
             $result = $error_no;
@@ -559,7 +559,7 @@ class Helper
      * @param string $suffix
      * @return string
      */
-    static function ftime($time, $format='Y-m-d H:i:s', $start_time = 0, $suffix = '前')
+    static function ftime($time, $format = 'Y-m-d H:i:s', $start_time = 0, $suffix = '前')
     {
         if ($start_time == 0) {
             $start_time = time();
@@ -578,7 +578,7 @@ class Helper
             );
 
             foreach ($f as $k => $v) {
-                if (0 != $c = floor($t / (int) $k)) {
+                if (0 != $c = floor($t / (int)$k)) {
                     return $c . $v . $suffix;
                 }
             }

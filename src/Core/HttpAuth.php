@@ -40,7 +40,7 @@ class HttpAuth
      */
     public static function factory($type = 'COOKIE')
     {
-        if (! self::$obj) {
+        if (!self::$obj) {
             if (is_string($type)) {
                 if (strcasecmp($type, 'cookie') == 0) {
                     self::$obj = new CookieAuth();
@@ -67,10 +67,3 @@ class HttpAuth
         return self::$obj;
     }
 }
-
-
-
-
-
-
-

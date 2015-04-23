@@ -243,7 +243,7 @@ class Application
             if (true === $run_controller) {
                 ob_start();
                 $response_content = $controller->$action();
-                if(! $response_content) {
+                if (!$response_content) {
                     $response_content = ob_get_contents();
                 }
                 ob_end_clean();
@@ -255,7 +255,7 @@ class Application
             }
         }
 
-        if (! empty($action_config['response'])) {
+        if (!empty($action_config['response'])) {
             $this->setResponseConfig($action_config['response']);
         }
 
@@ -456,7 +456,7 @@ class Application
      */
     private function setResponseConfig($config)
     {
-        if (! empty($config['basic_auth'])) {
+        if (!empty($config['basic_auth'])) {
             Response::getInstance()->basicAuth($config['basic_auth']);
         }
 
@@ -477,13 +477,13 @@ class Application
      */
     private function getClassInstanceByName($class_name)
     {
-        if (! is_array($class_name)) {
+        if (!is_array($class_name)) {
             $class_array = array($class_name);
         } else {
             $class_array = $class_name;
         }
 
-        foreach($class_array as $class) {
+        foreach ($class_array as $class) {
             try {
                 if (is_string($class)) {
                     $obj = new \ReflectionClass($class);
@@ -543,7 +543,8 @@ class Application
      * @return mixed
      * @throws CoreException
      */
-    function getDi($name, $params = array()) {
+    function getDi($name, $params = array())
+    {
         if (isset(self::$di[$name])) {
             return call_user_func_array(self::$di[$name], $params);
         }

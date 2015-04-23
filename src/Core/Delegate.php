@@ -137,22 +137,22 @@ class Delegate
 
         //设置app名称和路径
         $config->set('app', array(
-            'name'  =>  $this->app_name,
-            'path'  =>  APP_PATH_DIR.$this->app_name.DIRECTORY_SEPARATOR
+            'name' => $this->app_name,
+            'path' => APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR
         ));
 
         //静态文件url和绝对路径
         $config->set('static', array(
-            'url'   =>  $host.$request_url.'/static/',
-            'path'  =>  $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+            'url' => $host . $request_url . '/static/',
+            'path' => $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
         ));
 
         //url相关设置
         $config->set('url', array(
             'index' => $index_name,
-            'host'  =>  $host,
-            'request'   =>  $request_url,
-            'full_request'  =>  $host.$request_url,
+            'host' => $host,
+            'request' => $request_url,
+            'full_request' => $host . $request_url,
         ));
 
         return $config;
@@ -183,7 +183,8 @@ class Delegate
      * @param Closure $f
      * @return mixed
      */
-    function di($name, Closure $f) {
+    function di($name, Closure $f)
+    {
         $app = self::$instance[$this->app_name];
         $app->di[$name] = $f;
         return $app;

@@ -50,7 +50,7 @@ class Module extends FrameBase
     /**
      * 实例化module
      *
-     * @param null $params 指定数据库配置
+     * @param null|string $params 指定数据库配置
      */
     function __construct($params = null)
     {
@@ -59,6 +59,8 @@ class Module extends FrameBase
     }
 
     /**
+     * 返回一个数据库操作对象实例
+     *
      * @param string $params
      * @return \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver
      * @throws CoreException

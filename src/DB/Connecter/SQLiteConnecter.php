@@ -12,6 +12,11 @@ use Cross\Exception\CoreException;
 use Exception;
 use PDO;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class SQLiteConnecter
+ * @package Cross\DB\Connecter
+ */
 class SQLiteConnecter extends BaseConnecter
 {
     /**
@@ -20,7 +25,7 @@ class SQLiteConnecter extends BaseConnecter
     private static $instance;
 
     /**
-     * 创建一个PDO连接
+     * 创建一个SQLite的PDO连接
      *
      * @param string $dsn
      * @param array $options
@@ -44,11 +49,12 @@ class SQLiteConnecter extends BaseConnecter
      */
     static function getInstance($dsn, $user = '', $pwd = '', $options = array())
     {
-        if (empty(self::$instance)) {
-            self::$instance = new SqliteConnecter($dsn, $options);
+        $key = md5($dsn);
+        if (empty(self::$instance[$key])) {
+            self::$instance[$key] = new SqliteConnecter($dsn, $options);
         }
 
-        return self::$instance;
+        return self::$instance[$key];
     }
 
     /**

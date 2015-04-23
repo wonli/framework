@@ -52,7 +52,7 @@ class Loader
      */
     private function __construct($app_name)
     {
-        self::$app_path = APP_PATH_DIR.$app_name.DIRECTORY_SEPARATOR;
+        self::$app_path = APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR;
         spl_autoload_register(array($this, 'loadClass'));
         spl_autoload_register(array($this, 'loadPSRClass'));
     }
@@ -106,7 +106,7 @@ class Loader
             $file_path = Loader::getFilePath($file);
         }
 
-        $read_file_flag = (int) $require_file;
+        $read_file_flag = (int)$require_file;
         if (isset(self::$loaded [$file_path][$read_file_flag])) {
             return self::$loaded [$file_path][$read_file_flag];
         }
@@ -165,7 +165,7 @@ class Loader
         $files = $list = array();
         $_defines = array(
             'app' => self::$app_path,
-            'static' => Request::getInstance()->getScriptFilePath().DIRECTORY_SEPARATOR.'static'.DIRECTORY_SEPARATOR,
+            'static' => Request::getInstance()->getScriptFilePath() . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
             'project' => PROJECT_REAL_PATH,
         );
 
@@ -346,4 +346,3 @@ class Loader
     }
 
 }
-

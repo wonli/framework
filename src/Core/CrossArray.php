@@ -108,7 +108,7 @@ class CrossArray
     function arrayToObject($d)
     {
         if (is_array($d)) {
-            return (object) array_map(array($this, __FUNCTION__), $d);
+            return (object)array_map(array($this, __FUNCTION__), $d);
         } else {
             return $d;
         }

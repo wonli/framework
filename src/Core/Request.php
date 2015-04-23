@@ -78,8 +78,8 @@ class Request
         } elseif (($_scriptName = $this->_SERVER('PHP_SELF')) != null && basename($_scriptName) === $scriptName) {
             $this->_scriptUrl = $_scriptName;
         } elseif (($_scriptName = $this->_SERVER('ORIG_SCRIPT_NAME')) != null && basename(
-                                                                                     $_scriptName
-                                                                                 ) === $scriptName
+                $_scriptName
+            ) === $scriptName
         ) {
             $this->_scriptUrl = $_scriptName;
         } elseif (($pos = strpos($this->_SERVER('PHP_SELF'), '/' . $scriptName)) !== false) {
@@ -350,7 +350,7 @@ class Request
     public function isFlashRequest()
     {
         return stripos($this->_SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false
-               || stripos($this->_SERVER('HTTP_USER_AGENT'), 'Flash') !== false;
+        || stripos($this->_SERVER('HTTP_USER_AGENT'), 'Flash') !== false;
     }
 
     /**

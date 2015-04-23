@@ -197,8 +197,8 @@ class View extends FrameBase
     function getTplPath()
     {
         $app_name = $this->config->get('app', 'name');
-        if (! isset(self::$tpl_path[$app_name])) {
-            self::$tpl_path[$app_name] = $this->getTplBasePath().$this->getTplDir();
+        if (!isset(self::$tpl_path[$app_name])) {
+            self::$tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir();
         }
         return self::$tpl_path[$app_name];
     }
@@ -259,14 +259,14 @@ class View extends FrameBase
         //用来缓存当前运行中config中的url项配置
         //在运行过程中,如果url的配置有变化,可能会产生意料之外的结果,这时候需要调用
         //cleanLinkCache() 来刷新缓存
-        if (! isset(self::$url_config_cache[$app_name])) {
+        if (!isset(self::$url_config_cache[$app_name])) {
             $url_config = $this->config->get('url');
             self::$url_config_cache[$app_name] = $url_config;
         } else {
             $url_config = self::$url_config_cache[$app_name];
         }
 
-        if (! isset(self::$controller_cache[$app_name][$controller])) {
+        if (!isset(self::$controller_cache[$app_name][$controller])) {
             $url_controller = '';
             if ($controller !== null) {
                 $url_controller = $this->makeController($app_name, $controller, $url_config);
@@ -282,20 +282,19 @@ class View extends FrameBase
             $url_params = $this->makeParams($params, $url_config, $sec);
         }
 
-        if (! empty($url_config['ext']) && ! empty($url_controller)) {
-            switch($url_config['type'])
-            {
+        if (!empty($url_config['ext']) && !empty($url_controller)) {
+            switch ($url_config['type']) {
                 case 2:
-                    $url .= $url_controller.$url_config['ext'].$url_params;
+                    $url .= $url_controller . $url_config['ext'] . $url_params;
                     break;
                 case 1:
                 case 3:
                 case 4:
-                    $url .= $url_controller.$url_params.$url_config['ext'];
+                    $url .= $url_controller . $url_params . $url_config['ext'];
                     break;
             }
         } else {
-            $url .= $url_controller.$url_params;
+            $url .= $url_controller . $url_params;
         }
 
         return $url;
@@ -407,7 +406,7 @@ class View extends FrameBase
                     }
 
                     foreach ($p as $p_key => $p_val) {
-                        $_params .= $p_key.$_dot.$p_val.$_dot;
+                        $_params .= $p_key . $_dot . $p_val . $_dot;
                     }
                     $_params = rtrim($_params, $_dot);
                     break;
@@ -459,11 +458,11 @@ class View extends FrameBase
      */
     private function parseControllerAlias($app_name)
     {
-        if (! isset(self::$router_alias_cache[$app_name])) {
+        if (!isset(self::$router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
             self::$router_alias_cache[$app_name] = array();
-            if (! empty($router)) {
-                foreach($router as $controller_alias => $real_controller) {
+            if (!empty($router)) {
+                foreach ($router as $controller_alias => $real_controller) {
                     if (is_array($real_controller)) {
                         self::$router_alias_cache[$app_name][$controller_alias] = array_flip($real_controller);
                     } else {
@@ -479,7 +478,8 @@ class View extends FrameBase
     /**
      * 清除link中使用到的缓存(config->url配置在运行过程中发生变动时先清除缓存)
      */
-    function cleanLinkCache() {
+    function cleanLinkCache()
+    {
         $app_name = $this->config->get('app', 'name');
         unset(self::$url_config_cache[$app_name], self::$controller_cache[$app_name]);
     }
@@ -692,5 +692,3 @@ class View extends FrameBase
         include $layer_file;
     }
 }
-
-

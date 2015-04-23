@@ -40,7 +40,7 @@ class Config
 
     private function __construct($res_file)
     {
-        if (! file_exists($res_file)) {
+        if (!file_exists($res_file)) {
             throw new CoreException("读取配置文件失败");
         }
 
@@ -139,7 +139,7 @@ class Config
      */
     function set($name, $values = null)
     {
-        if (! isset($this->init[$name])) {
+        if (!isset($this->init[$name])) {
             if (is_array($values)) {
                 $this->init[$name] = array();
             } else {

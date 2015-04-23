@@ -12,6 +12,11 @@ use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
 use Cross\I\SqlInterface;
 
+/**
+ * @Auth: wonli <wonli@live.com>
+ * Class SQLAssembler
+ * @package Cross\DB\SQLAssembler
+ */
 class SQLAssembler implements SqlInterface
 {
     /**
