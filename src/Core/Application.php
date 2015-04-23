@@ -229,6 +229,10 @@ class Application
             $this->getClassInstanceByName($action_config['before']);
         }
 
+        if (!empty($action_config['basicAuth'])) {
+            Response::getInstance()->basicAuth($action_config['basicAuth']);
+        }
+
         if ($cache && $cache->getExpireTime()) {
             $response_content = $cache->get();
         } else {
@@ -456,10 +460,6 @@ class Application
      */
     private function setResponseConfig($config)
     {
-        if (!empty($config['basic_auth'])) {
-            Response::getInstance()->basicAuth($config['basic_auth']);
-        }
-
         if (isset($config['content_type'])) {
             Response::getInstance()->setContentType($config['content_type']);
         }
