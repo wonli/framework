@@ -35,28 +35,14 @@ define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 class Delegate
 {
     /**
-     * app 名称
-     *
-     * @var string
-     */
-    public $app_name;
-
-    /**
-     * 设置允许的请求列表
-     *
-     * @var array
-     */
-    public static $map;
-
-    /**
-     * 依赖列表
+     * 注入的匿名函数数组
      *
      * @var array
      */
     private $di;
 
     /**
-     * app配置文件
+     * app配置
      *
      * @var Config
      */
@@ -70,7 +56,21 @@ class Delegate
     private $runtime_config;
 
     /**
-     * cross instance
+     * app名称
+     *
+     * @var string
+     */
+    public $app_name;
+
+    /**
+     * 允许的请求列表(mRun)时生效
+     *
+     * @var array
+     */
+    public static $map;
+
+    /**
+     * Delegate的实例
      *
      * @var Delegate
      */
@@ -88,7 +88,6 @@ class Delegate
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
         $this->config = $this->initConfig();
-        $this->appInit();
     }
 
     /**
@@ -159,7 +158,7 @@ class Delegate
     }
 
     /**
-     * 获取app配置
+     * app配置对象
      *
      * @return Config
      */
@@ -169,15 +168,7 @@ class Delegate
     }
 
     /**
-     * 初始化配置参数,定义常量
-     */
-    private function appInit()
-    {
-
-    }
-
-    /**
-     * 依赖注入
+     * 设置依赖注入对象
      *
      * @param string $name
      * @param Closure $f
@@ -193,7 +184,7 @@ class Delegate
     /**
      * 解析请求
      *
-     * @param null $params 参见router->initParams();
+     * @param null|string $params 参见router->initParams();
      * @return $this
      */
     function router($params = null)
@@ -202,7 +193,8 @@ class Delegate
     }
 
     /**
-     * 配置uri 参见mRun()
+     * 配置uri
+     * @see mRun()
      *
      * @param string $uri 指定uri
      * @param null $controller "控制器:方法"
@@ -226,7 +218,14 @@ class Delegate
     }
 
     /**
-     * REST
+     * 处理REST风格的请求
+     * <pre>
+     * $app = Cross\Core\Delegate::loadApp('web')->rest();
+     *
+     * $app->get("/", function(){
+     *    echo "hello";
+     * });
+     * </pre>
      *
      * @return Rest
      */
@@ -236,10 +235,10 @@ class Delegate
     }
 
     /**
-     * 根据配置解析请求
+     * 从路由解析url请求,自动运行
      *
-     * @param string $params = null 用于自定义url请求内容
-     * @param string $args 参数
+     * @param string $params = null 为router指定参数
+     * @param string $args
      */
     public function run($params = null, $args = null)
     {
@@ -258,7 +257,7 @@ class Delegate
     }
 
     /**
-     * 按map配置运行
+     * 执行self::$map中匹配的url
      *
      * @param null $args 参数
      * @throws CoreException
