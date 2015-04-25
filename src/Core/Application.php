@@ -22,9 +22,18 @@ use ReflectionProperty;
 class Application
 {
     /**
+     * 注入对象数组
+     *
      * @var array
      */
     protected static $di;
+
+    /**
+     * 注入对象的实例数组
+     *
+     * @var array
+     */
+    protected static $dii;
 
     /**
      * action 名称
@@ -536,7 +545,7 @@ class Application
     }
 
     /**
-     * 获取依赖
+     * 返回一个注入对象的实例
      *
      * @param string $name
      * @param array $params
@@ -547,6 +556,25 @@ class Application
     {
         if (isset(self::$di[$name])) {
             return call_user_func_array(self::$di[$name], $params);
+        }
+        throw new CoreException("未定义的依赖 {$name}");
+    }
+
+    /**
+     * 以单例的方式实例化注入对象
+     *
+     * @param string $name
+     * @param array $params
+     * @return mixed
+     * @throws CoreException
+     */
+    function getDii($name, $params = array())
+    {
+        if (isset(self::$dii[$name])) {
+            return self::$dii[$name];
+        } elseif (isset(self::$di[$name])) {
+            self::$dii[$name] = call_user_func_array(self::$di[$name], $params);
+            return self::$dii[$name];
         }
         throw new CoreException("未定义的依赖 {$name}");
     }
