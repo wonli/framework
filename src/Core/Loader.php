@@ -55,6 +55,7 @@ class Loader
         self::$app_path = APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR;
         spl_autoload_register(array($this, 'loadClass'));
         spl_autoload_register(array($this, 'loadPSRClass'));
+        return $this;
     }
 
     /**
