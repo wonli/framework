@@ -62,13 +62,11 @@ class PDOSqlDriver
      */
     public function __construct(PDOConnecter $connecter, SQLAssembler $SQLAssembler)
     {
-        $this->connecter = $connecter;
-        $pdo = $connecter->getPDO();
-        $this->SQLAssembler = $SQLAssembler;
+        $this->setConnecter($connecter);
+        $this->setSQLAssembler($SQLAssembler);
 
-        if ($pdo instanceof PDO) {
-            $this->pdo = $pdo;
-        } else {
+        $this->pdo = $this->connecter->getPDO();
+        if (!$this->pdo instanceof PDO) {
             throw new CoreException("init pdo failed!");
         }
     }
@@ -93,13 +91,14 @@ class PDOSqlDriver
      * @param string $table
      * @param string $fields
      * @param string|array $where
-     * @param int $order
-     * @param int $group_by
+     * @param int|string $order
+     * @param int|string $group_by
+     * @param int|string $limit 0 表示无限制
      * @return mixed
      */
-    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1)
+    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
-        $this->SQLAssembler->getAll($table, $fields, $where, $order, $group_by);
+        $this->SQLAssembler->getAll($table, $fields, $where, $order, $group_by, $limit);
         return $this->getPrepareResult(true);
     }
 
@@ -386,6 +385,42 @@ class PDOSqlDriver
     public function getAutoIncrementName($table_name)
     {
         return $this->connecter->getPK($table_name);
+    }
+
+    /**
+     * 设置PDOConnecter对象
+     *
+     * @param PDOConnecter $connecter
+     */
+    public function setConnecter(PDOConnecter $connecter)
+    {
+        $this->connecter = $connecter;
+    }
+
+    /**
+     * 设置SQLAssembler对象
+     *
+     * @param SQLAssembler $SQLAssembler
+     */
+    public function setSQLAssembler(SQLAssembler $SQLAssembler)
+    {
+        $this->SQLAssembler = $SQLAssembler;
+    }
+
+    /**
+     * @return PDOConnecter
+     */
+    public function getConnecter()
+    {
+        return $this->connecter;
+    }
+
+    /**
+     * @return SQLAssembler
+     */
+    public function getSQLAssembler()
+    {
+        return $this->SQLAssembler;
     }
 
     /**

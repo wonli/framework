@@ -58,9 +58,11 @@ class SQLAssembler implements SqlInterface
      * @param string $where 查询条件
      * @param int $order 排序
      * @param int $group_by
+     * @param int|string $limit
      * @return array
+     * @throws CoreException
      */
-    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1)
+    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
         $params = array();
         $field_str = $this->parseFields($fields);
@@ -69,11 +71,21 @@ class SQLAssembler implements SqlInterface
         $group_str = $this->parseGroup($group_by);
 
         if (1 !== $group_by) {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str);
+            if (0 !== $limit) {
+                $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s";
+                $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str, $limit);
+            } else {
+                $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
+                $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str);
+            }
         } else {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str);
+            if (0 !== $limit) {
+                $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s";
+                $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str, $limit);
+            } else {
+                $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s";
+                $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str);
+            }
         }
 
         $this->setSQL($sql);

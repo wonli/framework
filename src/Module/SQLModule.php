@@ -84,12 +84,13 @@ class SQLModule extends Module
      * @param null $where
      * @param int $order
      * @param int $group_by
+     * @param int $limit
      * @param string $fields
      * @return array
      */
-    function getAll($where = null, $order = 1, $group_by = 1, $fields = '*')
+    function getAll($where = null, $order = 1, $group_by = 1, $limit = 0, $fields = '*')
     {
-        return $this->link->getAll($this->t, $fields, $where, $order, $group_by);
+        return $this->link->getAll($this->t, $fields, $where, $order, $group_by, $limit);
     }
 
     /**

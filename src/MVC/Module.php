@@ -22,12 +22,15 @@ use Cross\Exception\CoreException;
 class Module extends FrameBase
 {
     /**
+     * 数据库连接对象的一个实例
+     *
      * @var \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver
      */
     public $link;
 
     /**
-     * database type name
+     * 数据库连接配置文件中自定义的数据库类型
+     * 默认的数据库配置文件为config/db.config.php
      *
      * @var string
      */
@@ -48,11 +51,11 @@ class Module extends FrameBase
     protected static $database_config;
 
     /**
-     * 实例化module
+     * 实例化module,并创建一个与数据库的连接
      *
-     * @param null|string $params 指定数据库配置
+     * @param string $params 指定要连接的数据库和配置项的key, 如mysql['db']这里的params应该为mysql:db
      */
-    function __construct($params = null)
+    function __construct($params = '')
     {
         parent::__construct();
         $this->link = $this->getLink($params);

@@ -33,9 +33,10 @@ interface SqlInterface
      * @param string|array $where 条件(建议只使用字符串常量,包含变量时请使用数组)
      * @param int|string $order 排序
      * @param int|string $group_by 分组
+     * @param int|string $limit 0表示无限制
      * @return mixed
      */
-    function getAll($table, $fields, $where = '', $order = 1, $group_by = 1);
+    function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0);
 
     /**
      * 带分页的查询
