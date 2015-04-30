@@ -16,18 +16,13 @@ use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
+ *
  * Class Module
  * @package Cross\MVC
+ * @property \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver link
  */
 class Module extends FrameBase
 {
-    /**
-     * 数据库连接对象的一个实例
-     *
-     * @var \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver
-     */
-    public $link;
-
     /**
      * 数据库连接配置文件中自定义的数据库类型
      * 默认的数据库配置文件为config/db.config.php
@@ -35,6 +30,13 @@ class Module extends FrameBase
      * @var string
      */
     protected $db_type;
+
+    /**
+     * 连接数据库的参数
+     *
+     * @var string
+     */
+    protected $link_params;
 
     /**
      * 连接配置文件名
@@ -58,7 +60,7 @@ class Module extends FrameBase
     function __construct($params = '')
     {
         parent::__construct();
-        $this->link = $this->getLink($params);
+        $this->link_params = $params;
     }
 
     /**
@@ -135,5 +137,23 @@ class Module extends FrameBase
         }
 
         return $this->db_config_file;
+    }
+
+    /**
+     * 访问link属性时才与数据库建立连接
+     *
+     * @param $property
+     * @return \Cross\Cache\RedisCache|\Cross\Core\Request|\Cross\Core\Response|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver|View|null
+     * @throws CoreException
+     */
+    function __get($property)
+    {
+        switch ($property) {
+            case 'link' :
+                return $this->link = $this->getLink($this->link_params);
+
+            default :
+                return parent::__get($property);
+        }
     }
 }
