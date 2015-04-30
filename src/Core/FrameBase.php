@@ -10,6 +10,7 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Lib\Mcrypt\Mcrypt;
+use Cross\MVC\View;
 use Exception;
 use ReflectionClass;
 
@@ -19,7 +20,7 @@ use ReflectionClass;
  * @package Cross\Core
  * @property Request request
  * @property Response response
- * @property mixed view
+ * @property View view
  */
 class FrameBase extends Application
 {
@@ -347,7 +348,7 @@ class FrameBase extends Application
      * request response view
      *
      * @param $property
-     * @return Response|Request|mixed|object
+     * @return Response|Request|View|null
      */
     function __get($property)
     {
@@ -360,9 +361,8 @@ class FrameBase extends Application
 
             case 'view' :
                 return $this->view = $this->initView();
-
-            default :
-                break;
         }
+
+        return null;
     }
 }
