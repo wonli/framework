@@ -24,19 +24,11 @@ use Cross\Exception\CoreException;
 class Module extends FrameBase
 {
     /**
-     * 数据库连接配置文件中自定义的数据库类型
-     * 默认的数据库配置文件为config/db.config.php
-     *
-     * @var string
-     */
-    protected $db_type;
-
-    /**
      * 连接数据库的参数
      *
      * @var string
      */
-    protected $link_params;
+    private $link_params;
 
     /**
      * 连接配置文件名
