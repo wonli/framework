@@ -1,5 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <title>doc</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -292,14 +292,6 @@ img {
 </head>
 <body>
 <h1>CrossPHP 框架功能及特点</h1>
-<h5>一. 支持PSR标准,支持composer安装.</h5>
-<h5>二. 一个项目多个app,便于多人分工.写好web后不用为api再写一次逻辑</h5>
-<h5>三. 视图层采用原生php.支持layer布局,不同的页面风格只需指定不同的layer即可.</h5>
-<p><img src="http://document.crossphp.com/static/images/layer.gif" alt="layer示意图" /></p>
-<h5>四. 通过解析url运行,不用写url路由,使用路由配置可以为控制器指定别名</h5>
-<p><img src="http://document.crossphp.com/static/images/url.gif" alt="url生成及别名指定" /></p>
-<h5>五. 全局的异常处理系统及错误展示,在开发中可以快速定位到具体的代码行数</h5>
-<p><img src="http://document.crossphp.com/static/images/exception.png" alt="异常显示" /></p>
 <h1>一. 项目基本结构</h1>
 <p>在一个 <code>Cross</code> 项目中, 一个项目被拆分为多个app, 放在app目录下, 每个app都包含独立的控制器,视图及模板, 分别用于控制项目的具体部分, 一个常见的项目结构如下:</p>
 <pre><code>├─app 应用模块目录    
@@ -409,8 +401,9 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 </code></pre>
 
 <p>当请求的url是 <code>skeleton/htdocs/web/?/hi</code> 的时, 实际响应的是 <code>main</code> 控制器中的 <code>index</code> 方法</p>
-<p>当请求的url是 <code>skeleton/htdocs/web/?/article/page</code> 的时, 实际响应的控制是 <code>article</code> 的 <code>index</code> 方法  </p>
-<p>也可以在控制器中用静态属性 <code>_act_alias_</code> 来指定别名, 但优先级低于配置</p>
+<p>当请求的url是 <code>skeleton/htdocs/web/?/article/page</code> 的时, 实际响应的控制是 <code>article</code> 的 <code>index</code> 方法  
+</p>
+<p>在Cross中，路由是双向解析的，生成连接后，如果给连接指定了别名，连接会自动刷新为指定的别名。</p>
 <h1>二. 启动框架</h1>
 <p>Cross项目 框架和项目 独立， 所以启动框架前需要做两件事</p>
 <ol>
@@ -454,7 +447,13 @@ RewriteRule ^(.*)$ %{ENV:BASE}index.php?$1 [NC,L]
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
-
+/**
+ * @Auth: wonli &lt;wonli@live.com&gt;
+ * Class Main
+ * @package app\web\controllers
+ *
+ * @cp_cache array(true, array('type'=&gt;1))
+ */
 class User extends Controller
 {
     function index()
@@ -464,7 +463,8 @@ class User extends Controller
 }
 </code></pre>
 
-<p>通过浏览器 <code>http://domain/skeleton/htdocs/web/user</code> 来访问,这时页面会输出 <code>hello</code></p>
+<p>通过浏览器 <code>http://domain/skeleton/htdocs/web/user</code> 来访问,这时页面会输出 <code>hello</code>。<br />
+控制器的注释生效（对所有方法的请求都会优先使用缓存）。</p>
 <h3>父类提供的方法</h3>
 <ol>
 <li>
@@ -519,7 +519,7 @@ class User extends Controller
 {
     function index()
     {
-        $this-&gt;config-&gt;get(&quot;set&quot;, array('key', 'val'))
+        $this-&gt;config-&gt;set(&quot;set&quot;, array('key', 'val'))
     }
 }   
 </code></pre>
@@ -579,7 +579,7 @@ class User extends Controller
 <p><code>@cp_params</code> 只有<code>type=1</code>时生效， 为保持程序的一致性使用<code>@cp_params</code>时，指定的参数应与生成的连接的参数保存一致 </p>
 </blockquote>
 <h6>2. 为Action配置缓存</h6>
-<p>在注释中使用 <code>@cp_cache</code> 字段指定该Action的缓存</p>
+<p>在注释中使用 <code>@cp_cache</code> 字段指定该Action的缓存,直接使用php数组进行配置</p>
 <pre><code>namespace app\web\controllers;
 
 use Cross\MVC\Controller;
@@ -588,34 +588,35 @@ class User extends Controller
 {
     /**
      * 默认控制器
-     * @cp_params p1, p2, p3
-     * @cp_cache false(type=1, expire_time=864000)
+     * 
+     * @cp_cache array(true, array('type'=&gt;1, 'expire_time'=&gt;864000))
      */
     function index()
     {
-        print_r($this-&gt;params);
+
     }
 }
 </code></pre>
 
-<p>配置的格式为 <code>true/false(key=value, key=value...)</code> 多个key和value用逗号分隔 <code>true</code> 或 <code>false</code> 分别代表配置的开关.</p>
-<p>a. 使用文件缓存 <code>true(type=1, expire_time=864000)</code></p>
+<p>配置的格式为一个二维数组 <code>array(true/false, array(key=&gt;val...))</code> <code>true</code> 或 <code>false</code> 分别代表配置的开关.</p>
+<p>a. 使用文件缓存 <code>array(true, array('type'=&gt;1, 'expire_time'=&gt;864000))</code></p>
 <pre><code>    type = 1
     expire_time = 86400 表示缓存过期时间为1天
-    cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/html文件夹下
-    file_ext 缓存文件扩展名 默认为.html
-
-&gt;项目根目录下的cache目录需设置为可以读写
+    cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/request文件夹下
+    file_ext 缓存文件扩展名 默认为sys display中配置的处理方法名
 </code></pre>
 
-<p>b. 使用memcache缓存 <code>true(type=2, host=127.0.0.1, port=11211, expire_time=30)</code></p>
+<blockquote>
+<p>项目根目录下的cache目录需设置为可以读写</p>
+</blockquote>
+<p>b. 使用memcache缓存 <code>array(true, array('type'=&gt;2, 'host'=&gt;'127.0.0.1', 'port'=&gt;11211, 'expire_time'=&gt;600))</code></p>
 <pre><code>    type=2
     host=127.0.0.1
     port=11211
     expire_time=30
 </code></pre>
 
-<p>c. 使用redis缓存 <code>true(type=3, host=127.0.0.1, db=3, port=6379, expire_time=864000)</code></p>
+<p>c. 使用redis缓存 <code>array(true, array('type'=&gt;1, 'host'=&gt;'127.0.0.1', 'db'=&gt;3, 'port'=&gt;6379, expire_time=86400))</code></p>
 <pre><code>    type=3, 
     host=127.0.0.1, 
     port=6379, 
@@ -627,6 +628,14 @@ class User extends Controller
 <blockquote>
 <p>使用op_cache的时候注意与注释相关参数的设置</p>
 </blockquote>
+<h6>3. 配置前后置</h6>
+<p>使用 <code>cp_before</code> 配置运行前要执行的方法，使用 <code>cp_after</code> 配置运行结束后要执行的方法。参数是一个可访问的类方法。</p>
+<h6>4. 配置response</h6>
+<p>使用 <code>cp_response</code> 配置response，主要用于修正response时，返回的content-type和status。</p>
+<h5>5. 配置Basic Auth</h5>
+<p>使用 <code>cp_basicAuth</code> 在运行前先发送一个Basic Auth请求到客户端，使用<code>array('user'=&gt;'用户名', 'pw'=&gt;'密码')</code>来指定用户名和密码。</p>
+<h5>6. 自定义配置参数</h5>
+<p>自定义配置参数的格式为<code>cp_配置名</code>， 参数可以为任意可访问的类/或文件，自定义好以后在自己的类中处理。</p>
 <h3>在控制器中使用modules</h3>
 <p>在控制器中使用modules,以使用UserModules为例:</p>
 <pre><code>namespace app\web\controllers;
@@ -759,12 +768,13 @@ class User extends Controller
 
 <p>模型系统是所有app功能模块共同的数据来源,一个modules支持多个数据来源.目前默认支持以下的数据库系统.</p>
 <ul>
-<li>PDO驱动的MySQL</li>
+<li>PDO驱动的MySQL，SQLite，PgSQL</li>
 <li>Redis,</li>
 <li>Memcache,</li>
 <li>CouchBase,</li>
 <li>MongoDB</li>
 </ul>
+<p>除了这些默认支持的数据库外， 在数据库配置文件中，还可以将参数配置为一个匿名函数，来自定义你自己的数据处理类。</p>
 <blockquote>
 <p>不支持不同类型数据库之间切换</p>
 </blockquote>
@@ -1210,6 +1220,7 @@ class MainView extends View
 <p>重复使用的,公共的的tpl可以放在app视图控制器自定义的基类中,保持模板代码的整洁</p>
 </blockquote>
 <h1>六. 使用第三方Model</h1>
+<h5>1. 在module中扩展</h5>
 <p>以使用<a href="http://medoo.in/" title="medoo">http://medoo.in/</a>为例，先下载medoo.min.php文件到lib目录， 使用Loader类中的import方法载入该类， 在控制器中重新指定<code>TestModule</code>的link属性为Medoo类的实例，然后就可以在action中调用<code>$this-&gt;link</code>来使用medoo提供的接口了。</p>
 <pre><code>namespace modules\web;
 
@@ -1239,6 +1250,55 @@ class TestModule extends Module
         return $this-&gt;link-&gt;get('back_acl_menu', '*', array(
                 'id'    =&gt; 1,
             ));
+    }
+}
+</code></pre>
+
+<h5>2. 通过配置文件扩展</h5>
+<pre><code>Loader::import(&quot;::lib/medoo.min.php&quot;);
+
+.
+.
+.
+
+return array(
+    'mysql' =&gt; array(
+        'db' =&gt; $db,
+    ),  
+
+    'medoo' =&gt; array(
+        'db' =&gt;  function() use ($mysql_link) {
+            return new \Medoo(array(
+                'database_type' =&gt; 'mysql',
+                'database_name' =&gt; $mysql_link['name'],
+                'server' =&gt; $mysql_link['host'],
+                'username' =&gt; $mysql_link['user'],
+                'password' =&gt; $mysql_link['pass'],
+            ));
+        }
+    ),
+
+    'default'   =&gt;  array('mysql' =&gt; 'db')
+);
+</code></pre>
+
+<p>然后在Module中这样使用</p>
+<pre><code>namespace modules\web;
+
+use Cross\Core\Loader;
+use Cross\MVC\Module;       
+
+class TestModule extends Module
+{
+    function __construct()
+    {
+        parent::__construct('medoo:db');
+    }
+
+    function getUser()
+    {
+        //通过$this-&gt;link访问mdeoo提供的api来使用数据库
+        return $this-&gt;link;
     }
 }
 </code></pre>

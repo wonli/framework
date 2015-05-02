@@ -1,17 +1,5 @@
 # CrossPHP 框架功能及特点
 
-##### 一. 支持PSR标准,支持composer安装.
-
-##### 二. 一个项目多个app,便于多人分工.写好web后不用为api再写一次逻辑
-
-##### 三. 视图层采用原生php.支持layer布局,不同的页面风格只需指定不同的layer即可.
-![layer示意图](http://document.crossphp.com/static/images/layer.gif)
-
-##### 四. 通过解析url运行,不用写url路由,使用路由配置可以为控制器指定别名
-![url生成及别名指定](http://document.crossphp.com/static/images/url.gif)
-
-##### 五. 全局的异常处理系统及错误展示,在开发中可以快速定位到具体的代码行数
-![异常显示](http://document.crossphp.com/static/images/exception.png)
 
 # 一. 项目基本结构
 
@@ -119,7 +107,7 @@ router用于指定控制器的别名, 以以下配置为例:
  
 当请求的url是 `skeleton/htdocs/web/?/article/page` 的时, 实际响应的控制是 `article` 的 `index` 方法  
 
-也可以在控制器中用静态属性 `_act_alias_` 来指定别名, 但优先级低于配置
+在Cross中，路由是双向解析的，生成连接后，如果给连接指定了别名，连接会自动刷新为指定的别名。
 
 # 二. 启动框架
 
@@ -160,7 +148,13 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	namespace app\web\controllers;
 	
 	use Cross\MVC\Controller;
-	
+	/**
+	 * @Auth: wonli <wonli@live.com>
+	 * Class Main
+	 * @package app\web\controllers
+	 *
+	 * @cp_cache array(true, array('type'=>1))
+	 */
 	class User extends Controller
 	{
 		function index()
@@ -168,8 +162,9 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 			echo 'hello';
 		}
 	}
-通过浏览器 `http://domain/skeleton/htdocs/web/user` 来访问,这时页面会输出 `hello`
 
+通过浏览器 `http://domain/skeleton/htdocs/web/user` 来访问,这时页面会输出 `hello`。  
+控制器的注释生效（对所有方法的请求都会优先使用缓存）。
 
 ### 父类提供的方法
 
@@ -222,7 +217,7 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 	{
 		function index()
 		{
-			$this->config->get("set", array('key', 'val'))
+			$this->config->set("set", array('key', 'val'))
 		}
 	}	
 	
@@ -309,8 +304,8 @@ a. 使用文件缓存 `array(true, array('type'=>1, 'expire_time'=>864000))`
 
 		type = 1
 		expire_time = 86400 表示缓存过期时间为1天
-		cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/html文件夹下
-		file_ext 缓存文件扩展名 默认为.html
+		cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/request文件夹下
+		file_ext 缓存文件扩展名 默认为sys display中配置的处理方法名
 	
 >项目根目录下的cache目录需设置为可以读写
 
@@ -332,6 +327,21 @@ c. 使用redis缓存 `array(true, array('type'=>1, 'host'=>'127.0.0.1', 'db'=>3,
 使用缓存后Dispatcher流程会跳过app模型中该Action的逻辑,直接从缓存读取数据返回给客户端, 合理的使用缓存能大幅度提高应用性能.
 
 >使用op_cache的时候注意与注释相关参数的设置
+
+###### 3. 配置前后置
+
+使用 `cp_before` 配置运行前要执行的方法，使用 `cp_after` 配置运行结束后要执行的方法。参数是一个可访问的类方法。
+
+###### 4. 配置response
+
+使用 `cp_response` 配置response，主要用于修正response时，返回的content-type和status。
+
+##### 5. 配置Basic Auth
+
+使用 `cp_basicAuth` 在运行前先发送一个Basic Auth请求到客户端，使用`array('user'=>'用户名', 'pw'=>'密码')`来指定用户名和密码。
+
+##### 6. 自定义配置参数
+自定义配置参数的格式为`cp_配置名`， 参数可以为任意可访问的类/或文件，自定义好以后在自己的类中处理。
 
 ### 在控制器中使用modules
 
@@ -471,11 +481,13 @@ c. 使用redis缓存 `array(true, array('type'=>1, 'host'=>'127.0.0.1', 'db'=>3,
 
 模型系统是所有app功能模块共同的数据来源,一个modules支持多个数据来源.目前默认支持以下的数据库系统.
 
-- PDO驱动的MySQL
+- PDO驱动的MySQL，SQLite，PgSQL
 - Redis,
 - Memcache,
 - CouchBase,
 - MongoDB
+
+除了这些默认支持的数据库外， 在数据库配置文件中，还可以将参数配置为一个匿名函数，来自定义你自己的数据处理类。
 
 > 不支持不同类型数据库之间切换
 
@@ -926,6 +938,7 @@ c. 包含其他模板文件
 
 #六. 使用第三方Model
 
+#####1. 在module中扩展
 以使用[http://medoo.in/](http://medoo.in/ "medoo")为例，先下载medoo.min.php文件到lib目录， 使用Loader类中的import方法载入该类， 在控制器中重新指定`TestModule`的link属性为Medoo类的实例，然后就可以在action中调用`$this->link`来使用medoo提供的接口了。
 
 	namespace modules\web;
@@ -956,6 +969,55 @@ c. 包含其他模板文件
 	        return $this->link->get('back_acl_menu', '*', array(
 	                'id'    => 1,
 	            ));
+	    }
+	}
+
+#####2. 通过配置文件扩展
+
+	Loader::import("::lib/medoo.min.php");
+
+	.
+	.
+	.
+
+	return array(
+	    'mysql' => array(
+	        'db' => $db,
+	    ),	
+	
+	    'medoo' => array(
+	        'db' =>  function() use ($mysql_link) {
+	            return new \Medoo(array(
+	                'database_type' => 'mysql',
+	                'database_name' => $mysql_link['name'],
+	                'server' => $mysql_link['host'],
+	                'username' => $mysql_link['user'],
+	                'password' => $mysql_link['pass'],
+	            ));
+	        }
+	    ),
+	
+	    'default'   =>  array('mysql' => 'db')
+	);
+
+然后在Module中这样使用
+
+	namespace modules\web;
+	
+	use Cross\Core\Loader;
+	use Cross\MVC\Module;		
+	
+	class TestModule extends Module
+	{
+	    function __construct()
+	    {
+	        parent::__construct('medoo:db');
+	    }
+	
+	    function getUser()
+	    {
+			//通过$this->link访问mdeoo提供的api来使用数据库
+	        return $this->link;
 	    }
 	}
 
