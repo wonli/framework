@@ -435,12 +435,14 @@ class Application
             throw new CoreException('请指定Cache类型');
         }
 
+        $display = self::getConfig()->get('sys', 'display');
+        Response::getInstance()->setContentType($display);
         if (!isset($cache_config ['cache_path'])) {
             $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request';
         }
 
         if (!isset($cache_config ['file_ext'])) {
-            $cache_config ['file_ext'] = '.html';
+            $cache_config ['file_ext'] = '.'.strtolower($display);
         }
 
         if (!isset($cache_config ['key'])) {
