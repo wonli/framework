@@ -10,6 +10,7 @@ namespace Cross\Module;
 
 use Cross\Exception\CoreException;
 use Cross\MVC\Module;
+use ReflectionClass;
 
 /**
  * 提供简单的CRUD功能
@@ -43,7 +44,7 @@ class SQLModule extends Module
     {
         $called_class_name = get_called_class();
         if (empty(self::$instance[$called_class_name])) {
-            $obj = new \ReflectionClass($called_class_name);
+            $obj = new ReflectionClass($called_class_name);
             if ($obj->hasProperty('t')) {
                 self::$instance[$called_class_name] = $obj->newInstance($args);
             } else {
