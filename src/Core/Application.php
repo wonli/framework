@@ -11,8 +11,8 @@ namespace Cross\Core;
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
 use Exception;
+use ReflectionClass;
 use ReflectionMethod;
-use ReflectionProperty;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -69,6 +69,13 @@ class Application
      * @var string
      */
     private static $action_annotate;
+
+    /**
+     * 控制器注释配置
+     *
+     * @var array
+     */
+    private static $controller_annotate_config = array();
 
     /**
      * 实例化Application
@@ -152,45 +159,35 @@ class Application
             throw new CoreException("{$controllerSpace} 控制器不存在");
         }
 
+        $class_reflection = new ReflectionClass($controllerSpace);
+        if ($class_reflection->isAbstract()) {
+            throw new CoreException("{$controllerSpace} 不允许访问的控制器");
+        }
+
+        //控制器全局注释配置(不检测父类注释配置)
+        $controller_annotate = $class_reflection->getDocComment();
+        if ($controller_annotate) {
+            self::$controller_annotate_config = Annotate::getInstance($controller_annotate)->parse();
+        }
+
         if ($action) {
             try {
-
                 $is_callable = new ReflectionMethod($controllerSpace, $action);
-
             } catch (Exception $e) {
-
                 try {
-                    //控制中是否使用__call处理action
                     new ReflectionMethod($controllerSpace, '__call');
                     $this->setAction($action);
-
                     return;
-
                 } catch (Exception $e) {
-
-                    try {
-                        //是否使用public static $_act_alias_ 指定action别名
-                        $_property = new ReflectionProperty($controllerSpace, '_act_alias_');
-
-                    } catch (Exception $e) {
-                        throw new CoreException("不能识别的请求: {$controllerSpace}->{$action}");
-                    }
-
-                    $act_alias = $_property->getValue();
-                    if (isset($act_alias [$action])) {
-                        $action = $act_alias [$action];
-                        $is_callable = new ReflectionMethod($controllerSpace, $action);
-                    } else {
-                        throw new CoreException("未指定的方法: {$controllerSpace}->{$action}");
-                    }
+                    throw new CoreException("{$controllerSpace}->{$action} 不能解析的请求");
                 }
             }
 
-            if ($is_callable->isPublic() && true !== $is_callable->isAbstract()) {
+            if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
                 $this->setAction($action);
                 self::setActionAnnotate($is_callable->getDocComment());
             } else {
-                throw new CoreException('不允许访问的方法');
+                throw new CoreException("{$controllerSpace}->{$action} 不允许访问的方法");
             }
         }
     }
@@ -442,7 +439,7 @@ class Application
         }
 
         if (!isset($cache_config ['file_ext'])) {
-            $cache_config ['file_ext'] = '.'.strtolower($display);
+            $cache_config ['file_ext'] = '.' . strtolower($display);
         }
 
         if (!isset($cache_config ['key'])) {
@@ -497,7 +494,7 @@ class Application
         foreach ($class_array as $class) {
             try {
                 if (is_string($class)) {
-                    $obj = new \ReflectionClass($class);
+                    $obj = new ReflectionClass($class);
                     $obj->newInstance();
                 }
             } catch (Exception $e) {
@@ -533,7 +530,16 @@ class Application
      */
     public static function getActionConfig()
     {
-        return Annotate::getInstance(self::getActionAnnotate())->parse();
+        $action_annotate_config = Annotate::getInstance(self::getActionAnnotate())->parse();
+        if (empty(self::$controller_annotate_config)) {
+            return $action_annotate_config;
+        }
+
+        if (is_array($action_annotate_config)) {
+            return array_merge(self::$controller_annotate_config, $action_annotate_config);
+        }
+
+        return self::$controller_annotate_config;
     }
 
     /**
