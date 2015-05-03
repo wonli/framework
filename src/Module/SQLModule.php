@@ -115,11 +115,12 @@ class SQLModule extends Module
      * @param $data
      * @param bool $multi
      * @param array $insert_data
+     * @param bool $openTA
      * @return array|bool|mixed
      */
-    public function add($data, $multi = false, & $insert_data = array())
+    public function add($data, $multi = false, & $insert_data = array(), $openTA = false)
     {
-        return $this->link->add($this->t, $data, $multi, $insert_data);
+        return $this->link->add($this->t, $data, $multi, $insert_data, $openTA);
     }
 
     /**
@@ -139,10 +140,11 @@ class SQLModule extends Module
      *
      * @param $where
      * @param bool $multi
+     * @param bool $openTA
      * @return bool|mixed
      */
-    function del($where, $multi = false)
+    function del($where, $multi = false, $openTA = false)
     {
-        return $this->link->del($this->t, $where, $multi);
+        return $this->link->del($this->t, $where, $multi, $openTA);
     }
 }
