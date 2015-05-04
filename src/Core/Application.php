@@ -10,9 +10,10 @@ namespace Cross\Core;
 
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
-use Exception;
 use ReflectionClass;
 use ReflectionMethod;
+use Exception;
+use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -442,22 +443,35 @@ class Application
             $cache_config ['file_ext'] = '.' . strtolower($display);
         }
 
-        if (!isset($cache_config ['key'])) {
+        if (!isset($cache_config['key_dot'])) {
             $cache_config ['key_dot'] = DIRECTORY_SEPARATOR;
-            $cache_key_conf = array(
-                $this->getConfig()->get('app', 'name'),
-                strtolower($this->getController()),
-                $this->getAction()
-            );
-
-            $params = self::getParams();
-            if (!empty($params)) {
-                $cache_key_conf[] = md5(implode($cache_config ['key_dot'], $params));
-            }
-            $cache_key = implode($cache_config ['key_dot'], $cache_key_conf);
-            $cache_config['key'] = $cache_key;
         }
 
+        $cache_key_conf = array(
+            'app_name' => $this->getConfig()->get('app', 'name'),
+            'controller' => strtolower($this->getController()),
+            'action' => $this->getAction(),
+        );
+
+        $params = self::getParams();
+        if (isset($cache_config ['key'])) {
+            if ($cache_config ['key'] instanceof Closure) {
+                $cache_key = call_user_func_array($cache_config ['key'], array($cache_key_conf, $params));
+            } else {
+                $cache_key = $cache_config['key'];
+            }
+
+            if (empty($cache_key)) {
+                throw new CoreException("缓存key不能为空");
+            }
+        } else {
+            if (!empty($params)) {
+                $cache_key_conf['params'] = md5(implode($cache_config ['key_dot'], $params));
+            }
+            $cache_key = implode($cache_config['key_dot'], $cache_key_conf);
+        }
+
+        $cache_config['key'] = $cache_key;
         return RequestCache::factory($cache_config);
     }
 
