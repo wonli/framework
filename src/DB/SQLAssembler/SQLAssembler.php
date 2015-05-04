@@ -159,10 +159,6 @@ class SQLAssembler implements SqlInterface
         $order_str = $this->parseOrder($order);
         $group_str = $this->parseGroup($group_by);
 
-        $page['limit'] = max(1, (int)$page['limit']);
-        $page['total_page'] = ceil($page['result_count'] / $page['limit']);
-        $page['p'] = max(1, min($page['p'], $page['total_page']));
-
         $p = ($page['p'] - 1) * $page['limit'];
         if (1 !== $group_by) {
             $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s";

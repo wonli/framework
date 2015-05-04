@@ -181,10 +181,18 @@ class PDOSqlDriver
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $total = $this->get($table, 'COUNT(*) as total', $where);
-        $page['result_count'] = (int)$total['total'];
 
-        $this->SQLAssembler->find($table, $fields, $where, $order, $page, $group_by);
-        return $this->getPrepareResult(true);
+        $page['result_count'] = (int)$total['total'];
+        $page['limit'] = max(1, (int)$page['limit']);
+        $page['total_page'] = ceil($page['result_count'] / $page['limit']);
+
+        if ($page['p'] <= $page['total_page']) {
+            $page['p'] = max(1, $page['p']);
+            $this->SQLAssembler->find($table, $fields, $where, $order, $page, $group_by);
+            return $this->getPrepareResult(true);
+        }
+
+        return array();
     }
 
     /**
