@@ -228,7 +228,7 @@ class Application
         $this->initParams($router ['params'], $action_params);
 
         $cache = false;
-        if (isset($action_config['cache'])) {
+        if (isset($action_config['cache']) && Request::getInstance()->isGetRequest()) {
             $cache = $this->initRequestCache($action_config['cache']);
         }
 
