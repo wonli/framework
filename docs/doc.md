@@ -298,31 +298,36 @@ Cross项目 框架和项目 独立， 所以启动框架前需要做两件事
 		}
 	}
 
-配置的格式为一个二维数组 `array(true/false, array(key=>val...))` `true` 或 `false` 分别代表配置的开关.
+配置的格式为一个二维数组 `array(true/false, array(key=>val...))`
+
+第一个参数`true` 或 `false` 分别代表配置的开关.
+
+第二个参数中公用的有
+	
+	expire_time 表示缓存过期时间
+	key 缓存文件key的生成规则,支持匿名函数, 该匿名函数接收两个参数,第一个是app_name,controller,action, 第二个是params.
 
 a. 使用文件缓存 `array(true, array('type'=>1, 'expire_time'=>864000))`
 
-		type = 1
-		expire_time = 86400 表示缓存过期时间为1天
-		cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/request文件夹下
-		file_ext 缓存文件扩展名 默认为sys display中配置的处理方法名
+	type = 1
+	cache_path 表示缓存文件放在web索引文件的跟目录,默认放在项目的cache/request文件夹下
+	file_ext 缓存文件扩展名 默认为sys display中配置的处理方法名
 	
 >项目根目录下的cache目录需设置为可以读写
 
 b. 使用memcache缓存 `array(true, array('type'=>2, 'host'=>'127.0.0.1', 'port'=>11211, 'expire_time'=>600))`
 				
-		type=2
-		host=127.0.0.1
-		port=11211
-		expire_time=30
+	type=2
+	host=127.0.0.1
+	port=11211
 
 c. 使用redis缓存 `array(true, array('type'=>1, 'host'=>'127.0.0.1', 'db'=>3, 'port'=>6379, expire_time=86400))`
 
-		type=3, 
-		host=127.0.0.1, 
-		port=6379, 
-		db=3 使用的db id
-		expire_time=864000 key的生存时间
+	type=3, 
+	host=127.0.0.1, 
+	port=6379, 
+	db=3 使用的db id
+
 
 使用缓存后Dispatcher流程会跳过app模型中该Action的逻辑,直接从缓存读取数据返回给客户端, 合理的使用缓存能大幅度提高应用性能.
 
