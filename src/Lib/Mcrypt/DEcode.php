@@ -35,13 +35,12 @@ abstract class DEcode
      * PKCS5 补码
      *
      * @param $text
-     * @param $blocksize
+     * @param $block_size
      * @return string
      */
-    function pkcs5_pad($text, $blocksize = 16)
+    function pkcs5_pad($text, $block_size = 16)
     {
-        $pad = $blocksize - (strlen($text) % $blocksize);
-
+        $pad = $block_size - (strlen($text) % $block_size);
         return $text . str_repeat(chr($pad), $pad);
     }
 
@@ -54,10 +53,9 @@ abstract class DEcode
     function pkcs5_unpad($text)
     {
         $pad = ord($text{strlen($text) - 1});
-        if ($pad > strlen($text))
+        if ($pad > strlen($text) || (strspn($text, chr($pad), strlen($text) - $pad) != $pad) ) {
             return false;
-        if (strspn($text, chr($pad), strlen($text) - $pad) != $pad)
-            return false;
+        }
 
         return substr($text, 0, -1 * $pad);
     }

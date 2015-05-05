@@ -66,7 +66,7 @@ class DESMcrypt extends DEcode
         $key = $this->key;
         $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, ''); //使用MCRYPT_DES算法,ecb模式
         $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        $ks = mcrypt_enc_get_key_size($td);
+        //$ks = mcrypt_enc_get_key_size($td);
         @mcrypt_generic_init($td, $key, $iv); //初始处理
         $decrypted = mdecrypt_generic($td, $encrypted); //解密
         mcrypt_generic_deinit($td); //结束
