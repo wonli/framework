@@ -596,6 +596,13 @@ class Helper
     static function convert($size)
     {
         $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
-        return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
+        $s = floor(log($size, 1024));
+        $i = (int)$s;
+
+        if (isset($unit[$i])) {
+            return sprintf('%.2f ' . $unit[$i], $size / pow(1024, $s));
+        }
+
+        return $size . ' ' . $unit[0];
     }
 }
