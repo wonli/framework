@@ -95,17 +95,16 @@ class Controller extends FrameBase
     }
 
     /**
-     * view->display 的连接
+     * @see View::display()
      *
-     * @param null $data
-     * @param null $method
+     * @param null|mixed $data
+     * @param null|string $method
      * @param int $http_response_status
-     * @return mixed
      */
     protected function display($data = null, $method = null, $http_response_status = 200)
     {
         Response::getInstance()->setResponseStatus($http_response_status);
-        return $this->view->display($data, $method);
+        $this->view->display($data, $method);
     }
 
     /**
