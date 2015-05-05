@@ -106,7 +106,12 @@ class ImageCut
     }
 
     /**
-     * 生成图象
+     * 剪切图象
+     *
+     * @param $coordinate
+     * @param bool $return_path
+     * @return string
+     * @throws Exception
      */
     function cut($coordinate, $return_path = false)
     {

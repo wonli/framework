@@ -88,15 +88,15 @@ class Uploader
      */
     function _get_uploaded_info($file)
     {
-        $pathinfo = pathinfo($file['name']);
-        $file['extension'] = $pathinfo['extension'];
-        $file['filename'] = $pathinfo['basename'];
+        $path_info = pathinfo($file['name']);
+        $file['extension'] = $path_info['extension'];
+        $file['filename'] = $path_info['basename'];
 
-        if (!$pathinfo || !$this->_is_allowd_type($file['extension'])) {
+        if (!$path_info || !$this->_is_allowed_type($file['extension'])) {
             throw new CoreException('不支持的类型');
         }
 
-        if (!$this->_is_allowd_size($file['size'])) {
+        if (!$this->_is_allowed_size($file['size'])) {
             throw new CoreException("文件大小超出限制 {$file['size']}");
         }
 
@@ -109,7 +109,7 @@ class Uploader
      * @param int $type
      * @return bool
      */
-    function _is_allowd_type($type)
+    private function _is_allowed_type($type)
     {
         if (!$this->_allowed_file_type) {
             return true;
@@ -124,7 +124,7 @@ class Uploader
      * @param int $size
      * @return bool
      */
-    function _is_allowd_size($size)
+    private function _is_allowed_size($size)
     {
         if (!$this->_allowed_file_size) {
             return true;
@@ -138,7 +138,7 @@ class Uploader
     /**
      * 获取上传文件的信息
      *
-     * @return void
+     * @return string
      */
     function file_info()
     {
@@ -160,10 +160,9 @@ class Uploader
      *
      * @param string $dir 文件路径
      * @param string $name 文件名
-     * @param bool $mkdir 是否创建路径
      * @return bool
      */
-    function save($dir, $name = null, $mkdir = true)
+    function save($dir, $name = null)
     {
         if (!$this->_file) {
             return false;
@@ -176,7 +175,6 @@ class Uploader
         }
 
         $path = trim($dir, '/') . '/' . $name;
-
         return $this->move_uploaded_file($this->_file['tmp_name'], $path);
     }
 
@@ -191,19 +189,16 @@ class Uploader
     function move_uploaded_file($src, $target)
     {
         $abs_path = $this->_root_dir ? trim($this->_root_dir . '/') . $target : $target;
-        $dirname = dirname($abs_path);
+        $dir_name = dirname($abs_path);
 
-        if (!file_exists($dirname)) {
-            if (!mkdir($dirname, 0666, true)) {
+        if (!file_exists($dir_name)) {
+            if (!mkdir($dir_name, 0666, true)) {
                 throw new CoreException('保存文件的目录不存在');
-
-                return false;
             }
         }
 
         if (move_uploaded_file($src, $abs_path)) {
             @chmod($abs_path, 0666);
-
             return $target;
         } else {
             return false;
