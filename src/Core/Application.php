@@ -549,7 +549,7 @@ class Application
             return $action_annotate_config;
         }
 
-        if (is_array($action_annotate_config)) {
+        if (is_array($action_annotate_config) && is_array(self::$controller_annotate_config)) {
             return array_merge(self::$controller_annotate_config, $action_annotate_config);
         }
 

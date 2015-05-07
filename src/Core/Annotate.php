@@ -72,14 +72,14 @@ class Annotate
     /**
      * 注释配置转换为数组
      *
-     * @return array|bool
+     * @return array
      */
     public function parse()
     {
         $flag = preg_match_all(sprintf('/@%s(.*?)\s+(.*?)\n/', $this->prefix), $this->content, $content);
 
         if (!$flag) {
-            return true;
+            return array();
         }
 
         $conf = array_combine($content[1], $content[2]);
