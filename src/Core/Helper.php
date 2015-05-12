@@ -299,38 +299,46 @@ class Helper
      *
      * @param string $str
      * @param string $key
-     * @param string $operation
-     * @return bool|string
+     * @param string $operation encode加密 其他任意字符解密
+     * @return string
      */
     static function encodeParams($str, $key, $operation = 'encode')
     {
-        if ($operation == "encode") {
+        $result = '';
+        static $key_cache;
+        if (!isset($key_cache[$key])) {
+            $key_cache[$key] = md5($key);
+        }
+
+        $key = $key_cache[$key];
+        if ($operation == 'encode') {
             $str = (string)$str;
         } else {
-            $verity_str = substr($str, 0, 3);
-            $str = substr($str, 3);
-            //完整性验证
-            if ($verity_str != substr(md5($str), 0, 3)) {
-                return false;
+            //校验数据完整性
+            //省略校验要解密的参数是否是一个16进制的字符串
+            $str_head = substr($str, 0, 5);
+            $str = substr($str, 5);
+            if ($str_head != substr(md5($str . $key), 9, 5)) {
+                return $result;
             }
 
-            $str = base64_decode($str);
+            $str = pack('H*', $str);
         }
 
-        $rand_key = md5($key);
-        $str_len = strlen($str);
-
-        $result_str = "";
-        for ($i = 0; $i < $str_len; $i++) {
-            $result_str .= chr(ord($str[$i]) ^ ord($rand_key[$i % 32]));
+        if (!$str) {
+            return $result;
         }
 
-        if ($operation == "encode") {
-            $result_str = trim(base64_encode($result_str), "==");
-            $result_str = substr(md5($result_str), 0, 3) . $result_str;
+        for ($str_len = strlen($str), $i = 0; $i < $str_len; $i++) {
+            $result .= chr(ord($str[$i]) ^ ord($key[$i % 32]));
         }
 
-        return $result_str;
+        if ($operation == 'encode') {
+            $result = bin2hex($result);
+            $result = substr(md5($result . $key), 9, 5) . $result;
+        }
+
+        return $result;
     }
 
     /**
