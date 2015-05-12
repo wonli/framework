@@ -67,6 +67,13 @@ class FrameBase extends Application
     protected $url_crypt_key;
 
     /**
+     * 指定加密http auth加密的key
+     *
+     * @var string
+     */
+    protected $http_auth_key;
+
+    /**
      * module的实例
      *
      * @var array
@@ -138,7 +145,7 @@ class FrameBase extends Application
     protected function setAuth($key, $value, $exp = 86400)
     {
         $auth_type = parent::getConfig()->get('sys', 'auth');
-        return HttpAuth::factory($auth_type)->set($key, $value, $exp);
+        return HttpAuth::factory($auth_type, $this->http_auth_key)->set($key, $value, $exp);
     }
 
     /**
@@ -151,7 +158,7 @@ class FrameBase extends Application
     protected function getAuth($key, $de = false)
     {
         $auth_type = parent::getConfig()->get('sys', 'auth');
-        return HttpAuth::factory($auth_type)->get($key, $de);
+        return HttpAuth::factory($auth_type, $this->http_auth_key)->get($key, $de);
     }
 
     /**
