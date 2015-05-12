@@ -19,16 +19,11 @@ use Cross\I\HttpAuthInterface;
 class CookieAuth implements HttpAuthInterface
 {
     /**
-     * @var string
-     */
-    private $key;
-
-    /**
      * 加解密默认key
      *
      * @var string
      */
-    private $default_key = '!wl<@>c(r#%o*s&s';
+    private $key = '!wl<@>c(r#%o*s&s';
 
     function __construct($key = '')
     {
@@ -38,38 +33,7 @@ class CookieAuth implements HttpAuthInterface
     }
 
     /**
-     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
-     *
-     * @param $params
-     * @return string
-     */
-    protected function cookieKey($params)
-    {
-        if (isset($_SERVER['HTTP_USER_AGENT'])) {
-            $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-        } else {
-            $agent = 'agent';
-        }
-
-        return sha1($agent . $this->getKey() . $params);
-    }
-
-    /**
-     * 设置cookie的key
-     *
-     * @return string
-     */
-    protected function getKey()
-    {
-        if (!$this->key) {
-            $this->key = $this->default_key;
-        }
-
-        return $this->key;
-    }
-
-    /**
-     * 生成机密后的cookie
+     * 生成加密cookie
      *
      * @param $name
      * @param $params
@@ -96,6 +60,23 @@ class CookieAuth implements HttpAuthInterface
         }
 
         return false;
+    }
+
+    /**
+     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
+     *
+     * @param $params
+     * @return string
+     */
+    protected function cookieKey($params)
+    {
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+        } else {
+            $agent = 'agent';
+        }
+
+        return md5($agent . $this->key . $params);
     }
 
     /**

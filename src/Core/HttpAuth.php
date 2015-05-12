@@ -35,17 +35,18 @@ class HttpAuth
      *  也可以是一个实现了HttpAuthInterface接口的对象
      * </pre>
      *
+     * @param string $auth_key 指定加密key
      * @return CookieAuth|SessionAuth|HttpAuthInterface|object
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
      */
-    public static function factory($type = 'COOKIE')
+    public static function factory($type = 'COOKIE', $auth_key = '')
     {
         if (!self::$obj) {
             if (is_string($type)) {
                 if (strcasecmp($type, 'cookie') == 0) {
-                    self::$obj = new CookieAuth();
+                    self::$obj = new CookieAuth($auth_key);
                 } elseif (strcasecmp($type, 'session') == 0) {
-                    self::$obj = new SessionAuth();
+                    self::$obj = new SessionAuth($auth_key);
                 } else {
                     $object = new ReflectionClass($type);
                     if ($object->implementsInterface('Cross\I\HttpAuthInterface')) {
