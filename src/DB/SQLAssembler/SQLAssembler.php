@@ -256,35 +256,102 @@ class SQLAssembler implements SqlInterface
     }
 
     /**
-     * @param $sql
-     */
-    protected function setSQL($sql)
-    {
-        $this->sql = $sql;
-    }
-
-    /**
-     * @param $params
-     */
-    protected function setParams($params)
-    {
-        $this->params = $params;
-    }
-
-    /**
+     * @param string $fields
      * @return string
      */
-    public function getSQL()
+    public function select($fields = '*')
     {
-        return $this->sql;
+        return "SELECT {$this->parseFields($fields)} ";
     }
 
     /**
-     * @return string|array
+     * @param $table
+     * @return string
      */
-    public function getParams()
+    public function from($table)
     {
-        return $this->params;
+        return "FROM {$table} ";
+    }
+
+    /**
+     * @param string|array $where
+     * @param array $params
+     * @return string
+     * @throws CoreException
+     */
+    public function where($where, & $params)
+    {
+        return "WHERE {$this->parseWhere($where, $params)} ";
+    }
+
+    /**
+     * @param int $start
+     * @param bool|int $end
+     * @return string
+     */
+    public function limit($start, $end = false)
+    {
+        if ($end) {
+            $end = (int) $end;
+            return "LIMIT {$start}, {$end} ";
+        }
+
+        $start = (int) $start;
+        return "LIMIT {$start} ";
+    }
+
+    /**
+     * @param int $offset
+     * @return string
+     */
+    public function offset($offset)
+    {
+        return "OFFSET {$offset} ";
+    }
+
+    /**
+     * @param $order
+     * @return string
+     */
+    public function orderBy($order)
+    {
+        return "ORDER BY {$this->parseOrder($order)} ";
+    }
+
+    /**
+     * @param $group
+     * @return string
+     */
+    public function groupBy($group)
+    {
+        return "GROUP BY {$this->parseOrder($group)} ";
+    }
+
+    /**
+     * @param $having
+     * @return string
+     */
+    public function having($having)
+    {
+        return "HAVING {$having} ";
+    }
+
+    /**
+     * @param $procedure
+     * @return string
+     */
+    public function procedure($procedure)
+    {
+        return "PROCEDURE {$procedure} ";
+    }
+
+    /**
+     * @param $var_name
+     * @return string
+     */
+    public function into($var_name)
+    {
+        return "INTO {$var_name} ";
     }
 
     /**
@@ -318,11 +385,12 @@ class SQLAssembler implements SqlInterface
      */
     public function parseWhere($where, & $params)
     {
-        $condition = array();
         if (!empty($where)) {
             if (is_array($where)) {
+                $r = array();
                 foreach ($where as $w_key => $w_value) {
                     $operator = '=';
+                    $condition = array();
                     if (is_array($w_value)) {
                         list($operator, $n_value) = $w_value;
                         $operator = strtoupper(trim($operator));
@@ -341,7 +409,6 @@ class SQLAssembler implements SqlInterface
                                     list($ex_operator, $n_value) = $or_exp_val;
                                     $or_exp_val = $n_value;
                                 }
-
                                 $condition[" {$operator} "][] = "{$w_key} {$ex_operator} ?";
                                 $params [] = $or_exp_val;
                             }
@@ -379,13 +446,11 @@ class SQLAssembler implements SqlInterface
                             $condition[' AND '][] = "{$w_key} {$operator} ?";
                             $params [] = $w_value;
                     }
-                }
 
-                $r = array();
-                foreach ($condition as $sql_opt => $where_condition) {
-                    $r[] = implode($sql_opt, $where_condition);
+                    foreach ($condition as $sql_opt => $where_condition) {
+                        $r[] = implode($sql_opt, $where_condition);
+                    }
                 }
-
                 $where_str = implode(' AND ', $r);
             } else {
                 $where_str = $where;
@@ -433,5 +498,37 @@ class SQLAssembler implements SqlInterface
         }
 
         return $group_str;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSQL()
+    {
+        return $this->sql;
+    }
+
+    /**
+     * @param $sql
+     */
+    protected function setSQL($sql)
+    {
+        $this->sql = $sql;
+    }
+
+    /**
+     * @return string|array
+     */
+    public function getParams()
+    {
+        return $this->params;
+    }
+
+    /**
+     * @param $params
+     */
+    protected function setParams($params)
+    {
+        $this->params = $params;
     }
 }

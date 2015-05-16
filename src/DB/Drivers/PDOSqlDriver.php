@@ -39,6 +39,27 @@ class PDOSqlDriver
     public $sql;
 
     /**
+     * 链式查询每条语句的标示符
+     *
+     * @var int
+     */
+    protected $qid = 0;
+
+    /**
+     * 以qid为key,存储链式查询生成的sql语句
+     *
+     * @var array
+     */
+    protected $querySQL = array(0);
+
+    /**
+     * 联系查询生成的参数缓存
+     *
+     * @var array
+     */
+    protected $queryParams;
+
+    /**
      * @var string|array
      */
     protected $params;
@@ -264,14 +285,16 @@ class PDOSqlDriver
      * 执行一条SQL 语句 并返回结果
      *
      * @param string $sql
-     * @param int $model
-     * @throws CoreException
+     * @param int $fetch_style
+     * @param int $cursor_orientation
+     * @param int $cursor_offset
      * @return mixed
+     * @throws CoreException
      */
-    public function fetchOne($sql, $model = PDO::FETCH_ASSOC)
+    public function fetchOne($sql, $fetch_style = PDO::FETCH_ASSOC, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
     {
         try {
-            return $this->pdo->query($sql)->fetch($model);
+            return $this->pdo->query($sql)->fetch($fetch_style, $cursor_orientation, $cursor_offset);
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
         }
@@ -281,15 +304,31 @@ class PDOSqlDriver
      * 执行sql 并返回所有结果
      *
      * @param string $sql
-     * @param int $model
-     * @throws CoreException
+     * @param int $fetch_style
+     * @param null $fetch_argument
+     * @param array $ctor_args
+     * <pre>
+     * 当fetch_style为PDO::FETCH_CLASS时, 自定义类的构造函数的参数。
+     * </pre>
      * @return array
+     * @throws CoreException
      */
-    public function fetchAll($sql, $model = PDO::FETCH_ASSOC)
+    public function fetchAll($sql, $fetch_style = PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = array())
     {
         try {
             $data = $this->pdo->query($sql);
-            return $data->fetchAll($model);
+            if (null !== $fetch_argument) {
+                switch ($fetch_style) {
+                    case PDO::FETCH_CLASS:
+                        return $data->fetchAll($fetch_style, $fetch_argument, $ctor_args);
+
+                    default:
+                        return $data->fetchAll($fetch_style, $fetch_argument);
+                }
+
+            } else {
+                return $data->fetchAll($fetch_style);
+            }
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
         }
@@ -315,16 +354,183 @@ class PDOSqlDriver
      * 绑定sql语句,执行后给出返回结果
      *
      * @param bool $_fetchAll
-     * @param int $result_type
+     * @param int $fetch_style
      * @return mixed
      * @throws CoreException
      */
-    public function getPrepareResult($_fetchAll = false, $result_type = PDO::FETCH_ASSOC)
+    public function getPrepareResult($_fetchAll = false, $fetch_style = PDO::FETCH_ASSOC)
     {
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();
 
-        return $this->prepare($this->sql)->exec($this->params)->stmtFetch($_fetchAll, $result_type);
+        return $this->prepare($this->sql)->exec($this->params)->stmtFetch($_fetchAll, $fetch_style);
+    }
+
+    /**
+     * 链式查询以select开始,跟原生的sql语句保持一致
+     *
+     * @param string $fields
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function select($fields = '*')
+    {
+        $this->makeQueryID();
+        $this->querySQL[$this->qid] = $this->SQLAssembler->select($fields);
+        return $this;
+    }
+
+    /**
+     * @param $table
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function from($table)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->from($table);
+        return $this;
+    }
+
+    /**
+     * @param $where
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function where($where)
+    {
+        $params = array();
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->where($where, $params);
+        $this->queryParams[$this->qid] = $params;
+
+        return $this;
+    }
+
+    /**
+     * @param $start
+     * @param bool $end
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function limit($start, $end = false)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->limit($start, $end);
+        return $this;
+    }
+
+    /**
+     * @param $offset
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function offset($offset)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->offset($offset);
+        return $this;
+    }
+
+    /**
+     * @param $order
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function orderBy($order)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->orderBy($order);
+        return $this;
+    }
+
+    /**
+     * @param $group
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function groupBy($group)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->groupBy($group);
+        return $this;
+    }
+
+    /**
+     * @param $having
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function having($having)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->having($having);
+        return $this;
+    }
+
+    /**
+     * @param $procedure
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    function procedure($procedure)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->procedure($procedure);
+        return $this;
+    }
+
+    /**
+     * @param $var_name
+     * @return \Cross\DB\Drivers\PDOSqlDriver
+     */
+    public function into($var_name)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->into($var_name);
+        return $this;
+    }
+
+    /**
+     * 返回链式查询当前生成的prepare语句
+     *
+     * @return mixed
+     */
+    function getSQL()
+    {
+        return array(
+            'sql' => $this->querySQL[$this->qid],
+            'params' => $this->queryParams[$this->qid]
+        );
+    }
+
+    /**
+     * 生成qid
+     */
+    private function makeQueryID()
+    {
+        do {
+            $qid = mt_rand(1, 99999);
+            if (!isset($this->querySQL[$qid])) {
+                $this->qid = $qid;
+                break;
+            }
+        } while (true);
+    }
+
+    /**
+     * 绑定链式查询生成的sql语句并返回stmt对象
+     *
+     * @param bool $execute 是否调用stmt的execute
+     * @param array $prepare_params prepare时的参数
+     * @return PDOStatement
+     * @throws CoreException
+     */
+    public function stmt($execute = true, $prepare_params = array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY))
+    {
+        //如果不是以select开始调用,抛出异常
+        if ($this->qid == 0) {
+            throw new CoreException("链式风格的查询必须以->select()开始");
+        }
+
+        $sql = $this->querySQL[$this->qid];
+        try {
+            $stmt = $this->pdo->prepare($sql, $prepare_params);
+            if ($execute) {
+                $execute_params = array();
+                if (isset($this->queryParams[$this->qid])) {
+                    $execute_params = $this->queryParams[$this->qid];
+                }
+                $stmt->execute($execute_params);
+            }
+
+            unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
+            return $stmt;
+        } catch (Exception $e) {
+            throw new CoreException(sprintf("%s<br>SQL: %s", $e->getMessage(), $sql));
+        }
     }
 
     /**
@@ -370,18 +576,18 @@ class PDOSqlDriver
      * 返回参数绑定结果
      *
      * @param bool $_fetchAll
-     * @param int $result_type
+     * @param int $fetch_style
      * @return mixed
      * @throws CoreException
      */
-    public function stmtFetch($_fetchAll = false, $result_type = PDO::FETCH_ASSOC)
+    public function stmtFetch($_fetchAll = false, $fetch_style = PDO::FETCH_ASSOC)
     {
         if (!$this->stmt) throw new CoreException('stmt init failed!');
         if (true === $_fetchAll) {
-            return $this->stmt->fetchAll($result_type);
+            return $this->stmt->fetchAll($fetch_style);
         }
 
-        return $this->stmt->fetch($result_type);
+        return $this->stmt->fetch($fetch_style);
     }
 
     /**
@@ -396,6 +602,14 @@ class PDOSqlDriver
     }
 
     /**
+     * @return PDOConnecter
+     */
+    public function getConnecter()
+    {
+        return $this->connecter;
+    }
+
+    /**
      * 设置PDOConnecter对象
      *
      * @param PDOConnecter $connecter
@@ -406,6 +620,14 @@ class PDOSqlDriver
     }
 
     /**
+     * @return SQLAssembler
+     */
+    public function getSQLAssembler()
+    {
+        return $this->SQLAssembler;
+    }
+
+    /**
      * 设置SQLAssembler对象
      *
      * @param SQLAssembler $SQLAssembler
@@ -413,22 +635,6 @@ class PDOSqlDriver
     public function setSQLAssembler(SQLAssembler $SQLAssembler)
     {
         $this->SQLAssembler = $SQLAssembler;
-    }
-
-    /**
-     * @return PDOConnecter
-     */
-    public function getConnecter()
-    {
-        return $this->connecter;
-    }
-
-    /**
-     * @return SQLAssembler
-     */
-    public function getSQLAssembler()
-    {
-        return $this->SQLAssembler;
     }
 
     /**
