@@ -30,6 +30,13 @@ class SQLAssembler implements SqlInterface
     protected $params;
 
     /**
+     * offset()在limit()中已经传递了第二个参数时不再生效
+     *
+     * @var bool
+     */
+    protected $offset_is_valid = true;
+
+    /**
      * 获取单条数据sql语句
      *
      * @param string $table database table
@@ -292,11 +299,12 @@ class SQLAssembler implements SqlInterface
     public function limit($start, $end = false)
     {
         if ($end) {
-            $end = (int) $end;
+            $end = (int)$end;
+            $this->offset_is_valid = false;
             return "LIMIT {$start}, {$end} ";
         }
 
-        $start = (int) $start;
+        $start = (int)$start;
         return "LIMIT {$start} ";
     }
 
@@ -306,7 +314,11 @@ class SQLAssembler implements SqlInterface
      */
     public function offset($offset)
     {
-        return "OFFSET {$offset} ";
+        if ($this->offset_is_valid) {
+            return "OFFSET {$offset} ";
+        }
+
+        return "";
     }
 
     /**
