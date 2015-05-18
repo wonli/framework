@@ -54,6 +54,8 @@ class PgSQLAssembler extends SQLAssembler
     }
 
     /**
+     * PgSQL的limit如果有第二个参数, 那么和mysql的limit行为保持一致, 并且offset()不生效
+     *
      * @param int $start
      * @param bool|int $end
      * @return string
@@ -61,12 +63,14 @@ class PgSQLAssembler extends SQLAssembler
     public function limit($start, $end = false)
     {
         if ($end) {
-            $end = (int) $end;
+            $limit = max(1, (int)$end);
+            $offset = $limit * (max(1, (int)$start) - 1);
+
             $this->offset_is_valid = false;
-            return "LIMIT {$start} OFFSET {$end} ";
+            return "LIMIT {$limit} OFFSET {$offset} ";
         }
 
-        $start = (int) $start;
+        $start = (int)$start;
         return "LIMIT {$start} ";
     }
 }
