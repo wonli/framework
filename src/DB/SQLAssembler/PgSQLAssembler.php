@@ -53,4 +53,20 @@ class PgSQLAssembler extends SQLAssembler
         $this->setParams($params);
     }
 
+    /**
+     * @param int $start
+     * @param bool|int $end
+     * @return string
+     */
+    public function limit($start, $end = false)
+    {
+        if ($end) {
+            $end = (int) $end;
+            $this->offset_is_valid = false;
+            return "LIMIT {$start} OFFSET {$end} ";
+        }
+
+        $start = (int) $start;
+        return "LIMIT {$start} ";
+    }
 }
