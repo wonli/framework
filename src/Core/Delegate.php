@@ -13,7 +13,7 @@ use Cross\I\RouterInterface;
 use Closure;
 
 //检查环境版本
-!version_compare(PHP_VERSION, '5.3.0', '<') or die('requires PHP 5.3.0 Please upgrade!');
+version_compare(PHP_VERSION, '5.3.0', '>=') or die('requires PHP 5.3.0 Please upgrade!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
@@ -121,7 +121,7 @@ class Delegate
      *
      * @return Config
      */
-    function initConfig()
+    private function initConfig()
     {
         $config = Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
             $this->runtime_config
@@ -187,7 +187,7 @@ class Delegate
      * @param null|string $params 参见router->initParams();
      * @return $this
      */
-    function router($params = null)
+    private function router($params = null)
     {
         return Router::initialization($this->config)->set_router_params($params)->getRouter();
     }
@@ -273,5 +273,54 @@ class Delegate
         } else {
             throw new CoreException('Not Specified Uri');
         }
+    }
+
+    /**
+     * CLI模式下运行方式
+     * <pre>
+     * 在命令行模式下的调用方法如下:
+     * php /path/index.php controller:action params1, params2, ... $paramsN
+     * 第一个参数用来指定要调用的控制器和方法
+     * 格式如下:
+     *      控制器名称:方法名称
+     *
+     * 在控制器:方法后加空格来指定参数,格式如下:
+     *      参数1, 参数2, ... 参数N
+     *
+     * 控制器中调用$this->params来获取并处理参数
+     * </pre>
+     *
+     * @param int $run_argc
+     * @param array $run_argv
+     */
+    public function cliRun($run_argc = 0, $run_argv = array())
+    {
+        if (PHP_SAPI !== 'cli') {
+            die('This app is only running from CLI');
+        }
+
+        if ($run_argc === 0) {
+            $run_argc = $_SERVER['argc'];
+        }
+
+        if (empty($run_argv)) {
+            $run_argv = $_SERVER['argv'];
+        }
+
+        //指定要调用的控制器:方法和参数
+        if ($run_argc == 1) {
+            die('Please specify params: controller:action params');
+        }
+
+        //从argv数组中去掉文件名,第一个参数为控制器
+        array_shift($run_argv);
+        $controller = $run_argv[0];
+
+        //去掉控制器,剩下的为参数
+        array_shift($run_argv);
+        $params = $run_argv;
+
+        //调用get()
+        $this->get($controller, $params);
     }
 }
