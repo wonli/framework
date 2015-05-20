@@ -290,20 +290,20 @@ class Delegate
      * 控制器中调用$this->params来获取并处理参数
      * </pre>
      *
-     * @param int $run_argc
-     * @param array $run_argv
+     * @param int|bool $run_argc
+     * @param array|bool $run_argv
      */
-    public function cliRun($run_argc = 0, $run_argv = array())
+    public function cliRun($run_argc = false, $run_argv = false)
     {
         if (PHP_SAPI !== 'cli') {
             die('This app is only running from CLI');
         }
 
-        if ($run_argc === 0) {
+        if (false === $run_argc) {
             $run_argc = $_SERVER['argc'];
         }
 
-        if (empty($run_argv)) {
+        if (false === $run_argv) {
             $run_argv = $_SERVER['argv'];
         }
 
