@@ -115,7 +115,7 @@ class SQLAssembler implements SqlInterface
      *      );
      *  </pre>
      * @return array|bool
-     * @throws FrontException
+     * @throws CoreException
      */
     public function add($table, $data, $multi = false, & $insert_data = array())
     {
@@ -124,6 +124,10 @@ class SQLAssembler implements SqlInterface
         $insert_sql = "INSERT INTO {$table} (%s) VALUES (%s)";
 
         if (true === $multi) {
+            if (empty($data['fields']) || empty($data['values'])) {
+                throw new CoreException('data format error!');
+            }
+
             foreach ($data ['fields'] as $d) {
                 $field .= "{$d},";
                 $value .= '?,';
@@ -438,7 +442,8 @@ class SQLAssembler implements SqlInterface
                                 $in_where_condition [] = '?';
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s (%s)', $w_key, $operator, implode(',', $in_where_condition));
+                            $condition[' AND '][] = sprintf('%s %s (%s)', $w_key, $operator,
+                                implode(',', $in_where_condition));
                             break;
 
                         case 'BETWEEN':
@@ -451,7 +456,8 @@ class SQLAssembler implements SqlInterface
                                 throw new CoreException('BETWEEN parameter error!');
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $w_key, $operator, $w_value[0], $w_value[1]);
+                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $w_key, $operator, $w_value[0],
+                                $w_value[1]);
                             break;
 
                         default:
