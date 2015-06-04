@@ -184,7 +184,13 @@ class PDOSqlDriver
             }
             return true;
         } else {
-            return $this->prepare($this->sql)->exec($this->params)->insertId();
+            $result = $this->prepare($this->sql)->exec($this->params);
+            $last_insert_id = $result->insertId();
+            if ($last_insert_id > 0) {
+                return $last_insert_id;
+            }
+
+            return true;
         }
     }
 
@@ -291,8 +297,12 @@ class PDOSqlDriver
      * @return mixed
      * @throws CoreException
      */
-    public function fetchOne($sql, $fetch_style = PDO::FETCH_ASSOC, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
-    {
+    public function fetchOne(
+        $sql,
+        $fetch_style = PDO::FETCH_ASSOC,
+        $cursor_orientation = PDO::FETCH_ORI_NEXT,
+        $cursor_offset = 0
+    ) {
         try {
             return $this->pdo->query($sql)->fetch($fetch_style, $cursor_orientation, $cursor_offset);
         } catch (Exception $e) {
@@ -582,7 +592,10 @@ class PDOSqlDriver
      */
     public function stmtFetch($_fetchAll = false, $fetch_style = PDO::FETCH_ASSOC)
     {
-        if (!$this->stmt) throw new CoreException('stmt init failed!');
+        if (!$this->stmt) {
+            throw new CoreException('stmt init failed!');
+        }
+
         if (true === $_fetchAll) {
             return $this->stmt->fetchAll($fetch_style);
         }
