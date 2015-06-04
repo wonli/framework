@@ -244,14 +244,14 @@ class View extends FrameBase
     }
 
     /**
-     * 生成连接
+     * 生成url
      *
-     * @param null $controller 控制器:方法
+     * @param null $controller
      * @param null $params
      * @param bool $sec
      * @return string
      */
-    function link($controller = null, $params = null, $sec = false)
+    function url($controller = null, $params = null, $sec = false)
     {
         $url = $this->getLinkBase();
         $app_name = $this->config->get('app', 'name');
@@ -301,15 +301,39 @@ class View extends FrameBase
     }
 
     /**
-     * 生成参数加密的连接
+     * @see View::url() 生成加密连接
      *
-     * @param null $_controller
+     * @param null $controller
      * @param null $params
      * @return string
      */
-    function slink($_controller = null, $params = null)
+    function sUrl($controller = null, $params = null)
     {
-        return $this->link($_controller, $params, true);
+        return $this->url($controller, $params, true);
+    }
+
+    /**
+     * @see View::url() 生成非加密连接
+     *
+     * @param null $controller 控制器:方法
+     * @param null $params
+     * @return string
+     */
+    function link($controller = null, $params = null)
+    {
+        return $this->url($controller, $params);
+    }
+
+    /**
+     * @see View::sUrl()
+     *
+     * @param null $controller
+     * @param null $params
+     * @return string
+     */
+    function slink($controller = null, $params = null)
+    {
+        return $this->url($controller, $params, true);
     }
 
     /**
