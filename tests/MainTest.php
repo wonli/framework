@@ -96,17 +96,17 @@ class MainTest extends PHPUnit_Framework_TestCase
             switch($link_type)
             {
                 case 1:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}54cBBcFGAM{$ext}", $result, 'url->type=>1 make link error');
+                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>1 make link error');
                     break;
                 case 2:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?b22RQkKBhZDVAoEERVWCAM", $result, 'url->type=>2 make link error');
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?cd4b145090a061643540a041115560803", $result, 'url->type=>2 make link error');
                     break;
                 case 3:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}babRQkYBh9DVBgEGBVWGgM{$ext}", $result, 'url->type=>3 make link error');
+                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}692ad450918061f435418041815561a03{$ext}", $result, 'url->type=>3 make link error');
                     break;
 
                 case 4:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}babRQkYBh9DVBgEGBVWGgM{$ext}", $result, 'url->type=>4 make link error');
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}692ad450918061f435418041815561a03{$ext}", $result, 'url->type=>4 make link error');
                     break;
             }
         }
