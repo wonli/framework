@@ -18,7 +18,7 @@ use DOMDocument;
  * Class NodeTree
  * @package Cross\Lib\Document
  */
-class NodeTree {
+class CallTree {
 
     private $node = array();
 
@@ -29,7 +29,7 @@ class NodeTree {
 
     public static function getInstance()
     {
-        return new NodeTree();
+        return new CallTree();
     }
 
     /**
@@ -60,7 +60,7 @@ class NodeTree {
      */
     function dom()
     {
-        return NodeToHTML::getInstance()->getDom($this->getNode());
+        return CallTreeToHTML::getInstance()->getDom($this->getNode());
     }
 
     /**
@@ -90,6 +90,6 @@ class NodeTree {
      */
     private function nodeToHTML()
     {
-        return NodeToHTML::getInstance()->getHTML($this->getNode());;
+        return CallTreeToHTML::getInstance()->getHTML($this->getNode());
     }
 }

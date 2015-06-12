@@ -39,12 +39,12 @@ class HTML
      *
      * @param string $name
      * @param mixed $arguments
-     * @return NodeTree
+     * @return CallTree
      */
     static function __callStatic($name, $arguments)
     {
-        $nodeTree = NodeTree::getInstance();
-        $nodeTree->saveNode($name, $arguments);
-        return $nodeTree;
+        $callTree = CallTree::getInstance();
+        $callTree->saveNode($name, $arguments);
+        return $callTree;
     }
 }

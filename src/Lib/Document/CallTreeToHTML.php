@@ -15,13 +15,13 @@ use DOMElement;
 use DOMNode;
 
 /**
- * 把NodeTree转换为HTML
+ * 把CallTree转换为HTML
  *
  * @Auth: wonli <wonli@live.com>
  * Class NodeToHTML
  * @package Cross\Lib\Document
  */
-class NodeToHTML
+class CallTreeToHTML
 {
     /**
      * @var DOMDocument
@@ -40,7 +40,7 @@ class NodeToHTML
 
     static function getInstance()
     {
-        return new NodeToHTML();
+        return new CallTreeToHTML();
     }
 
     /**
@@ -84,7 +84,7 @@ class NodeToHTML
             $root_element_name = current(array_keys($node));
 
             $node = current($node);
-            if (isset($node[0]) && !$node[0] instanceof NodeTree) {
+            if (isset($node[0]) && !$node[0] instanceof CallTree) {
                 if (is_array($node[0])) {
                     if (isset($node[0]['@content'])) {
                         $content = $node[0]['@content'];
@@ -106,7 +106,7 @@ class NodeToHTML
         }
 
         //为parentElement设置属性
-        if ($parentElement && isset($node[0]) && !$node[0] instanceof NodeTree) {
+        if ($parentElement && isset($node[0]) && !$node[0] instanceof CallTree) {
             if (!empty($node[0])) {
                 foreach ($node[0] as $attr_set_name => $attr_set_value) {
                     if ($attr_set_value instanceof Closure) {
@@ -118,12 +118,12 @@ class NodeToHTML
         }
 
         foreach ($node as $n) {
-            if (!empty($n) && $n instanceof NodeTree) {
+            if (!empty($n) && $n instanceof CallTree) {
                 $node_detail = $n->getNode();
                 foreach ($node_detail as $element_name => $child_node) {
 
                     //获取当前element中的文本内容
-                    if (isset($child_node[0]) && !$child_node[0] instanceof NodeTree) {
+                    if (isset($child_node[0]) && !$child_node[0] instanceof CallTree) {
                         if (is_array($child_node[0])) {
                             if (isset($child_node[0]['@content'])) {
                                 $content = $child_node[0]['@content'];
