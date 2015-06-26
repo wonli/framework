@@ -420,8 +420,10 @@ class Application
      */
     private function initRequestCache($request_cache_config)
     {
-        if (!is_array($request_cache_config) || count($request_cache_config) != 2) {
-            throw new CoreException('Request Cache配置为一个二维数组');
+        if (!is_array($request_cache_config) ||
+            !isset($request_cache_config[1]) || !is_array($request_cache_config[1])
+        ) {
+            throw new CoreException('Request Cache 配置格式不正确');
         }
 
         list($cache_enable, $cache_config) = $request_cache_config;

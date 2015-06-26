@@ -19,11 +19,11 @@ use Cross\I\CacheInterface;
 class FileCache implements CacheInterface
 {
     /**
-     * 过期时间
+     * 缓存配置
      *
-     * @var int
+     * @var array
      */
-    private $expire_time;
+    private $config;
 
     /**
      * 缓存文件路径
@@ -32,8 +32,16 @@ class FileCache implements CacheInterface
      */
     private $cache_file;
 
+    /**
+     * 过期时间
+     *
+     * @var int
+     */
+    private $expire_time;
+
     function __construct($cache_config)
     {
+        $this->setConfig($cache_config);
         $file_ext = isset($cache_config['file_ext']) ? $cache_config['file_ext'] : '.html';
         $this->cache_file = $cache_config['cache_path'] . DIRECTORY_SEPARATOR . $cache_config['key'] . $file_ext;
         $this->expire_time = isset($cache_config ['expire_time']) ? $cache_config ['expire_time'] : 3600;
@@ -97,5 +105,26 @@ class FileCache implements CacheInterface
         }
 
         file_put_contents($key, $value, LOCK_EX);
+    }
+
+    /**
+     * 设置配置
+     *
+     * @param array $config
+     * @return mixed
+     */
+    function setConfig($config = array())
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * 获取缓存配置
+     *
+     * @return mixed
+     */
+    function getConfig()
+    {
+        return $this->config;
     }
 }
