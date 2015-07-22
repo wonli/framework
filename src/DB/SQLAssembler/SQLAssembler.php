@@ -403,73 +403,103 @@ class SQLAssembler implements SqlInterface
     {
         if (!empty($where)) {
             if (is_array($where)) {
-                $r = array();
-                foreach ($where as $w_key => $w_value) {
+                $where_str = '';
+                $all_condition = array();
+                foreach ($where as $field => $field_config) {
                     $operator = '=';
+                    $connector = 'AND';
                     $condition = array();
-                    if (is_array($w_value)) {
-                        list($operator, $n_value) = $w_value;
-                        $operator = strtoupper(trim($operator));
-                        $w_value = $n_value;
+
+                    if (is_array($field_config)) {
+                        list($connector, $field_true_value) = $field_config;
+                        $connector = strtoupper(trim($connector));
+                        $field_config = $field_true_value;
                     }
 
-                    switch ($operator) {
+                    switch ($connector) {
                         case 'OR':
-                        case 'AND':
-                            if (!is_array($w_value)) {
-                                throw new CoreException('OR need a array parameter');
+                            if (!is_array($field_config)) {
+                                $field_config = array($field_config);
                             }
-                            foreach ($w_value as $or_exp_val) {
-                                $ex_operator = '=';
-                                if (is_array($or_exp_val)) {
-                                    list($ex_operator, $n_value) = $or_exp_val;
-                                    $or_exp_val = $n_value;
+                            foreach ($field_config as $field_single_config) {
+                                if (is_array($field_single_config)) {
+                                    list($operator, $single_field_value) = $field_single_config;
+                                    $params [] = $single_field_value;
+                                } else {
+                                    $params [] = $field_single_config;
                                 }
-                                $condition[" {$operator} "][] = "{$w_key} {$ex_operator} ?";
-                                $params [] = $or_exp_val;
+                                $condition[' OR '][] = "{$field} {$operator} ?";
                             }
+                            break;
+
+                        case 'AND':
+                            if (is_array($field_config)) {
+                                list($operator, $field_true_value) = $field_config;
+                                $params [] = $field_true_value;
+                            } else {
+                                $params [] = $field_config;
+                            }
+
+                            $condition[' AND '][] = "{$field} {$operator} ?";
                             break;
 
                         case 'IN':
                         case 'NOT IN':
-                            if (!is_array($w_value)) {
+                            if (!is_array($field_config)) {
                                 throw new CoreException('IN or NOT IN need a array parameter');
                             }
 
                             $in_where_condition = array();
-                            foreach ($w_value as $in_exp_val) {
-                                $params[] = $in_exp_val;
+                            foreach ($field_config as $in_field_val) {
+                                $params[] = $in_field_val;
                                 $in_where_condition [] = '?';
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s (%s)', $w_key, $operator,
-                                implode(',', $in_where_condition));
+                            $condition[' AND '][] = sprintf('%s %s (%s)', $field, $connector,
+                                implode(',', $in_where_condition)
+                            );
                             break;
 
                         case 'BETWEEN':
                         case 'NOT BETWEEN':
-                            if (!is_array($w_value)) {
+                            if (!is_array($field_config)) {
                                 throw new CoreException('BETWEEN need a array parameter');
                             }
 
-                            if (!isset($w_value[0]) || !isset($w_value[1])) {
+                            if (!isset($field_config[0]) || !isset($field_config[1])) {
                                 throw new CoreException('BETWEEN parameter error!');
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $w_key, $operator, $w_value[0],
-                                $w_value[1]);
+                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $field, $connector,
+                                $field_config[0], $field_config[1]
+                            );
                             break;
 
                         default:
-                            $condition[' AND '][] = "{$w_key} {$operator} ?";
-                            $params [] = $w_value;
+                            $operator = $connector;
+                            $condition[' AND '][] = "{$field} {$operator} ?";
+                            $params [] = $field_config;
                     }
 
-                    foreach ($condition as $sql_opt => $where_condition) {
-                        $r[] = implode($sql_opt, $where_condition);
+                    $all_condition[] = $condition;
+                }
+
+                foreach ($all_condition as $condition) {
+                    foreach ($condition as $where_connector => $where_condition) {
+                        if (isset($where_condition[1])) {
+                            $where_snippet = sprintf('(%s)', implode($where_connector, $where_condition));
+                            $where_connector = ' AND ';
+                        } else {
+                            $where_snippet = $where_condition[0];
+                        }
+
+                        if ('' === $where_str) {
+                            $where_str = $where_snippet;
+                        } else {
+                            $where_str .= $where_connector . $where_snippet;
+                        }
                     }
                 }
-                $where_str = implode(' AND ', $r);
             } else {
                 $where_str = $where;
             }
