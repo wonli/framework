@@ -451,6 +451,7 @@ class Application
 
         $cache_key_conf = array(
             'app_name' => $this->getConfig()->get('app', 'name'),
+            'tpl_dir_name'  =>  $this->getConfig()->get('sys', 'default_tpl_dir'),
             'controller' => strtolower($this->getController()),
             'action' => $this->getAction(),
         );
