@@ -72,7 +72,15 @@ class CrossArray
         } else {
             if (isset($this->data[$config])) {
                 if ($name) {
-                    if (isset($this->data[$config][$name])) {
+                    if (is_array($name)) {
+                        $result = array();
+                        foreach ($name as $n) {
+                            if (isset($this->data[$config][$n])) {
+                                $result[$n] = $this->data[$config][$n];
+                            }
+                        }
+                        return $result;
+                    } elseif (isset($this->data[$config][$name])) {
                         return $this->data[$config][$name];
                     }
 
@@ -88,6 +96,7 @@ class CrossArray
 
     /**
      * 返回全部数据
+     *
      * @param bool| $obj 是否返回对象
      * @return array/object
      */
@@ -102,6 +111,7 @@ class CrossArray
 
     /**
      * 数组转对象
+     *
      * @param $d
      * @return object
      */
