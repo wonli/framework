@@ -176,9 +176,7 @@ class Application
                 $is_callable = new ReflectionMethod($controllerSpace, $action);
             } catch (Exception $e) {
                 try {
-                    new ReflectionMethod($controllerSpace, '__call');
-                    $this->setAction($action);
-                    return;
+                    $is_callable = new ReflectionMethod($controllerSpace, '__call');
                 } catch (Exception $e) {
                     throw new CoreException("{$controllerSpace}->{$action} 不能解析的请求");
                 }
