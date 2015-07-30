@@ -496,6 +496,84 @@ class Helper
     }
 
     /**
+     * 校验身份证号码
+     *
+     * @param string $id_card
+     * @param bool|true $just_check_length 是否只校验长度
+     * @return bool
+     */
+    static function checkIDCard($id_card, $just_check_length = true)
+    {
+        //长度校验
+        $length_validate = preg_match('/^([\d]{17}[xX\d]|[\d]{15})$/', $id_card) === 1;
+        if ($just_check_length) {
+            return $length_validate;
+        }
+
+        $city_code = array(
+            11 => true, 12 => true, 13 => true, 14 => true, 15 => true,
+            21 => true, 22 => true, 23 => true,
+            31 => true, 32 => true, 33 => true, 34 => true, 35 => true, 36 => true, 37 => true,
+            41 => true, 42 => true, 43 => true, 44 => true, 45 => true, 46 => true,
+            50 => true, 51 => true, 52 => true, 53 => true, 54 => true,
+            61 => true, 62 => true, 63 => true, 64 => true, 65 => true,
+            71 => true,
+            81 => true, 82 => true,
+            91 => true,
+        );
+
+        //地区校验
+        if (!isset($city_code[$id_card[0] . $id_card[1]])) {
+            return false;
+        }
+
+        //生成校验码
+        $make_verify_bit = function ($id_card) {
+            if (strlen($id_card) != 17) {
+                return null;
+            }
+
+            $factor = array(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2);
+            //校验码对应值
+            $verify_number_list = array('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2');
+            $checksum = 0;
+            for ($i = 0; $i < 17; $i++) {
+                $checksum += $id_card[$i] * $factor[$i];
+            }
+
+            $mod = $checksum % 11;
+            $verify_number = $verify_number_list[$mod];
+            return $verify_number;
+        };
+
+        $id_card_length = strlen($id_card);
+        if ($id_card_length == 15) {
+            //超出百岁特殊编码
+            if (array_search(substr($id_card, 12, 3), array('996', '997', '998', '999')) !== false) {
+                $id_card = substr($id_card, 0, 6) . '18' . substr($id_card, 6, 9);
+            } else {
+                $id_card = substr($id_card, 0, 6) . '19' . substr($id_card, 6, 9);
+            }
+
+            $id_card .= $make_verify_bit($id_card);
+        } else {
+            //校验最后一位
+            if (strcasecmp($id_card[17], $make_verify_bit(substr($id_card, 0, 17))) != 0) {
+                return false;
+            }
+        }
+
+        //校验出生日期
+        $birth_day = substr($id_card, 6, 8);
+        $d = new \DateTime($birth_day);
+        if ($d->format('Y') > date('Y') || $d->format('m') > 12 || $d->format('d') > 31) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * encrypt 加密解密
      *
      * @param string $crypt
