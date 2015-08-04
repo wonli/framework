@@ -407,11 +407,17 @@ class SQLAssembler implements SqlInterface
                 $all_condition = array();
                 foreach ($where as $field => $field_config) {
                     $operator = '=';
-                    $connector = 'AND';
+                    $condition_connector = $connector = 'AND';
                     $condition = array();
 
                     if (is_array($field_config)) {
-                        list($connector, $field_true_value) = $field_config;
+                        if (count($field_config) == 3) {
+                            list($connector, $field_true_value, $condition_connector) = $field_config;
+                        } else {
+                            list($connector, $field_true_value) = $field_config;
+                        }
+
+                        $condition_connector = strtoupper(trim($condition_connector));
                         $connector = strtoupper(trim($connector));
                         $field_config = $field_true_value;
                     }
@@ -455,7 +461,7 @@ class SQLAssembler implements SqlInterface
                                 $in_where_condition [] = '?';
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s (%s)', $field, $connector,
+                            $condition[" {$condition_connector} "][] = sprintf('%s %s (%s)', $field, $connector,
                                 implode(',', $in_where_condition)
                             );
                             break;
@@ -470,14 +476,24 @@ class SQLAssembler implements SqlInterface
                                 throw new CoreException('BETWEEN parameter error!');
                             }
 
-                            $condition[' AND '][] = sprintf('%s %s %s AND %s', $field, $connector,
+                            $condition[" {$condition_connector} "][] = sprintf('%s %s %s AND %s', $field, $connector,
                                 $field_config[0], $field_config[1]
                             );
                             break;
 
+                        case 'FIND_IN_SET':
+                            $condition[" {$condition_connector} "][] = sprintf('find_in_set(?, %s)', $field);
+                            $params[] = $field_config;
+                            break;
+
+                        case 'REGEXP':
+                            $condition[" {$condition_connector} "][] = sprintf('%s REGEXP(?)', $field);
+                            $params[] = $field_config;
+                            break;
+
                         default:
                             $operator = $connector;
-                            $condition[' AND '][] = "{$field} {$operator} ?";
+                            $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
                             $params [] = $field_config;
                     }
 
