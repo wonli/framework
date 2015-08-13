@@ -329,8 +329,8 @@ class Application
      */
     private function setParams($url_params = null, $annotate_params = array())
     {
-        $url_type = $this->getConfig()->get('url', 'type');
-        switch ($url_type) {
+        $url_config = $this->getConfig()->get('url');
+        switch ($url_config['type']) {
             case 1:
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
@@ -347,7 +347,18 @@ class Application
                 break;
         }
 
-        self::$class_params = $params;
+        $addition_params = array();
+        if (!empty($url_config['addition_params']) && is_array($url_config['addition_params'])) {
+            $addition_params = array_filter($url_config['addition_params']);
+        }
+
+        if (empty($params)) {
+            self::$class_params = $addition_params;
+        } elseif (is_array($params)) {
+            self::$class_params = array_merge($params, $addition_params);
+        } else {
+            self::$class_params = $params;
+        }
     }
 
     /**
@@ -449,7 +460,7 @@ class Application
 
         $cache_key_conf = array(
             'app_name' => $this->getConfig()->get('app', 'name'),
-            'tpl_dir_name'  =>  $this->getConfig()->get('sys', 'default_tpl_dir'),
+            'tpl_dir_name' => $this->getConfig()->get('sys', 'default_tpl_dir'),
             'controller' => strtolower($this->getController()),
             'action' => $this->getAction(),
         );

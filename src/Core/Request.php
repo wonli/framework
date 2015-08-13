@@ -254,20 +254,33 @@ class Request
      * 按type返回url请求
      *
      * @param int $type
+     * @param bool $fix_query_string rewrite状态下,如果request_uri包含问号要进行特殊处理
      * @return string
      */
-    public function getUrlRequest($type = 1)
+    public function getUrlRequest($type = 1, $fix_query_string = false)
     {
-        if ($type == 2) {
-            return $this->_SERVER('PATH_INFO');
-        } else {
-            $request_url = $this->_SERVER('REQUEST_URI');
-            if ($request_url && false !== strpos($request_url, '?')) {
-                list(, $_query_get) = explode('?', $request_url);
-                parse_str($_query_get, $add_get);
-                $_GET = array_merge($_GET, $add_get);
-            }
-            return $this->_SERVER('QUERY_STRING');
+        switch ($type) {
+            case 1:
+                $request_uri = $this->_SERVER('REQUEST_URI');
+                $query_string = $this->_SERVER('QUERY_STRING');
+
+                if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
+                    list(, $_query_get) = explode('?', $request_uri);
+
+                    parse_str($_query_get, $add_get);
+                    $_GET = array_merge($_GET, $add_get);
+                    if ($this->isPostRequest()) {
+                        $_POST = array_merge($_POST, $add_get);
+                    }
+
+                    if ($_query_get == $query_string) {
+                        return '';
+                    }
+                }
+
+                return $query_string;
+            case 2:
+                return $this->_SERVER('PATH_INFO');
         }
     }
 
