@@ -281,6 +281,9 @@ class Request
                 return $query_string;
             case 2:
                 return $this->_SERVER('PATH_INFO');
+
+            default:
+                return '';
         }
     }
 
