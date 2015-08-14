@@ -330,8 +330,25 @@ class Application
     private function setParams($url_params = null, $annotate_params = array())
     {
         $url_config = $this->getConfig()->get('url');
+        //获取附加参数
+        $reset_annotate_params = false;
+        $router_addition_params = array();
+        if (!empty($url_config['router_addition_params']) && is_array($url_config['router_addition_params'])) {
+            $router_addition_params = $url_config['router_addition_params'];
+            $reset_annotate_params = true;
+        }
+
         switch ($url_config['type']) {
             case 1:
+                if ($reset_annotate_params) {
+                    $now_annotate_params = array();
+                    foreach ($annotate_params as $key) {
+                        if (!isset($router_addition_params[$key])) {
+                            $now_annotate_params[] = $key;
+                        }
+                    }
+                    $annotate_params = $now_annotate_params;
+                }
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
@@ -347,15 +364,10 @@ class Application
                 break;
         }
 
-        $addition_params = array();
-        if (!empty($url_config['addition_params']) && is_array($url_config['addition_params'])) {
-            $addition_params = array_filter($url_config['addition_params']);
-        }
-
         if (empty($params)) {
-            self::$class_params = $addition_params;
+            self::$class_params = $router_addition_params;
         } elseif (is_array($params)) {
-            self::$class_params = array_merge($params, $addition_params);
+            self::$class_params = array_merge($router_addition_params, $params);
         } else {
             self::$class_params = $params;
         }

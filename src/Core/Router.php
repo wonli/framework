@@ -161,9 +161,6 @@ class Router implements RouterInterface
         if (true === $parse_mixed_params && false !== strpos($_query_string, '&')) {
             $_query_string_array = explode('&', $_query_string);
             $_query_string = array_shift($_query_string_array);
-
-            parse_str(html_entity_decode('&' . implode('&', $_query_string_array)), $add_params);
-            unset($add_params[$_query_string]);
         }
 
         $_query_string = trim(ltrim($_query_string, '/'), $url_config['dot']);
@@ -185,12 +182,6 @@ class Router implements RouterInterface
             $router_params = explode($url_config['dot'], $_query_string);
         } else {
             $router_params = array($_query_string);
-        }
-
-        if (!empty($add_params)) {
-            self::$config->set('url', array(
-                'addition_params' => $add_params,
-            ));
         }
 
         return $router_params;
@@ -252,56 +243,52 @@ class Router implements RouterInterface
     }
 
     /**
-     * 解析alias配置
+     * 解析router别名配置
      *
-     * @param $request
+     * @param array $request
+     * @throws CoreException
      * @internal param $router
      */
     function setRouter($request)
     {
-        //router配置
         $router_config = self::$config->get('router');
-        $_controller = $request [0];
+        $_controller = array_shift($request);
         self::$config->set('url', array('ori_controller' => $_controller));
-        array_shift($request);
 
         if (isset($router_config [$_controller])) {
             $controller_alias = $router_config [$_controller];
             if (is_array($controller_alias)) {
-                if (isset($request [0])) {
-                    $_action = $request [0];
-                    self::$config->set('url', array('ori_action' => $_action));
-                    array_shift($request);
-
-                    if (isset($controller_alias [$_action])) {
-                        if (false !== strpos($controller_alias [$_action], ':')) {
-                            $controller_alias_ = explode(':', $controller_alias [$_action]);
-                            $_action = $controller_alias_[0];
-                            array_shift($controller_alias_);
-                            $alias_params = $controller_alias_;
-                        } else {
-                            $_action = $controller_alias [$_action];
-                        }
-                    }
+                list($alias_controller, $alias_addition_params) = $controller_alias;
+                if (strpos($alias_controller, ':') !== false) {
+                    list($_controller, $_action) = explode(':', $alias_controller);
                 } else {
-                    $_action = self::$default_action;
+                    $_controller = $alias_controller;
+                }
+
+                self::$config->set('url', array(
+                    'router_addition_params' => $alias_addition_params,
+                ));
+
+                if (!isset($_action)) {
+                    if (isset($request[0])) {
+                        $_action = array_shift($request);
+                        self::$config->set('url', array('ori_action' => $_action));
+                    } else {
+                        $_action = self::$default_action;
+                    }
                 }
             } else {
                 if (false !== strpos($controller_alias, ':')) {
                     $_user_alias = explode(':', $controller_alias);
-                    $_controller = $_user_alias [0];
-                    array_shift($_user_alias);
-
-                    $_action = $_user_alias [0];
-                    array_shift($_user_alias);
+                    $_controller = array_shift($_user_alias);
+                    $_action = array_shift($_user_alias);
 
                     $alias_params = $_user_alias;
                 } else {
                     $_controller = $controller_alias;
 
                     if (isset($request [0])) {
-                        $_action = $request[0];
-                        array_shift($request);
+                        $_action = array_shift($request);
                     } else {
                         $_action = self::$default_action;
                     }
@@ -309,9 +296,13 @@ class Router implements RouterInterface
             }
         } else {
             if (isset($request[0])) {
-                $_action = $request [0];
+                $_action = array_shift($request);
                 self::$config->set('url', array('ori_action' => $_action));
-                array_shift($request);
+
+                $combine_alias_key = $_controller . ':' . $_action;
+                if (isset($router_config[$combine_alias_key])) {
+                    list($_controller, $_action) = explode(':', $router_config[$combine_alias_key]);
+                }
             } else {
                 $_action = self::$default_action;
             }

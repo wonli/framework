@@ -8,8 +8,10 @@
  */
 namespace Cross\MVC;
 
+use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Helper;
+use Cross\Core\Loader;
 use Cross\Core\Response;
 use Cross\Core\Router;
 use Cross\Exception\CoreException;
@@ -79,25 +81,11 @@ class View extends FrameBase
     protected static $tpl_path;
 
     /**
-     * 控制器解析缓存
-     *
-     * @var array
-     */
-    protected static $controller_cache = array();
-
-    /**
      * url配置缓存
      *
      * @var array
      */
     protected static $url_config_cache = array();
-
-    /**
-     * 路由别名配置缓存
-     *
-     * @var array
-     */
-    protected static $router_alias_cache = array();
 
     /**
      * 模板的绝对路径
@@ -233,78 +221,45 @@ class View extends FrameBase
      * @param array $data
      * @param string|int $key
      * @param string $default_value
+     * @return string
      */
     function e($data, $key, $default_value = '')
     {
         if (isset($data[$key])) {
-            echo $data[$key];
-        } else {
-            echo $default_value;
+            return $data[$key];
         }
+
+        return $default_value;
     }
 
     /**
      * 生成url
      *
-     * @param null $controller
-     * @param null $params
+     * @param null|string $controller
+     * @param null|string|array $params
      * @param bool $sec
      * @return string
      */
     function url($controller = null, $params = null, $sec = false)
     {
-        $url = $this->getLinkBase();
-        $app_name = $this->config->get('app', 'name');
-
-        //用来缓存当前运行中config中的url项配置
-        //在运行过程中,如果url的配置有变化,可能会产生意料之外的结果,这时候需要调用
-        //cleanLinkCache() 来刷新缓存
-        if (!isset(self::$url_config_cache[$app_name])) {
-            $url_config = $this->config->get('url');
-            self::$url_config_cache[$app_name] = $url_config;
-        } else {
-            $url_config = self::$url_config_cache[$app_name];
+        static $link_base = null;
+        if ($link_base === null) {
+            $link_base = $this->getLinkBase();
         }
 
-        if (!isset(self::$controller_cache[$app_name][$controller])) {
-            $url_controller = '';
-            if ($controller !== null) {
-                $url_controller = $this->makeController($app_name, $controller, $url_config);
-            }
-
-            self::$controller_cache[$app_name][$controller] = $url_controller;
-        } else {
-            $url_controller = self::$controller_cache[$app_name][$controller];
+        static $app_name = null;
+        if ($app_name === null) {
+            $app_name = $this->config->get('app', 'name');
         }
 
-        $url_params = '';
-        if ($params != null) {
-            $url_params = $this->makeParams($params, $url_config, $sec);
-        }
-
-        if (!empty($url_config['ext']) && !empty($url_controller)) {
-            switch ($url_config['type']) {
-                case 2:
-                    $url .= $url_controller . $url_config['ext'] . $url_params;
-                    break;
-                case 1:
-                case 3:
-                case 4:
-                    $url .= $url_controller . $url_params . $url_config['ext'];
-                    break;
-            }
-        } else {
-            $url .= $url_controller . $url_params;
-        }
-
-        return $url;
+        $uri = $this->makeUri($app_name, false, $controller, $params, $sec);
+        return $link_base . '/' . $uri;
     }
 
     /**
      * @see View::url() 生成加密连接
-     *
-     * @param null $controller
-     * @param null $params
+     * @param null|string $controller
+     * @param null|string|array $params
      * @return string
      */
     function sUrl($controller = null, $params = null)
@@ -314,9 +269,8 @@ class View extends FrameBase
 
     /**
      * @see View::url() 生成非加密连接
-     *
-     * @param null $controller 控制器:方法
-     * @param null $params
+     * @param null|string $controller 控制器:方法
+     * @param null|string|array $params
      * @return string
      */
     function link($controller = null, $params = null)
@@ -326,9 +280,8 @@ class View extends FrameBase
 
     /**
      * @see View::sUrl()
-     *
-     * @param null $controller
-     * @param null $params
+     * @param null|string $controller
+     * @param null|string|array $params
      * @return string
      */
     function slink($controller = null, $params = null)
@@ -337,21 +290,97 @@ class View extends FrameBase
     }
 
     /**
+     * 生成指定app,指定控制器的url
+     *
+     * @param string $base_link
+     * @param string $app_name
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @param null|bool $sec
+     * @return string
+     */
+    function appUrl($base_link, $app_name, $controller = null, $params = null, $sec = null)
+    {
+        $uri = $this->makeUri($app_name, true, $controller, $params, $sec);
+        return rtrim($base_link, '/') . '/' . $uri;
+    }
+
+    /**
+     * 生成连接
+     *
+     * @param string $app_name
+     * @param bool $check_app_name
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @param null|bool $sec
+     * @return string
+     * @throws CoreException
+     */
+    private function makeUri($app_name, $check_app_name, $controller = null, $params = null, $sec = null)
+    {
+        $uri = '';
+        //用来缓存当前运行中config中的url项配置
+        //在运行过程中,如果url的配置有变化,可能会产生意料之外的结果,这时候需要调用
+        //cleanLinkCache() 来刷新缓存
+        if (!isset(self::$url_config_cache[$app_name])) {
+            $this_app_name = $app_name;
+            if ($check_app_name) {
+                $this_app_name = $this->config->get('app', 'name');
+            }
+
+            if ($check_app_name && $app_name != $this_app_name) {
+                $uri .= $app_name;
+                $config = CrossArray::init(Loader::read(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php'));
+                $url_config = $config->get('url');
+            } else {
+                $url_config = $this->config->get('url');
+            }
+
+            self::$url_config_cache[$app_name] = $url_config;
+        } else {
+            $url_config = self::$url_config_cache[$app_name];
+        }
+
+        $url_params = '';
+        $url_controller_uri = $this->makeController($app_name, $controller, $params, $url_config);
+        if (!empty($params)) {
+            $url_params = $this->makeParams($params, $url_config, $sec);
+        }
+
+        if (!empty($url_config['ext']) && !empty($url_controller_uri)) {
+            switch ($url_config['type']) {
+                case 2:
+                    $uri .= $url_controller_uri . $url_config['ext'] . $url_params;
+                    break;
+                case 1:
+                case 3:
+                case 4:
+                    $uri .= $url_controller_uri . $url_params . $url_config['ext'];
+                    break;
+            }
+        } else {
+            $uri .= $url_controller_uri . $url_params;
+        }
+
+        return $uri;
+    }
+
+    /**
      * 生成控制器连接
      *
      * @param string $app_name
      * @param string $controller
+     * @param null|string|array $params
      * @param array $url_config
-     * @throws \Cross\Exception\CoreException
      * @return string
+     * @throws CoreException
      */
-    private function makeController($app_name, $controller, $url_config)
+    private function makeController($app_name, $controller, & $params, $url_config)
     {
-        $_link_url = '/';
-        $this->getControllerAlias($app_name, $controller, $_controller, $_action);
-
+        $controller_uri = '';
+        $this->getControllerAlias($app_name, $controller, $params, $_controller, $_action);
         if ($url_config ['rewrite']) {
-            $_link_url .= $_controller;
+            $controller_uri .= $_controller;
         } else {
             $index_file_name = $url_config ['index'];
             switch ($url_config['type']) {
@@ -376,14 +405,14 @@ class View extends FrameBase
                     throw new CoreException('不支持的url type');
             }
 
-            $_link_url .= $_dot . $_controller;
+            $controller_uri .= $_dot . $_controller;
         }
 
         if (null != $_action) {
-            $_link_url .= $url_config['dot'] . $_action;
+            $controller_uri .= $url_config['dot'] . $_action;
         }
 
-        return $_link_url;
+        return $controller_uri;
     }
 
     /**
@@ -449,27 +478,39 @@ class View extends FrameBase
      *
      * @param string $app_name
      * @param string $controller
+     * @param null|string|array $params
      * @param string $_controller
      * @param string $_action
      */
-    private function getControllerAlias($app_name, $controller, & $_controller, & $_action)
+    private function getControllerAlias($app_name, $controller, & $params, & $_controller, & $_action)
     {
-        $alias_config = $this->parseControllerAlias($app_name);
-        if (isset($alias_config[$controller])) {
-            $_controller = $alias_config[$controller];
-        } else {
+        $app_alias_config = $this->parseControllerAlias($app_name);
+        if (isset($app_alias_config[$controller])) {
+            $controller_alias = $app_alias_config[$controller];
+            if (is_array($controller_alias)) {
+                foreach ($controller_alias as $real_controller_name => $alias_params) {
+                    if ($params === $alias_params) {
+                        $_controller = $real_controller_name;
+                        $params = null;
+                        break;
+                    }
+                }
+            } else {
+                $_action = null;
+                if (false !== strpos($controller_alias, ':')) {
+                    list($_controller, $_action) = explode(':', $controller_alias);
+                } else {
+                    $_controller = $controller_alias;
+                }
+            }
+        }
+
+        if (empty($_controller)) {
             $_action = null;
             if (false !== strpos($controller, ':')) {
                 list($_controller, $_action) = explode(':', $controller);
             } else {
                 $_controller = $controller;
-            }
-
-            if (isset($alias_config[$_controller])) {
-                $controller_action_alias_config = $alias_config[$_controller];
-                if (isset($controller_action_alias_config[$_action])) {
-                    $_action = $controller_action_alias_config[$_action];
-                }
             }
         }
     }
@@ -482,21 +523,27 @@ class View extends FrameBase
      */
     private function parseControllerAlias($app_name)
     {
-        if (!isset(self::$router_alias_cache[$app_name])) {
+        static $router_alias_cache = null;
+        if (!isset($router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
-            self::$router_alias_cache[$app_name] = array();
+            $router_alias_cache[$app_name] = array();
             if (!empty($router)) {
-                foreach ($router as $controller_alias => $real_controller) {
-                    if (is_array($real_controller)) {
-                        self::$router_alias_cache[$app_name][$controller_alias] = array_flip($real_controller);
+                foreach ($router as $controller_alias => $alias_config) {
+                    if (is_array($alias_config)) {
+                        $alias_params = array();
+                        $real_controller = $alias_config[0];
+                        if (isset($alias_config[1])) {
+                            list($real_controller, $alias_params) = $alias_config;
+                        }
+
+                        $router_alias_cache[$app_name][$real_controller][$controller_alias] = $alias_params;
                     } else {
-                        self::$router_alias_cache[$app_name][$real_controller] = $controller_alias;
+                        $router_alias_cache[$app_name][$alias_config] = $controller_alias;
                     }
                 }
             }
         }
-
-        return self::$router_alias_cache[$app_name];
+        return $router_alias_cache[$app_name];
     }
 
     /**
@@ -505,7 +552,7 @@ class View extends FrameBase
     function cleanLinkCache()
     {
         $app_name = $this->config->get('app', 'name');
-        unset(self::$url_config_cache[$app_name], self::$controller_cache[$app_name]);
+        unset(self::$url_config_cache[$app_name]);
     }
 
     /**
