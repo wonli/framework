@@ -255,8 +255,20 @@ class Router implements RouterInterface
         $_controller = array_shift($request);
         self::$config->set('url', array('ori_controller' => $_controller));
 
-        if (isset($router_config [$_controller])) {
+        $combine_alias_key = '';
+        if (isset($request[0])) {
+            $combine_alias_key = $_controller . ':' . $request[0];
+        }
+
+        $controller_alias = array();
+        if (isset($router_config [$combine_alias_key])) {
+            array_shift($request);
+            $controller_alias = $router_config [$combine_alias_key];
+        } elseif (isset($router_config [$_controller])) {
             $controller_alias = $router_config [$_controller];
+        }
+
+        if (! empty($controller_alias)) {
             if (is_array($controller_alias)) {
                 list($alias_controller, $alias_addition_params) = $controller_alias;
                 if (strpos($alias_controller, ':') !== false) {
@@ -279,11 +291,7 @@ class Router implements RouterInterface
                 }
             } else {
                 if (false !== strpos($controller_alias, ':')) {
-                    $_user_alias = explode(':', $controller_alias);
-                    $_controller = array_shift($_user_alias);
-                    $_action = array_shift($_user_alias);
-
-                    $alias_params = $_user_alias;
+                    list($_controller, $_action) = explode(':', $controller_alias);
                 } else {
                     $_controller = $controller_alias;
 
@@ -298,11 +306,6 @@ class Router implements RouterInterface
             if (isset($request[0])) {
                 $_action = array_shift($request);
                 self::$config->set('url', array('ori_action' => $_action));
-
-                $combine_alias_key = $_controller . ':' . $_action;
-                if (isset($router_config[$combine_alias_key])) {
-                    list($_controller, $_action) = explode(':', $router_config[$combine_alias_key]);
-                }
             } else {
                 $_action = self::$default_action;
             }

@@ -531,11 +531,13 @@ class View extends FrameBase
                 foreach ($router as $controller_alias => $alias_config) {
                     if (is_array($alias_config)) {
                         $alias_params = array();
-                        $real_controller = $alias_config[0];
                         if (isset($alias_config[1])) {
                             list($real_controller, $alias_params) = $alias_config;
+                        } else {
+                            $real_controller = $alias_config[0];
                         }
 
+                        $router_alias_cache[$app_name][$real_controller] = array();
                         $router_alias_cache[$app_name][$real_controller][$controller_alias] = $alias_params;
                     } else {
                         $router_alias_cache[$app_name][$alias_config] = $controller_alias;
