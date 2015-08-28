@@ -207,9 +207,11 @@ class PDOSqlDriver
      */
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
-        $total = $this->get($table, 'COUNT(*) as total', $where);
+        if (!isset($page['result_count'])) {
+            $total = $this->get($table, 'COUNT(*) as total', $where);
+            $page['result_count'] = (int)$total['total'];
+        }
 
-        $page['result_count'] = (int)$total['total'];
         $page['limit'] = max(1, (int)$page['limit']);
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
 
@@ -302,7 +304,8 @@ class PDOSqlDriver
         $fetch_style = PDO::FETCH_ASSOC,
         $cursor_orientation = PDO::FETCH_ORI_NEXT,
         $cursor_offset = 0
-    ) {
+    )
+    {
         try {
             return $this->pdo->query($sql)->fetch($fetch_style, $cursor_orientation, $cursor_offset);
         } catch (Exception $e) {
