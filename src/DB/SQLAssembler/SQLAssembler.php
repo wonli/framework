@@ -423,150 +423,6 @@ class SQLAssembler implements SqlInterface
     }
 
     /**
-     * 解析关联数组
-     *
-     * @param array $where
-     * @param array $params
-     * @return string
-     * @throws CoreException
-     */
-    private function parseWhereFromHashMap($where, & $params)
-    {
-        $where_str = '';
-        $all_condition = array();
-        foreach ($where as $field => $field_config) {
-            $operator = '=';
-            $field = trim($field);
-            $is_mixed_field = false;
-            $condition_connector = $connector = 'AND';
-            $condition = array();
-
-            if ($field[0] == '(' && $field[strlen($field) - 1] == ')') {
-                $is_mixed_field = true;
-            }
-
-            if ($is_mixed_field === false && is_array($field_config)) {
-                if (count($field_config) == 3) {
-                    list($connector, $field_true_value, $condition_connector) = $field_config;
-                } else {
-                    list($connector, $field_true_value) = $field_config;
-                }
-
-                $condition_connector = strtoupper(trim($condition_connector));
-                $connector = strtoupper(trim($connector));
-                $field_config = $field_true_value;
-            }
-
-            switch ($connector) {
-                case 'OR':
-                    if (!is_array($field_config)) {
-                        $field_config = array($field_config);
-                    }
-                    foreach ($field_config as $field_single_config) {
-                        if (is_array($field_single_config)) {
-                            list($operator, $single_field_value) = $field_single_config;
-                            $params [] = $single_field_value;
-                        } else {
-                            $params [] = $field_single_config;
-                        }
-                        $condition[' OR '][] = "{$field} {$operator} ?";
-                    }
-                    break;
-
-                case 'AND':
-                    if ($is_mixed_field) {
-                        $condition[" {$condition_connector} "][] = $field;
-                        if (is_array($field_config)) {
-                            foreach ($field_config as $f) {
-                                $params [] = $f;
-                            }
-                        } else {
-                            $params[] = $field_config;
-                        }
-                    } else {
-                        if (is_array($field_config)) {
-                            list($operator, $field_true_value) = $field_config;
-                            $params [] = $field_true_value;
-                        } else {
-                            $params [] = $field_config;
-                        }
-
-                        $condition[' AND '][] = "{$field} {$operator} ?";
-                    }
-                    break;
-
-                case 'IN':
-                case 'NOT IN':
-                    if (!is_array($field_config)) {
-                        throw new CoreException('IN or NOT IN need a array parameter');
-                    }
-
-                    $in_where_condition = array();
-                    foreach ($field_config as $in_field_val) {
-                        $params[] = $in_field_val;
-                        $in_where_condition [] = '?';
-                    }
-
-                    $condition[" {$condition_connector} "][] = sprintf('%s %s (%s)', $field, $connector,
-                        implode(',', $in_where_condition)
-                    );
-                    break;
-
-                case 'BETWEEN':
-                case 'NOT BETWEEN':
-                    if (!is_array($field_config)) {
-                        throw new CoreException('BETWEEN need a array parameter');
-                    }
-
-                    if (!isset($field_config[0]) || !isset($field_config[1])) {
-                        throw new CoreException('BETWEEN parameter error!');
-                    }
-
-                    $condition[" {$condition_connector} "][] = sprintf('%s %s %s AND %s', $field, $connector,
-                        $field_config[0], $field_config[1]
-                    );
-                    break;
-
-                case 'FIND_IN_SET':
-                    $condition[" {$condition_connector} "][] = sprintf('find_in_set(?, %s)', $field);
-                    $params[] = $field_config;
-                    break;
-
-                case 'REGEXP':
-                    $condition[" {$condition_connector} "][] = sprintf('%s REGEXP(?)', $field);
-                    $params[] = $field_config;
-                    break;
-
-                default:
-                    $operator = $connector;
-                    $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
-                    $params [] = $field_config;
-            }
-
-            $all_condition[] = $condition;
-        }
-
-        foreach ($all_condition as $condition) {
-            foreach ($condition as $where_connector => $where_condition) {
-                if (isset($where_condition[1])) {
-                    $where_snippet = sprintf('(%s)', implode($where_connector, $where_condition));
-                    $where_connector = ' AND ';
-                } else {
-                    $where_snippet = $where_condition[0];
-                }
-
-                if ('' === $where_str) {
-                    $where_str = $where_snippet;
-                } else {
-                    $where_str .= $where_connector . $where_snippet;
-                }
-            }
-        }
-
-        return $where_str;
-    }
-
-    /**
      * 解析order
      *
      * @param string $order
@@ -634,5 +490,168 @@ class SQLAssembler implements SqlInterface
     protected function setParams($params)
     {
         $this->params = $params;
+    }
+
+    /**
+     * 解析where条件
+     *
+     * @param string $operator 字段和值之间的操作符
+     * @param string $field 字段名
+     * @param string|array $field_config 字段值配置
+     * @param bool $is_mixed_field 区别默认字段和复合字段(带括号的字段)
+     * @param string $condition_connector 每个条件之间的连接符
+     * @param string $connector 每个字段之间的连接符
+     * @param array $params 包含字段值的数组(prepare之后传递的参数)
+     * @return array
+     * @throws CoreException
+     */
+    protected function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, & $params)
+    {
+        $condition = array();
+        switch ($connector) {
+            case 'OR':
+                if (!is_array($field_config)) {
+                    $field_config = array($field_config);
+                }
+                foreach ($field_config as $field_single_config) {
+                    if (is_array($field_single_config)) {
+                        list($operator, $single_field_value) = $field_single_config;
+                        $params [] = $single_field_value;
+                    } else {
+                        $params [] = $field_single_config;
+                    }
+                    $condition[' OR '][] = "{$field} {$operator} ?";
+                }
+                break;
+
+            case 'AND':
+                if ($is_mixed_field) {
+                    $condition[" {$condition_connector} "][] = $field;
+                    if (is_array($field_config)) {
+                        foreach ($field_config as $f) {
+                            $params [] = $f;
+                        }
+                    } else {
+                        $params[] = $field_config;
+                    }
+                } else {
+                    if (is_array($field_config)) {
+                        list($operator, $field_true_value) = $field_config;
+                        $params [] = $field_true_value;
+                    } else {
+                        $params [] = $field_config;
+                    }
+
+                    $condition[' AND '][] = "{$field} {$operator} ?";
+                }
+                break;
+
+            case 'IN':
+            case 'NOT IN':
+                if (!is_array($field_config)) {
+                    throw new CoreException('IN or NOT IN need a array parameter');
+                }
+
+                $in_where_condition = array();
+                foreach ($field_config as $in_field_val) {
+                    $params[] = $in_field_val;
+                    $in_where_condition [] = '?';
+                }
+
+                $condition[" {$condition_connector} "][] = sprintf('%s %s (%s)', $field, $connector,
+                    implode(',', $in_where_condition)
+                );
+                break;
+
+            case 'BETWEEN':
+            case 'NOT BETWEEN':
+                if (!is_array($field_config)) {
+                    throw new CoreException('BETWEEN need a array parameter');
+                }
+
+                if (!isset($field_config[0]) || !isset($field_config[1])) {
+                    throw new CoreException('BETWEEN parameter error!');
+                }
+
+                $condition[" {$condition_connector} "][] = sprintf('%s %s %s AND %s', $field, $connector,
+                    $field_config[0], $field_config[1]
+                );
+                break;
+
+            default:
+                $operator = $connector;
+                $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
+                $params [] = $field_config;
+        }
+
+        return $condition;
+    }
+
+    /**
+     * 解析关联数组
+     *
+     * @param array $where
+     * @param array $params
+     * @return string
+     * @throws CoreException
+     */
+    private function parseWhereFromHashMap($where, & $params)
+    {
+        $all_condition = array();
+        foreach ($where as $field => $field_config) {
+            $operator = '=';
+            $field = trim($field);
+            $is_mixed_field = false;
+            $condition_connector = $connector = 'AND';
+
+            if ($field[0] == '(' && $field[strlen($field) - 1] == ')') {
+                $is_mixed_field = true;
+            }
+
+            if ($is_mixed_field === false && is_array($field_config)) {
+                if (count($field_config) == 3) {
+                    list($connector, $field_true_value, $condition_connector) = $field_config;
+                } else {
+                    list($connector, $field_true_value) = $field_config;
+                }
+
+                $condition_connector = strtoupper(trim($condition_connector));
+                $connector = strtoupper(trim($connector));
+                $field_config = $field_true_value;
+            }
+
+            $condition = $this->parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, $params);
+            $all_condition[] = $condition;
+        }
+
+        return $this->combineWhereCondition($all_condition);
+    }
+
+    /**
+     * 组合where条件
+     *
+     * @param $where_condition
+     * @return string
+     */
+    private function combineWhereCondition($where_condition)
+    {
+        $where = '';
+        foreach ($where_condition as $condition) {
+            foreach ($condition as $where_connector => $where_condition) {
+                if (isset($where_condition[1])) {
+                    $where_snippet = sprintf('(%s)', implode($where_connector, $where_condition));
+                    $where_connector = ' AND ';
+                } else {
+                    $where_snippet = $where_condition[0];
+                }
+
+                if ('' === $where) {
+                    $where = $where_snippet;
+                } else {
+                    $where .= $where_connector . $where_snippet;
+                }
+            }
+        }
+        return $where;
     }
 }
