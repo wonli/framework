@@ -565,34 +565,40 @@ class View extends FrameBase
      */
     function display($data = null, $method = null)
     {
+        $load_layer = true;
         $this->data = $data;
         if ($method === null) {
             $display_type = $this->config->get('sys', 'display');
-            if ($display_type && $display_type != 'HTML') {
+            if ($display_type && strcasecmp($display_type, 'html') !== 0) {
+                $load_layer = false;
                 $method = strtoupper($display_type);
-            } else {
+            } else if ($this->action) {
                 $method = $this->action;
+            } else {
+                $method = Router::$default_action;
             }
         }
 
-        if (!$method) {
-            $method = Router::$default_action;
-        }
-
-        $this->obRender($data, $method);
+        $this->obRender($data, $method, $load_layer);
     }
 
     /**
      * 输出带layer的view
      *
-     * @param $data
-     * @param $method
+     * @param array $data
+     * @param string $method
+     * @param bool $load_layer
+     * @throws CoreException
      */
-    function obRender($data, $method)
+    function obRender($data, $method, $load_layer)
     {
-        ob_start();
-        $this->$method($data);
-        $this->loadLayer(ob_get_clean());
+        if ($load_layer) {
+            ob_start();
+            $this->$method($data);
+            $this->loadLayer(ob_get_clean());
+        } else {
+            $this->$method($data);
+        }
     }
 
     /**
@@ -711,10 +717,6 @@ class View extends FrameBase
      */
     function JSON($data)
     {
-        $this->set(
-            array('layer' => 'json')
-        );
-
         Response::getInstance()->setContentType('json');
         echo json_encode($data);
     }
@@ -727,13 +729,8 @@ class View extends FrameBase
      */
     function XML($data, $root_name = 'root')
     {
-        $this->set(
-            array('layer' => 'xml')
-        );
-
         Response::getInstance()->setContentType('xml');
         $xml = Array2XML::createXML($root_name, $data);
-
         echo $xml->saveXML();
     }
 
