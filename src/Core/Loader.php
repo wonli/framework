@@ -133,7 +133,7 @@ class Loader
                     break;
 
                 case 'ini':
-                    $data = parse_ini_file($file_path);
+                    $data = parse_ini_file($file_path, true);
                     self::$loaded [$file_path][$read_file_flag] = $data;
                     break;
 
