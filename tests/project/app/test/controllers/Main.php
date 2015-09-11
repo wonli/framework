@@ -29,6 +29,16 @@ class Main extends Controller
     }
 
     /**
+     * 测试注释配置
+     *
+     * @cp_params a, b, c
+     */
+    function annotate()
+    {
+        return $this->params;
+    }
+
+    /**
      * 生成连接
      */
     function makeLink()
@@ -48,7 +58,7 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        echo $this->view->link("Main:getUrlSecurityParams", array(
+        return $this->view->link("Main:getUrlSecurityParams", array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']
@@ -75,7 +85,7 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        echo $this->view->slink("Main:getUrlSecurityParams", array(
+        return $this->view->slink("Main:getUrlSecurityParams", array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']
@@ -123,6 +133,7 @@ class Main extends Controller
 
             case 2:
             case 4:
+            case 5:
                 $url_start = strlen($this->config->get('url', 'index')) + 2;
                 break;
         }

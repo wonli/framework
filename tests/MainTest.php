@@ -25,11 +25,9 @@ class MainTest extends PHPUnit_Framework_TestCase
      */
     function testReadAppConfig()
     {
-        $result = $this->getAppResponse("Main:getAppConfig");
-        $ori_file = Loader::read("::app/test/init.php");
-        $ori_string = json_encode($ori_file['router'], true);
-
-        $this->assertJsonStringEqualsJsonString($result, $ori_string, 'read app/init.php error...');
+        $result = $this->getAppResponse('Main:getAppConfig');
+        $ori_file = Loader::read('::app/test/init.php');
+        $this->assertJsonStringEqualsJsonString($result, json_encode($ori_file['router'], true), 'read app/init.php error...');
     }
 
     /**
@@ -38,9 +36,19 @@ class MainTest extends PHPUnit_Framework_TestCase
     function testSetAppConfig()
     {
         $params = array('a'=>array(1, 2, 3, 'name' => array('a', 'b', 'c')));
-        $result = $this->getAppResponse("Main:setAppConfig", $params);
+        $result = $this->getAppResponse('Main:setAppConfig', $params);
 
         $this->assertEquals($result, json_encode($params), 'set app config error...');
+    }
+
+    /**
+     * 测试注释配置
+     */
+    function testAnnotate()
+    {
+        $params = array(1, 2, 3);
+        $result = $this->getAppResponse('Main:annotate', $params);
+        $this->assertEquals($result, array('a' => 1, 'b' => 2, 'c' => 3), 'parse annotate error...');
     }
 
     /**
@@ -55,9 +63,9 @@ class MainTest extends PHPUnit_Framework_TestCase
         $params['ext'] = $ext;
         $params['index'] = 'index.php';
 
-        for($link_type=1; $link_type <= 4; $link_type ++) {
+        for($link_type=1; $link_type <= 5; $link_type ++) {
             $params['type'] = $link_type;
-            $result = $this->getAppResponse("Main:makeLink", $params);
+            $result = $this->getAppResponse('Main:makeLink', $params);
 
             switch($link_type)
             {
@@ -72,6 +80,10 @@ class MainTest extends PHPUnit_Framework_TestCase
                     break;
                 case 4:
                     $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}p1{$dot}1{$dot}p2{$dot}2{$dot}p3{$dot}3{$ext}", $result, 'url->type=>4 make link error');
+                    break;
+
+                case 5:
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}1{$dot}2{$dot}3{$ext}", $result, 'url->type=>5 make link error');
                     break;
             }
         }
@@ -89,9 +101,9 @@ class MainTest extends PHPUnit_Framework_TestCase
         $params['ext'] = $ext;
         $params['index'] = 'index.php';
 
-        for($link_type=1; $link_type <= 4; $link_type ++) {
+        for($link_type=1; $link_type <= 5; $link_type ++) {
             $params['type'] = $link_type;
-            $result = $this->getAppResponse("Main:makeEncryptLink", $params);
+            $result = $this->getAppResponse('Main:makeEncryptLink', $params);
 
             switch($link_type)
             {
@@ -108,6 +120,10 @@ class MainTest extends PHPUnit_Framework_TestCase
                 case 4:
                     $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}692ad450918061f435418041815561a03{$ext}", $result, 'url->type=>4 make link error');
                     break;
+
+                case 5:
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>5 make link error');
+                    break;
             }
         }
     }
@@ -123,11 +139,10 @@ class MainTest extends PHPUnit_Framework_TestCase
         $params['dot'] = $dot;
         $params['ext'] = $ext;
 
-        for($link_type=1; $link_type <= 4; $link_type ++) {
+        for($link_type=1; $link_type <= 5; $link_type ++) {
             $params['link_type'] = $link_type;
-            $result = $this->getAppResponse("Main:makeEncryptLinkAndDecryptParams", $params);
-            $params_json = json_encode($params);
-            $this->assertEquals($params_json, $result, "url type {$link_type} encrypt link failure!");
+            $result = $this->getAppResponse('Main:makeEncryptLinkAndDecryptParams', $params);
+            $this->assertEquals(json_encode($params), $result, "url type {$link_type} encrypt link failure!");
         }
     }
 
@@ -140,10 +155,6 @@ class MainTest extends PHPUnit_Framework_TestCase
      */
     protected function getAppResponse($controller, $params=array())
     {
-        ob_start();
-        Delegate::loadApp('test')->get($controller, $params) ;
-        $result = ob_get_clean();
-
-        return $result;
+        return Delegate::loadApp('test')->get($controller, $params, true) ;
     }
 }
