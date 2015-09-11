@@ -329,7 +329,6 @@ class View extends FrameBase
             }
 
             if ($check_app_name && $app_name != $this_app_name) {
-                $uri .= $app_name;
                 $config = CrossArray::init(Loader::read(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php'));
                 $url_config = $config->get('url');
             } else {
