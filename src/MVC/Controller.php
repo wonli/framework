@@ -78,7 +78,7 @@ class Controller extends FrameBase
      */
     protected function to($_controller = null, $params = null, $sec = false)
     {
-        $url = $this->view->link($_controller, $params, $sec);
+        $url = $this->view->url($_controller, $params, $sec);
         return $this->redirect($url);
     }
 
