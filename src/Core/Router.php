@@ -125,12 +125,13 @@ class Router implements RouterInterface
         switch ($url_config ['type']) {
             case 1:
             case 3:
-                $request = Request::getInstance()->getUrlRequest(1, $url_config['rewrite']);
+                $request = Request::getInstance()->getUrlRequest('QUERY_STRING', $url_config['rewrite']);
                 return self::parseString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config, true);
 
             case 2:
             case 4:
-                $path_info = Request::getInstance()->getUrlRequest(2, $url_config['rewrite']);
+            case 5:
+                $path_info = Request::getInstance()->getUrlRequest('PATH_INFO', $url_config['rewrite']);
                 $request = self::parseString(htmlspecialchars(urldecode($path_info), ENT_QUOTES), $url_config);
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);

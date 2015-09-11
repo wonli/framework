@@ -253,14 +253,14 @@ class Request
     /**
      * 按type返回url请求
      *
-     * @param int $type
+     * @param string $type
      * @param bool $fix_query_string rewrite状态下,如果request_uri包含问号要进行特殊处理
      * @return string
      */
-    public function getUrlRequest($type = 1, $fix_query_string = false)
+    public function getUrlRequest($type = 'REQUEST_URI', $fix_query_string = false)
     {
         switch ($type) {
-            case 1:
+            case 'QUERY_STRING':
                 $request_uri = $this->_SERVER('REQUEST_URI');
                 $query_string = $this->_SERVER('QUERY_STRING');
 
@@ -279,7 +279,7 @@ class Request
                 }
 
                 return $query_string;
-            case 2:
+            case 'PATH_INFO':
                 return $this->_SERVER('PATH_INFO');
 
             default:

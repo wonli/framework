@@ -355,6 +355,7 @@ class View extends FrameBase
                 case 1:
                 case 3:
                 case 4:
+                case 5:
                     $uri .= $url_controller_uri . $url_params . $url_config['ext'];
                     break;
             }
@@ -398,6 +399,7 @@ class View extends FrameBase
 
                 case 2:
                 case 4:
+                case 5:
                     $_dot = $index_file_name . '/';
                     break;
 
@@ -431,6 +433,7 @@ class View extends FrameBase
         if ($params) {
             switch ($url_config['type']) {
                 case 1:
+                case 5:
                     if (is_array($params)) {
                         $_params = implode($_dot, $params);
                     } else {

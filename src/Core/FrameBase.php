@@ -213,6 +213,7 @@ class FrameBase extends Application
         if (null === $params) {
             switch ($url_type) {
                 case 1:
+                case 5:
                     $params = $this->params;
                     if (is_array($this->params)) {
                         $params = current(array_values($this->params));
@@ -242,6 +243,7 @@ class FrameBase extends Application
 
         switch ($url_type) {
             case 1:
+            case 5:
                 $result_array = explode(parent::getConfig()->get('url', 'dot'), $decode_params_str);
                 $annotate = parent::getActionConfig();
                 $result = parent::combineParamsAnnotateConfig($result_array, $annotate['params']);

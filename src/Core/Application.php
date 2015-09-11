@@ -340,6 +340,7 @@ class Application
 
         switch ($url_config['type']) {
             case 1:
+            case 5:
                 if ($reset_annotate_params) {
                     $now_annotate_params = array();
                     foreach ($annotate_params as $key) {
