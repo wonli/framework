@@ -16,7 +16,6 @@ use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
- *
  * Class Module
  * @package Cross\MVC
  * @property \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver link
