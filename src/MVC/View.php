@@ -582,7 +582,7 @@ class View extends FrameBase
             $display_type = $this->config->get('sys', 'display');
             if ($display_type && strcasecmp($display_type, 'html') !== 0) {
                 $load_layer = false;
-                $method = strtoupper($display_type);
+                $method = trim($display_type);
             } else if ($this->action) {
                 $method = $this->action;
             } else {
