@@ -46,52 +46,30 @@ class CrossArray
      *
      * @param $config
      * @param null|boolean $name
-     * @return string|array
+     * @return bool|string|array
      */
     function get($config, $name = null)
     {
-        if (is_array($config)) {
-            if ($name === true) {
-                foreach ($config as $item) {
-                    if (isset($this->data[$item])) {
-                        unset($this->data[$item]);
-                    }
-                }
-
-                return $this->data;
-            } else {
-                $_returnArr = array();
-                foreach ($config as $item) {
-                    if (isset($this->data[$item])) {
-                        $_returnArr[$item] = $this->data[$item];
-                    }
-                }
-            }
-
-            return $_returnArr;
-        } else {
-            if (isset($this->data[$config])) {
-                if ($name) {
-                    if (is_array($name)) {
-                        $result = array();
-                        foreach ($name as $n) {
-                            if (isset($this->data[$config][$n])) {
-                                $result[$n] = $this->data[$config][$n];
-                            }
+        if (isset($this->data[$config])) {
+            if ($name) {
+                if (is_array($name)) {
+                    $result = array();
+                    foreach ($name as $n) {
+                        if (isset($this->data[$config][$n])) {
+                            $result[$n] = $this->data[$config][$n];
                         }
-                        return $result;
-                    } elseif (isset($this->data[$config][$name])) {
-                        return $this->data[$config][$name];
                     }
-
-                    return false;
+                    return $result;
+                } elseif (isset($this->data[$config][$name])) {
+                    return $this->data[$config][$name];
                 }
 
-                return $this->data[$config];
+                return false;
             }
-        }
 
-        return null;
+            return $this->data[$config];
+        }
+        return false;
     }
 
     /**
