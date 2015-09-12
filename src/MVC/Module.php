@@ -134,29 +134,46 @@ class Module extends FrameBase
      */
     protected function parseModelParams($params = '')
     {
-        $all_db_config = $this->databaseConfig();
+        $db_config_params = '';
         if ($params) {
-            list($model_type, $model_config_key) = explode(':', $params);
-            $model_config = $all_db_config->get($model_type, $model_config_key);
-
-            if (empty($model_config)) {
-                throw new CoreException("未配置的数据库: {$model_type}:{$model_config_key}");
-            }
+            $db_config_params = $params;
         } else {
-            if ($default = $all_db_config->get('default')) {
-                $default_config = each($default);
-                $model_type = $default_config['key'];
-                $model_config = $all_db_config->get($model_type, $default_config['value']);
-            } else {
-                if ($model_config = $all_db_config->get('mysql', 'db')) {
-                    $model_type = 'mysql';
-                } else {
-                    throw new CoreException('未找到数据库默认配置');
-                }
+            static $default_db_config = '';
+            if ($default_db_config === '') {
+                $default_db_config = $this->config->get('sys', 'default_db');
+            }
+
+            if ($default_db_config) {
+                $db_config_params = $default_db_config;
             }
         }
 
-        return array('model_type' => $model_type, 'model_config' => $model_config);
+        if ($db_config_params) {
+            if (strpos($db_config_params, ':') === false) {
+                throw new CoreException("数据库参数配置格式不正确: {$db_config_params}");
+            }
+
+            list($model_type, $model_name) = explode(':', $db_config_params);
+        } else {
+            $model_name = 'db';
+            $model_type = 'mysql';
+        }
+
+        static $model_config_cache;
+        if (!isset($model_config_cache[$model_type][$model_name])) {
+            $all_db_config = $this->databaseConfig();
+            $model_config = $all_db_config->get($model_type, $model_name);
+            if (empty($model_config)) {
+                throw new CoreException("未配置的Model: {$model_type}:{$model_name}");
+            }
+
+            $model_config_cache[$model_type][$model_name] = array(
+                'model_type' => $model_type,
+                'model_config' => $model_config,
+            );
+        }
+
+        return $model_config_cache[$model_type][$model_name];
     }
 
     /**
