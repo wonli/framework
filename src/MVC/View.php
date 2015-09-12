@@ -351,7 +351,7 @@ class View extends FrameBase
         }
 
         $url_params = '';
-        $url_controller_uri = $this->makeController($app_name, $controller, $params, $url_config);
+        $url_controller_uri = $this->makeControllerUri($app_name, $controller, $params, $url_config);
         if (!empty($params)) {
             $url_params = $this->makeParams($params, $url_config, $sec);
         }
@@ -385,10 +385,40 @@ class View extends FrameBase
      * @return string
      * @throws CoreException
      */
-    private function makeController($app_name, $controller, & $params, $url_config)
+    private function makeControllerUri($app_name, $controller, & $params, $url_config)
     {
+        static $uri_cache;
+        if (isset($uri_cache[$app_name][$controller])) {
+            return $uri_cache[$app_name][$controller];
+        }
+
+        $_action = null;
+        $array_alias_flag = array();
+        $real_controller = $controller;
+
+        $app_alias_config = $this->parseControllerAlias($app_name, $array_alias_flag);
+        if (isset($app_alias_config[$controller])) {
+            $controller_alias = $app_alias_config[$controller];
+            if (isset($array_alias_flag[$controller])) {
+                $url_controller_config = key($controller_alias);
+                $alias_params = $controller_alias[$url_controller_config];
+
+                if ($params === $alias_params) {
+                    $real_controller = $url_controller_config;
+                    $params = null;
+                }
+            } else {
+                $real_controller = $controller_alias;
+            }
+        }
+
+        if (false !== strpos($real_controller, ':')) {
+            list($_controller, $_action) = explode(':', $real_controller);
+        } else {
+            $_controller = $real_controller;
+        }
+
         $controller_uri = '';
-        $this->getControllerAlias($app_name, $controller, $params, $_controller, $_action);
         if ($url_config ['rewrite']) {
             $controller_uri .= $_controller;
         } else {
@@ -421,6 +451,10 @@ class View extends FrameBase
 
         if (null != $_action) {
             $controller_uri .= $url_config['dot'] . $_action;
+        }
+
+        if (!isset($array_alias_flag[$controller])) {
+            $uri_cache[$app_name][$controller] = $controller_uri;
         }
 
         return $controller_uri;
@@ -486,56 +520,17 @@ class View extends FrameBase
     }
 
     /**
-     * 解析控制器别名
-     *
-     * @param string $app_name
-     * @param string $controller
-     * @param null|string|array $params
-     * @param string $_controller
-     * @param string $_action
-     */
-    private function getControllerAlias($app_name, $controller, & $params, & $_controller, & $_action)
-    {
-        $app_alias_config = $this->parseControllerAlias($app_name);
-        if (isset($app_alias_config[$controller])) {
-            $controller_alias = $app_alias_config[$controller];
-            if (is_array($controller_alias)) {
-                foreach ($controller_alias as $real_controller_name => $alias_params) {
-                    if ($params === $alias_params) {
-                        $_controller = $real_controller_name;
-                        $params = null;
-                        break;
-                    }
-                }
-            } else {
-                $_action = null;
-                if (false !== strpos($controller_alias, ':')) {
-                    list($_controller, $_action) = explode(':', $controller_alias);
-                } else {
-                    $_controller = $controller_alias;
-                }
-            }
-        }
-
-        if (empty($_controller)) {
-            $_action = null;
-            if (false !== strpos($controller, ':')) {
-                list($_controller, $_action) = explode(':', $controller);
-            } else {
-                $_controller = $controller;
-            }
-        }
-    }
-
-    /**
      * 解析路由别名配置
      *
      * @param string $app_name
+     * @param array $array_alias_flag
      * @return array
+     * @throws CoreException
      */
-    private function parseControllerAlias($app_name)
+    private function parseControllerAlias($app_name, & $array_alias_flag = array())
     {
         static $router_alias_cache = null;
+        static $array_router_alias_flag = array();
         if (!isset($router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
             $router_alias_cache[$app_name] = array();
@@ -551,12 +546,19 @@ class View extends FrameBase
 
                         $router_alias_cache[$app_name][$real_controller] = array();
                         $router_alias_cache[$app_name][$real_controller][$controller_alias] = $alias_params;
+
+                        $array_router_alias_flag[$app_name][$real_controller] = true;
                     } else {
                         $router_alias_cache[$app_name][$alias_config] = $controller_alias;
                     }
                 }
             }
         }
+
+        if (isset($array_router_alias_flag[$app_name])) {
+            $array_alias_flag = $array_router_alias_flag[$app_name];
+        }
+
         return $router_alias_cache[$app_name];
     }
 
