@@ -25,6 +25,34 @@ use Cross\Lib\ArrayOperate\Array2XML;
 class View extends FrameBase
 {
     /**
+     * 默认模板目录
+     *
+     * @var string
+     */
+    private $tpl_dir;
+
+    /**
+     * 资源配置
+     *
+     * @var array
+     */
+    private $res_list;
+
+    /**
+     * 默认模板路径
+     *
+     * @var string
+     */
+    private $tpl_base_path;
+
+    /**
+     * 默认url
+     *
+     * @var string
+     */
+    private $link_base = null;
+
+    /**
      * 模板数据
      *
      * @var array
@@ -39,46 +67,11 @@ class View extends FrameBase
     protected $set = array();
 
     /**
-     * 资源配置
-     *
-     * @var array
-     */
-    protected $res_list;
-
-    /**
-     * 默认模板目录
-     *
-     * @var string
-     */
-    protected $tpl_dir;
-
-    /**
-     * 默认模板路径
-     *
-     * @var string
-     */
-    protected $tpl_base_path;
-
-    /**
-     * 默认url
-     *
-     * @var string
-     */
-    protected $link_base = null;
-
-    /**
      * 模版扩展文件名
      *
      * @var string
      */
     protected $tpl_file_ext_name = '.tpl.php';
-
-    /**
-     * 模版文件夹路径
-     *
-     * @var string
-     */
-    protected static $tpl_path;
 
     /**
      * url配置缓存
@@ -142,15 +135,20 @@ class View extends FrameBase
      */
     function res($res_url, $use_static_url = true)
     {
-        if ($this->config->get('res_url')) {
-            $res_base_url = $this->config->get('res_url');
-        } elseif ($use_static_url) {
-            $res_base_url = $this->config->get('static', 'url');
-        } else {
-            $res_base_url = $this->config->get('url', 'full_request');
+        static $res_base_url = null;
+        if (!isset($res_base_url[$use_static_url])) {
+            if ($this->config->get('res_url')) {
+                $base_url = $this->config->get('res_url');
+            } elseif ($use_static_url) {
+                $base_url = $this->config->get('static', 'url');
+            } else {
+                $base_url = $this->config->get('url', 'full_request');
+            }
+
+            $res_base_url[$use_static_url] = rtrim($base_url, '/') . '/';
         }
 
-        return rtrim($res_base_url, '/') . '/' . $res_url;
+        return $res_base_url[$use_static_url] . $res_url;
     }
 
     /**
@@ -165,6 +163,21 @@ class View extends FrameBase
         }
 
         return $this->link_base;
+    }
+
+    /**
+     * 获取当前app名称
+     *
+     * @return array|string
+     */
+    function getAppName()
+    {
+        static $app_name = null;
+        if ($app_name === null) {
+            $app_name = $this->config->get('app', 'name');
+        }
+
+        return $app_name;
     }
 
     /**
@@ -184,11 +197,13 @@ class View extends FrameBase
      */
     function getTplPath()
     {
-        $app_name = $this->config->get('app', 'name');
-        if (!isset(self::$tpl_path[$app_name])) {
-            self::$tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir();
+        static $tpl_path;
+        $app_name = $this->getAppName();
+        if (!isset($tpl_path[$app_name])) {
+            $tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir();
         }
-        return self::$tpl_path[$app_name];
+
+        return $tpl_path[$app_name];
     }
 
     /**
@@ -247,12 +262,7 @@ class View extends FrameBase
             $link_base = $this->getLinkBase();
         }
 
-        static $app_name = null;
-        if ($app_name === null) {
-            $app_name = $this->config->get('app', 'name');
-        }
-
-        $uri = $this->makeUri($app_name, false, $controller, $params, $sec);
+        $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $sec);
         return $link_base . '/' . $uri;
     }
 
@@ -325,7 +335,7 @@ class View extends FrameBase
         if (!isset(self::$url_config_cache[$app_name])) {
             $this_app_name = $app_name;
             if ($check_app_name) {
-                $this_app_name = $this->config->get('app', 'name');
+                $this_app_name = $this->getAppName();
             }
 
             if ($check_app_name && $app_name != $this_app_name) {
@@ -555,8 +565,7 @@ class View extends FrameBase
      */
     function cleanLinkCache()
     {
-        $app_name = $this->config->get('app', 'name');
-        unset(self::$url_config_cache[$app_name]);
+        unset(self::$url_config_cache[$this->getAppName()]);
     }
 
     /**
