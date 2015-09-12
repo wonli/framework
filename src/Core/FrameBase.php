@@ -318,12 +318,12 @@ class FrameBase extends Application
     {
         list(, , $type) = explode("\\", get_called_class());
         if (strcasecmp($type, 'views') !== 0) {
-            $view_class_name = str_replace($type, 'views', get_called_class()) . 'View';
+            $viewControllerName = str_replace($type, 'views', get_called_class()) . 'View';
         } else {
-            $view_class_name = get_called_class();
+            $viewControllerName = get_called_class();
         }
 
-        $view = new $view_class_name;
+        $view = new $viewControllerName();
         $view->config = $this->config;
         $view->controller = $this->controller;
         $view->action = $this->action;
