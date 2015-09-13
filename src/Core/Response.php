@@ -265,7 +265,7 @@ class Response
      */
     private function flushContent($message, $tpl = '')
     {
-        if (null !== $tpl && file_exists($tpl)) {
+        if (null !== $tpl && is_file($tpl)) {
             require $tpl;
         } else {
             echo $message;

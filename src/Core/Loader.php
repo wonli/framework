@@ -101,7 +101,7 @@ class Loader
      */
     static public function read($file, $require_file = true)
     {
-        if (file_exists($file)) {
+        if (is_file($file)) {
             $file_path = $file;
         } else {
             $file_path = Loader::getFilePath($file);
@@ -335,7 +335,7 @@ class Loader
     {
         if (isset(self::$loaded[$file])) {
             return true;
-        } else if (file_exists($file)) {
+        } else if (is_file($file)) {
             require $file;
             self::$loaded[$file] = true;
             return true;

@@ -156,7 +156,7 @@ class Application
         $controllerSpace = $this->getControllerNamespace();
         $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace) . '.php';
 
-        if (!file_exists($controllerRealFile)) {
+        if (!is_file($controllerRealFile)) {
             throw new CoreException("{$controllerSpace} 控制器不存在");
         }
 

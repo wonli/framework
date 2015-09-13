@@ -751,7 +751,7 @@ class View extends FrameBase
             $layer_file = $_real_path . 'default' . $layer_ext;
         }
 
-        if (!file_exists($layer_file)) {
+        if (!is_file($layer_file)) {
             throw new CoreException($layer_file . ' layer Not found!');
         }
 
