@@ -321,7 +321,7 @@ class View extends FrameBase
      * @param string $app_name
      * @param bool $check_app_name
      * @param null|string $controller
-     * @param null|string|array $params
+     * @param null|array $params
      * @param null|bool $sec
      * @return string
      * @throws CoreException
@@ -380,12 +380,12 @@ class View extends FrameBase
      *
      * @param string $app_name
      * @param string $controller
-     * @param null|string|array $params
+     * @param null|array $params
      * @param array $url_config
      * @return string
      * @throws CoreException
      */
-    private function makeControllerUri($app_name, $controller, & $params, $url_config)
+    private function makeControllerUri($app_name, $controller, & $params, array $url_config)
     {
         static $uri_cache;
         if (isset($uri_cache[$app_name][$controller])) {
@@ -463,12 +463,12 @@ class View extends FrameBase
     /**
      * 生成link参数
      *
-     * @param array|string $params
+     * @param array $params
      * @param array $url_config
      * @param bool $sec
      * @return string
      */
-    private function makeParams($params, $url_config, $sec = false)
+    private function makeParams(array $params, array $url_config, $sec = false)
     {
         $_params = '';
         $_dot = $url_config['dot'];
@@ -477,34 +477,17 @@ class View extends FrameBase
             switch ($url_config['type']) {
                 case 1:
                 case 5:
-                    if (is_array($params)) {
-                        $_params = implode($_dot, $params);
-                    } else {
-                        $url_str = array();
-                        parse_str($params, $url_str);
-                        $_params = implode($_dot, $url_str);
-                    }
+                    $_params = implode($_dot, $params);
                     break;
 
                 case 2:
                     $_dot = '?';
-                    if (is_array($params)) {
-                        $_params = http_build_query($params);
-                    } else {
-                        $_params = $params;
-                    }
+                    $_params = http_build_query($params);
                     break;
 
                 case 3:
                 case 4:
-                    if (!is_array($params)) {
-                        $p = array();
-                        parse_str($params, $p);
-                    } else {
-                        $p = $params;
-                    }
-
-                    foreach ($p as $p_key => $p_val) {
+                    foreach ($params as $p_key => $p_val) {
                         $_params .= $p_key . $_dot . $p_val . $_dot;
                     }
                     $_params = rtrim($_params, $_dot);
