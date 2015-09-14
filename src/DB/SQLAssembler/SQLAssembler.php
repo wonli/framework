@@ -536,13 +536,19 @@ class SQLAssembler implements SqlInterface
                     }
                 } else {
                     if (is_array($field_config)) {
-                        list($operator, $field_true_value) = $field_config;
-                        $params [] = $field_true_value;
+                        foreach ($field_config as $and_exp_val) {
+                            $ex_operator = '=';
+                            if (is_array($and_exp_val)) {
+                                list($ex_operator, $n_value) = $and_exp_val;
+                                $and_exp_val = $n_value;
+                            }
+                            $condition[' AND '][] = "{$field} {$ex_operator} ?";
+                            $params [] = $and_exp_val;
+                        }
                     } else {
                         $params [] = $field_config;
+                        $condition[' AND '][] = "{$field} {$operator} ?";
                     }
-
-                    $condition[' AND '][] = "{$field} {$operator} ?";
                 }
                 break;
 
