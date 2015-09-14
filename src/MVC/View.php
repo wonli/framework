@@ -393,13 +393,11 @@ class View extends FrameBase
         }
 
         $_action = null;
-        $array_alias_flag = array();
         $real_controller = $controller;
-
-        $app_alias_config = $this->parseControllerAlias($app_name, $array_alias_flag);
-        if (isset($app_alias_config[$controller])) {
-            $controller_alias = $app_alias_config[$controller];
-            if (isset($array_alias_flag[$controller])) {
+        $app_alias_config = $this->parseControllerAlias($app_name);
+        if (isset($app_alias_config['config'][$controller])) {
+            $controller_alias = $app_alias_config['config'][$controller];
+            if (isset($app_alias_config['_ARRAY_'][$controller])) {
                 $url_controller_config = key($controller_alias);
                 $alias_params = $controller_alias[$url_controller_config];
 
@@ -453,7 +451,7 @@ class View extends FrameBase
             $controller_uri .= $url_config['dot'] . $_action;
         }
 
-        if (!isset($array_alias_flag[$controller])) {
+        if (!isset($app_alias_config['_ARRAY_'][$controller])) {
             $uri_cache[$app_name][$controller] = $controller_uri;
         }
 
@@ -506,14 +504,12 @@ class View extends FrameBase
      * 解析路由别名配置
      *
      * @param string $app_name
-     * @param array $array_alias_flag
      * @return array
      * @throws CoreException
      */
-    private function parseControllerAlias($app_name, & $array_alias_flag = array())
+    private function parseControllerAlias($app_name)
     {
-        static $router_alias_cache = null;
-        static $array_router_alias_flag = array();
+        static $router_alias_cache;
         if (!isset($router_alias_cache[$app_name])) {
             $router = $this->config->get('router');
             $router_alias_cache[$app_name] = array();
@@ -527,19 +523,15 @@ class View extends FrameBase
                             $real_controller = $alias_config[0];
                         }
 
-                        $router_alias_cache[$app_name][$real_controller] = array();
-                        $router_alias_cache[$app_name][$real_controller][$controller_alias] = $alias_params;
+                        $router_alias_cache[$app_name]['config'][$real_controller] = array();
+                        $router_alias_cache[$app_name]['config'][$real_controller][$controller_alias] = $alias_params;
 
-                        $array_router_alias_flag[$app_name][$real_controller] = true;
+                        $router_alias_cache[$app_name]['_ARRAY_'][$real_controller] = true;
                     } else {
-                        $router_alias_cache[$app_name][$alias_config] = $controller_alias;
+                        $router_alias_cache[$app_name]['config'][$alias_config] = $controller_alias;
                     }
                 }
             }
-        }
-
-        if (isset($array_router_alias_flag[$app_name])) {
-            $array_alias_flag = $array_router_alias_flag[$app_name];
         }
 
         return $router_alias_cache[$app_name];
