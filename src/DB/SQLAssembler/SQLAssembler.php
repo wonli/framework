@@ -579,9 +579,9 @@ class SQLAssembler implements SqlInterface
                     throw new CoreException('BETWEEN parameter error!');
                 }
 
-                $condition[" {$condition_connector} "][] = sprintf('%s %s %s AND %s', $field, $connector,
-                    $field_config[0], $field_config[1]
-                );
+                $condition[" {$condition_connector} "][] = sprintf('%s %s ? AND ?', $field, $connector);
+                $params[] = $field_config[0];
+                $params[] = $field_config[1];
                 break;
 
             default:
