@@ -4,7 +4,6 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.4.1
  */
 require __DIR__ . '/src/Core/Loader.php';
 require __DIR__ . '/src/Core/Delegate.php';
