@@ -41,10 +41,8 @@ class CrossArray
 
     /**
      * 获取配置参数
-     * $config为字符串的时候 获取配置数组,此时设定$name 则获取数组中指定项的值
-     * $config为数组的时候 获取数组中指定的配置项,如果$name为true 则获取指定项之外的配置项
      *
-     * @param $config
+     * @param string $config
      * @param null|boolean $name
      * @return bool|string|array
      */
