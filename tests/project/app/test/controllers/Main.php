@@ -58,7 +58,7 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        return $this->view->link("Main:getUrlSecurityParams", array(
+        return $this->view->link('Main:getUrlSecurityParams', array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']
@@ -85,7 +85,7 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        return $this->view->slink("Main:getUrlSecurityParams", array(
+        return $this->view->slink('Main:getUrlSecurityParams', array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']
@@ -111,7 +111,7 @@ class Main extends Controller
         ));
 
         $this->view->setLinkBase('');
-        $link = $this->view->slink("Main:getUrlSecurityParams", array(
+        $link = $this->view->slink('Main:getUrlSecurityParams', array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']

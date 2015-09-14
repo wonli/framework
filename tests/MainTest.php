@@ -147,6 +147,72 @@ class MainTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * SQL条件语句生成
+     */
+    function testSqlCondition()
+    {
+        $SQL = new \Cross\DB\SQLAssembler\SQLAssembler();
+
+        $p1 = array();
+        $r1 = $SQL->parseWhere(array('a' => 1, 'b' => 2), $p1);
+        $this->assertEquals($r1, 'a = ? AND b = ?', 'condition 1 failure');
+        $this->assertEquals($p1, array(1, 2), 'condition 1 params failure');
+
+        $p2 = array();
+        $r2 = $SQL->parseWhere(array('a' => 1, 'b' => array('>=', 2)), $p2);
+        $this->assertEquals($r2, 'a = ? AND b >= ?', 'condition 2 failure');
+        $this->assertEquals($p2, array(1, 2), 'condition 2 params failure');
+
+        $p3 = array();
+        $r3 = $SQL->parseWhere(array('a' => 1, '(b > ? OR b < ?)' => array(1, 2)), $p3);
+        $this->assertEquals($r3, 'a = ? AND (b > ? OR b < ?)', 'condition 3 failure');
+        $this->assertEquals($p3, array(1, 1, 2), 'condition 3 params failure');
+
+        $p4 = array();
+        $r4 = $SQL->parseWhere(array(
+            'a' => array('AND', array(
+                array('>=', 1),
+                array('<=', 10),
+            ))
+        ), $p4);
+        $this->assertEquals($r4, '(a >= ? AND a <= ?)', 'condition 4 failure');
+        $this->assertEquals($p4, array(1, 10), 'condition 4 params failure');
+
+        $p5 = array();
+        $r5 = $SQL->parseWhere(array(
+            'a' =>  array('between', array(1, 10))
+        ), $p5);
+        $this->assertEquals($r5, 'a BETWEEN ? AND ?', 'condition 5 failure');
+        $this->assertEquals($p5, array(1, 10), 'condition 5 failure');
+
+        $p6 = array();
+        $r6 = $SQL->parseWhere(array(
+            'a' =>  array('or', array(1, 10))
+        ), $p6);
+        $this->assertEquals($r6, '(a = ? OR a = ?)', 'condition 6 failure');
+        $this->assertEquals($p6, array(1, 10), 'condition 6 failure');
+
+        $p7 = array();
+        $r7 = $SQL->parseWhere(array(
+            'a' =>  array('or', array(1, 10)),
+            'b' =>  array('and', array(
+                array('>=', 1),
+                array('<=', 2)
+            )),
+            'c' =>  array('between', array(1, 2))
+        ), $p7);
+        $this->assertEquals($r7, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 6 failure');
+        $this->assertEquals($p7, array(1, 10, 1, 2, 1, 2), 'condition 6 failure');
+
+        $p8 = array();
+        $r8 = $SQL->parseWhere(array(
+            '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', array(1, 10, 1, 2, 1, 2)
+        ), $p8);
+        $this->assertEquals($r8, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 6 failure');
+        $this->assertEquals($p8, array(1, 10, 1, 2, 1, 2), 'condition 6 failure');
+    }
+
+    /**
      * 调用app指定controller
      *
      * @param $controller
