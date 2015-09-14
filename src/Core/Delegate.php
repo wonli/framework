@@ -4,7 +4,7 @@
  *
  * @link        http://www.crossphp.com
  * @license     http://www.crossphp.com/license
- * @version     1.4.0
+ * @version     1.4.1
  */
 namespace Cross\Core;
 
@@ -97,7 +97,7 @@ class Delegate
      */
     static function getVersion()
     {
-        return '1.4.0';
+        return '1.4.1';
     }
 
     /**
