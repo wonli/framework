@@ -3,7 +3,7 @@
  * Cross - a micro PHP 5 framework
  *
  * @link        http://www.crossphp.com
- * @license     http://www.crossphp.com/license
+ * @license     MIT License
  */
 
 namespace Cross\Lib\Document;
