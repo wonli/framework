@@ -159,9 +159,13 @@ class Application
             throw new CoreException("{$controllerSpace} 控制器不存在");
         }
 
-        $class_reflection = new ReflectionClass($controllerSpace);
-        if ($class_reflection->isAbstract()) {
-            throw new CoreException("{$controllerSpace} 不允许访问的控制器");
+        try {
+            $class_reflection = new ReflectionClass($controllerSpace);
+            if ($class_reflection->isAbstract()) {
+                throw new CoreException("{$controllerSpace} 不允许访问的控制器");
+            }
+        } catch (Exception $e) {
+            throw new CoreException($e->getMessage());
         }
 
         //控制器全局注释配置(不检测父类注释配置)
