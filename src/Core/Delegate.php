@@ -278,13 +278,13 @@ class Delegate
      * CLI模式下运行方式
      * <pre>
      * 在命令行模式下的调用方法如下:
-     * php /path/index.php controller:action params1, params2, ... $paramsN
+     * php /path/index.php controller:action params1=value params2=value ... $paramsN=value
      * 第一个参数用来指定要调用的控制器和方法
      * 格式如下:
      *      控制器名称:方法名称
      *
      * 在控制器:方法后加空格来指定参数,格式如下:
-     *      参数1, 参数2, ... 参数N
+     *      参数1=值, 参数2=值, ... 参数N=值
      *
      * 控制器中调用$this->params来获取并处理参数
      * </pre>
@@ -306,20 +306,15 @@ class Delegate
             $run_argv = $_SERVER['argv'];
         }
 
-        //指定要调用的控制器:方法和参数
         if ($run_argc == 1) {
             die('Please specify params: controller:action params');
         }
 
-        //从argv数组中去掉文件名,第一个参数为控制器
+        //去掉argv中的第一个参数
         array_shift($run_argv);
-        $controller = $run_argv[0];
+        $controller = array_shift($run_argv);
 
-        //去掉控制器,剩下的为参数
-        array_shift($run_argv);
-        $params = $run_argv;
-
-        //调用get()
-        $this->get($controller, $params);
+        //使用get调用指定的控制器和方法,并传递参数
+        $this->get($controller, $run_argv);
     }
 }
