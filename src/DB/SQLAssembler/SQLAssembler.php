@@ -8,7 +8,6 @@
 namespace Cross\DB\SQLAssembler;
 
 use Cross\Exception\CoreException;
-use Cross\Exception\FrontException;
 use Cross\I\SqlInterface;
 
 /**
