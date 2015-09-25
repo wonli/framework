@@ -22,20 +22,6 @@ use Closure;
 class Application
 {
     /**
-     * 注入对象数组
-     *
-     * @var array
-     */
-    protected static $di;
-
-    /**
-     * 注入对象的实例数组
-     *
-     * @var array
-     */
-    protected static $dii;
-
-    /**
      * action 名称
      *
      * @var string
@@ -57,13 +43,6 @@ class Application
     protected static $controller_class_name;
 
     /**
-     * app配置
-     *
-     * @var CrossArray
-     */
-    protected static $app_config;
-
-    /**
      * action 注释
      *
      * @var string
@@ -78,16 +57,19 @@ class Application
     private static $controller_annotate_config = array();
 
     /**
+     * @var Delegate
+     */
+    private static $delegate;
+
+    /**
      * 实例化Application
      *
-     * @param Config $app_config
-     * @param array $di
+     * @param Delegate $delegate
      * @return Application
      */
-    final public static function initialization($app_config, $di = array())
+    final public static function initialization(Delegate $delegate)
     {
-        self::setDi($di);
-        self::setConfig($app_config);
+        self::$delegate = $delegate;
         return new Application();
     }
 
@@ -221,6 +203,7 @@ class Application
         $action = $run_controller ? $router ['action'] : null;
         $this->initController($router ['controller'], $action);
 
+        self::$delegate->getClosureContainer()->run('dispatcher');
         $action_config = self::getActionConfig();
         $action_params = array();
         if (isset($action_config['params'])) {
@@ -282,26 +265,6 @@ class Application
         }
 
         return true;
-    }
-
-    /**
-     * 设置config
-     *
-     * @param array|object $config 配置
-     */
-    private static function setConfig($config)
-    {
-        self::$app_config = $config;
-    }
-
-    /**
-     * 设置di
-     *
-     * @param $di
-     */
-    private static function setDi($di)
-    {
-        self::$di = $di;
     }
 
     /**
@@ -413,7 +376,7 @@ class Application
      */
     public static function stringParamsToAssociativeArray($stringParams)
     {
-        $paramsArray = explode(self::$app_config->get('url', 'dot'), $stringParams);
+        $paramsArray = explode(self::$delegate->getConfig()->get('url', 'dot'), $stringParams);
         return self::oneDimensionalToAssociativeArray($paramsArray);
     }
 
@@ -585,17 +548,27 @@ class Application
     }
 
     /**
+     * 获取当前delegate
+     *
+     * @return Delegate
+     */
+    public static function getDelegate()
+    {
+        return self::$delegate;
+    }
+
+    /**
      * 获取配置
      *
      * @return Config
      */
     public static function getConfig()
     {
-        return self::$app_config;
+        return self::$delegate->getConfig();
     }
 
     /**
-     * 返回一个注入对象的实例
+     * 调用注入的匿名函数
      *
      * @param string $name
      * @param array $params
@@ -604,14 +577,15 @@ class Application
      */
     function getDi($name, $params = array())
     {
-        if (isset(self::$di[$name])) {
-            return call_user_func_array(self::$di[$name], $params);
+        $di = self::$delegate->getDi();
+        if (isset($di[$name])) {
+            return call_user_func_array($di[$name], $params);
         }
-        throw new CoreException("未定义的依赖 {$name}");
+        throw new CoreException("未定义的注入方法 {$name}");
     }
 
     /**
-     * 以单例的方式实例化注入对象
+     * 调用注入的匿名函数并缓存结果
      *
      * @param string $name
      * @param array $params
@@ -620,13 +594,15 @@ class Application
      */
     function getDii($name, $params = array())
     {
-        if (isset(self::$dii[$name])) {
-            return self::$dii[$name];
-        } elseif (isset(self::$di[$name])) {
-            self::$dii[$name] = call_user_func_array(self::$di[$name], $params);
-            return self::$dii[$name];
+        static $dii = array();
+        $di = self::$delegate->getDi();
+        if (isset($dii[$name])) {
+            return $dii[$name];
+        } elseif (isset($di[$name])) {
+            $dii[$name] = call_user_func_array($di[$name], $params);
+            return $dii[$name];
         }
-        throw new CoreException("未定义的依赖 {$name}");
+        throw new CoreException("未定义的注入方法 {$name}");
     }
 
     /**

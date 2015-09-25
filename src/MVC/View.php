@@ -578,16 +578,20 @@ class View extends FrameBase
      * @param array $data
      * @param string $method
      * @param bool $load_layer
+     * @return string|void
      * @throws CoreException
      */
     function obRender($data, $method, $load_layer)
     {
+        ob_start();
+        $this->$method($data);
+        $method_content = ob_get_clean();
+        parent::getDelegate()->getClosureContainer()->run('obRender', $method_content);
+
         if ($load_layer) {
-            ob_start();
-            $this->$method($data);
-            $this->loadLayer(ob_get_clean());
+            return $this->loadLayer($method_content);
         } else {
-            $this->$method($data);
+            return $method;
         }
     }
 

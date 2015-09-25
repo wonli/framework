@@ -8,6 +8,7 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Runtime\ClosureContainer;
 use Cross\I\RouterInterface;
 use Closure;
 
@@ -39,6 +40,18 @@ class Delegate
      * @var array
      */
     private $di;
+
+    /**
+     * @var Router
+     */
+    private $router;
+
+    /**
+     * 运行时匿名函数容器
+     *
+     * @var ClosureContainer
+     */
+    private $action_container;
 
     /**
      * app配置
@@ -87,6 +100,7 @@ class Delegate
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
         $this->config = $this->initConfig();
+        $this->initClosureContainer();
     }
 
     /**
@@ -116,94 +130,6 @@ class Delegate
     }
 
     /**
-     * 初始化App配置
-     *
-     * @return Config
-     */
-    private function initConfig()
-    {
-        $config = Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
-            $this->runtime_config
-        );
-
-        $request = Request::getInstance();
-        $host = $request->getHostInfo();
-        $index_name = $request->getIndexName();
-
-        $request_url = $request->getBaseUrl();
-        $base_script_path = $request->getScriptFilePath();
-
-        //设置app名称和路径
-        $config->set('app', array(
-            'name' => $this->app_name,
-            'path' => APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR
-        ));
-
-        //静态文件url和绝对路径
-        $config->set('static', array(
-            'url' => $host . $request_url . '/static/',
-            'path' => $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
-        ));
-
-        //url相关设置
-        $config->set('url', array(
-            'index' => $index_name,
-            'host' => $host,
-            'request' => $request_url,
-            'full_request' => $host . $request_url,
-        ));
-
-        return $config;
-    }
-
-    /**
-     * app配置对象
-     *
-     * @return Config
-     */
-    function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * 设置依赖注入对象
-     *
-     * @param string $name
-     * @param Closure $f
-     * @return mixed
-     */
-    function di($name, Closure $f)
-    {
-        $app = self::$instance[$this->app_name];
-        $app->di[$name] = $f;
-        return $app;
-    }
-
-    /**
-     * 解析请求
-     *
-     * @param null|string $params 参见router->initParams();
-     * @return $this
-     */
-    private function router($params = null)
-    {
-        return Router::initialization($this->config)->set_router_params($params)->getRouter();
-    }
-
-    /**
-     * 配置uri
-     * @see mRun()
-     *
-     * @param string $uri 指定uri
-     * @param null $controller "控制器:方法"
-     */
-    public function map($uri, $controller = null)
-    {
-        self::$map [$uri] = $controller;
-    }
-
-    /**
      * 直接调用控制器类中的方法 忽略解析和alias配置
      *
      * @param string $controller "控制器:方法"
@@ -213,7 +139,29 @@ class Delegate
      */
     public function get($controller, $args = null, $return_content = false)
     {
-        return Application::initialization($this->config, $this->di)->dispatcher($controller, $args, true, $return_content);
+        return Application::initialization($this)->dispatcher($controller, $args, true, $return_content);
+    }
+
+    /**
+     * 从路由解析url请求,自动运行
+     *
+     * @param string $params = null 为router指定参数
+     * @param string $args
+     */
+    public function run($params = null, $args = null)
+    {
+        Application::initialization($this)->dispatcher($this->router($params), $args);
+    }
+
+    /**
+     * 自定义router运行
+     *
+     * @param RouterInterface $router RouterInterface的实现
+     * @param string $args 参数
+     */
+    public function rRun(RouterInterface $router, $args)
+    {
+        Application::initialization($this)->dispatcher($router, $args);
     }
 
     /**
@@ -230,29 +178,19 @@ class Delegate
      */
     public function rest()
     {
-        return Rest::getInstance($this->config, $this->di);
+        return Rest::getInstance($this);
     }
 
     /**
-     * 从路由解析url请求,自动运行
+     * 配置uri
+     * @see mRun()
      *
-     * @param string $params = null 为router指定参数
-     * @param string $args
+     * @param string $uri 指定uri
+     * @param null $controller "控制器:方法"
      */
-    public function run($params = null, $args = null)
+    public function map($uri, $controller = null)
     {
-        Application::initialization($this->config, $this->di)->dispatcher($this->router($params), $args);
-    }
-
-    /**
-     * 自定义router运行
-     *
-     * @param RouterInterface $router RouterInterface的实现
-     * @param string $args 参数
-     */
-    public function rRun(RouterInterface $router, $args)
-    {
-        Application::initialization($this->config, $this->di)->dispatcher($router, $args);
+        self::$map [$uri] = $controller;
     }
 
     /**
@@ -316,5 +254,146 @@ class Delegate
 
         //使用get调用指定的控制器和方法,并传递参数
         $this->get($controller, $run_argv);
+    }
+
+    /**
+     * 注册注入匿名函数
+     *
+     * @param $name
+     * @param Closure $f
+     * @return $this
+     */
+    function di($name, Closure $f)
+    {
+        $this->di[$name] = $f;
+        return $this;
+    }
+
+    /**
+     * 注册运行时匿名函数
+     *
+     * @param string $name
+     * @param Closure $f
+     * @return $this
+     */
+    function on($name, Closure $f)
+    {
+        $this->action_container->add($name, $f);
+        return $this;
+    }
+
+    /**
+     * 初始化App配置
+     *
+     * @return Config
+     */
+    private function initConfig()
+    {
+        $config = Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
+            $this->runtime_config
+        );
+
+        $request = Request::getInstance();
+        $host = $request->getHostInfo();
+        $index_name = $request->getIndexName();
+
+        $request_url = $request->getBaseUrl();
+        $base_script_path = $request->getScriptFilePath();
+
+        //设置app名称和路径
+        $config->set('app', array(
+            'name' => $this->app_name,
+            'path' => APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR
+        ));
+
+        //静态文件url和绝对路径
+        $config->set('static', array(
+            'url' => $host . $request_url . '/static/',
+            'path' => $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+        ));
+
+        //url相关设置
+        $config->set('url', array(
+            'index' => $index_name,
+            'host' => $host,
+            'request' => $request_url,
+            'full_request' => $host . $request_url,
+        ));
+
+        return $config;
+    }
+
+    /**
+     * app配置对象
+     *
+     * @return Config
+     */
+    function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * @return Router
+     */
+    function getRouter()
+    {
+        return $this->router;
+    }
+
+    /**
+     * 解析请求
+     *
+     * @param null|string $params 参见router->initParams();
+     * @return $this
+     */
+    private function router($params = null)
+    {
+        $this->router = Router::initialization($this);
+        return $this->router->setRouterParams($params)->getRouter();
+    }
+
+    /**
+     * @return Request
+     */
+    function getRequest()
+    {
+        return Request::getInstance();
+    }
+
+    /**
+     * @return Response
+     */
+    function getResponse()
+    {
+        return Response::getInstance();
+    }
+
+    /**
+     * 返回依赖注入对象
+     *
+     * @return array
+     */
+    function getDi()
+    {
+        return $this->di;
+    }
+
+    /**
+     * 初始化运行时Action容器
+     */
+    private function initClosureContainer()
+    {
+        $this->action_container = new ClosureContainer();
+    }
+
+    /**
+     * 返回当前app的aspect容器实例
+     *
+     * @return ClosureContainer
+     */
+    function getClosureContainer()
+    {
+        return $this->action_container;
     }
 }
