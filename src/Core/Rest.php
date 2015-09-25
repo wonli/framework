@@ -7,6 +7,8 @@
  */
 namespace Cross\Core;
 
+use Cross\Exception\CoreException;
+use ReflectionFunction;
 use Closure;
 
 /**
@@ -38,27 +40,27 @@ class Rest
 
     /**
      * 初始化request
-     * @param Config $config
+     * @param Delegate $delegate
      */
-    private function __construct($config)
+    private function __construct(Delegate $delegate)
     {
         $this->request = Request::getInstance();
-        $this->config = $config;
+        $this->config = $delegate->getConfig();
 
-        $url_request = $this->request->getUrlRequest($this->config->get('url', 'type'));
-        $this->request_string = empty($url_request) ? '/' : $url_request;
+        $request_string = $this->getRequestString($this->config->get('url', 'type'));
+        $this->request_string = empty($request_string) ? '/' : $request_string;
     }
 
     /**
      * 创建rest实例
      *
-     * @param $config
+     * @param Delegate $delegate
      * @return Rest
      */
-    static function getInstance($config)
+    static function getInstance(Delegate $delegate)
     {
         if (!self::$instance) {
-            self::$instance = new Rest($config);
+            self::$instance = new Rest($delegate);
         }
 
         return self::$instance;
@@ -68,7 +70,7 @@ class Rest
      * GET
      *
      * @param $request_url
-     * @param callable $process_func
+     * @param callable|Closure $process_func
      */
     function get($request_url, Closure $process_func)
     {
@@ -86,7 +88,7 @@ class Rest
      * POST
      *
      * @param $request_url
-     * @param callable $process_func
+     * @param callable|Closure $process_func
      */
     function post($request_url, Closure $process_func)
     {
@@ -107,7 +109,7 @@ class Rest
      * PUT
      *
      * @param $request_url
-     * @param callable $process_func
+     * @param callable|Closure $process_func
      */
     function put($request_url, Closure $process_func)
     {
@@ -128,7 +130,7 @@ class Rest
      * PUT
      *
      * @param $request_url
-     * @param callable $process_func
+     * @param callable|Closure $process_func
      */
     function delete($request_url, Closure $process_func)
     {
@@ -143,40 +145,89 @@ class Rest
     }
 
     /**
+     * 获取请求的uri字符串
+     *
+     * @param int $url_type
+     * @return string
+     */
+    private function getRequestString($url_type)
+    {
+        switch ($url_type) {
+            case 1:
+            case 3:
+                $request = Request::getInstance()->getUrlRequest('QUERY_STRING');
+                break;
+
+            case 2:
+            case 4:
+            case 5:
+                $request = Request::getInstance()->getUrlRequest('PATH_INFO');
+                break;
+
+            default:
+                $request = '';
+        }
+
+        return '/' . $request;
+    }
+
+    /**
      * 检查参数是否与请求字符串对应
      *
      * @param $request_url
-     * @param $params
+     * @param array $params
      * @return bool
      */
-    function checkRequest($request_url, & $params)
+    function checkRequest($request_url, & $params = array())
     {
         $url_dot = $this->config->get('url', 'dot');
-        $params_key = array();
-        $params_value = array();
+        $params_key = $params_value = array();
 
         if (($request_url == '' && $this->request_string != '') || ($request_url == '/' && $this->request_string != '/')) {
             return false;
         }
 
-        if (false !== strpos($request_url, "{$url_dot}:")) {
-            $params_start = strpos($request_url, "{$url_dot}:");
-            $params_key = array_filter(explode("{$url_dot}:", substr($request_url, $params_start)));
-            $request_url = substr($request_url, 0, $params_start);
+        if (strcasecmp($request_url, $this->request_string) == 0) {
+            return true;
         }
 
-        if (0 === strncasecmp($this->request_string, $request_url, strlen($request_url))) {
-            if (!empty($params_key)) {
-                $params_value = array_filter(
-                    explode("{$url_dot}", substr($this->request_string, strlen($request_url)))
-                );
+        $request_url_string_flag = '';
+        if (false !== ($params_start = strpos($request_url, $url_dot))) {
+            preg_match_all("/{$url_dot}\{:(.*?)\}/", $request_url, $p);
+            if (!empty($p)) {
+                $params_key = $p[1];
+            }
+
+            $request_url_string_flag = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $request_url);
+        }
+
+        $url_request_selection = explode($url_dot, $this->request_string);
+        $set_selection = explode($url_dot, $request_url_string_flag);
+        if (count($url_request_selection) !== count($set_selection)) {
+            return false;
+        }
+
+        if ($request_url_string_flag) {
+            foreach (explode($url_dot, $request_url_string_flag) as $p => $s) {
+                if ($s == '{PARAMS}') {
+                    $params_value[] = $url_request_selection[$p];
+                    continue;
+                }
+
+                if (strcasecmp($s, $url_request_selection[$p]) !== 0) {
+                    return false;
+                }
             }
         } else {
             return false;
         }
 
-        if (!empty($params_value) && count($params_key) == count($params_value)) {
-            $params = array_combine($params_key, $params_value);
+        foreach ($params_key as $position => $key_name) {
+            if (isset($params_value[$position])) {
+                $params[$key_name] = $params_value[$position];
+            } else {
+                $params[$key_name] = null;
+            }
         }
 
         return true;
@@ -187,20 +238,28 @@ class Rest
      *
      * @param Closure $process_func
      * @param array $params
-     * @internal param $rep
+     * @throws CoreException
      */
     function response(Closure $process_func, $params)
     {
-        $ref_func = new \ReflectionFunction($process_func);
-        if (count($ref_func->getParameters()) == count($params)) {
-            if (!is_array($params)) {
-                $params = array($params);
+        $ref = new ReflectionFunction($process_func);
+        if (count($ref->getParameters()) > count($params)) {
+            $need_params = '';
+            foreach ($ref->getParameters() as $r) {
+                if (!isset($params[$r->name])) {
+                    $need_params .= sprintf('$%s,', $r->name);
+                }
             }
+            throw new CoreException(sprintf('该方法所需参数: %s 未指定', rtrim($need_params, ',')));
+        }
 
-            $rep = call_user_func_array($process_func, $params);
-            if (null != $rep) {
-                Response::getInstance()->display($rep);
-            }
+        if (!is_array($params)) {
+            $params = array($params);
+        }
+
+        $rep = call_user_func_array($process_func, $params);
+        if (null != $rep) {
+            Response::getInstance()->display($rep);
         }
     }
 }
