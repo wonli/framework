@@ -589,9 +589,9 @@ class View extends FrameBase
         parent::getDelegate()->getClosureContainer()->run('obRender', $method_content);
 
         if ($load_layer) {
-            return $this->loadLayer($method_content);
+            $this->loadLayer($method_content);
         } else {
-            return $method;
+            echo $method_content;
         }
     }
 
