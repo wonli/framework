@@ -86,7 +86,7 @@ class Application
         $action = '';
         $params = '';
 
-        if (is_object($router)) {
+        if ($router instanceof Router) {
 
             $controller = $router->getController();
             $action = $router->getAction();
@@ -110,7 +110,7 @@ class Application
             $params = $args;
         }
 
-        return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params,);
+        return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params);
     }
 
     /**
@@ -228,8 +228,8 @@ class Application
             $response_content = $cache->get();
         } else {
             $action = $this->getAction();
-            $full_class_name = $this->getControllerNamespace();
-            $controller = new $full_class_name();
+            $full_controller_name = $this->getControllerNamespace();
+            $controller = new $full_controller_name();
 
             if (Response::getInstance()->isEndFlush()) {
                 return true;
