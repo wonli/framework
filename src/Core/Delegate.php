@@ -99,8 +99,10 @@ class Delegate
         Loader::init($app_name);
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
+
         $this->config = $this->initConfig();
-        $this->initClosureContainer();
+        $this->action_container = new ClosureContainer();
+        $this->router = Router::initialization($this);
     }
 
     /**
@@ -150,7 +152,9 @@ class Delegate
      */
     public function run($params = null, $args = null)
     {
-        Application::initialization($this)->dispatcher($this->router($params), $args);
+        Application::initialization($this)->dispatcher(
+            $this->router->setRouterParams($params)->getRouter(), $args
+        );
     }
 
     /**
@@ -283,9 +287,61 @@ class Delegate
     }
 
     /**
-     * 初始化App配置
+     * app配置对象
      *
      * @return Config
+     */
+    function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * @return Router
+     */
+    function getRouter()
+    {
+        return $this->router;
+    }
+
+    /**
+     * 返回当前app的aspect容器实例
+     *
+     * @return ClosureContainer
+     */
+    function getClosureContainer()
+    {
+        return $this->action_container;
+    }
+
+    /**
+     * @return Request
+     */
+    function getRequest()
+    {
+        return Request::getInstance();
+    }
+
+    /**
+     * @return Response
+     */
+    function getResponse()
+    {
+        return Response::getInstance();
+    }
+
+    /**
+     * 返回依赖注入对象
+     *
+     * @return array
+     */
+    function getDi()
+    {
+        return $this->di;
+    }
+
+    /**
+     * 初始化App配置
      */
     private function initConfig()
     {
@@ -321,79 +377,5 @@ class Delegate
         ));
 
         return $config;
-    }
-
-    /**
-     * app配置对象
-     *
-     * @return Config
-     */
-    function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * @return Router
-     */
-    function getRouter()
-    {
-        return $this->router;
-    }
-
-    /**
-     * 解析请求
-     *
-     * @param null|string $params 参见router->initParams();
-     * @return $this
-     */
-    private function router($params = null)
-    {
-        $this->router = Router::initialization($this);
-        return $this->router->setRouterParams($params)->getRouter();
-    }
-
-    /**
-     * @return Request
-     */
-    function getRequest()
-    {
-        return Request::getInstance();
-    }
-
-    /**
-     * @return Response
-     */
-    function getResponse()
-    {
-        return Response::getInstance();
-    }
-
-    /**
-     * 返回依赖注入对象
-     *
-     * @return array
-     */
-    function getDi()
-    {
-        return $this->di;
-    }
-
-    /**
-     * 初始化运行时Action容器
-     */
-    private function initClosureContainer()
-    {
-        $this->action_container = new ClosureContainer();
-    }
-
-    /**
-     * 返回当前app的aspect容器实例
-     *
-     * @return ClosureContainer
-     */
-    function getClosureContainer()
-    {
-        return $this->action_container;
     }
 }
