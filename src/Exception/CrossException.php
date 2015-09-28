@@ -108,9 +108,9 @@ abstract class CrossException extends Exception
                             $t_info_length = max(strlen($t_key), strlen($t_info));
                             if (!isset($trace_table[$t_key]) || $t_info_length > $trace_table[$t_key]) {
                                 if (($t_info_length) % 2 != 0) {
-                                    $t_info_length += 5;
+                                    $t_info_length += 9;
                                 } else {
-                                    $t_info_length += 4;
+                                    $t_info_length += 8;
                                 }
                                 $trace_table[$t_key] = $t_info_length;
                             }

@@ -5,10 +5,51 @@
  * 根据message中的trace_table 输出一个trace信息的文字表格
  * 内容为message['trace']
  */
-if (! empty($message)) {
+if (!empty($message)) {
 
     $trace = $message['trace'];
     $table = $message['trace_table'];
+
+    /**
+     * 输出ASC logo
+     */
+    if (!function_exists('ascLogo')) {
+        function ascLogo($txtTableInfo)
+        {
+            $line_length = array_sum($txtTableInfo) + count($txtTableInfo) + 1;
+            $asc_logo_data = <<<ASC_LOGO
+                                   __         v%s
+  ______________  ______________  / /_  ____
+ / ___/ ___/ __ \/ ___/ ___/ __ \/ __ \/ __ \
+/ /__/ /  / /_/ (__  )__  ) /_/ / / / / /_/ /
+\___/_/   \____/____/____/ .___/_/ /_/ .___/
+                        /_/         /_/
+ASC_LOGO;
+
+            $logo_lines = explode("\n", sprintf($asc_logo_data, \Cross\Core\Delegate::getVersion()));
+            $offset = 6;
+            $max_length = 0;
+            foreach ($logo_lines as $line) {
+                $length = strlen($line);
+                if ($length > $max_length) {
+                    $max_length = $length;
+                }
+            }
+
+            $half_length = floor($line_length / 2 - ($max_length - $offset) / 2);
+            foreach ($logo_lines as $line) {
+                for ($i = 0; $i <= $line_length; $i++) {
+                    if ($i == $half_length) {
+                        echo $line;
+                    } elseif ($i < $half_length) {
+                        echo ' ';
+                    }
+                }
+                echo PHP_EOL;
+            }
+            echo PHP_EOL;
+        }
+    }
 
     /**
      * 输出带标题的横线
@@ -16,7 +57,7 @@ if (! empty($message)) {
      * @param $txtTableInfo
      * @param string $text
      */
-    if (! function_exists('line')) {
+    if (!function_exists('line')) {
         function line($txtTableInfo, $text = '')
         {
             $line_length = array_sum($txtTableInfo) + count($txtTableInfo) + 1;
@@ -33,7 +74,7 @@ if (! empty($message)) {
                 }
                 echo '=';
             }
-            echo "\n";
+            echo PHP_EOL;
         }
     }
 
@@ -42,7 +83,7 @@ if (! empty($message)) {
      *
      * @param $txtTableInfo
      */
-    if (! function_exists('th')) {
+    if (!function_exists('th')) {
         function th($txtTableInfo)
         {
             echo '+';
@@ -52,7 +93,7 @@ if (! empty($message)) {
                 }
                 echo '+';
             }
-            echo "\n";
+            echo PHP_EOL;
         }
     }
 
@@ -61,7 +102,7 @@ if (! empty($message)) {
      *
      * @param $txtTableInfo
      */
-    if (! function_exists('tHead')) {
+    if (!function_exists('tHead')) {
         function tHead($txtTableInfo)
         {
             echo '|';
@@ -80,7 +121,7 @@ if (! empty($message)) {
                 }
                 echo '|';
             }
-            echo "\n";
+            echo PHP_EOL;
         }
     }
 
@@ -90,7 +131,7 @@ if (! empty($message)) {
      * @param $data
      * @param $txtTableInfo
      */
-    if (! function_exists('tBody')) {
+    if (!function_exists('tBody')) {
         function tBody($data, $txtTableInfo)
         {
             echo '|';
@@ -112,11 +153,12 @@ if (! empty($message)) {
                 }
                 echo '|';
             }
-            echo "\n";
+            echo PHP_EOL;
         }
     }
 
-    echo "\n";
+    echo PHP_EOL;
+    ascLogo($table);
     line($table, '--  Exception Start  --');
     printf("\n Line: %s \n File: %s \n\n", $message['line'], $message['file']);
 
@@ -124,14 +166,14 @@ if (! empty($message)) {
     thead($table);
     th($table);
 
-    if (! empty($trace)) {
+    if (!empty($trace)) {
         foreach ($trace as $t) {
             tBody($t, $table);
             th($table);
         }
     }
 
-    echo "\n";
+    echo PHP_EOL;
     line($table, sprintf("--  Exception END  %s  --", date('Y-m-d H:i:s', time())));
 }
 
