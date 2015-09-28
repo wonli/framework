@@ -128,6 +128,7 @@ class Application
      *
      * @param string $controller 控制器
      * @param string $action 动作
+     * @return ReflectionClass
      * @throws CoreException
      */
     private function initController($controller, $action = null)
@@ -174,6 +175,8 @@ class Application
                 throw new CoreException("{$controllerSpace}->{$action} 不允许访问的方法");
             }
         }
+
+        return $class_reflection;
     }
 
     /**
@@ -201,9 +204,8 @@ class Application
     {
         $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
-        $this->initController($router ['controller'], $action);
+        $controller_reflection = $this->initController($router ['controller'], $action);
 
-        self::$delegate->getClosureContainer()->run('dispatcher');
         $action_config = self::getActionConfig();
         $action_params = array();
         if (isset($action_config['params'])) {
@@ -211,6 +213,7 @@ class Application
         }
         $this->initParams($router ['params'], $action_params);
 
+        self::$delegate->getClosureContainer()->run('dispatcher');
         $cache = false;
         if (isset($action_config['cache']) && Request::getInstance()->isGetRequest()) {
             $cache = $this->initRequestCache($action_config['cache']);
@@ -228,8 +231,7 @@ class Application
             $response_content = $cache->get();
         } else {
             $action = $this->getAction();
-            $full_controller_name = $this->getControllerNamespace();
-            $controller = new $full_controller_name();
+            $controller = $controller_reflection->newInstance();
 
             if (Response::getInstance()->isEndFlush()) {
                 return true;
