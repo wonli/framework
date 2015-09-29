@@ -106,7 +106,7 @@ class Loader
             $file_path = Loader::getFilePath($file);
         }
 
-        $read_file_flag = (int)$require_file;
+        $read_file_flag = (int) $require_file;
         if (isset(self::$loaded [$file_path][$read_file_flag])) {
             return self::$loaded [$file_path][$read_file_flag];
         }
@@ -165,7 +165,8 @@ class Loader
         $files = $list = array();
         $_defines = array(
             'app' => self::$app_path,
-            'static' => Request::getInstance()->getScriptFilePath() . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
+            'static' => Request::getInstance()->getScriptFilePath(
+                ) . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR,
             'project' => PROJECT_REAL_PATH,
         );
 
@@ -251,24 +252,22 @@ class Loader
      */
     function loadClass($class_name)
     {
-        $pos = strpos($class_name, '\\');
         $prefix = '';
-        if ($pos) {
+        $pos = strpos($class_name, '\\');
+        if (false !== $pos) {
             $prefix = substr($class_name, 0, $pos);
+            $class_name = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
         }
 
-        $class_name = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
-        if ($prefix && 0 === strcasecmp($prefix, 'cross')) {
+        $check_file_exists = true;
+        if (false !== $prefix && 0 === strcasecmp($prefix, 'cross')) {
+            $check_file_exists = false;
             $class_file = CP_PATH . substr($class_name, $pos + 1) . '.php';
         } else {
             $class_file = PROJECT_REAL_PATH . $class_name . '.php';
         }
 
-        if (!is_file($class_file)) {
-            return false;
-        }
-
-        $this->requireFile($class_file);
+        $this->requireFile($class_file, false, $check_file_exists);
         return $class_file;
     }
 
@@ -310,10 +309,7 @@ class Loader
         }
 
         foreach (self::$name_space[$prefix] as $base_dir) {
-            $file = $base_dir
-                . str_replace('\\', '/', $relative_class)
-                . '.php';
-
+            $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
             if ($this->requireFile($file)) {
                 return $file;
             }
@@ -327,12 +323,17 @@ class Loader
      *
      * @param $file
      * @param bool $throw_exception
+     * @param bool $check_file_exists
      * @return bool
      * @throws CoreException
      */
-    static function requireFile($file, $throw_exception = false)
+    static function requireFile($file, $throw_exception = false, $check_file_exists = true)
     {
         if (isset(self::$loaded[$file])) {
+            return true;
+        } else if ($check_file_exists === false) {
+            require $file;
+            self::$loaded[$file] = true;
             return true;
         } else if (is_file($file)) {
             require $file;

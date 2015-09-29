@@ -39,10 +39,6 @@ class Config
 
     private function __construct($res_file)
     {
-        if (!is_file($res_file)) {
-            throw new CoreException("读取配置文件失败");
-        }
-
         $this->res_file = $res_file;
     }
 

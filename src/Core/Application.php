@@ -299,11 +299,6 @@ class Application
     private function initController($controller, $action = null)
     {
         $controllerSpace = $this->getControllerNamespace($controller);
-        $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace) . '.php';
-
-        if (!is_file($controllerRealFile)) {
-            throw new CoreException("{$controllerSpace} 控制器不存在");
-        }
 
         try {
             $class_reflection = new ReflectionClass($controllerSpace);
