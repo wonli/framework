@@ -26,21 +26,28 @@ class Application
      *
      * @var string
      */
-    protected static $class_action;
+    protected $action;
 
     /**
      * 运行时的参数
      *
      * @var mixed
      */
-    protected static $class_params;
+    protected $params;
 
     /**
      * 控制器名称
      *
      * @var string
      */
-    protected static $controller_class_name;
+    protected $controller;
+
+    /**
+     * 当前app名称
+     *
+     * @var string
+     */
+    private $app_name;
 
     /**
      * action 注释
@@ -59,18 +66,19 @@ class Application
     /**
      * @var Delegate
      */
-    private static $delegate;
+    private $delegate;
 
     /**
      * 实例化Application
      *
+     * @param string $app_name
      * @param Delegate $delegate
-     * @return Application
      */
-    final public static function initialization(Delegate $delegate)
+    function __construct($app_name, Delegate $delegate)
     {
-        self::$delegate = $delegate;
-        return new Application();
+        $this->app_name = $app_name;
+        $this->delegate = $delegate;
+        $this->config = $delegate->getConfig();
     }
 
     /**
@@ -116,11 +124,23 @@ class Application
     /**
      * 获取控制器的命名空间
      *
+     * @param string $controller_name
      * @return string
      */
-    protected function getControllerNamespace()
+    protected function getControllerNamespace($controller_name)
     {
-        return 'app\\' . $this->getConfig()->get('app', 'name') . '\\controllers\\' . $this->getController();
+        return 'app\\' . $this->app_name . '\\controllers\\' . $controller_name;
+    }
+
+    /**
+     * 默认的视图控制器命名空间
+     *
+     * @param string $controller_name
+     * @return string
+     */
+    protected function getViewControllerNameSpace($controller_name)
+    {
+        return 'app\\' . $this->app_name . '\\views\\' . $controller_name . 'View';
     }
 
     /**
@@ -133,9 +153,7 @@ class Application
      */
     private function initController($controller, $action = null)
     {
-        $this->setController($controller);
-
-        $controllerSpace = $this->getControllerNamespace();
+        $controllerSpace = $this->getControllerNamespace($controller);
         $controllerRealFile = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $controllerSpace) . '.php';
 
         if (!is_file($controllerRealFile)) {
@@ -151,6 +169,7 @@ class Application
             throw new CoreException($e->getMessage());
         }
 
+        $this->setController($controller);
         //控制器全局注释配置(不检测父类注释配置)
         $controller_annotate = $class_reflection->getDocComment();
         if ($controller_annotate) {
@@ -204,7 +223,7 @@ class Application
     {
         $router = $this->getRouter($router, $args);
         $action = $run_controller ? $router ['action'] : null;
-        $controller_reflection = $this->initController($router ['controller'], $action);
+        $cr = $this->initController($router ['controller'], $action);
 
         $action_config = self::getActionConfig();
         $action_params = array();
@@ -213,7 +232,7 @@ class Application
         }
         $this->initParams($router ['params'], $action_params);
 
-        self::$delegate->getClosureContainer()->run('dispatcher');
+        $this->delegate->getClosureContainer()->run('dispatcher');
         $cache = false;
         if (isset($action_config['cache']) && Request::getInstance()->isGetRequest()) {
             $cache = $this->initRequestCache($action_config['cache']);
@@ -231,7 +250,14 @@ class Application
             $response_content = $cache->get();
         } else {
             $action = $this->getAction();
-            $controller = $controller_reflection->newInstance();
+            $controller_name = $this->getController();
+            $cr->setStaticPropertyValue('action_annotate', $action_config);
+            $cr->setStaticPropertyValue('view_controller_namespace', $this->getViewControllerNameSpace($controller_name));
+            $cr->setStaticPropertyValue('controller_name', $controller_name);
+            $cr->setStaticPropertyValue('call_action', $action);
+            $cr->setStaticPropertyValue('url_params', $this->getParams());
+            $cr->setStaticPropertyValue('app_delegate', $this->delegate);
+            $controller = $cr->newInstance();
 
             if (Response::getInstance()->isEndFlush()) {
                 return true;
@@ -276,7 +302,7 @@ class Application
      */
     private function setController($controller)
     {
-        self::$controller_class_name = $controller;
+        $this->controller = $controller;
     }
 
     /**
@@ -286,7 +312,7 @@ class Application
      */
     private function setAction($action)
     {
-        self::$class_action = $action;
+        $this->action = $action;
     }
 
     /**
@@ -297,7 +323,7 @@ class Application
      */
     private function setParams($url_params = null, $annotate_params = array())
     {
-        $url_config = $this->getConfig()->get('url');
+        $url_config = $this->config->get('url');
         //获取附加参数
         $reset_annotate_params = false;
         $router_addition_params = array();
@@ -334,11 +360,11 @@ class Application
         }
 
         if (empty($params)) {
-            self::$class_params = $router_addition_params;
+            $this->params = $router_addition_params;
         } elseif (is_array($params)) {
-            self::$class_params = array_merge($router_addition_params, $params);
+            $this->params = array_merge($router_addition_params, $params);
         } else {
-            self::$class_params = $params;
+            $this->params = $params;
         }
     }
 
@@ -373,13 +399,13 @@ class Application
     /**
      * 字符类型的参数转换为一个关联数组
      *
-     * @param $stringParams
+     * @param string $stringParams
+     * @param string $separator
      * @return array
      */
-    public static function stringParamsToAssociativeArray($stringParams)
+    public static function stringParamsToAssociativeArray($stringParams, $separator)
     {
-        $paramsArray = explode(self::$delegate->getConfig()->get('url', 'dot'), $stringParams);
-        return self::oneDimensionalToAssociativeArray($paramsArray);
+        return self::oneDimensionalToAssociativeArray(explode($separator, $stringParams));
     }
 
     /**
@@ -425,7 +451,7 @@ class Application
             throw new CoreException('请指定Cache类型');
         }
 
-        $display = self::getConfig()->get('sys', 'display');
+        $display = $this->config->get('sys', 'display');
         Response::getInstance()->setContentType($display);
         if (!isset($cache_config ['cache_path'])) {
             $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request';
@@ -440,13 +466,13 @@ class Application
         }
 
         $cache_key_conf = array(
-            'app_name' => $this->getConfig()->get('app', 'name'),
-            'tpl_dir_name' => $this->getConfig()->get('sys', 'default_tpl_dir'),
+            'app_name' => $this->app_name,
+            'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
             'controller' => strtolower($this->getController()),
             'action' => $this->getAction(),
         );
 
-        $params = self::getParams();
+        $params = $this->getParams();
         if (isset($cache_config ['key'])) {
             if ($cache_config ['key'] instanceof Closure) {
                 $cache_key = call_user_func_array($cache_config ['key'], array($cache_key_conf, $params));
@@ -550,71 +576,13 @@ class Application
     }
 
     /**
-     * 获取当前delegate
-     *
-     * @return Delegate
-     */
-    public static function getDelegate()
-    {
-        return self::$delegate;
-    }
-
-    /**
-     * 获取配置
-     *
-     * @return Config
-     */
-    public static function getConfig()
-    {
-        return self::$delegate->getConfig();
-    }
-
-    /**
-     * 调用注入的匿名函数
-     *
-     * @param string $name
-     * @param array $params
-     * @return mixed
-     * @throws CoreException
-     */
-    function getDi($name, $params = array())
-    {
-        $di = self::$delegate->getDi();
-        if (isset($di[$name])) {
-            return call_user_func_array($di[$name], $params);
-        }
-        throw new CoreException("未定义的注入方法 {$name}");
-    }
-
-    /**
-     * 调用注入的匿名函数并缓存结果
-     *
-     * @param string $name
-     * @param array $params
-     * @return mixed
-     * @throws CoreException
-     */
-    function getDii($name, $params = array())
-    {
-        static $dii = array();
-        $di = self::$delegate->getDi();
-        if (isset($dii[$name])) {
-            return $dii[$name];
-        } elseif (isset($di[$name])) {
-            $dii[$name] = call_user_func_array($di[$name], $params);
-            return $dii[$name];
-        }
-        throw new CoreException("未定义的注入方法 {$name}");
-    }
-
-    /**
      * 获取控制器名称
      *
      * @return mixed
      */
-    public static function getController()
+    public function getController()
     {
-        return self::$controller_class_name;
+        return $this->controller;
     }
 
     /**
@@ -622,9 +590,9 @@ class Application
      *
      * @return string
      */
-    public static function getAction()
+    public function getAction()
     {
-        return self::$class_action;
+        return $this->action;
     }
 
     /**
@@ -632,10 +600,9 @@ class Application
      *
      * @return mixed
      */
-    public static function getParams()
+    public function getParams()
     {
-        return self::$class_params;
+        return $this->params;
     }
-
 }
 

@@ -35,6 +35,27 @@ define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 class Delegate
 {
     /**
+     * app名称
+     *
+     * @var string
+     */
+    public $app_name;
+
+    /**
+     * 允许的请求列表(mRun)时生效
+     *
+     * @var array
+     */
+    private static $map;
+
+    /**
+     * Delegate的实例
+     *
+     * @var Delegate
+     */
+    private static $instance;
+
+    /**
      * 注入的匿名函数数组
      *
      * @var array
@@ -68,27 +89,6 @@ class Delegate
     private $runtime_config;
 
     /**
-     * app名称
-     *
-     * @var string
-     */
-    public $app_name;
-
-    /**
-     * 允许的请求列表(mRun)时生效
-     *
-     * @var array
-     */
-    public static $map;
-
-    /**
-     * Delegate的实例
-     *
-     * @var Delegate
-     */
-    private static $instance;
-
-    /**
      * 初始化框架
      *
      * @param string $app_name 要加载的app名称
@@ -100,9 +100,11 @@ class Delegate
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
 
-        $this->config = $this->initConfig();
+        $this->config = self::initConfig($app_name, $runtime_config);
         $this->action_container = new ClosureContainer();
-        $this->router = Router::initialization($this);
+        $this->router = new Router($this->config);
+
+        $this->app = new Application($app_name, $this);
     }
 
     /**
@@ -141,7 +143,7 @@ class Delegate
      */
     public function get($controller, $args = null, $return_content = false)
     {
-        return Application::initialization($this)->dispatcher($controller, $args, true, $return_content);
+        return $this->app->dispatcher($controller, $args, true, $return_content);
     }
 
     /**
@@ -152,9 +154,7 @@ class Delegate
      */
     public function run($params = null, $args = null)
     {
-        Application::initialization($this)->dispatcher(
-            $this->router->setRouterParams($params)->getRouter(), $args
-        );
+        $this->app->dispatcher($this->router->setRouterParams($params)->getRouter(), $args);
     }
 
     /**
@@ -165,7 +165,7 @@ class Delegate
      */
     public function rRun(RouterInterface $router, $args)
     {
-        Application::initialization($this)->dispatcher($router, $args);
+        $this->app->dispatcher($router, $args);
     }
 
     /**
@@ -297,6 +297,16 @@ class Delegate
     }
 
     /**
+     * 获取运行时指定的配置
+     *
+     * @return array
+     */
+    function getRuntimeConfig()
+    {
+        return $this->runtime_config;
+    }
+
+    /**
      * @return Router
      */
     function getRouter()
@@ -342,12 +352,14 @@ class Delegate
 
     /**
      * 初始化App配置
+     * @param string $app_name
+     * @param array $runtime_config
+     * @return $this
+     * @throws \Cross\Exception\FrontException
      */
-    private function initConfig()
+    private static function initConfig($app_name, $runtime_config)
     {
-        $config = Config::load(APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR . 'init.php')->parse(
-            $this->runtime_config
-        );
+        $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->parse($runtime_config);
 
         $request = Request::getInstance();
         $host = $request->getHostInfo();
@@ -358,8 +370,8 @@ class Delegate
 
         //设置app名称和路径
         $config->set('app', array(
-            'name' => $this->app_name,
-            'path' => APP_PATH_DIR . $this->app_name . DIRECTORY_SEPARATOR
+            'name' => $app_name,
+            'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
         ));
 
         //静态文件url和绝对路径

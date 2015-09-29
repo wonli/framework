@@ -40,9 +40,9 @@ class Router implements RouterInterface
     private $controller;
 
     /**
-     * @var Delegate
+     * @var Config
      */
-    private $delegate;
+    private $config;
 
     /**
      * 默认action
@@ -57,30 +57,13 @@ class Router implements RouterInterface
     private $router_params = array();
 
     /**
-     * router实例
+     * 初始化router
      *
-     * @var Router
+     * @param Config $config
      */
-    private static $instance;
-
-    private function __construct(Delegate $delegate)
+    function __construct(Config $config)
     {
-        $this->delegate = $delegate;
-    }
-
-    /**
-     * 单例模式创建Router的实例
-     *
-     * @param Delegate $delegate
-     * @return Router
-     */
-    static function initialization(Delegate $delegate)
-    {
-        if (!self::$instance) {
-            self::$instance = new Router($delegate);
-        }
-
-        return self::$instance;
+        $this->config = $config;
     }
 
     /**
@@ -118,7 +101,7 @@ class Router implements RouterInterface
      */
     function initRequestParams()
     {
-        $url_config = $this->delegate->getConfig()->get('url');
+        $url_config = $this->config->get('url');
         switch ($url_config ['type']) {
             case 1:
             case 3:
@@ -228,7 +211,7 @@ class Router implements RouterInterface
     {
         $_router = $this->getRouterParams();
         if (empty($_router)) {
-            $_defaultRouter = $this->getDefaultRouter($this->delegate->getConfig()->get('url', '*'));
+            $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
 
             $this->setController($_defaultRouter['controller']);
             $this->setAction($_defaultRouter['action']);
@@ -249,9 +232,9 @@ class Router implements RouterInterface
      */
     function setRouter($request)
     {
-        $router_config = $this->delegate->getConfig()->get('router');
+        $router_config = $this->config->get('router');
         $_controller = array_shift($request);
-        $this->delegate->getConfig()->set('url', array('ori_controller' => $_controller));
+        $this->config->set('url', array('ori_controller' => $_controller));
 
         $combine_alias_key = '';
         if (isset($request[0])) {
@@ -275,14 +258,14 @@ class Router implements RouterInterface
                     $_controller = $alias_controller;
                 }
 
-                $this->delegate->getConfig()->set('url', array(
+                $this->config->set('url', array(
                     'router_addition_params' => $alias_addition_params,
                 ));
 
                 if (!isset($_action)) {
                     if (isset($request[0])) {
                         $_action = array_shift($request);
-                        $this->delegate->getConfig()->set('url', array('ori_action' => $_action));
+                        $this->config->set('url', array('ori_action' => $_action));
                     } else {
                         $_action = self::$default_action;
                     }
@@ -303,7 +286,7 @@ class Router implements RouterInterface
         } else {
             if (isset($request[0])) {
                 $_action = array_shift($request);
-                $this->delegate->getConfig()->set('url', array('ori_action' => $_action));
+                $this->config->set('url', array('ori_action' => $_action));
             } else {
                 $_action = self::$default_action;
             }
