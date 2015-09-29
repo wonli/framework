@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-    <title>crossphp error</title>
+    <title>CrossPHP Framework Exception</title>
     <style type="text/css">
     body { font: 14px helvetica, arial, sans-serif; color: #2B2B2B; background-color: #D4D4D4; padding:0; margin: 0; max-height: 100%; }
     a { text-decoration: none; }
@@ -102,50 +102,8 @@
 </div>
 
 <div class="data-table-container" id="data-tables">
-    <div class="data-table" id="sg-request-data">
-        <label>Cross URL Params</label>
-        <?php
-        $params = Cross\Core\Application::getParams();
-        $controller = Cross\Core\Application::getController();
-        $action = Cross\Core\Application::getAction();
-        ?>
-        <?php if (!empty($params)) : ?>
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <td class="data-table-k">Key</td>
-                    <td class="data-table-v">Value</td>
-                </tr>
-                </thead>
-                <tbody>
-                <?php if (!empty($controller)) : ?>
-                    <tr>
-                        <td>Controller</td>
-                        <td><?php echo $controller ?></td>
-                    </tr>
-                <?php endif ?>
-                <?php if (!empty($action)) : ?>
-                    <tr>
-                        <td>Action</td>
-                        <td><?php echo $action ?></td>
-                    </tr>
-                <?php endif ?>
-
-                <?php foreach ($params as $c_key => $c_value) : ?>
-                    <tr>
-                        <td>Params <?php echo $c_key ?>:</td>
-                        <td><?php echo $c_value ?></td>
-                    </tr>
-                <?php endforeach ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <span class="empty">empty</span>
-        <?php endif ?>
-    </div>
-
     <div class="data-table" id="sg-get-data">
-        <label>GET Data</label>
+        <label>GET</label>
         <?php if (!empty($_GET)) : ?>
             <table class="data-table">
                 <thead>
@@ -169,7 +127,7 @@
     </div>
 
     <div class="data-table" id="sg-post-data">
-        <label>POST Data</label>
+        <label>POST</label>
         <?php if (!empty($_POST)) : ?>
             <table class="data-table">
                 <thead>
