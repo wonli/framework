@@ -138,7 +138,8 @@ class Main extends Controller
                 break;
         }
 
-        $r = Router::initialization(parent::getDelegate())->setRouterParams(explode($dot, substr($link, $url_start)))->getRouter();
+        $router = new Router(parent::getConfig());
+        $r = $router->setRouterParams(explode($dot, substr($link, $url_start)))->getRouter();
         $result = $this->sParams($r->getParams());
 
         $this->display($result);
