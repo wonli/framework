@@ -75,7 +75,7 @@ class Module extends FrameBase
     function getModel($params = '', &$config = array())
     {
         $config = $this->parseModelParams($params);
-        return DBFactory::make($config['model_type'], $config['model_config'], $this->config);
+        return DBFactory::make($config['model_type'], $config['model_config'], $this->getConfig());
     }
 
     /**
@@ -138,7 +138,7 @@ class Module extends FrameBase
         } else {
             static $default_db_config = '';
             if ($default_db_config === '') {
-                $default_db_config = $this->config->get('sys', 'default_db');
+                $default_db_config = $this->getConfig()->get('sys', 'default_db');
             }
 
             if ($default_db_config) {
@@ -182,7 +182,7 @@ class Module extends FrameBase
      */
     private function getLink()
     {
-        return DBFactory::make($this->link_type, $this->link_config, $this->config);
+        return DBFactory::make($this->link_type, $this->link_config, $this->getConfig());
     }
 
     /**
@@ -206,7 +206,7 @@ class Module extends FrameBase
     private function getModuleConfigFile()
     {
         if (!$this->db_config_file) {
-            $db_config_file = parent::getConfig()->get('sys', 'db_config');
+            $db_config_file = $this->getConfig()->get('sys', 'db_config');
             if (!$db_config_file) {
                 $db_config_file = 'db.config.php';
             }

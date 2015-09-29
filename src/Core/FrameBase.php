@@ -56,13 +56,6 @@ class FrameBase
     protected $delegate;
 
     /**
-     * 缓存配置
-     *
-     * @var string
-     */
-    protected $cache_config;
-
-    /**
      * url加密时用到的key
      *
      * @var string
@@ -149,7 +142,7 @@ class FrameBase
      * @return mixed
      * @throws CoreException
      */
-    function getDi($name, $params = array())
+    protected function getDi($name, $params = array())
     {
         $di = $this->delegate->getDi();
         if (isset($di[$name])) {
@@ -166,7 +159,7 @@ class FrameBase
      * @return mixed
      * @throws CoreException
      */
-    function getDii($name, $params = array())
+    protected function getDii($name, $params = array())
     {
         static $dii = array();
         $di = $this->delegate->getDi();
@@ -177,26 +170,6 @@ class FrameBase
             return $dii[$name];
         }
         throw new CoreException("未定义的注入方法 {$name}");
-    }
-
-    /**
-     * 设置缓存配置
-     *
-     * @param $cache_config
-     */
-    public function setCacheConfig($cache_config)
-    {
-        $this->cache_config = $cache_config;
-    }
-
-    /**
-     * 返回缓存配置
-     *
-     * @return mixed
-     */
-    public function getCacheConfig()
-    {
-        return $this->cache_config;
     }
 
     /**
@@ -216,7 +189,7 @@ class FrameBase
     /**
      * 解密会话
      *
-     * @param $key
+     * @param string $key
      * @param bool $de
      * @return bool|mixed|string
      */
@@ -269,7 +242,7 @@ class FrameBase
     /**
      * 还原加密后的参数
      *
-     * @param null $params
+     * @param null|string $params
      * @return bool|string
      */
     protected function sParams($params = null)
@@ -327,7 +300,7 @@ class FrameBase
     /**
      * mcrypt加密
      *
-     * @param $params
+     * @param string $params
      * @return mixed
      */
     protected function mcryptEncode($params)
@@ -341,7 +314,7 @@ class FrameBase
     /**
      * mcrypt 解密
      *
-     * @param $params
+     * @param string $params
      * @return string
      */
     protected function mcryptDecode($params)
@@ -371,6 +344,7 @@ class FrameBase
      * @param string $message
      * @param string $type
      * @return array|string
+     * @throws CoreException
      */
     function result($status = 1, $message = 'ok', $type = '')
     {
@@ -380,6 +354,10 @@ class FrameBase
         );
 
         if (strcasecmp($type, 'json') == 0) {
+            if (json_encode($result) === false) {
+                throw new CoreException('json encode失败');
+            }
+
             $result = json_encode($result);
         }
 
@@ -389,8 +367,8 @@ class FrameBase
     /**
      * request response view
      *
-     * @param $property
-     * @return Response|Request|View|null
+     * @param string $property
+     * @return Response|Request|View|Config|null
      */
     function __get($property)
     {

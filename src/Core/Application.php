@@ -82,13 +82,158 @@ class Application
     }
 
     /**
+     * 运行框架
+     *
+     * @param object|string $router 要解析的理由
+     * @param null $args 指定参数
+     * @param bool $run_controller 是否只返回控制器实例
+     * @param bool $return_response_content 是输出还是直接返回结果
+     * @return array|mixed|string
+     * @throws CoreException
+     */
+    public function dispatcher($router, $args = null, $run_controller = true, $return_response_content = false)
+    {
+        $router = $this->parseRouter($router, $args);
+        $action = $run_controller ? $router ['action'] : null;
+        $cr = $this->initController($router ['controller'], $action);
+
+        $action_config = self::getActionConfig();
+        $action_params = array();
+        if (isset($action_config['params'])) {
+            $action_params = $action_config['params'];
+        }
+        $this->initParams($router ['params'], $action_params);
+
+        $this->delegate->getClosureContainer()->run('dispatcher');
+        $cache = false;
+        if (isset($action_config['cache']) && Request::getInstance()->isGetRequest()) {
+            $cache = $this->initRequestCache($action_config['cache']);
+        }
+
+        if (isset($action_config['before'])) {
+            $this->getClassInstanceByName($action_config['before']);
+        }
+
+        if (!empty($action_config['basicAuth'])) {
+            Response::getInstance()->basicAuth($action_config['basicAuth']);
+        }
+
+        if ($cache && $cache->getExpireTime()) {
+            $response_content = $cache->get();
+        } else {
+            $action = $this->getAction();
+            $controller_name = $this->getController();
+            $cr->setStaticPropertyValue('action_annotate', $action_config);
+            $cr->setStaticPropertyValue('view_controller_namespace', $this->getViewControllerNameSpace($controller_name));
+            $cr->setStaticPropertyValue('controller_name', $controller_name);
+            $cr->setStaticPropertyValue('call_action', $action);
+            $cr->setStaticPropertyValue('url_params', $this->getParams());
+            $cr->setStaticPropertyValue('app_delegate', $this->delegate);
+            $controller = $cr->newInstance();
+
+            if (Response::getInstance()->isEndFlush()) {
+                return true;
+            }
+
+            if (true === $run_controller) {
+                ob_start();
+                $response_content = $controller->$action();
+                if (!$response_content) {
+                    $response_content = ob_get_contents();
+                }
+                ob_end_clean();
+                if ($cache) {
+                    $cache->set(null, $response_content);
+                }
+            } else {
+                return $controller;
+            }
+        }
+
+        if (!empty($action_config['response'])) {
+            $this->setResponseConfig($action_config['response']);
+        }
+
+        if ($return_response_content) {
+            return $response_content;
+        } else {
+            Response::getInstance()->display($response_content);
+        }
+
+        if (isset($action_config['after'])) {
+            $this->getClassInstanceByName($action_config['after']);
+        }
+
+        return true;
+    }
+
+    /**
+     * 合并参数注释配置
+     *
+     * @param null $params
+     * @param array $annotate_params
+     * @return array|null
+     */
+    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array())
+    {
+        if (empty($annotate_params)) {
+            return $params;
+        }
+
+        if (!empty($params)) {
+            $params_set = array();
+            foreach ($params as $k => $p) {
+                if (isset($annotate_params[$k])) {
+                    $params_set [$annotate_params[$k]] = $p;
+                } else {
+                    $params_set [] = $p;
+                }
+            }
+            $params = $params_set;
+        }
+
+        return $params;
+    }
+
+    /**
+     * 字符类型的参数转换为一个关联数组
+     *
+     * @param string $stringParams
+     * @param string $separator
+     * @return array
+     */
+    public static function stringParamsToAssociativeArray($stringParams, $separator)
+    {
+        return self::oneDimensionalToAssociativeArray(explode($separator, $stringParams));
+    }
+
+    /**
+     * 一维数组按顺序转换为关联数组
+     *
+     * @param array $oneDimensional
+     * @return array
+     */
+    public static function oneDimensionalToAssociativeArray($oneDimensional)
+    {
+        $result = array();
+        for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
+            if (isset($oneDimensional[$i]) && isset($oneDimensional[$i + 1])) {
+                $result[$oneDimensional[$i]] = $oneDimensional[$i + 1];
+            }
+            array_shift($oneDimensional);
+        }
+
+        return $result;
+    }
+
+    /**
      * 解析router
      *
      * @param Router|string|array $router
      * @param string $args 当$router类型为string时,指定参数
      * @return array
      */
-    private function getRouter($router, $args)
+    private function parseRouter($router, $args)
     {
         $controller = '';
         $action = '';
@@ -210,92 +355,6 @@ class Application
     }
 
     /**
-     * 运行框架
-     *
-     * @param object|string $router 要解析的理由
-     * @param null $args 指定参数
-     * @param bool $run_controller 是否只返回控制器实例
-     * @param bool $return_response_content 是输出还是直接返回结果
-     * @return array|mixed|string
-     * @throws CoreException
-     */
-    public function dispatcher($router, $args = null, $run_controller = true, $return_response_content = false)
-    {
-        $router = $this->getRouter($router, $args);
-        $action = $run_controller ? $router ['action'] : null;
-        $cr = $this->initController($router ['controller'], $action);
-
-        $action_config = self::getActionConfig();
-        $action_params = array();
-        if (isset($action_config['params'])) {
-            $action_params = $action_config['params'];
-        }
-        $this->initParams($router ['params'], $action_params);
-
-        $this->delegate->getClosureContainer()->run('dispatcher');
-        $cache = false;
-        if (isset($action_config['cache']) && Request::getInstance()->isGetRequest()) {
-            $cache = $this->initRequestCache($action_config['cache']);
-        }
-
-        if (isset($action_config['before'])) {
-            $this->getClassInstanceByName($action_config['before']);
-        }
-
-        if (!empty($action_config['basicAuth'])) {
-            Response::getInstance()->basicAuth($action_config['basicAuth']);
-        }
-
-        if ($cache && $cache->getExpireTime()) {
-            $response_content = $cache->get();
-        } else {
-            $action = $this->getAction();
-            $controller_name = $this->getController();
-            $cr->setStaticPropertyValue('action_annotate', $action_config);
-            $cr->setStaticPropertyValue('view_controller_namespace', $this->getViewControllerNameSpace($controller_name));
-            $cr->setStaticPropertyValue('controller_name', $controller_name);
-            $cr->setStaticPropertyValue('call_action', $action);
-            $cr->setStaticPropertyValue('url_params', $this->getParams());
-            $cr->setStaticPropertyValue('app_delegate', $this->delegate);
-            $controller = $cr->newInstance();
-
-            if (Response::getInstance()->isEndFlush()) {
-                return true;
-            }
-
-            if (true === $run_controller) {
-                ob_start();
-                $response_content = $controller->$action();
-                if (!$response_content) {
-                    $response_content = ob_get_contents();
-                }
-                ob_end_clean();
-                if ($cache) {
-                    $cache->set(null, $response_content);
-                }
-            } else {
-                return $controller;
-            }
-        }
-
-        if (!empty($action_config['response'])) {
-            $this->setResponseConfig($action_config['response']);
-        }
-
-        if ($return_response_content) {
-            return $response_content;
-        } else {
-            Response::getInstance()->display($response_content);
-        }
-
-        if (isset($action_config['after'])) {
-            $this->getClassInstanceByName($action_config['after']);
-        }
-
-        return true;
-    }
-
-    /**
      * 设置controller
      *
      * @param $controller
@@ -366,65 +425,6 @@ class Application
         } else {
             $this->params = $params;
         }
-    }
-
-    /**
-     * 合并参数注释配置
-     *
-     * @param null $params
-     * @param array $annotate_params
-     * @return array|null
-     */
-    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array())
-    {
-        if (empty($annotate_params)) {
-            return $params;
-        }
-
-        if (!empty($params)) {
-            $params_set = array();
-            foreach ($params as $k => $p) {
-                if (isset($annotate_params[$k])) {
-                    $params_set [$annotate_params[$k]] = $p;
-                } else {
-                    $params_set [] = $p;
-                }
-            }
-            $params = $params_set;
-        }
-
-        return $params;
-    }
-
-    /**
-     * 字符类型的参数转换为一个关联数组
-     *
-     * @param string $stringParams
-     * @param string $separator
-     * @return array
-     */
-    public static function stringParamsToAssociativeArray($stringParams, $separator)
-    {
-        return self::oneDimensionalToAssociativeArray(explode($separator, $stringParams));
-    }
-
-    /**
-     * 一维数组按顺序转换为关联数组
-     *
-     * @param array $oneDimensional
-     * @return array
-     */
-    public static function oneDimensionalToAssociativeArray($oneDimensional)
-    {
-        $result = array();
-        for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
-            if (isset($oneDimensional[$i]) && isset($oneDimensional[$i + 1])) {
-                $result[$oneDimensional[$i]] = $oneDimensional[$i + 1];
-            }
-            array_shift($oneDimensional);
-        }
-
-        return $result;
     }
 
     /**
@@ -561,7 +561,7 @@ class Application
      *
      * @return array|bool
      */
-    public static function getActionConfig()
+    private static function getActionConfig()
     {
         $action_annotate_config = Annotate::getInstance(self::getActionAnnotate())->parse();
         if (empty(self::$controller_annotate_config)) {
@@ -580,7 +580,7 @@ class Application
      *
      * @return mixed
      */
-    public function getController()
+    private function getController()
     {
         return $this->controller;
     }
@@ -590,7 +590,7 @@ class Application
      *
      * @return string
      */
-    public function getAction()
+    private function getAction()
     {
         return $this->action;
     }
@@ -600,7 +600,7 @@ class Application
      *
      * @return mixed
      */
-    public function getParams()
+    private function getParams()
     {
         return $this->params;
     }

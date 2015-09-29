@@ -69,7 +69,7 @@ class Router implements RouterInterface
     /**
      * 设置url解析参数
      *
-     * @param $params
+     * @param array|null $params
      * @return $this
      */
     public function setRouterParams($params = null)
@@ -84,11 +84,63 @@ class Router implements RouterInterface
     }
 
     /**
+     * 设置router
+     *
+     * @return $this
+     * @throws FrontException
+     */
+    public function getRouter()
+    {
+        $_router = $this->getRouterParams();
+        if (empty($_router)) {
+            $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
+
+            $this->setController($_defaultRouter['controller']);
+            $this->setAction($_defaultRouter['action']);
+            $this->setParams($_defaultRouter['params']);
+        } else {
+            $this->setRouter($_router);
+        }
+
+        return $this;
+    }
+
+    /**
+     * 返回控制器名称
+     *
+     * @return mixed
+     */
+    public function getController()
+    {
+        return $this->controller;
+    }
+
+    /**
+     * 返回action名称
+     *
+     * @return mixed
+     */
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    /**
+     * 返回参数
+     *
+     * @return mixed
+     */
+    public function getParams()
+    {
+        return $this->params;
+    }
+
+    /**
      * 要解析的请求string
      *
      * @return array
      */
-    public function getRouterParams()
+    private function getRouterParams()
     {
         return $this->router_params;
     }
@@ -99,7 +151,7 @@ class Router implements RouterInterface
      * @return array|string
      * @throws \cross\exception\CoreException
      */
-    function initRequestParams()
+    private function initRequestParams()
     {
         $url_config = $this->config->get('url');
         switch ($url_config ['type']) {
@@ -137,7 +189,7 @@ class Router implements RouterInterface
      * @return array
      * @throws FrontException
      */
-    static function parseRequestString($_query_string, $url_config, $parse_mixed_params = false)
+    private static function parseRequestString($_query_string, $url_config, $parse_mixed_params = false)
     {
         if (true === $parse_mixed_params && false !== strpos($_query_string, '&')) {
             $_query_string_array = explode('&', $_query_string);
@@ -202,35 +254,13 @@ class Router implements RouterInterface
     }
 
     /**
-     * 设置router
-     *
-     * @return $this
-     * @throws FrontException
-     */
-    public function getRouter()
-    {
-        $_router = $this->getRouterParams();
-        if (empty($_router)) {
-            $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
-
-            $this->setController($_defaultRouter['controller']);
-            $this->setAction($_defaultRouter['action']);
-            $this->setParams($_defaultRouter['params']);
-        } else {
-            $this->setRouter($_router);
-        }
-
-        return $this;
-    }
-
-    /**
      * 解析router别名配置
      *
      * @param array $request
      * @throws CoreException
      * @internal param $router
      */
-    function setRouter($request)
+    private function setRouter($request)
     {
         $router_config = $this->config->get('router');
         $_controller = array_shift($request);
@@ -331,36 +361,6 @@ class Router implements RouterInterface
     private function setParams($params)
     {
         $this->params = $params;
-    }
-
-    /**
-     * 返回控制器名称
-     *
-     * @return mixed
-     */
-    public function getController()
-    {
-        return $this->controller;
-    }
-
-    /**
-     * 返回action名称
-     *
-     * @return mixed
-     */
-    public function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * 返回参数
-     *
-     * @return mixed
-     */
-    public function getParams()
-    {
-        return $this->params;
     }
 }
 

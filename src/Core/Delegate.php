@@ -263,7 +263,7 @@ class Delegate
     /**
      * 注册注入匿名函数
      *
-     * @param $name
+     * @param string $name
      * @param Closure $f
      * @return $this
      */

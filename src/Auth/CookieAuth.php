@@ -62,23 +62,6 @@ class CookieAuth implements HttpAuthInterface
     }
 
     /**
-     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
-     *
-     * @param $params
-     * @return string
-     */
-    protected function cookieKey($params)
-    {
-        if (isset($_SERVER['HTTP_USER_AGENT'])) {
-            $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-        } else {
-            $agent = 'agent';
-        }
-
-        return md5($agent . $this->key . $params);
-    }
-
-    /**
      * 从已加密的cookie中取出值
      *
      * @param string $params cookie的key
@@ -118,5 +101,22 @@ class CookieAuth implements HttpAuthInterface
         }
 
         return $result;
+    }
+
+    /**
+     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
+     *
+     * @param $params
+     * @return string
+     */
+    protected function cookieKey($params)
+    {
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+        } else {
+            $agent = 'agent';
+        }
+
+        return md5($agent . $this->key . $params);
     }
 }
