@@ -41,12 +41,12 @@ class SQLiteConnecter extends BaseConnecter
 
     /**
      * @param string $dsn
-     * @param string $user
-     * @param string $pwd
+     * @param null $user
+     * @param null $pwd
      * @param array $options
-     * @return SqliteConnecter|PDO
+     * @return SQLiteConnecter|PDO
      */
-    static function getInstance($dsn, $user = '', $pwd = '', $options = array())
+    static function getInstance($dsn, $user = null, $pwd = null, $options = array())
     {
         $key = md5($dsn);
         if (empty(self::$instance[$key])) {

@@ -38,43 +38,30 @@ class DBFactory
      */
     static function make($link, $params, $config)
     {
-        //如果params是一个匿名函数,执行匿名函数并返回
+        //如果params是一个匿名函数
+        //匿名函数的第一个参数为当前app配置, 执行匿名函数并返回
         if ($params instanceof Closure) {
             return call_user_func_array($params, array($config));
         }
 
-        //调用Cross中的数据库连接处理类
+        //配置的数据表前缀
+        $prefix = !empty($params['prefix']) ? $params['prefix'] : '';
+        $options = isset($params['options']) ? $params['options'] : array();
         switch (strtolower($link)) {
             case 'mysql' :
-                $port = isset($params['port']) ? $params['port'] : 3306;
-                $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
-                $options = isset($params['options']) ? $params['options'] : array();
-
-                if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($params['unix_socket'])) {
-                    $dsn = "mysql:dbname={$params['name']};unix_socket={$params['unix_socket']}";
-                } else {
-                    $dsn = "mysql:host={$params['host']};dbname={$params['name']};port={$port};charset={$char_set}";
-                }
-
-                $connecter = MySQLConnecter::getInstance($dsn, $params['user'], $params['pass'], $options);
-                return new PDOSqlDriver($connecter, new MySQLAssembler());
+                return new PDOSqlDriver(
+                    MySQLConnecter::getInstance(self::getDsn($params, 'mysql'), $params['user'], $params['pass'], $options),
+                    new MySQLAssembler($prefix)
+                );
 
             case 'sqlite':
-                $connecter = SQLiteConnecter::getInstance($params['dsn']);
-                return new PDOSqlDriver($connecter, new SQLiteAssembler());
+                return new PDOSqlDriver(SQLiteConnecter::getInstance($params['dsn']), new SQLiteAssembler($prefix));
 
             case 'pgsql':
-                $port = isset($params['port']) ? $params['port'] : 5432;
-                $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
-                $options = isset($params['options']) ? $params['options'] : array();
-                if (!isset($params['dsn'])) {
-                    $dsn = "mysql:host={$params['host']};dbname={$params['name']};port={$port};charset={$char_set}";
-                } else {
-                    $dsn = $params['dsn'];
-                }
-
-                $connecter = PgSqlConnecter::getInstance($dsn, $params['user'], $params['pass'], $options);
-                return new PDOSqlDriver($connecter, new PgSQLAssembler());
+                return new PDOSqlDriver(
+                    PgSqlConnecter::getInstance(self::getDsn($params, 'pgsql'), $params['user'], $params['pass'], $options),
+                    new PgSQLAssembler($prefix)
+                );
 
             case 'mongo':
                 return new MongoDriver($params);
@@ -89,4 +76,36 @@ class DBFactory
                 throw new CoreException('不支持的数据库扩展!');
         }
     }
+
+    /**
+     * 生成DSN
+     *
+     * @param array $params
+     * @param string $type
+     * @param bool|false $use_unix_socket
+     * @return string
+     * @throws CoreException
+     */
+    private static function getDsn($params, $type = 'mysql', $use_unix_socket = true)
+    {
+        if (!empty($params['dsn'])) {
+            return $params['dsn'];
+        }
+
+        if (!isset($params['host']) || !isset($params['name'])) {
+            throw new CoreException('连接数据库所需参数不足');
+        }
+
+        $port = isset($params['port']) ? $params['port'] : 3306;
+        $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
+
+        if ($use_unix_socket && strcasecmp(PHP_OS, 'linux') == 0 && !empty($params['unix_socket'])) {
+            $dsn = "{$type}:dbname={$params['name']};unix_socket={$params['unix_socket']}";
+        } else {
+            $dsn = "{$type}:host={$params['host']};port={$port};dbname={$params['name']};charset={$char_set}";
+        }
+
+        return $dsn;
+    }
+
 }

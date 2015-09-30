@@ -99,6 +99,17 @@ class Module extends FrameBase
     }
 
     /**
+     * 获取带配置前缀的表名
+     *
+     * @param string $table
+     * @return string
+     */
+    function getPrefix($table = '')
+    {
+        return $this->link->getPrefix() . $table;
+    }
+
+    /**
      * 读取并解析数据库配置
      *
      * @return CrossArray

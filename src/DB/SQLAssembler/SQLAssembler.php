@@ -28,11 +28,28 @@ class SQLAssembler implements SqlInterface
     protected $params;
 
     /**
+     * 表前缀
+     *
+     * @var string
+     */
+    protected $table_prefix;
+
+    /**
      * offset()在limit()中已经传递了第二个参数时不再生效
      *
      * @var bool
      */
     protected $offset_is_valid = true;
+
+    /**
+     * 初始化时可以指定表前缀
+     *
+     * @param string $table_prefix
+     */
+    function __construct($table_prefix = '')
+    {
+        $this->table_prefix = $table_prefix;
+    }
 
     /**
      * 获取单条数据sql语句
@@ -45,6 +62,7 @@ class SQLAssembler implements SqlInterface
     function get($table, $fields, $where)
     {
         $params = array();
+        $table = $this->table_prefix . $table;
         $one_sql = "SELECT %s FROM {$table} WHERE %s LIMIT 1";
 
         $field_str = $this->parseFields($fields);
@@ -70,6 +88,7 @@ class SQLAssembler implements SqlInterface
     public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
         $params = array();
+        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
@@ -119,6 +138,7 @@ class SQLAssembler implements SqlInterface
     {
         $params = array();
         $field = $value = '';
+        $table = $this->table_prefix . $table;
         $insert_sql = "INSERT INTO {$table} (%s) VALUES (%s)";
 
         if (true === $multi) {
@@ -163,6 +183,7 @@ class SQLAssembler implements SqlInterface
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
+        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
@@ -192,6 +213,7 @@ class SQLAssembler implements SqlInterface
      */
     public function update($table, $data, $where)
     {
+        $table = $this->table_prefix . $table;
         $up_sql = "UPDATE {$table} SET %s WHERE %s";
 
         $field = '';
@@ -250,14 +272,14 @@ class SQLAssembler implements SqlInterface
             }
 
             $where_str = implode(' AND ', $where_condition);
-            $sql = sprintf($del_sql, $table, $where_str);
+            $sql = sprintf($del_sql, $this->table_prefix . $table, $where_str);
             foreach ($where ['values'] as $p) {
                 $params[] = $p;
             }
 
         } else {
             $where_str = $this->parseWhere($where, $params);
-            $sql = sprintf($del_sql, $table, $where_str);
+            $sql = sprintf($del_sql, $this->table_prefix . $table, $where_str);
         }
 
         $this->setSQL($sql);
@@ -279,7 +301,7 @@ class SQLAssembler implements SqlInterface
      */
     public function from($table)
     {
-        return "FROM {$table} ";
+        return sprintf("FROM %s ", $this->table_prefix . $table);
     }
 
     /**
@@ -480,6 +502,16 @@ class SQLAssembler implements SqlInterface
     public function getParams()
     {
         return $this->params;
+    }
+
+    /**
+     * 获取表前缀
+     *
+     * @return string
+     */
+    public function getPrefix()
+    {
+        return $this->table_prefix;
     }
 
     /**

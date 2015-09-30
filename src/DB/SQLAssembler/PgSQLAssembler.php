@@ -28,6 +28,7 @@ class PgSQLAssembler extends SQLAssembler
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
+        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);

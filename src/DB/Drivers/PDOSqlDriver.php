@@ -499,6 +499,16 @@ class PDOSqlDriver
     }
 
     /**
+     * 获取表前缀
+     *
+     * @return string
+     */
+    function getPrefix()
+    {
+        return $this->SQLAssembler->getPrefix();
+    }
+
+    /**
      * 生成qid
      */
     private function makeQueryID()
