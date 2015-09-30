@@ -260,7 +260,7 @@ class Loader
         }
 
         $check_file_exists = true;
-        if (false !== $prefix && 0 === strcasecmp($prefix, 'cross')) {
+        if ('' !== $prefix && 0 === strcasecmp($prefix, 'cross')) {
             $check_file_exists = false;
             $class_file = CP_PATH . substr($class_name, $pos + 1) . '.php';
         } else {
