@@ -334,6 +334,7 @@ class FrameBase
     {
         $view = new $this->view_controller();
         $view->config = $this->getConfig();
+        $view->params = $this->params;
         return $view;
     }
 
