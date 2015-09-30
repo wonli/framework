@@ -250,13 +250,13 @@ class Request
     }
 
     /**
-     * 按type返回url请求
+     * 按type返回uri请求
      *
      * @param string $type
      * @param bool $fix_query_string rewrite状态下,如果request_uri包含问号要进行特殊处理
      * @return string
      */
-    public function getUrlRequest($type = 'REQUEST_URI', $fix_query_string = false)
+    public function getUriRequest($type = 'QUERY_STRING', $fix_query_string = false)
     {
         switch ($type) {
             case 'QUERY_STRING':

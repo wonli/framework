@@ -194,7 +194,7 @@ class Delegate
      */
     public function map($uri, $controller = null)
     {
-        self::$map [$uri] = $controller;
+        self::$map[$uri] = $controller;
     }
 
     /**
@@ -205,12 +205,9 @@ class Delegate
      */
     public function mRun($args = null)
     {
-        $url_type = $this->config->get('url', 'type');
-        $req = Request::getInstance()->getUrlRequest($url_type);
-
-        if (isset(self::$map [$req])) {
-            $controller = self::$map [$req];
-            $this->get($controller, $args);
+        $req = $this->router->getUriRequest('/');
+        if (isset(self::$map[$req])) {
+            $this->get(self::$map[$req], $args);
         } else {
             throw new CoreException('Not Specified Uri');
         }

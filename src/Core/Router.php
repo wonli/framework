@@ -136,6 +136,35 @@ class Router implements RouterInterface
     }
 
     /**
+     * 按类型解析请求字符串
+     *
+     * @param string $prefix
+     * @param array $url_config
+     * @return string
+     */
+    public function getUriRequest($prefix = '/', & $url_config = array())
+    {
+        $url_config = $this->config->get('url');
+        switch ($url_config ['type']) {
+            case 1:
+            case 3:
+                $request = Request::getInstance()->getUriRequest('QUERY_STRING', $url_config['rewrite']);
+                break;
+
+            case 2:
+            case 4:
+            case 5:
+                $request = Request::getInstance()->getUriRequest('PATH_INFO', $url_config['rewrite']);
+                break;
+
+            default:
+                $request = '';
+        }
+
+        return $prefix . $request;
+    }
+
+    /**
      * 要解析的请求string
      *
      * @return array
@@ -153,18 +182,16 @@ class Router implements RouterInterface
      */
     private function initRequestParams()
     {
-        $url_config = $this->config->get('url');
+        $request = $this->getUriRequest('', $url_config);
         switch ($url_config ['type']) {
             case 1:
             case 3:
-                $request = Request::getInstance()->getUrlRequest('QUERY_STRING', $url_config['rewrite']);
                 return $this->parseRequestString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config, true);
 
             case 2:
             case 4:
             case 5:
-                $path_info = Request::getInstance()->getUrlRequest('PATH_INFO', $url_config['rewrite']);
-                $request = $this->parseRequestString(htmlspecialchars(urldecode($path_info), ENT_QUOTES), $url_config);
+                $request = $this->parseRequestString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config);
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }

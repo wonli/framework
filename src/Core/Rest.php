@@ -26,12 +26,14 @@ class Rest
     /**
      * @var object
      */
-    protected $config;
+    protected $request;
 
     /**
-     * @var object
+     * 配置的uri分隔符
+     *
+     * @var string
      */
-    protected $request;
+    protected $uri_dot;
 
     /**
      * @var string
@@ -44,11 +46,11 @@ class Rest
      */
     private function __construct(Delegate $delegate)
     {
-        $this->request = Request::getInstance();
-        $this->config = $delegate->getConfig();
+        $url_config = array();
+        $this->request = $delegate->getRequest();
 
-        $request_string = $this->getRequestString($this->config->get('url', 'type'));
-        $this->request_string = empty($request_string) ? '/' : $request_string;
+        $this->request_string = $delegate->getRouter()->getUriRequest('/', $url_config);
+        $this->uri_dot = $url_config['dot'];
     }
 
     /**
@@ -145,33 +147,6 @@ class Rest
     }
 
     /**
-     * 获取请求的uri字符串
-     *
-     * @param int $url_type
-     * @return string
-     */
-    private function getRequestString($url_type)
-    {
-        switch ($url_type) {
-            case 1:
-            case 3:
-                $request = Request::getInstance()->getUrlRequest('QUERY_STRING');
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-                $request = Request::getInstance()->getUrlRequest('PATH_INFO');
-                break;
-
-            default:
-                $request = '';
-        }
-
-        return '/' . $request;
-    }
-
-    /**
      * 检查参数是否与请求字符串对应
      *
      * @param $request_url
@@ -180,9 +155,7 @@ class Rest
      */
     function checkRequest($request_url, & $params = array())
     {
-        $url_dot = $this->config->get('url', 'dot');
         $params_key = $params_value = array();
-
         if (($request_url == '' && $this->request_string != '') || ($request_url == '/' && $this->request_string != '/')) {
             return false;
         }
@@ -192,8 +165,8 @@ class Rest
         }
 
         $request_url_string_flag = '';
-        if (false !== ($params_start = strpos($request_url, $url_dot))) {
-            preg_match_all("/{$url_dot}\{:(.*?)\}/", $request_url, $p);
+        if (false !== ($params_start = strpos($request_url, $this->uri_dot))) {
+            preg_match_all("/{$this->uri_dot}\{:(.*?)\}/", $request_url, $p);
             if (!empty($p)) {
                 $params_key = $p[1];
             }
@@ -201,14 +174,14 @@ class Rest
             $request_url_string_flag = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $request_url);
         }
 
-        $url_request_selection = explode($url_dot, $this->request_string);
-        $set_selection = explode($url_dot, $request_url_string_flag);
+        $url_request_selection = explode($this->uri_dot, $this->request_string);
+        $set_selection = explode($this->uri_dot, $request_url_string_flag);
         if (count($url_request_selection) !== count($set_selection)) {
             return false;
         }
 
         if ($request_url_string_flag) {
-            foreach (explode($url_dot, $request_url_string_flag) as $p => $s) {
+            foreach (explode($this->uri_dot, $request_url_string_flag) as $p => $s) {
                 if ($s == '{PARAMS}') {
                     $params_value[] = $url_request_selection[$p];
                     continue;
