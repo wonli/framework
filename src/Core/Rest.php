@@ -166,7 +166,7 @@ class Rest
 
         $request_url_string_flag = '';
         if (false !== ($params_start = strpos($request_url, $this->uri_dot))) {
-            preg_match_all("/{$this->uri_dot}\{:(.*?)\}/", $request_url, $p);
+            preg_match_all("/\{:(.*?)\}/", $request_url, $p);
             if (!empty($p)) {
                 $params_key = $p[1];
             }
