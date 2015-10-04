@@ -19,21 +19,19 @@ use Closure;
 class Rest
 {
     /**
-     * @var object
+     * @var Rest
      */
     static $instance;
 
     /**
-     * @var object
+     * @var Request
      */
     protected $request;
 
     /**
-     * 配置的uri分隔符
-     *
      * @var string
      */
-    protected $uri_dot;
+    protected $request_type;
 
     /**
      * @var string
@@ -41,16 +39,20 @@ class Rest
     protected $request_string;
 
     /**
+     * @var array
+     */
+    protected $uri_closure_map = array();
+
+    /**
      * 初始化request
+     *
      * @param Delegate $delegate
      */
     private function __construct(Delegate $delegate)
     {
-        $url_config = array();
         $this->request = $delegate->getRequest();
-
-        $this->request_string = $delegate->getRouter()->getUriRequest('/', $url_config);
-        $this->uri_dot = $url_config['dot'];
+        $this->request_type = $this->getRequestType();
+        $this->request_string = $delegate->getRouter()->getUriRequest('/');
     }
 
     /**
@@ -71,128 +73,130 @@ class Rest
     /**
      * GET
      *
-     * @param $request_url
-     * @param callable|Closure $process_func
+     * @param string $custom_router
+     * @param callable|Closure $process_closure
      */
-    function get($request_url, Closure $process_func)
+    function get($custom_router, Closure $process_closure)
     {
-        if (true !== $this->request->isGetRequest()) {
-            return;
-        }
-
-        $params = array();
-        if (true === $this->checkRequest($request_url, $params)) {
-            $this->response($process_func, $params);
+        if ($this->request_type === 'get') {
+            $this->uri_closure_map['get'][$custom_router] = $process_closure;
         }
     }
 
     /**
      * POST
      *
-     * @param $request_url
-     * @param callable|Closure $process_func
+     * @param string $custom_router
+     * @param callable|Closure $process_closure
      */
-    function post($request_url, Closure $process_func)
+    function post($custom_router, Closure $process_closure)
     {
-        if (true !== $this->request->isPostRequest()) {
-            return;
+        if ($this->request_type === 'post') {
+            $this->uri_closure_map['post'][$custom_router] = $process_closure;
         }
-
-        if (strcasecmp($request_url, $this->request_string) !== 0) {
-            return;
-        }
-
-        $php_data = file_get_contents("php://input");
-        parse_str($php_data, $data);
-        $this->response($process_func, $data);
     }
 
     /**
      * PUT
      *
-     * @param $request_url
-     * @param callable|Closure $process_func
+     * @param string $custom_router
+     * @param callable|Closure $process_closure
      */
-    function put($request_url, Closure $process_func)
+    function put($custom_router, Closure $process_closure)
     {
-        if (true !== $this->request->isPutRequest()) {
-            return;
-        }
-
-        if (strcasecmp($request_url, $this->request_string) !== 0) {
-            return;
-        }
-
-        $php_data = file_get_contents("php://input");
-        parse_str($php_data, $data);
-        $this->response($process_func, $data);
-    }
-
-    /**
-     * PUT
-     *
-     * @param $request_url
-     * @param callable|Closure $process_func
-     */
-    function delete($request_url, Closure $process_func)
-    {
-        if (true !== $this->request->isDeleteRequest()) {
-            return;
-        }
-
-        $params = array();
-        if (true === $this->checkRequest($request_url, $params)) {
-            $this->response($process_func, $params);
+        if ($this->request_type === 'put') {
+            $this->uri_closure_map['put'][$custom_router] = $process_closure;
         }
     }
 
     /**
-     * 检查参数是否与请求字符串对应
+     * DELETE
      *
-     * @param $request_url
+     * @param string $custom_router
+     * @param callable|Closure $process_closure
+     */
+    function delete($custom_router, Closure $process_closure)
+    {
+        if ($this->request_type === 'delete') {
+            $this->uri_closure_map['delete'][$custom_router] = $process_closure;
+        }
+    }
+
+    /**
+     * 处理请求
+     *
+     * @throws CoreException
+     */
+    function run()
+    {
+        $match = false;
+        if (!empty($this->uri_closure_map[$this->request_type])) {
+            foreach ($this->uri_closure_map[$this->request_type] as $custom_router => $process_closure) {
+                $params = array();
+                if (true === $this->matchCustomRouter($custom_router, $params)) {
+                    $this->response($process_closure, $params);
+                    $match = true;
+                    break;
+                }
+            }
+        }
+
+        if (false === $match) {
+            throw new CoreException('Not Match Uri');
+        }
+    }
+
+    /**
+     * 匹配uri和自定义路由
+     *
+     * @param string $custom_router
      * @param array $params
      * @return bool
      */
-    function checkRequest($request_url, & $params = array())
+    private function matchCustomRouter($custom_router, & $params = array())
     {
         $params_key = $params_value = array();
-        if (($request_url == '' && $this->request_string != '') || ($request_url == '/' && $this->request_string != '/')) {
+        $request_uri_string = $this->request_string;
+
+        if (!$custom_router) {
             return false;
         }
 
-        if (strcasecmp($request_url, $this->request_string) == 0) {
+        if (strcasecmp($custom_router, $request_uri_string) == 0) {
             return true;
         }
 
-        $request_url_string_flag = '';
-        if (false !== ($params_start = strpos($request_url, $this->uri_dot))) {
-            preg_match_all("/\{:(.*?)\}/", $request_url, $p);
-            if (!empty($p)) {
-                $params_key = $p[1];
-            }
-
-            $request_url_string_flag = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $request_url);
+        preg_match_all("/\{:(.*?)\}/", $custom_router, $p);
+        if (!empty($p)) {
+            $params_key = $p[1];
         }
 
-        $url_request_selection = explode($this->uri_dot, $this->request_string);
-        $set_selection = explode($this->uri_dot, $request_url_string_flag);
-        if (count($url_request_selection) !== count($set_selection)) {
-            return false;
-        }
-
-        if ($request_url_string_flag) {
-            foreach (explode($this->uri_dot, $request_url_string_flag) as $p => $s) {
-                if ($s == '{PARAMS}') {
-                    $params_value[] = $url_request_selection[$p];
-                    continue;
-                }
-
-                if (strcasecmp($s, $url_request_selection[$p]) !== 0) {
-                    return false;
-                }
+        $custom_router_params_token = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $custom_router);
+        while (strlen($custom_router_params_token) > 0) {
+            $defined_params_pos = strpos($custom_router_params_token, '{PARAMS}');
+            if ($defined_params_pos) {
+                $compare_ret = substr_compare($custom_router_params_token, $request_uri_string, 0, $defined_params_pos, true);
+            } else {
+                $compare_ret = strcasecmp($custom_router_params_token, $request_uri_string);
             }
-        } else {
-            return false;
+
+            if ($compare_ret !== 0) {
+                return false;
+            }
+
+            //去掉已经解析的部分
+            $custom_router_params_token = substr($custom_router_params_token, $defined_params_pos + 8);
+            $request_uri_string = substr($request_uri_string, $defined_params_pos);
+
+            if ($custom_router_params_token) {
+                //下一个标识符的位置
+                $next_defined_dot_pos = strpos($request_uri_string, $custom_router_params_token[0]);
+
+                $params_value[] = substr($request_uri_string, 0, $next_defined_dot_pos);
+                $request_uri_string = substr($request_uri_string, $next_defined_dot_pos);
+            } else {
+                $params_value[] = $request_uri_string;
+            }
         }
 
         foreach ($params_key as $position => $key_name) {
@@ -209,30 +213,49 @@ class Rest
     /**
      * 输出结果
      *
-     * @param Closure $process_func
+     * @param Closure $process_closure
      * @param array $params
      * @throws CoreException
      */
-    function response(Closure $process_func, $params)
+    private function response(Closure $process_closure, $params)
     {
-        $ref = new ReflectionFunction($process_func);
+        $ref = new ReflectionFunction($process_closure);
         if (count($ref->getParameters()) > count($params)) {
             $need_params = '';
             foreach ($ref->getParameters() as $r) {
                 if (!isset($params[$r->name])) {
-                    $need_params .= sprintf('$%s,', $r->name);
+                    $need_params .= sprintf('$%s ', $r->name);
                 }
             }
-            throw new CoreException(sprintf('该方法所需参数: %s 未指定', rtrim($need_params, ',')));
+            throw new CoreException(sprintf('所需参数: %s 未指定', $need_params));
         }
 
         if (!is_array($params)) {
             $params = array($params);
         }
 
-        $rep = call_user_func_array($process_func, $params);
+        $rep = call_user_func_array($process_closure, $params);
         if (null != $rep) {
             Response::getInstance()->display($rep);
         }
+    }
+
+    /**
+     * 获取当前请求类型
+     *
+     * @return string
+     */
+    private function getRequestType()
+    {
+        $request_type = 'get';
+        if ($this->request->isPostRequest()) {
+            $request_type = 'post';
+        } elseif ($this->request->isPutRequest()) {
+            $request_type = 'put';
+        } elseif ($this->request->isDeleteRequest()) {
+            $request_type = 'delete';
+        }
+
+        return $request_type;
     }
 }
