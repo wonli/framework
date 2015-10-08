@@ -68,17 +68,13 @@ class ImageThumb
     /**
      * 设置高宽
      *
-     * @param $width
-     * @param string $height
+     * @param int $width
+     * @param int $height
      * @return $this
      */
-    function set_size($width, $height = '')
+    function set_size($width = 0, $height = 0)
     {
         $this->width = $width;
-        if (!$height) {
-            $height = $width;
-        }
-
         $this->height = $height;
 
         return $this;
@@ -141,14 +137,14 @@ class ImageThumb
         $thumb_file_name = $this->thumb_image_name . $file_ext;
         unset($info);
 
-        $scale = min($this->width / $src_width, $this->height / $src_height);
+        $scale = max($this->width / $src_width, $this->height / $src_height);
         if ($scale >= 1) {
             $width = $src_width;
             $height = $src_height;
         }
         else {
-            $width = (int)$src_width * $scale;
-            $height = (int)$src_height * $scale;
+            $width = round($src_width * $scale);
+            $height = round($src_height * $scale);
         }
 
         // 载入原图
