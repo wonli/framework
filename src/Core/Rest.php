@@ -21,7 +21,12 @@ class Rest
     /**
      * @var Rest
      */
-    static $instance;
+    private static $instance;
+
+    /**
+     * @var array
+     */
+    protected $rules;
 
     /**
      * @var Request
@@ -123,6 +128,16 @@ class Rest
     }
 
     /**
+     * 参数正则验证规则
+     *
+     * @param array $rules
+     */
+    function rules(array $rules)
+    {
+        $this->rules = $rules;
+    }
+
+    /**
      * 处理请求
      *
      * @throws CoreException
@@ -201,7 +216,12 @@ class Rest
 
         foreach ($params_key as $position => $key_name) {
             if (isset($params_value[$position])) {
-                $params[$key_name] = $params_value[$position];
+                $val = $params_value[$position];
+                if (isset($this->rules[$key_name]) && !preg_match($this->rules[$key_name], $val)) {
+                    return false;
+                }
+
+                $params[$key_name] = $val;
             } else {
                 $params[$key_name] = null;
             }
