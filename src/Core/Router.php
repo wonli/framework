@@ -161,7 +161,7 @@ class Router implements RouterInterface
                 $request = '';
         }
 
-        return $prefix . $request;
+        return $prefix . htmlspecialchars(urldecode($request), ENT_QUOTES);
     }
 
     /**
@@ -186,12 +186,12 @@ class Router implements RouterInterface
         switch ($url_config ['type']) {
             case 1:
             case 3:
-                return $this->parseRequestString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config, true);
+                return $this->parseRequestString($request, $url_config, true);
 
             case 2:
             case 4:
             case 5:
-                $request = $this->parseRequestString(htmlspecialchars(urldecode($request), ENT_QUOTES), $url_config);
+                $request = $this->parseRequestString($request, $url_config);
                 if (!empty($request)) {
                     return array_merge($request, $_REQUEST);
                 }
