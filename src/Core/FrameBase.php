@@ -15,10 +15,10 @@ use Cross\MVC\View;
  * @Auth: wonli <wonli@live.com>
  * Class FrameBase
  * @package Cross\Core
- * @property Request request
- * @property Response response
- * @property View view
- * @property Config config
+ * @property Config $config
+ * @property Request $request
+ * @property Response $response
+ * @property View $view
  */
 class FrameBase
 {
