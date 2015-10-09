@@ -42,10 +42,10 @@ class CrossArray
      * 获取配置参数
      *
      * @param string $config
-     * @param null|boolean $name
+     * @param string|array $name
      * @return bool|string|array
      */
-    function get($config, $name = null)
+    function get($config, $name = '')
     {
         if (isset($this->data[$config])) {
             if ($name) {
@@ -72,8 +72,8 @@ class CrossArray
     /**
      * 返回全部数据
      *
-     * @param bool| $obj 是否返回对象
-     * @return array/object
+     * @param bool $obj 是否返回对象
+     * @return array|\stdClass
      */
     function getAll($obj = false)
     {
@@ -87,8 +87,8 @@ class CrossArray
     /**
      * 数组转对象
      *
-     * @param $d
-     * @return object
+     * @param array $d
+     * @return \stdClass
      */
     function arrayToObject($d)
     {
