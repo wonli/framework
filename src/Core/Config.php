@@ -17,29 +17,24 @@ use Cross\Exception\CoreException;
 class Config
 {
     /**
-     * 配置资源文件地址
-     *
-     * @var string
+     * @var array
      */
-    protected $res_file;
+    private $config_data;
 
     /**
-     * 单例模式
-     *
-     * @var object
+     * @var \Cross\Core\Config
      */
     private static $instance;
 
     /**
-     * 所有配置
+     * 读取配置
      *
-     * @var array
+     * @param string $res_file 配置文件绝对路径
+     * @throws CoreException
      */
-    protected $init;
-
     private function __construct($res_file)
     {
-        $this->res_file = $res_file;
+        $this->config_data = Loader::read($res_file);
     }
 
     /**
@@ -58,105 +53,68 @@ class Config
     }
 
     /**
-     * 解析配置文件和自定义参数
+     * @see CrossArray::get()
      *
-     * @param null $user_config 用户自定义参数
-     * @return $this
-     */
-    function parse($user_config = null)
-    {
-        $config_data = $this->readConfigFile();
-        if (null !== $user_config) {
-            if (!is_array($user_config) && is_file($user_config)) {
-                $config_set = require $user_config;
-                $this->setData($config_set);
-
-                return $this;
-            } else if (!empty($user_config) && is_array($user_config)) {
-                foreach ($user_config as $key => $_config) {
-                    if (is_array($_config)) {
-                        foreach ($_config as $_config_key => $_config_value) {
-                            $config_data [$key] [$_config_key] = $_config_value;
-                        }
-                    } else {
-                        $config_data [$key] = $_config;
-                    }
-                }
-            }
-        }
-
-        $this->setData($config_data);
-        return $this;
-    }
-
-    /**
-     * 保存配置参数
-     *
-     * @param array $init 配置文件
-     * @return array
-     */
-    function setData($init)
-    {
-        $this->init = $init;
-    }
-
-    /**
-     * 从文件读取配置文件 支持PHP / JSON
-     *
-     * @return mixed
-     * @throws CoreException
-     */
-    function readConfigFile()
-    {
-        return Loader::read($this->res_file);
-    }
-
-    /**
-     * 获取配置参数
-     * $config为字符串的时候 获取配置数组,此时设定$name 则获取数组中指定项的值
-     * $config为数组的时候 获取数组中指定的配置项,如果$name为true 则获取指定项之外的配置项
-     *
-     * @param $config
-     * @param $name null|boolean
+     * @param string $index
+     * @param string|array $options
      * @return string|array
      */
-    function get($config, $name = null)
+    function get($index, $options = '')
     {
-        return CrossArray::init($this->init)->get($config, $name);
+        return CrossArray::init($this->config_data)->get($index, $options);
     }
 
     /**
      * 设定配置项的值
      *
-     * @param string $name 要设定的项
-     * @param array|string $values 设定的项的值
-     * @return bool|null
+     * @param string $index
+     * @param array|string $values
+     * @return bool
      */
-    function set($name, $values = null)
+    function set($index, $values = '')
     {
-        if (!isset($this->init[$name])) {
-            if (is_array($values)) {
-                $this->init[$name] = array();
+        if (is_array($values)) {
+            if (isset($this->config_data[$index])) {
+                $this->config_data[$index] = array_merge($this->config_data[$index], $values);
             } else {
-                return $this->init[$name] = $values;
+                $this->config_data[$index] = $values;
             }
-        }
-
-        foreach ($values as $k => $v) {
-            $this->init[$name][$k] = $v;
+        } else {
+            $this->config_data[$index] = $values;
         }
 
         return true;
     }
 
     /**
-     * 返回全部配置
+     * @see CrossArray::getAll()
      *
-     * @param bool|$obj 是否返回对象
-     * @return array/object
+     * @param bool $obj 是否返回对象
+     * @return array|object
      */
     function getAll($obj = false)
     {
-        return CrossArray::init($this->init)->getAll($obj);
+        return CrossArray::init($this->config_data)->getAll($obj);
+    }
+
+    /**
+     * 合并运行时定义的配置
+     *
+     * @param array $append_config
+     * @return $this
+     */
+    function parse(array $append_config = array())
+    {
+        if (!empty($append_config)) {
+            foreach ($append_config as $key => $value) {
+                if (isset($this->config_data[$key])) {
+                    $this->config_data[$key] = array_merge($this->config_data[$key], $value);
+                } else {
+                    $this->config_data[$key] = $value;
+                }
+            }
+        }
+
+        return $this;
     }
 }
