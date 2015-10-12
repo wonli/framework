@@ -184,6 +184,8 @@ class Response
         $content_type_name = $this->getContentType();
         if (isset(self::$mime_types [$content_type_name])) {
             $content_type = self::$mime_types [$content_type_name];
+        } else if ($content_type_name) {
+            $content_type = $content_type_name;
         } else {
             $content_type = self::$mime_types ['html'];
         }
