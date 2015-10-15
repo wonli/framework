@@ -161,11 +161,10 @@ class Delegate
      * 自定义router运行
      *
      * @param RouterInterface $router RouterInterface的实现
-     * @param string $args 参数
      */
-    public function rRun(RouterInterface $router, $args)
+    public function rRun(RouterInterface $router)
     {
-        $this->app->dispatcher($router, $args);
+        $this->app->dispatcher($router);
     }
 
     /**
