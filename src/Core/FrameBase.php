@@ -342,24 +342,22 @@ class FrameBase
      * 返回一个数组或JSON字符串
      *
      * @param int $status
-     * @param string $message
-     * @param string $type
+     * @param string|array $message
+     * @param bool $json_encode
      * @return array|string
      * @throws CoreException
      */
-    function result($status = 1, $message = 'ok', $type = '')
+    function result($status = 1, $message = 'ok', $json_encode = false)
     {
         $result = array(
             'status' => $status,
             'message' => $message,
         );
 
-        if (strcasecmp($type, 'json') == 0) {
-            if (json_encode($result) === false) {
-                throw new CoreException('json encode失败');
+        if ($json_encode) {
+            if (($result = json_encode($result)) === false) {
+                throw new CoreException('json encode fail');
             }
-
-            $result = json_encode($result);
         }
 
         return $result;
