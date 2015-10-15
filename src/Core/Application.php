@@ -9,6 +9,7 @@ namespace Cross\Core;
 
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
+use Cross\I\RouterInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
@@ -229,7 +230,7 @@ class Application
     /**
      * 解析router
      *
-     * @param Router|string|array $router
+     * @param RouterInterface|string|array $router
      * @param string $args 当$router类型为string时,指定参数
      * @return array
      */
@@ -239,7 +240,7 @@ class Application
         $action = '';
         $params = '';
 
-        if ($router instanceof Router) {
+        if ($router instanceof RouterInterface) {
 
             $controller = $router->getController();
             $action = $router->getAction();
