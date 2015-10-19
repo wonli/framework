@@ -223,7 +223,6 @@ class Router implements RouterInterface
             $_query_string = array_shift($_query_string_array);
         }
 
-        $_query_string = trim(ltrim($_query_string, '/'), $url_config['dot']);
         $router_params = array();
         if (!$_query_string) {
             return $router_params;
