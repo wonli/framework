@@ -161,7 +161,7 @@ class Router implements RouterInterface
                 $request = '';
         }
 
-        return $prefix . htmlspecialchars(urldecode($request), ENT_QUOTES);
+        return $prefix . htmlspecialchars(urldecode(ltrim($request, '/')), ENT_QUOTES);
     }
 
     /**
@@ -223,7 +223,6 @@ class Router implements RouterInterface
             $_query_string = array_shift($_query_string_array);
         }
 
-        $_query_string = ltrim($_query_string, '/');
         $router_params = array();
         if (!$_query_string) {
             return $router_params;
