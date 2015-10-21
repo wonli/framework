@@ -114,7 +114,7 @@ class Delegate
      */
     static function getVersion()
     {
-        return '1.4.1';
+        return '1.5.0';
     }
 
     /**
