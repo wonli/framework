@@ -147,14 +147,11 @@ class Delegate
     }
 
     /**
-     * 从路由解析url请求,自动运行
-     *
-     * @param string $params = null 为router指定参数
-     * @param string $args
+     * 解析url并运行
      */
-    public function run($params = null, $args = null)
+    public function run()
     {
-        $this->app->dispatcher($this->router->setRouterParams($params)->getRouter(), $args);
+        $this->app->dispatcher($this->router->getRouter());
     }
 
     /**

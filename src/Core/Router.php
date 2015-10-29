@@ -69,17 +69,12 @@ class Router implements RouterInterface
     /**
      * 设置url解析参数
      *
-     * @param array|null $params
+     * @param array $params
      * @return $this
      */
-    public function setRouterParams($params = null)
+    public function setRouterParams(array $params)
     {
-        if (null === $params) {
-            $this->router_params = $this->initRequestParams();
-        } else {
-            $this->router_params = $params;
-        }
-
+        $this->router_params = $params;
         return $this;
     }
 
@@ -91,15 +86,15 @@ class Router implements RouterInterface
      */
     public function getRouter()
     {
-        $_router = $this->getRouterParams();
-        if (empty($_router)) {
+        $router_params = $this->getRouterParams();
+        if (empty($router_params)) {
             $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
 
             $this->setController($_defaultRouter['controller']);
             $this->setAction($_defaultRouter['action']);
             $this->setParams($_defaultRouter['params']);
         } else {
-            $this->setRouter($_router);
+            $this->initRouter($router_params);
         }
 
         return $this;
@@ -171,6 +166,10 @@ class Router implements RouterInterface
      */
     private function getRouterParams()
     {
+        if (empty($this->router_params)) {
+            $this->router_params = $this->initRequestParams();
+        }
+
         return $this->router_params;
     }
 
@@ -286,7 +285,7 @@ class Router implements RouterInterface
      * @throws CoreException
      * @internal param $router
      */
-    private function setRouter($request)
+    private function initRouter($request)
     {
         $router_config = $this->config->get('router');
         $_controller = array_shift($request);
