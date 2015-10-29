@@ -55,14 +55,7 @@ class Application
      *
      * @var string
      */
-    private static $action_annotate;
-
-    /**
-     * 控制器注释配置
-     *
-     * @var array
-     */
-    private static $controller_annotate_config = array();
+    private $action_annotate;
 
     /**
      * @var Delegate
@@ -98,7 +91,7 @@ class Application
         $action = $run_controller ? $router ['action'] : null;
         $cr = $this->initController($router ['controller'], $action);
 
-        $action_config = self::getActionConfig();
+        $action_config = $this->getActionConfig();
         $action_params = array();
         if (isset($action_config['params'])) {
             $action_params = $action_config['params'];
@@ -312,9 +305,10 @@ class Application
 
         $this->setController($controller);
         //控制器全局注释配置(不检测父类注释配置)
-        $controller_annotate = $class_reflection->getDocComment();
-        if ($controller_annotate) {
-            self::$controller_annotate_config = Annotate::getInstance($controller_annotate)->parse();
+        $controller_annotate = array();
+        $class_annotate_content = $class_reflection->getDocComment();
+        if ($class_annotate_content) {
+            $controller_annotate = Annotate::getInstance($class_annotate_content)->parse();
         }
 
         if ($action) {
@@ -330,7 +324,7 @@ class Application
 
             if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
                 $this->setAction($action);
-                self::setActionAnnotate($is_callable->getDocComment());
+                $this->setActionAnnotate(Annotate::getInstance($is_callable->getDocComment())->parse(), $controller_annotate);
             } else {
                 throw new CoreException("{$controllerSpace}->{$action} 不允许访问的方法");
             }
@@ -535,21 +529,16 @@ class Application
     /**
      * 设置action注释
      *
-     * @param string $annotate
+     * @param array $annotate
+     * @param array $controller_annotate
      */
-    private static function setActionAnnotate($annotate)
+    private function setActionAnnotate(array $annotate, array $controller_annotate)
     {
-        self::$action_annotate = $annotate;
-    }
-
-    /**
-     * 获取action注释
-     *
-     * @return string
-     */
-    private static function getActionAnnotate()
-    {
-        return self::$action_annotate;
+        if (empty($controller_annotate)) {
+            $this->action_annotate = $annotate;
+        } else {
+            $this->action_annotate = array_merge($controller_annotate, $annotate);
+        }
     }
 
     /**
@@ -557,18 +546,9 @@ class Application
      *
      * @return array|bool
      */
-    private static function getActionConfig()
+    private function getActionConfig()
     {
-        $action_annotate_config = Annotate::getInstance(self::getActionAnnotate())->parse();
-        if (empty(self::$controller_annotate_config)) {
-            return $action_annotate_config;
-        }
-
-        if (is_array($action_annotate_config) && is_array(self::$controller_annotate_config)) {
-            return array_merge(self::$controller_annotate_config, $action_annotate_config);
-        }
-
-        return self::$controller_annotate_config;
+        return $this->action_annotate;
     }
 
     /**
