@@ -43,12 +43,13 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * 测试注释配置
+     * 使用get调用时, 参数还原无效
      */
     function testAnnotate()
     {
         $params = array(1, 2, 3);
         $result = $this->getAppResponse('Main:annotate', $params);
-        $this->assertEquals($result, array('a' => 1, 'b' => 2, 'c' => 3), 'parse annotate error...');
+        $this->assertEquals($result, array(1, 2, 3), 'parse annotate error...');
     }
 
     /**
