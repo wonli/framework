@@ -134,16 +134,19 @@ class Delegate
     }
 
     /**
-     * 直接调用控制器类中的方法 忽略解析和alias配置
+     * 直接调用控制器类中的方法
+     * <pre>
+     * 忽略路由别名相关配置和URL参数, @cp_params注释不生效
+     * </pre>
      *
      * @param string $controller "控制器:方法"
-     * @param null $args 参数
+     * @param string|array $args 参数
      * @param bool $return_content 是输出还是直接返回结果
-     * @return array|mixed|string
+     * @return mixed
      */
     public function get($controller, $args = null, $return_content = false)
     {
-        return $this->app->dispatcher($controller, $args, true, $return_content);
+        return $this->app->dispatcher($controller, $args, $return_content);
     }
 
     /**

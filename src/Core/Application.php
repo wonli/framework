@@ -80,17 +80,15 @@ class Application
      *
      * @param object|string $router
      * @param null $args 指定参数
-     * @param bool $run_controller 是否返回控制器实例
-     * @param bool $return_response_content 是否输出
+     * @param bool $return_response_content 是否输出执行结果
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function dispatcher($router, $args = null, $run_controller = true, $return_response_content = false)
+    public function dispatcher($router, $args = null, $return_response_content = false)
     {
         $init_prams = true;
         $router = $this->parseRouter($router, $args, $init_prams);
-        $action = $run_controller ? $router ['action'] : null;
-        $cr = $this->initController($router ['controller'], $action);
+        $cr = $this->initController($router['controller'], $router['action']);
 
         $annotate_config = $this->getAnnotateConfig();
         if ($init_prams) {
@@ -139,18 +137,14 @@ class Application
                 return true;
             }
 
-            if (true === $run_controller) {
-                ob_start();
-                $response_content = $controller->$action();
-                if (!$response_content) {
-                    $response_content = ob_get_contents();
-                }
-                ob_end_clean();
-                if ($cache) {
-                    $cache->set(null, $response_content);
-                }
-            } else {
-                return $controller;
+            ob_start();
+            $response_content = $controller->$action();
+            if (!$response_content) {
+                $response_content = ob_get_contents();
+            }
+            ob_end_clean();
+            if ($cache) {
+                $cache->set(null, $response_content);
             }
         }
 
