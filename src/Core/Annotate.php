@@ -124,11 +124,11 @@ class Annotate
     /**
      * 配置参数值解析
      * <pre>
-     * 如: 1, type=file, 300 会被解析为
+     * 如: a, b=file, c 会被解析为
      * array(
-     *      1,
-     *      'type'  => file,
-     *      300
+     *      'a' => '',
+     *      'b' => file,
+     *      'c' => '',
      * )
      * </pre>
      *
@@ -138,13 +138,13 @@ class Annotate
     private function parseConfigValue($params)
     {
         $result = array();
-        $conf = array_filter(preg_split('/[\s,]+/', $params));
+        $conf = array_map('trim', explode(',', $params));
         foreach ($conf as $c) {
             if (false !== strpos($c, '=')) {
                 $c = explode('=', $c);
-                $result[$c[0]] = isset($c[1]) ? $c[1] : '';
+                $result[trim($c[0])] = isset($c[1]) ? trim($c[1]) : '';
             } else {
-                $result [] = $c;
+                $result[$c] = '';
             }
         }
         unset($conf);

@@ -168,29 +168,28 @@ class Application
     /**
      * 合并参数注释配置
      *
-     * @param null $params
+     * @param array $params
      * @param array $annotate_params
-     * @return array|null
+     * @return array
      */
-    public static function combineParamsAnnotateConfig($params = null, $annotate_params = array())
+    public static function combineParamsAnnotateConfig(array $params = array(), array $annotate_params = array())
     {
-        if (empty($annotate_params)) {
-            return $params;
+        if (empty($params)) {
+            return $annotate_params;
         }
 
-        if (!empty($params)) {
-            $params_set = array();
-            foreach ($params as $k => $p) {
-                if (isset($annotate_params[$k])) {
-                    $params_set [$annotate_params[$k]] = $p;
-                } else {
-                    $params_set [] = $p;
-                }
+        $params_set = array();
+        foreach ($annotate_params as $params_key => $default_value) {
+            $params_value = array_shift($params);
+            if ($params_value) {
+                $params_set[$params_key] = $params_value;
+            } else {
+                $params_set[$params_key] = $default_value;
             }
-            $params = $params_set;
         }
 
-        return $params;
+        unset($params);
+        return $params_set;
     }
 
     /**
@@ -211,7 +210,7 @@ class Application
      * @param array $oneDimensional
      * @return array
      */
-    public static function oneDimensionalToAssociativeArray($oneDimensional)
+    public static function oneDimensionalToAssociativeArray(array $oneDimensional)
     {
         $result = array();
         for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
