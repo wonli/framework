@@ -178,18 +178,21 @@ class Application
             return $annotate_params;
         }
 
-        $params_set = array();
-        foreach ($annotate_params as $params_key => $default_value) {
-            $params_value = array_shift($params);
-            if ($params_value != '') {
-                $params_set[$params_key] = $params_value;
-            } else {
-                $params_set[$params_key] = $default_value;
+        if (!empty($annotate_params)) {
+            $params_set = array();
+            foreach ($annotate_params as $params_key => $default_value) {
+                $params_value = array_shift($params);
+                if ($params_value != '') {
+                    $params_set[$params_key] = $params_value;
+                } else {
+                    $params_set[$params_key] = $default_value;
+                }
             }
+            unset($params);
+            return $params_set;
         }
 
-        unset($params);
-        return $params_set;
+        return $params;
     }
 
     /**
