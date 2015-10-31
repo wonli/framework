@@ -181,7 +181,7 @@ class Application
         $params_set = array();
         foreach ($annotate_params as $params_key => $default_value) {
             $params_value = array_shift($params);
-            if ($params_value !== null) {
+            if ($params_value != '') {
                 $params_set[$params_key] = $params_value;
             } else {
                 $params_set[$params_key] = $default_value;
