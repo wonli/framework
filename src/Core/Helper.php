@@ -90,13 +90,13 @@ class Helper
     /**
      * 创建文件夹
      *
-     * @param $path
-     * @return void
+     * @param string $path
+     * @param int $mode
      */
-    static function createFolders($path)
+    static function createFolders($path, $mode = 0755)
     {
         if (!is_dir($path)) {
-            mkdir($path, 0777, true);
+            mkdir($path, $mode, true);
         }
     }
 
@@ -104,19 +104,19 @@ class Helper
      * 根据文件名创建文件
      *
      * @param string $file_name
-     * @param int $chmod
+     * @param int $mode
      * @return bool
      */
-    static function mkfile($file_name, $chmod = 0777)
+    static function mkfile($file_name, $mode = 0775)
     {
         if (!file_exists($file_name)) {
             $file_path = dirname($file_name);
-            self::createFolders($file_path);
+            self::createFolders($file_path, $mode);
 
             $fp = fopen($file_name, 'w+');
             if ($fp) {
                 fclose($fp);
-                chmod($file_name, $chmod);
+                chmod($file_name, $mode);
                 return true;
             }
             return false;
