@@ -509,6 +509,10 @@ class Helper
             return $length_validate;
         }
 
+        if (!$length_validate) {
+            return false;
+        }
+
         $city_code = array(
             11 => true, 12 => true, 13 => true, 14 => true, 15 => true,
             21 => true, 22 => true, 23 => true,
