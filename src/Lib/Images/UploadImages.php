@@ -36,7 +36,7 @@ class UploadImages
      *
      * @var array
      */
-    protected $upload_file_base_info;
+    protected $upload_file_base_info = array();
 
     /**
      * 返回的消息内容
@@ -80,6 +80,13 @@ class UploadImages
     );
 
     /**
+     * 缩略图大小配置
+     *
+     * @var array
+     */
+    protected $thumb;
+
+    /**
      * 构造函数
      *
      * @param $upload_file_name
@@ -103,24 +110,13 @@ class UploadImages
     /**
      * 设置文件上传大小
      *
-     * @param $size
+     * @param int $size byte
      * @return $this
      */
-    protected function set_allow_size($size)
+    function setAllowSize($size)
     {
         $this->allow_size = $size;
-
         return $this;
-    }
-
-    /**
-     * 返回文件大小
-     *
-     * @return int
-     */
-    protected function get_allow_size()
-    {
-        return $this->allow_size;
     }
 
     /**
@@ -129,144 +125,10 @@ class UploadImages
      * @param string $path
      * @return $this
      */
-    public function set_save_path($path = '')
+    public function setSavePath($path = '')
     {
         $this->save_path = $path;
-
         return $this;
-    }
-
-    /**
-     * 获取文件的保存路径
-     *
-     * @return string
-     */
-    protected function get_save_path()
-    {
-        if (!empty($this->save_path) && !is_dir($this->save_path)) {
-            mkdir($this->save_path, 755, true);
-        }
-
-        return rtrim($this->save_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * 获取允许上传的文件类型
-     *
-     * @return array
-     */
-    protected function get_allow_type()
-    {
-        return $this->allow_type;
-    }
-
-    /**
-     * 设置允许上传的文件类型
-     *
-     * @param array $type
-     * @return $this
-     */
-    public function set_allow_type(array $type)
-    {
-        $this->allow_type = $type;
-
-        return $this;
-    }
-
-    /**
-     * 获取要上传文件的基础信息
-     *
-     * @throws Exception
-     * @return array
-     */
-    protected function get_base_info()
-    {
-        if (!$this->upload_file_base_info) {
-            if (isset($_FILES[$this->upload_file_name])) {
-                $base_info = $_FILES[$this->upload_file_name];
-                if ($base_info['error'] !== 0) {
-                    throw new Exception($base_info['error']);
-                }
-                else {
-                    $extend_info = $this->get_image_info($base_info ['tmp_name']);
-                    if (!empty($extend_info)) {
-                        $base_info = array_merge($base_info, $extend_info);
-                    }
-                }
-                $this->set_base_info($base_info);
-            }
-        }
-
-        return $this->upload_file_base_info;
-    }
-
-    /**
-     * 返回上传文件的基础信息
-     *
-     * @param $upload_file_base_info
-     */
-    protected function set_base_info($upload_file_base_info)
-    {
-        $this->upload_file_base_info = $upload_file_base_info;
-    }
-
-    /**
-     * 保存文件
-     *
-     * @return string
-     */
-    protected function get_save_file_name()
-    {
-        $base_file = $this->get_base_info();
-
-        return $this->save_name . $base_file['ext'];
-    }
-
-    /**
-     * 检查上传文件
-     *
-     * @return bool|int
-     */
-    protected function check()
-    {
-        $file_ret = $this->check_file_type();
-        if (true !== $file_ret) {
-            return $file_ret;
-        }
-
-        $size_ret = $this->check_file_size();
-        if (true !== $size_ret) {
-            return $size_ret;
-        }
-
-        return true;
-    }
-
-    /**
-     * 移动上传的文件到指定目录
-     *
-     * @return array
-     */
-    protected function move_upload_file()
-    {
-        try {
-            $base_info = $this->get_base_info();
-        } catch (Exception $e) {
-            return $this->result($e->getMessage());
-        }
-
-        $check_ret = $this->check();
-        if (true !== $check_ret) {
-            return $this->result($check_ret);
-        }
-        else {
-            $saved_file_path = $this->get_save_file_full_path();
-            if (move_uploaded_file($base_info['tmp_name'], $saved_file_path)) {
-                return $this->result(0, $saved_file_path);
-            }
-        }
-
-        return $this->result(-8);
     }
 
     /**
@@ -274,10 +136,10 @@ class UploadImages
      */
     public function save()
     {
-        $ret = $this->move_upload_file();
+        $ret = $this->moveUploadFile();
         if ($ret['status'] === 0) {
             return $this->result('ok', array(
-                'url' => $this->get_save_file_name(),
+                'url' => $this->getSaveFileName(),
                 'path' => $ret['message'],
             ));
         }
@@ -288,23 +150,23 @@ class UploadImages
     /**
      * 生成缩略图
      *
-     * @param array $thumb_config
+     * @param array $thumb_size_config
      * @param bool $save_ori_images
      * @return array
      */
-    public function thumb($thumb_config = array(), $save_ori_images = true)
+    public function thumb($thumb_size_config = array(), $save_ori_images = true)
     {
-        $ret = $this->move_upload_file();
+        $ret = $this->moveUploadFile();
         if ($ret['status'] === 0) {
-            $result_file_url['ori'] = $this->get_save_file_name();
+            $result_file_url['ori'] = $this->getSaveFileName();
             //生成缩略图
-            if (!empty($thumb_config)) {
+            if (!empty($thumb_size_config)) {
                 $ori_images_path = $ret['message'];
-                if (!is_array($thumb_config)) {
-                    $thumb_config = array($thumb_config);
+                if (!is_array($thumb_size_config)) {
+                    $thumb_size_config = array($thumb_size_config);
                 }
 
-                $result_file_url['thumb'] = $this->make_thumb($ori_images_path, $thumb_config);
+                $result_file_url['thumb'] = $this->makeThumb($ori_images_path, $thumb_size_config);
                 if (!$save_ori_images) {
                     unlink($ori_images_path);
                     unset($result_file_url['ori']);
@@ -320,23 +182,24 @@ class UploadImages
     /**
      * 剪切图片
      *
-     * @param $thumb_config
+     * @param $thumb_size [宽度x高度]
      * @param array $coordinate
      * @param bool $save_ori_images
      * @return array
      */
-    public function cut($thumb_config, $coordinate = array(), $save_ori_images = true)
+    public function cut($thumb_size = '100x100', $coordinate = array('x' => 0, 'y' => 0, 'w' => 0, 'h' => 0), $save_ori_images = true)
     {
-        $ret = $this->move_upload_file();
+        $ret = $this->moveUploadFile();
         if ($ret['status'] === 0) {
-            $result_file_url['ori'] = $this->get_save_file_name();
-            if (!empty($thumb_config)) {
+            $result_file_url['ori'] = $this->getSaveFileName();
+            if (!empty($thumb_size)) {
                 $ori_images_path = $ret['message'];
-                if (!is_array($thumb_config)) {
-                    $thumb_config = array($thumb_config);
+                if (!is_array($thumb_size)) {
+                    $thumb_size = array($thumb_size);
                 }
 
-                $result_file_url['thumb'] = $this->make_cut_thumb($ori_images_path, $thumb_config, $coordinate);
+                $result_file_url['thumb'] = $this->makeCutThumb($ori_images_path, $thumb_size, $coordinate);
+
                 if (!$save_ori_images) {
                     unlink($ori_images_path);
                     unset($result_file_url['ori']);
@@ -350,6 +213,164 @@ class UploadImages
     }
 
     /**
+     *  计算缩裁剪略图大小
+     * @param int $max_w 最大宽度
+     * @param int $max_h 最大高度
+     * @return $this
+     */
+    protected function thumbSize($max_w, $max_h)
+    {
+        $w = $this->upload_file_base_info['width'];
+        $h = $this->upload_file_base_info['height'];
+        //计算缩放比例
+        $w_ratio = $max_w / $w;
+        $h_ratio = $max_h / $h;
+        //计算裁剪图片宽、高度
+        if (($w <= $max_w) && ($h <= $max_h)) {
+            $this->thumb['w'] = $w;
+            $this->thumb['h'] = $h;
+        } else if (($w_ratio * $h) < $max_h) {
+            $this->thumb['h'] = ceil($w_ratio * $h);
+            $this->thumb['w'] = $max_w;
+        } else {
+            $this->thumb['w'] = ceil($h_ratio * $w);
+            $this->thumb['h'] = $max_h;
+        }
+
+        return $this;
+    }
+
+    /**
+     * 返回文件大小
+     *
+     * @return int
+     */
+    protected function getAllowSize()
+    {
+        return $this->allow_size;
+    }
+
+    /**
+     * 获取文件的保存路径
+     *
+     * @return string
+     */
+    protected function getSavePath()
+    {
+        if (!empty($this->save_path) && !is_dir($this->save_path)) {
+            mkdir($this->save_path, 0755, true);
+        }
+
+        return rtrim($this->save_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * 获取允许上传的文件类型
+     *
+     * @return array
+     */
+    protected function getAllowType()
+    {
+        return $this->allow_type;
+    }
+
+    /**
+     * 设置允许上传的文件类型
+     *
+     * @param array $type
+     * @return $this
+     */
+    public function setAllowType(array $type)
+    {
+        $this->allow_type = $type;
+        return $this;
+    }
+
+    /**
+     * 获取要上传文件的基础信息
+     *
+     * @throws Exception
+     * @return array
+     */
+    protected function getBaseInfo()
+    {
+        if (empty($this->upload_file_base_info)) {
+            if (isset($_FILES[$this->upload_file_name])) {
+                $base_info = $_FILES[$this->upload_file_name];
+                if ($base_info['error'] !== 0) {
+                    throw new Exception($base_info['error']);
+                } else {
+                    $extend_info = $this->getImageInfo($base_info ['tmp_name']);
+                    if (!empty($extend_info)) {
+                        $base_info = array_merge($base_info, $extend_info);
+                    }
+                }
+
+                $this->upload_file_base_info = $base_info;
+            }
+        }
+
+        return $this->upload_file_base_info;
+    }
+
+    /**
+     * 保存文件
+     *
+     * @return string
+     */
+    protected function getSaveFileName()
+    {
+        $base_file = $this->getBaseInfo();
+        return $this->save_name . $base_file['ext'];
+    }
+
+    /**
+     * 检查上传文件
+     *
+     * @return bool|int
+     */
+    protected function check()
+    {
+        $file_ret = $this->checkFileType();
+        if (true !== $file_ret) {
+            return $file_ret;
+        }
+
+        $size_ret = $this->checkFileSize();
+        if (true !== $size_ret) {
+            return $size_ret;
+        }
+
+        return true;
+    }
+
+    /**
+     * 移动上传的文件到指定目录
+     *
+     * @return array
+     */
+    protected function moveUploadFile()
+    {
+        try {
+            $base_info = $this->getBaseInfo();
+        } catch (Exception $e) {
+            return $this->result($e->getMessage());
+        }
+
+        $check_ret = $this->check();
+        if (true !== $check_ret) {
+            return $this->result($check_ret);
+        } else {
+            $saved_file_path = $this->getSaveFileFullPath();
+            if (move_uploaded_file($base_info['tmp_name'], $saved_file_path)) {
+                return $this->result(0, $saved_file_path);
+            }
+        }
+
+        return $this->result(-8);
+    }
+
+    /**
      * 剪切后生成缩略图
      *
      * @param string $images_path 原图地址
@@ -357,7 +378,7 @@ class UploadImages
      * @param array $coordinate 坐标(x,y,w,h)
      * @return array
      */
-    protected function make_cut_thumb($images_path, $thumb_size_config, $coordinate)
+    protected function makeCutThumb($images_path, $thumb_size_config, $coordinate)
     {
         $result = array();
         if (!$images_path || !$thumb_size_config) {
@@ -368,16 +389,16 @@ class UploadImages
         foreach ($thumb_size_config as $val) {
             if (false !== strpos($val, 'x')) {
                 list($width, $height) = explode('x', $val);
-            }
-            else {
+            } else {
                 $width = $height = $val;
             }
 
-            $thumb_file_name = sprintf("%s-%sx%s", $this->save_name, $width, $height);
-            $save_path = $this->get_save_path();
-            $result[] = $cut->set_cut_size($width, $height)->set_save_info($save_path, $thumb_file_name)->cut($coordinate);
+            $this->thumbSize($width, $height);
+            $thumb_file_name = sprintf("%s-%sx%s", $this->save_name, $this->thumb['w'], $this->thumb['h']);
+            $save_path = $this->getSavePath();
+            $result[] = $cut->setCutSize($this->thumb['w'], $this->thumb['h'])
+                ->setSaveInfo($save_path, $thumb_file_name)->cut($coordinate);
         }
-
         return $result;
     }
 
@@ -388,7 +409,7 @@ class UploadImages
      * @param $thumb_size_config
      * @return array
      */
-    protected function make_thumb($images_path, $thumb_size_config)
+    protected function makeThumb($images_path, $thumb_size_config)
     {
         $result = array();
         if (!$images_path || !$thumb_size_config) {
@@ -399,13 +420,12 @@ class UploadImages
         foreach ($thumb_size_config as $val) {
             if (false !== strpos($val, 'x')) {
                 list($width, $height) = explode('x', $val);
-            }
-            else {
+            } else {
                 $width = $height = $val;
             }
-
-            $thumb_file_name = sprintf("%s-%sx%s", $this->save_name, $width, $height);
-            $result[] = $Thumb->set_file($this->get_save_path(), $thumb_file_name)->set_size($width, $height)->thumb();
+            $this->thumbSize($width, $height);
+            $thumb_file_name = sprintf("%s-%sx%s", $this->save_name, $this->thumb['w'], $this->thumb['h']);
+            $result[] = $Thumb->setFile($this->getSavePath(), $thumb_file_name)->setSize($this->thumb['w'], $this->thumb['h'])->thumb();
         }
 
         return $result;
@@ -414,10 +434,10 @@ class UploadImages
     /**
      * 检查文件类型
      */
-    protected function check_file_type()
+    protected function checkFileType()
     {
-        $base_info = $this->get_base_info();
-        $allow_type = $this->get_allow_type();
+        $base_info = $this->getBaseInfo();
+        $allow_type = $this->getAllowType();
         if (!in_array($base_info['file_type'], $allow_type)) {
             return -3;
         }
@@ -430,10 +450,10 @@ class UploadImages
      *
      * @return bool|int
      */
-    protected function check_file_size()
+    protected function checkFileSize()
     {
-        $base_info = $this->get_base_info();
-        $allow_size = $this->get_allow_size();
+        $base_info = $this->getBaseInfo();
+        $allow_size = $this->getAllowSize();
 
         if ($base_info['size'] > $allow_size) {
             return -4;
@@ -447,10 +467,10 @@ class UploadImages
      *
      * @return string
      */
-    protected function get_save_file_full_path()
+    protected function getSaveFileFullPath()
     {
-        $save_path = $this->get_save_path();
-        $save_name = $this->get_save_file_name();
+        $save_path = $this->getSavePath();
+        $save_name = $this->getSaveFileName();
 
         return $save_path . $save_name;
     }
@@ -461,7 +481,7 @@ class UploadImages
      * @param $images
      * @return array|bool
      */
-    protected function get_image_info($images)
+    protected function getImageInfo($images)
     {
         $image_info = getimagesize($images);
         if (false !== $image_info) {
@@ -479,8 +499,7 @@ class UploadImages
             );
 
             return $info;
-        }
-        else {
+        } else {
             return false;
         }
     }

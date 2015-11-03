@@ -42,7 +42,7 @@ class DESMcrypt extends DEcode
     public function enCode($input)
     {
         $size = mcrypt_get_block_size(MCRYPT_DES, MCRYPT_MODE_ECB);
-        $input = $this->pkcs5_pad($input, $size);
+        $input = $this->pkcs5Pad($input, $size);
         $key = $this->key;
         $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
         $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
@@ -70,7 +70,7 @@ class DESMcrypt extends DEcode
         $decrypted = mdecrypt_generic($td, $encrypted); //解密
         mcrypt_generic_deinit($td); //结束
         mcrypt_module_close($td);
-        $y = $this->pkcs5_unpad($decrypted);
+        $y = $this->pkcs5Unpad($decrypted);
 
         return $y;
     }

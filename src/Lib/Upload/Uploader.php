@@ -21,28 +21,28 @@ class Uploader
      *
      * @var string
      */
-    protected $_file = null;
+    protected $file;
 
     /**
      * 允许的文件类型
      *
      * @var array
      */
-    protected $_allowed_file_type = null;
+    protected $allowed_file_type;
 
     /**
      * 允许的文件大小
      *
      * @var int
      */
-    protected $_allowed_file_size = null;
+    protected $allowed_file_size;
 
     /**
      * 文件储存路径
      *
      * @var string
      */
-    protected $_root_dir;
+    protected $save_dir;
 
     /**
      * 添加post上来的文件
@@ -55,17 +55,17 @@ class Uploader
         if (!is_uploaded_file($file['tmp_name'])) {
             throw new CoreException('无法识别的文件');
         }
-        $this->_file = $this->_get_uploaded_info($file);
+        $this->file = $this->getUploadedInfo($file);
     }
 
     /**
      * 设定允许上传的文件类型
      *
-     * @param int $type （小写）示例：gif|jpg|jpeg|png
+     * @param string $type （小写）示例：gif|jpg|jpeg|png
      */
-    function allowed_type($type)
+    function setAllowedType($type)
     {
-        $this->_allowed_file_type = explode('|', $type);
+        $this->allowed_file_type = explode('|', $type);
     }
 
     /**
@@ -73,9 +73,42 @@ class Uploader
      *
      * @param int $size
      */
-    function allowed_size($size)
+    function setAllowedSize($size)
     {
-        $this->_allowed_file_size = $size;
+        $this->allowed_file_size = $size;
+    }
+
+    /**
+     * 若没有指定root，则将会按照所指定的path来保存
+     *
+     * @param string $dir
+     */
+    function setSaveDir($dir)
+    {
+        $this->save_dir = $dir;
+    }
+
+    /**
+     * 保存文件
+     *
+     * @param string $dir 文件路径
+     * @param string $name 文件名
+     * @return bool
+     */
+    function save($dir, $name = null)
+    {
+        if (!$this->file) {
+            return false;
+        }
+
+        if (!$name) {
+            $name = $this->file['filename'];
+        } else {
+            $name .= '.' . $this->file['extension'];
+        }
+
+        $path = trim($dir, '/') . '/' . $name;
+        return $this->moveUploadedFile($this->file['tmp_name'], $path);
     }
 
     /**
@@ -85,17 +118,17 @@ class Uploader
      * @throws CoreException
      * @return bool
      */
-    function _get_uploaded_info($file)
+    private function getUploadedInfo($file)
     {
         $path_info = pathinfo($file['name']);
         $file['extension'] = $path_info['extension'];
         $file['filename'] = $path_info['basename'];
 
-        if (!$path_info || !$this->_is_allowed_type($file['extension'])) {
+        if (!$path_info || !$this->isAllowedType($file['extension'])) {
             throw new CoreException('不支持的类型');
         }
 
-        if (!$this->_is_allowed_size($file['size'])) {
+        if (!$this->isAllowedSize($file['size'])) {
             throw new CoreException("文件大小超出限制 {$file['size']}");
         }
 
@@ -108,13 +141,13 @@ class Uploader
      * @param int $type
      * @return bool
      */
-    private function _is_allowed_type($type)
+    private function isAllowedType($type)
     {
-        if (!$this->_allowed_file_type) {
+        if (!$this->allowed_file_type) {
             return true;
         }
 
-        return in_array(strtolower($type), $this->_allowed_file_type);
+        return in_array(strtolower($type), $this->allowed_file_type);
     }
 
     /**
@@ -123,58 +156,15 @@ class Uploader
      * @param int $size
      * @return bool
      */
-    private function _is_allowed_size($size)
+    private function isAllowedSize($size)
     {
-        if (!$this->_allowed_file_size) {
+        if (!$this->allowed_file_size) {
             return true;
         }
 
-        return is_numeric($this->_allowed_file_size) ?
-            ($size <= $this->_allowed_file_size) :
-            ($size >= $this->_allowed_file_size[0] && $size <= $this->_allowed_file_size[1]);
-    }
-
-    /**
-     * 获取上传文件的信息
-     *
-     * @return string
-     */
-    function file_info()
-    {
-        return $this->_file;
-    }
-
-    /**
-     * 若没有指定root，则将会按照所指定的path来保存
-     *
-     * @param string $dir
-     */
-    function root_dir($dir)
-    {
-        $this->_root_dir = $dir;
-    }
-
-    /**
-     * 保存文件
-     *
-     * @param string $dir 文件路径
-     * @param string $name 文件名
-     * @return bool
-     */
-    function save($dir, $name = null)
-    {
-        if (!$this->_file) {
-            return false;
-        }
-
-        if (!$name) {
-            $name = $this->_file['filename'];
-        } else {
-            $name .= '.' . $this->_file['extension'];
-        }
-
-        $path = trim($dir, '/') . '/' . $name;
-        return $this->move_uploaded_file($this->_file['tmp_name'], $path);
+        return is_numeric($this->allowed_file_size) ?
+            ($size <= $this->allowed_file_size) :
+            ($size >= $this->allowed_file_size[0] && $size <= $this->allowed_file_size[1]);
     }
 
     /**
@@ -185,19 +175,19 @@ class Uploader
      * @throws CoreException
      * @return bool
      */
-    function move_uploaded_file($src, $target)
+    private function moveUploadedFile($src, $target)
     {
-        $abs_path = $this->_root_dir ? trim($this->_root_dir . '/') . $target : $target;
+        $abs_path = $this->save_dir ? trim($this->save_dir . '/') . $target : $target;
         $dir_name = dirname($abs_path);
 
         if (!file_exists($dir_name)) {
-            if (!mkdir($dir_name, 0666, true)) {
+            if (!mkdir($dir_name, 0600, true)) {
                 throw new CoreException('保存文件的目录不存在');
             }
         }
 
         if (move_uploaded_file($src, $abs_path)) {
-            @chmod($abs_path, 0666);
+            @chmod($abs_path, 0600);
             return $target;
         } else {
             return false;

@@ -37,7 +37,7 @@ abstract class DEcode
      * @param $block_size
      * @return string
      */
-    function pkcs5_pad($text, $block_size = 16)
+    function pkcs5Pad($text, $block_size = 16)
     {
         $pad = $block_size - (strlen($text) % $block_size);
         return $text . str_repeat(chr($pad), $pad);
@@ -49,7 +49,7 @@ abstract class DEcode
      * @param $text
      * @return bool|string
      */
-    function pkcs5_unpad($text)
+    function pkcs5Unpad($text)
     {
         $pad = ord($text{strlen($text) - 1});
         if ($pad > strlen($text) || (strspn($text, chr($pad), strlen($text) - $pad) != $pad) ) {

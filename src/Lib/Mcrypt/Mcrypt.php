@@ -74,7 +74,7 @@ class Mcrypt extends DEcode
     {
         $key = $this->getKey();
         $iv = $this->getIV();
-        $s = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $this->pkcs5_pad($data), MCRYPT_MODE_CBC, $iv);
+        $s = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $this->pkcs5Pad($data), MCRYPT_MODE_CBC, $iv);
         if ($this->isContainIV) {
             $s = $iv . $s;
         }
@@ -103,14 +103,12 @@ class Mcrypt extends DEcode
         if ($this->isContainIV) {
             $iv = substr($data, 0, 16);
             $data = substr($data, 16);
-        }
-        else {
+        } else {
             $iv = $this->getIV();
         }
 
         $str = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $data, MCRYPT_MODE_CBC, $iv);
-
-        return $this->pkcs5_unpad($str);
+        return $this->pkcs5Unpad($str);
     }
 
     /**
@@ -120,7 +118,7 @@ class Mcrypt extends DEcode
      */
     function getKey()
     {
-        if (! $this->key) {
+        if (!$this->key) {
             return md5($this->default_key);
         }
 

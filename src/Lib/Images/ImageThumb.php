@@ -57,7 +57,7 @@ class ImageThumb
      * @param $thumb_image_name
      * @return $this
      */
-    function set_file($dir, $thumb_image_name)
+    function setFile($dir, $thumb_image_name)
     {
         $this->save_dir = $dir;
         $this->thumb_image_name = $thumb_image_name;
@@ -72,7 +72,7 @@ class ImageThumb
      * @param int $height
      * @return $this
      */
-    function set_size($width = 0, $height = 0)
+    function setSize($width = 0, $height = 0)
     {
         $this->width = $width;
         $this->height = $height;
@@ -86,7 +86,7 @@ class ImageThumb
      * @param $images
      * @return array|bool
      */
-    protected function get_image_info($images)
+    protected function getImageInfo($images)
     {
         $image_info = getimagesize($images);
         if (false !== $image_info) {
@@ -104,8 +104,7 @@ class ImageThumb
             );
 
             return $info;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -125,7 +124,7 @@ class ImageThumb
         }
 
         // 获取原图信息
-        $info = $this->get_image_info($this->src_images);
+        $info = $this->getImageInfo($this->src_images);
         if (!$info) {
             return false;
         }
@@ -141,14 +140,13 @@ class ImageThumb
         if ($scale >= 1) {
             $width = $src_width;
             $height = $src_height;
-        }
-        else {
+        } else {
             $width = round($src_width * $scale);
             $height = round($src_height * $scale);
         }
 
-        // 载入原图
-        $src_images = $this->create_image($this->src_images, $type);
+        //载入原图
+        $src_images = $this->createImage($this->src_images, $type);
 
         //创建缩略图
         if ($type != 'gif' && function_exists('imagecreatetruecolor')) {
@@ -176,7 +174,7 @@ class ImageThumb
 
         //返回缩略图的路径，字符串
         $save_path = $this->save_dir . $thumb_file_name;
-        $this->save_image($thumb_images, $save_path, $type, 100);
+        $this->saveImage($thumb_images, $save_path, $type, 100);
         imagedestroy($thumb_images);
         imagedestroy($src_images);
 
@@ -194,7 +192,7 @@ class ImageThumb
      * @param $image_type
      * @return resource
      */
-    protected function create_image($image, $image_type)
+    protected function createImage($image, $image_type)
     {
         switch ($image_type) {
             case 'jpg':
@@ -232,7 +230,7 @@ class ImageThumb
      * @param int $quality
      * @return bool
      */
-    protected function save_image($resource, $save_path, $image_type, $quality = 100)
+    protected function saveImage($resource, $save_path, $image_type, $quality = 100)
     {
         switch ($image_type) {
             case 'jpg':

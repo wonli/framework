@@ -6,6 +6,13 @@ use Exception;
 class ImageCut
 {
     /**
+     * 临时创建的图象
+     *
+     * @var resource
+     */
+    private $im;
+
+    /**
      * 图片类型
      *
      * @var string
@@ -55,20 +62,23 @@ class ImageCut
     protected $images_info;
 
     /**
-     * 临时创建的图象
-     *
-     * @var resource
+     * @var int
      */
-    private $im;
+    private $resize_width;
+
+    /**
+     * @var int
+     */
+    private $resize_height;
 
     function __construct($src_images)
     {
         $this->src_images = $src_images;
-        $this->images_info = $this->get_image_info($src_images);
+        $this->images_info = $this->getImageInfo($src_images);
         $this->type = $this->images_info['file_type'];
 
         //初始化图象
-        $this->create_im();
+        $this->createImageResource();
 
         //目标图象地址
         $this->width = $this->images_info['width'];
@@ -82,7 +92,7 @@ class ImageCut
      * @param $name
      * @return $this
      */
-    function set_save_info($path, $name)
+    function setSaveInfo($path, $name)
     {
         $this->save_path = $path;
         $this->save_name = $name;
@@ -97,7 +107,7 @@ class ImageCut
      * @param $height
      * @return $this
      */
-    function set_cut_size($width, $height)
+    function setCutSize($width, $height)
     {
         $this->resize_width = $width;
         $this->resize_height = $height;
@@ -121,7 +131,7 @@ class ImageCut
             throw new Exception('请设置剪切坐标x, y, w, h');
         }
 
-        $save_path = $this->get_save_path();
+        $save_path = $this->getSavePath();
 
         //改变后的图象的比例
         if (!empty($this->resize_height)) {
@@ -162,7 +172,7 @@ class ImageCut
             $coordinate['h']
         );
 
-        $this->save_image($thumb_images, $save_path, $this->images_info['file_type'], 100);
+        $this->saveImage($thumb_images, $save_path, $this->images_info['file_type'], 100);
         if (true === $return_path) {
             return $save_path;
         }
@@ -176,7 +186,7 @@ class ImageCut
      * @param $images
      * @return array|bool
      */
-    protected function get_image_info($images)
+    protected function getImageInfo($images)
     {
         $image_info = getimagesize($images);
         if (false !== $image_info) {
@@ -194,8 +204,7 @@ class ImageCut
             );
 
             return $info;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -203,7 +212,7 @@ class ImageCut
     /**
      * 创建临时图象
      */
-    private function create_im()
+    private function createImageResource()
     {
         switch ($this->type) {
             case 'jpg':
@@ -239,7 +248,7 @@ class ImageCut
      * @param int $quality
      * @return bool
      */
-    protected function save_image($resource, $save_path, $image_type, $quality = 100)
+    protected function saveImage($resource, $save_path, $image_type, $quality = 100)
     {
         switch ($image_type) {
             case 'jpg':
@@ -265,11 +274,32 @@ class ImageCut
     }
 
     /**
+     * 图象目标地址
+     *
+     * @throws Exception
+     * @return string
+     */
+    protected function getSavePath()
+    {
+        $name = $this->getSaveName();
+        if (!$name) {
+            throw new Exception('请设置缩略图名称');
+        }
+
+        $path = $this->getSaveDir();
+        if (!$path || !is_dir($path)) {
+            throw new Exception('请设置路径');
+        }
+
+        return $path . $name . $this->images_info['ext'];
+    }
+
+    /**
      * 获取文件名
      *
      * @return string
      */
-    private function get_save_name()
+    private function getSaveName()
     {
         return $this->save_name;
     }
@@ -279,29 +309,8 @@ class ImageCut
      *
      * @return string
      */
-    private function get_save_dir()
+    private function getSaveDir()
     {
         return $this->save_path;
-    }
-
-    /**
-     * 图象目标地址
-     *
-     * @throws Exception
-     * @return string
-     */
-    protected function get_save_path()
-    {
-        $name = $this->get_save_name();
-        if (!$name) {
-            throw new Exception('请设置缩略图名称');
-        }
-
-        $path = $this->get_save_dir();
-        if (!$path || !is_dir($path)) {
-            throw new Exception('请设置路径');
-        }
-
-        return $path . $name . $this->images_info['ext'];
     }
 }
