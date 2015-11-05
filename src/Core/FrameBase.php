@@ -283,7 +283,11 @@ class FrameBase
             case 1:
             case 5:
                 $result_array = explode($this->getConfig()->get('url', 'dot'), $decode_params_str);
-                $result = Application::combineParamsAnnotateConfig($result_array, self::$action_annotate['params']);
+                if (!empty(self::$action_annotate['params'])) {
+                    $result = Application::combineParamsAnnotateConfig($result_array, self::$action_annotate['params']);
+                } else {
+                    $result = $result_array;
+                }
                 break;
             case 2:
                 parse_str($decode_params_str, $result);
