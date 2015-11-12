@@ -34,6 +34,11 @@ class Rest
     protected $request;
 
     /**
+     * @var Delegate
+     */
+    protected $delegate;
+
+    /**
      * @var string
      */
     protected $request_type;
@@ -55,6 +60,7 @@ class Rest
      */
     private function __construct(Delegate $delegate)
     {
+        $this->delegate = $delegate;
         $this->request = $delegate->getRequest();
         $this->request_type = $this->getRequestType();
         $this->request_string = $delegate->getRouter()->getUriRequest('/');
@@ -128,6 +134,18 @@ class Rest
     }
 
     /**
+     * @see Delegate::on()
+     *
+     * @param string $name
+     * @param Closure $f
+     * @return $this
+     */
+    function on($name, $f)
+    {
+        $this->delegate->on($name, $f);
+    }
+
+    /**
      * 参数正则验证规则
      *
      * @param array $rules
@@ -157,7 +175,12 @@ class Rest
         }
 
         if (false === $match) {
-            throw new CoreException('Not Match Uri');
+            $closure_container = $this->delegate->getClosureContainer();
+            if ($closure_container->isRegister('mismatching')) {
+                $closure_container->run('mismatching');
+            } else {
+                throw new CoreException('Not Match Uri');
+            }
         }
     }
 

@@ -81,4 +81,19 @@ class ClosureContainer
 
         return false;
     }
+
+    /**
+     * 检查指定的匿名方法是否已经注册
+     *
+     * @param string $name
+     * @return bool
+     */
+    function isRegister($name)
+    {
+        if (isset($this->actions[$name])) {
+            return true;
+        }
+
+        return false;
+    }
 }
