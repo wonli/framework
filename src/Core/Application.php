@@ -344,6 +344,7 @@ class Application
     {
         $url_config = $this->config->get('url');
         //获取附加参数
+        $combine_get_params = true;
         $reset_annotate_params = false;
         $router_addition_params = array();
         if (!empty($url_config['router_addition_params']) && is_array($url_config['router_addition_params'])) {
@@ -375,6 +376,7 @@ class Application
                 break;
             default:
                 $params = $url_params;
+                $combine_get_params = false;
                 break;
         }
 
@@ -384,6 +386,10 @@ class Application
             $current_params = array_merge($router_addition_params, $params);
         } else {
             $current_params = $params;
+        }
+
+        if ($combine_get_params) {
+            $current_params = array_merge($_GET, $current_params);
         }
 
         $this->setParams($current_params);

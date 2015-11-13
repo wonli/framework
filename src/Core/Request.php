@@ -263,6 +263,7 @@ class Request
                 $request_uri = $this->_SERVER('REQUEST_URI');
                 $query_string = $this->_SERVER('QUERY_STRING');
 
+                array_shift($_GET);
                 if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
                     list(, $_query_get) = explode('?', $request_uri);
 
