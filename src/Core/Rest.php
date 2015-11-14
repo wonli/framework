@@ -51,7 +51,7 @@ class Rest
     /**
      * @var array
      */
-    protected $uri_closure_map = array();
+    protected $custom_router_config = array();
 
     /**
      * 初始化request
@@ -89,9 +89,7 @@ class Rest
      */
     function get($custom_router, Closure $process_closure)
     {
-        if ($this->request_type === 'get') {
-            $this->uri_closure_map['get'][$custom_router] = $process_closure;
-        }
+        $this->addCustomRouter('get', $custom_router, $process_closure);
     }
 
     /**
@@ -102,9 +100,7 @@ class Rest
      */
     function post($custom_router, Closure $process_closure)
     {
-        if ($this->request_type === 'post') {
-            $this->uri_closure_map['post'][$custom_router] = $process_closure;
-        }
+        $this->addCustomRouter('post', $custom_router, $process_closure);
     }
 
     /**
@@ -115,9 +111,7 @@ class Rest
      */
     function put($custom_router, Closure $process_closure)
     {
-        if ($this->request_type === 'put') {
-            $this->uri_closure_map['put'][$custom_router] = $process_closure;
-        }
+        $this->addCustomRouter('put', $custom_router, $process_closure);
     }
 
     /**
@@ -128,9 +122,7 @@ class Rest
      */
     function delete($custom_router, Closure $process_closure)
     {
-        if ($this->request_type === 'delete') {
-            $this->uri_closure_map['delete'][$custom_router] = $process_closure;
-        }
+        $this->addCustomRouter('delete', $custom_router, $process_closure);
     }
 
     /**
@@ -140,7 +132,7 @@ class Rest
      * @param Closure $f
      * @return $this
      */
-    function on($name, $f)
+    function on($name, Closure $f)
     {
         $this->delegate->on($name, $f);
     }
@@ -163,11 +155,13 @@ class Rest
     function run()
     {
         $match = false;
-        if (!empty($this->uri_closure_map[$this->request_type])) {
-            foreach ($this->uri_closure_map[$this->request_type] as $custom_router => $process_closure) {
+        if (!empty($this->custom_router_config[$this->request_type])) {
+            $custom_router_config = $this->custom_router_config[$this->request_type];
+            $match_routers = $custom_router_config['high_level'] + $custom_router_config['low_level'];
+            foreach ($match_routers as $custom_router => $router_config) {
                 $params = array();
-                if (true === $this->matchCustomRouter($custom_router, $params)) {
-                    $this->response($process_closure, $params);
+                if (true === $this->matchCustomRouter($custom_router, $router_config['params_key'], $params)) {
+                    $this->response($router_config['process_closure'], $params);
                     $match = true;
                     break;
                 }
@@ -179,7 +173,7 @@ class Rest
             if ($closure_container->isRegister('mismatching')) {
                 $closure_container->run('mismatching');
             } else {
-                throw new CoreException('Not Match Uri');
+                throw new CoreException('Not match uri');
             }
         }
     }
@@ -188,25 +182,19 @@ class Rest
      * 匹配uri和自定义路由
      *
      * @param string $custom_router
+     * @param array $params_keys
      * @param array $params
      * @return bool
      */
-    private function matchCustomRouter($custom_router, & $params = array())
+    private function matchCustomRouter($custom_router, array $params_keys = array(), array & $params = array())
     {
-        $params_key = $params_value = array();
         $request_uri_string = $this->request_string;
-
         if (!$custom_router) {
             return false;
         }
 
         if (strcasecmp($custom_router, $request_uri_string) == 0) {
             return true;
-        }
-
-        preg_match_all("/\{:(.*?)\}/", $custom_router, $p);
-        if (!empty($p)) {
-            $params_key = $p[1];
         }
 
         $custom_router_params_token = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $custom_router);
@@ -222,31 +210,26 @@ class Rest
                 return false;
             }
 
-            //去掉已经解析的部分
+            //分段解析
             $custom_router_params_token = substr($custom_router_params_token, $defined_params_pos + 8);
             $request_uri_string = substr($request_uri_string, $defined_params_pos);
 
             if ($custom_router_params_token) {
                 //下一个标识符的位置
                 $next_defined_dot_pos = strpos($request_uri_string, $custom_router_params_token[0]);
-
-                $params_value[] = substr($request_uri_string, 0, $next_defined_dot_pos);
+                $params_value = substr($request_uri_string, 0, $next_defined_dot_pos);
                 $request_uri_string = substr($request_uri_string, $next_defined_dot_pos);
             } else {
-                $params_value[] = $request_uri_string;
+                $params_value = $request_uri_string;
             }
-        }
 
-        foreach ($params_key as $position => $key_name) {
-            if (isset($params_value[$position])) {
-                $val = $params_value[$position];
-                if (isset($this->rules[$key_name]) && !preg_match($this->rules[$key_name], $val)) {
-                    return false;
-                }
+            $key_name = array_shift($params_keys);
+            if ($key_name && isset($this->rules[$key_name]) && !preg_match($this->rules[$key_name], $params_value)) {
+                return false;
+            }
 
-                $params[$key_name] = $val;
-            } else {
-                $params[$key_name] = null;
+            if ($key_name) {
+                $params[$key_name] = $params_value;
             }
         }
 
@@ -262,24 +245,56 @@ class Rest
      */
     private function response(Closure $process_closure, $params)
     {
+        $need_params = '';
+        $closure_params = array();
         $ref = new ReflectionFunction($process_closure);
-        if (count($ref->getParameters()) > count($params)) {
-            $need_params = '';
-            foreach ($ref->getParameters() as $r) {
+
+        $parameters = $ref->getParameters();
+        if (count($parameters) > count($params)) {
+            foreach ($parameters as $r) {
                 if (!isset($params[$r->name])) {
-                    $need_params .= sprintf('$%s ', $r->name);
+                    $need_params .= sprintf('%s ', $r->name);
                 }
             }
-            throw new CoreException(sprintf('所需参数: %s 未指定', $need_params));
+            throw new CoreException("所需参数: {$need_params}未指定");
         }
 
-        if (!is_array($params)) {
-            $params = array($params);
+        foreach($parameters as $p) {
+            if (!isset($params[$p->name])) {
+                throw new CoreException("不匹配的参数: {$p->name}");
+            }
+
+            $closure_params[$p->name] = $params[$p->name];
         }
 
-        $rep = call_user_func_array($process_closure, $params);
+        $rep = call_user_func_array($process_closure, $closure_params);
         if (null != $rep) {
-            Response::getInstance()->display($rep);
+            $this->delegate->getResponse()->display($rep);
+        }
+    }
+
+    /**
+     * 解析自定义路由并保存参数key
+     *
+     * @param string $request_type
+     * @param string $custom_router
+     * @param Closure $process_closure
+     */
+    private function addCustomRouter($request_type, $custom_router, Closure $process_closure)
+    {
+        if ($this->request_type === $request_type) {
+            $preg_match_result = preg_match_all("/\{:(.*?)\}/", $custom_router, $params_keys);
+            if ($preg_match_result) {
+                $this->custom_router_config[$request_type]['low_level'][$custom_router] = array(
+                    'process_closure' => $process_closure,
+                    'params_key' => $params_keys[1]
+                );
+            } else {
+                $this->custom_router_config[$request_type]['high_level'][$custom_router] = array(
+                    'process_closure' => $process_closure,
+                    'params_key' => array()
+                );
+            }
         }
     }
 
