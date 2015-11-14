@@ -156,8 +156,17 @@ class Rest
     {
         $match = false;
         if (!empty($this->custom_router_config[$this->request_type])) {
+            $match_routers = array();
             $custom_router_config = $this->custom_router_config[$this->request_type];
-            $match_routers = $custom_router_config['high_level'] + $custom_router_config['low_level'];
+
+            if (!empty($custom_router_config['high_level'])) {
+                $match_routers = $custom_router_config['high_level'];
+            }
+
+            if (!empty($custom_router_config['low_level'])) {
+                $match_routers += $custom_router_config['low_level'];
+            }
+
             foreach ($match_routers as $custom_router => $router_config) {
                 $params = array();
                 if (true === $this->matchCustomRouter($custom_router, $router_config['params_key'], $params)) {
