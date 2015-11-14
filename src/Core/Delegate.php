@@ -208,7 +208,12 @@ class Delegate
         if (isset(self::$map[$req])) {
             $this->get(self::$map[$req], $args);
         } else {
-            throw new CoreException('Not Specified Uri');
+            $closure_container = $this->getClosureContainer();
+            if ($closure_container->isRegister('mismatching')) {
+                $closure_container->run('mismatching');
+            } else {
+                throw new CoreException('Not Specified Uri');
+            }
         }
     }
 
