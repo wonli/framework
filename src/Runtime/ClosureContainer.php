@@ -90,10 +90,6 @@ class ClosureContainer
      */
     function isRegister($name)
     {
-        if (isset($this->actions[$name])) {
-            return true;
-        }
-
-        return false;
+        return isset($this->actions[$name]);
     }
 }
