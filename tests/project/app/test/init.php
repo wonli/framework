@@ -24,6 +24,16 @@ return array(
          */
         'display' => 'JSON'
     ),
+    /**
+     * 用于uri和cookie加密的key
+     */
+    'encrypt'   =>  array(
+        'uri'   =>  'crossphp',
+        'cookie'    =>  '',
+    ),
+    /**
+     * url配置
+     */
     'url' => array(
 
         /**

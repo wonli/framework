@@ -10,7 +10,6 @@ namespace Cross\Core;
 use Cross\Exception\CoreException;
 use Cross\Http\Request;
 use Cross\Http\Response;
-use Cross\Lib\Mcrypt\Mcrypt;
 use Cross\MVC\View;
 
 /**
@@ -56,20 +55,6 @@ class FrameBase
      * @var Delegate
      */
     protected $delegate;
-
-    /**
-     * url加密时用到的key
-     *
-     * @var string
-     */
-    protected $url_crypt_key;
-
-    /**
-     * 指定加密http auth加密的key
-     *
-     * @var string
-     */
-    protected $http_auth_key;
 
     /**
      * @var Delegate
@@ -137,6 +122,31 @@ class FrameBase
     }
 
     /**
+     * 返回一个数组或JSON字符串
+     *
+     * @param int $status
+     * @param string|array $message
+     * @param bool $json_encode
+     * @return array|string
+     * @throws CoreException
+     */
+    function result($status = 1, $message = 'ok', $json_encode = false)
+    {
+        $result = array(
+            'status' => $status,
+            'message' => $message,
+        );
+
+        if ($json_encode) {
+            if (($result = json_encode($result)) === false) {
+                throw new CoreException('json encode fail');
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * 调用注入的匿名函数
      *
      * @param string $name
@@ -184,8 +194,7 @@ class FrameBase
      */
     protected function setAuth($key, $value, $exp = 86400)
     {
-        $auth_type = $this->getConfig()->get('sys', 'auth');
-        return HttpAuth::factory($auth_type, $this->http_auth_key)->set($key, $value, $exp);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('cookie'))->set($key, $value, $exp);
     }
 
     /**
@@ -197,8 +206,7 @@ class FrameBase
      */
     protected function getAuth($key, $de = false)
     {
-        $auth_type = $this->getConfig()->get('sys', 'auth');
-        return HttpAuth::factory($auth_type, $this->http_auth_key)->get($key, $de);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('cookie'))->get($key, $de);
     }
 
     /**
@@ -210,35 +218,23 @@ class FrameBase
      */
     protected function urlEncrypt($tex, $type = 'encode')
     {
-        $key = $this->getUrlEncryptKey();
-        return Helper::encodeParams($tex, $key, $type);
+        return Helper::encodeParams($tex, $this->getUrlEncryptKey('uri'), $type);
     }
 
     /**
-     * 设置url加密时候用到的key
+     * 获取uri加密/解密时用到的key
      *
-     * @param $key
+     * @param string $type
+     * @return string
      */
-    protected function setUrlEncryptKey($key)
+    protected function getUrlEncryptKey($type = 'cookie')
     {
-        $this->url_crypt_key = $key;
-    }
-
-    /**
-     * 获取url加密/解密时用到的key
-     */
-    protected function getUrlEncryptKey()
-    {
-        if (!$this->url_crypt_key) {
-            $url_crypt_key = $this->getConfig()->get('url', 'crypto_key');
-            if (!$url_crypt_key) {
-                $url_crypt_key = 'crossphp';
-            }
-
-            $this->setUrlEncryptKey($url_crypt_key);
+        $encrypt_key = $this->getConfig()->get('encrypt', $type);
+        if (empty($encrypt_key)) {
+            $encrypt_key = 'cross';
         }
 
-        return $this->url_crypt_key;
+        return $encrypt_key;
     }
 
     /**
@@ -304,34 +300,6 @@ class FrameBase
     }
 
     /**
-     * mcrypt加密
-     *
-     * @param string $params
-     * @return mixed
-     */
-    protected function mcryptEncode($params)
-    {
-        $mcrypt = new Mcrypt;
-        $_params = $mcrypt->enCode($params);
-
-        return $_params[1];
-    }
-
-    /**
-     * mcrypt 解密
-     *
-     * @param string $params
-     * @return string
-     */
-    protected function mcryptDecode($params)
-    {
-        $mcrypt = new Mcrypt;
-        $_params = $mcrypt->deCode($params);
-
-        return $_params;
-    }
-
-    /**
      * 初始化视图控制器
      *
      * @return mixed
@@ -342,31 +310,6 @@ class FrameBase
         $view->config = $this->getConfig();
         $view->params = $this->params;
         return $view;
-    }
-
-    /**
-     * 返回一个数组或JSON字符串
-     *
-     * @param int $status
-     * @param string|array $message
-     * @param bool $json_encode
-     * @return array|string
-     * @throws CoreException
-     */
-    function result($status = 1, $message = 'ok', $json_encode = false)
-    {
-        $result = array(
-            'status' => $status,
-            'message' => $message,
-        );
-
-        if ($json_encode) {
-            if (($result = json_encode($result)) === false) {
-                throw new CoreException('json encode fail');
-            }
-        }
-
-        return $result;
     }
 
     /**
