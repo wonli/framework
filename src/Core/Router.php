@@ -9,6 +9,7 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
+use Cross\Http\Request;
 use Cross\I\RouterInterface;
 
 /**

@@ -8,7 +8,7 @@
 namespace Cross\MVC;
 
 use Cross\Core\FrameBase;
-use Cross\Core\Response;
+use Cross\Http\Response;
 
 /**
  * @Auth: wonli <wonli@live.com>

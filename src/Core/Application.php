@@ -9,6 +9,8 @@ namespace Cross\Core;
 
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
+use Cross\Http\Request;
+use Cross\Http\Response;
 use Cross\I\RouterInterface;
 use ReflectionClass;
 use ReflectionMethod;

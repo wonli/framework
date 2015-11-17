@@ -5,7 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
-namespace Cross\Core;
+namespace Cross\Http;
 
 use Cross\Exception\FrontException;
 

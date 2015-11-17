@@ -8,6 +8,8 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Http\Request;
+use Cross\Http\Response;
 use Cross\Runtime\ClosureContainer;
 use Cross\I\RouterInterface;
 use Closure;

@@ -8,6 +8,8 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Http\Request;
+use Cross\Http\Response;
 use Cross\Lib\Mcrypt\Mcrypt;
 use Cross\MVC\View;
 

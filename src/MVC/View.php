@@ -11,7 +11,7 @@ use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Helper;
 use Cross\Core\Loader;
-use Cross\Core\Response;
+use Cross\Http\Response;
 use Cross\Core\Router;
 use Cross\Exception\CoreException;
 use Cross\Lib\ArrayOperate\Array2XML;

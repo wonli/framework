@@ -7,7 +7,7 @@
  */
 namespace Cross\Exception;
 
-use Cross\Core\Response;
+use Cross\Http\Response;
 use Exception;
 use SplFileObject;
 
