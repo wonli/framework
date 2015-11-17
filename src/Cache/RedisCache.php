@@ -8,6 +8,7 @@
 namespace Cross\Cache;
 
 use Cross\Exception\CoreException;
+use Exception;
 use Redis;
 
 /**
@@ -18,9 +19,9 @@ use Redis;
 class RedisCache
 {
     /**
-     * @var redis
+     * @var Redis
      */
-    public $link;
+    protected $link;
 
     /**
      * 连接redis
@@ -33,21 +34,34 @@ class RedisCache
      * @param $option
      * @throws \cross\exception\CoreException
      */
-    function __construct($option)
+    function __construct(array $option)
     {
         if (!extension_loaded('redis')) {
             throw new CoreException('NOT_SUPPORT : redis');
         }
 
-        $obj = new Redis();
+        $redis = new Redis();
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
-            $obj->connect($option['unix_socket']);
+            $redis->connect($option['unix_socket']);
         } else {
-            $obj->connect($option ['host'], $option ['port']);
+            $redis->connect($option['host'], $option['port']);
         }
 
-        $obj->select($option['db']);
-        $this->link = $obj;
+        $authStatus = true;
+        if (!empty($option['pass'])) {
+            $authStatus = $redis->auth($option['pass']);
+        }
+
+        try {
+            if ($authStatus) {
+                $redis->select($option['db']);
+                $this->link = $redis;
+            } else {
+                throw new CoreException('Redis auth failed !');
+            }
+        } catch (Exception $e) {
+            throw new CoreException($e->getMessage());
+        }
     }
 
     /**
