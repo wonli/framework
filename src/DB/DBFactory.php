@@ -7,16 +7,16 @@
  */
 namespace Cross\DB;
 
-use Cross\Cache\RedisCache;
-use Cross\DB\Connecter\MySQLConnecter;
-use Cross\DB\Connecter\PgSQLConnecter;
-use Cross\DB\Connecter\SQLiteConnecter;
-use Cross\DB\Drivers\CouchDriver;
-use Cross\DB\Drivers\MongoDriver;
-use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\SQLAssembler\MySQLAssembler;
 use Cross\DB\SQLAssembler\PgSQLAssembler;
 use Cross\DB\SQLAssembler\SQLiteAssembler;
+use Cross\DB\Connecter\MySQLConnecter;
+use Cross\DB\Connecter\PgSQLConnecter;
+use Cross\DB\Connecter\SQLiteConnecter;
+use Cross\Cache\Driver\RedisDriver;
+use Cross\DB\Drivers\CouchDriver;
+use Cross\DB\Drivers\MongoDriver;
+use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\Exception\CoreException;
 use Closure;
 
@@ -33,7 +33,7 @@ class DBFactory
      * @param $link
      * @param $params
      * @param $config
-     * @return RedisCache|CouchDriver|MongoDriver|PDOSqlDriver|mixed
+     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      */
     static function make($link, $params, $config)
@@ -67,7 +67,7 @@ class DBFactory
                 return new MongoDriver($params);
 
             case 'redis':
-                return new RedisCache($params);
+                return new RedisDriver($params);
 
             case 'couch':
                 return new CouchDriver($params);

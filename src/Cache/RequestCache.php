@@ -7,70 +7,79 @@
  */
 namespace Cross\Cache;
 
+use Cross\Cache\Driver\FileCacheDriver;
+use Cross\Cache\Request\RedisCache;
+use Cross\Cache\Request\Memcache;
 use Cross\Exception\CoreException;
 use Cross\I\RequestCacheInterface;
 use ReflectionClass;
 
 /**
+ * RequestCache工厂类
+ *
  * @Auth: wonli <wonli@live.com>
  * Class RequestCache
  * @package Cross\Cache
  */
-class RequestCache extends CoreCache
+class RequestCache
 {
-    /**
-     * @var FileCache|MemcacheBase|RedisCache|RequestMemcache|RequestRedisCache|RequestCacheInterface|object
-     */
-    static $cache_object;
+    const FILE_TYPE = 1;
+    const MEMCACHE_TYPE = 2;
+    const REDIS_TYPE = 3;
 
     /**
-     * 获取处理Request Cache的类实例
+     * @var RedisCache|Memcache|FileCacheDriver|RequestCacheInterface
+     */
+    static $instance;
+
+    /**
+     * RequestCache
      *
+     * @param int|object|string $cache_type
      * @param array $cache_config
-     * @return FileCache|MemcacheBase|RedisCache|RequestMemcache|RequestRedisCache|RequestCacheInterface|object
-     * @throws \Cross\Exception\CoreException
+     * @return FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
+     * @throws CoreException
      */
-    static function factory($cache_config)
+    static function factory($cache_type, array $cache_config)
     {
-        $cache = $cache_config['type'];
-        if (!self::$cache_object) {
-            if (is_int($cache)) {
-                switch ($cache) {
-                    case 1:
-                        self::$cache_object = new FileCache($cache_config);
+        if (!self::$instance) {
+            if (is_int($cache_type)) {
+                switch ($cache_type) {
+                    case self::FILE_TYPE:
+                        self::$instance = new FileCacheDriver($cache_config);
                         break;
 
-                    case 2:
-                        self::$cache_object = new RequestMemcache($cache_config);
+                    case self::MEMCACHE_TYPE:
+                        self::$instance = new Memcache($cache_config);
                         break;
 
-                    case 3:
-                        self::$cache_object = new RequestRedisCache($cache_config);
+                    case self::REDIS_TYPE:
+                        self::$instance = new RedisCache($cache_config);
                         break;
 
                     default :
-                        throw new CoreException('不支持的缓存');
+                        throw new CoreException('不支持的缓存类型');
                 }
-            } elseif (is_object($cache)) {
-                if ($cache instanceof RequestCacheInterface) {
-                    self::$cache_object = $cache;
-                    self::$cache_object->setConfig($cache_config);
+            } elseif (is_object($cache_type)) {
+                if ($cache_type instanceof RequestCacheInterface) {
+                    self::$instance = $cache_type;
+                    self::$instance->setConfig($cache_config);
                 } else {
                     throw new CoreException('Request Cache必须实现RequestCacheInterface');
                 }
-            } elseif (is_string($cache)) {
-                $object = new ReflectionClass($cache);
+            } elseif (is_string($cache_type)) {
+                $object = new ReflectionClass($cache_type);
                 if ($object->implementsInterface('Cross\I\RequestCacheInterface')) {
-                    self::$cache_object = $object->newInstance();
-                    self::$cache_object->setConfig($cache_config);
+                    self::$instance = $object->newInstance();
+                    self::$instance->setConfig($cache_config);
                 } else {
                     throw new CoreException('Request Cache必须实现RequestCacheInterface');
                 }
             } else {
-                throw new CoreException('不支持的缓存类型');
+                throw new CoreException('不能识别的缓存类型');
             }
         }
 
-        return self::$cache_object;
+        return self::$instance;
     }
 }

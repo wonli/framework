@@ -5,16 +5,17 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
-namespace Cross\Cache;
+namespace Cross\Cache\Request;
 
+use Cross\Cache\Driver\MemcacheDriver;
 use Cross\I\RequestCacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestMemcache
- * @package Cross\Cache
+ * @package Cross\Cache\Request
  */
-class RequestMemcache extends MemcacheBase implements RequestCacheInterface
+class Memcache extends MemcacheDriver implements RequestCacheInterface
 {
     /**
      * @var array
@@ -31,7 +32,7 @@ class RequestMemcache extends MemcacheBase implements RequestCacheInterface
      *
      * @param $option
      */
-    function __construct($option)
+    function __construct(array $option)
     {
         parent::__construct($option);
         $this->setConfig($option);
@@ -100,7 +101,7 @@ class RequestMemcache extends MemcacheBase implements RequestCacheInterface
      * @param array $config
      * @return mixed
      */
-    function setConfig($config = array())
+    function setConfig(array $config = array())
     {
         $this->config = $config;
     }

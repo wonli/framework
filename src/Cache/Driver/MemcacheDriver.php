@@ -5,32 +5,37 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
-namespace Cross\Cache;
+namespace Cross\Cache\Driver;
 
 use Cross\Exception\CoreException;
+use Exception;
 use Memcache;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class MemcacheBase
- * @package Cross\Cache
+ * Class MemcacheDriver
+ * @package Cross\Cache\Driver
  */
-class MemcacheBase
+class MemcacheDriver
 {
     /**
      * @var Memcache
      */
     public $link;
 
-    function __construct($option)
+    function __construct(array $option)
     {
         if (!extension_loaded('memcache')) {
-            throw new CoreException('NOT_SUPPORT : memcache');
+            throw new CoreException('Not support memcache extension !');
         }
 
-        $mc = new Memcache();
-        $mc->addserver($option['host'], $option['port']);
-        $this->link = $mc;
+        try {
+            $mc = new Memcache();
+            $mc->addserver($option['host'], $option['port']);
+            $this->link = $mc;
+        } catch (Exception $e) {
+            throw new CoreException($e->getMessage());
+        }
     }
 
     /**

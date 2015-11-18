@@ -5,17 +5,17 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
-namespace Cross\Cache;
+namespace Cross\Cache\Driver;
 
 use Cross\Core\Helper;
 use Cross\I\CacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class FileCache
- * @package Cross\Cache
+ * Class FileCacheDriver
+ * @package Cross\Cache\Driver
  */
-class FileCache implements CacheInterface
+class FileCacheDriver implements CacheInterface
 {
     /**
      * 缓存配置
@@ -38,7 +38,7 @@ class FileCache implements CacheInterface
      */
     private $expire_time;
 
-    function __construct($cache_config)
+    function __construct(array $cache_config)
     {
         $this->setConfig($cache_config);
         $file_ext = isset($cache_config['file_ext']) ? $cache_config['file_ext'] : '.html';
@@ -112,7 +112,7 @@ class FileCache implements CacheInterface
      * @param array $config
      * @return mixed
      */
-    function setConfig($config = array())
+    function setConfig(array $config = array())
     {
         $this->config = $config;
     }

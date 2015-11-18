@@ -428,11 +428,11 @@ class Application
     }
 
     /**
-     * 初始化request cache
+     * 初始化RequestCache
      *
      * @param $request_cache_config
-     * @return bool|\cross\cache\FileCache|\cross\cache\MemcacheBase|\cross\cache\RedisCache|\cross\cache\RequestMemcache|\cross\cache\RequestRedisCache
-     * @throws \cross\exception\CoreException
+     * @return bool|\Cross\Cache\Driver\FileCacheDriver|\Cross\Cache\Request\Memcache|\Cross\Cache\Request\RedisCache|\Cross\I\RequestCacheInterface|object
+     * @throws CoreException
      */
     private function initRequestCache($request_cache_config)
     {
@@ -491,7 +491,7 @@ class Application
         }
 
         $cache_config['key'] = $cache_key;
-        return RequestCache::factory($cache_config);
+        return RequestCache::factory($cache_config['type'], $cache_config);
     }
 
     /**

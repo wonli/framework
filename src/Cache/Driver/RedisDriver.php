@@ -5,7 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
-namespace Cross\Cache;
+namespace Cross\Cache\Driver;
 
 use Cross\Exception\CoreException;
 use Exception;
@@ -13,10 +13,10 @@ use Redis;
 
 /**
  * @Auth: wonli <wonli@live.com>
- * Class RedisCache
- * @package Cross\Cache
+ * Class RedisDriver
+ * @package Cross\Cache\Driver
  */
-class RedisCache
+class RedisDriver
 {
     /**
      * @var Redis
@@ -37,7 +37,7 @@ class RedisCache
     function __construct(array $option)
     {
         if (!extension_loaded('redis')) {
-            throw new CoreException('NOT_SUPPORT : redis');
+            throw new CoreException('Not support redis extension !');
         }
 
         $redis = new Redis();
