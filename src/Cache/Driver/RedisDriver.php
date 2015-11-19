@@ -44,7 +44,7 @@ class RedisDriver
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
             $redis->connect($option['unix_socket']);
         } else {
-            $redis->connect($option['host'], $option['port']);
+            $redis->connect($option['host'], $option['port'], $option['timeout']);
         }
 
         $authStatus = true;
