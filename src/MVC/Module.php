@@ -7,17 +7,24 @@
  */
 namespace Cross\MVC;
 
+use Cross\Cache\Driver\RedisDriver;
+use Cross\DB\Drivers\CouchDriver;
+use Cross\DB\Drivers\MongoDriver;
+use Cross\DB\Drivers\PDOSqlDriver;
+use Cross\DB\DBFactory;
 use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
+use Cross\Core\Config;
 use Cross\Core\Loader;
-use Cross\DB\DBFactory;
+use Cross\Http\Response;
+use Cross\Http\Request;
 use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Module
  * @package Cross\MVC
- * @property \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver $link
+ * @property RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver $link
  */
 class Module extends FrameBase
 {
@@ -67,15 +74,15 @@ class Module extends FrameBase
     /**
      * 创建model实例,参数格式和构造函数一致
      *
-     * @param string $params 要实例化model的参数
-     * @param array $config 解析params获得的model详细配置
-     * @return \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver
+     * @param string $params
+     * @param array $config
+     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      */
     function getModel($params = '', &$config = array())
     {
         $config = $this->parseModelParams($params);
-        return DBFactory::make($config['model_type'], $config['model_config'], $this->getConfig());
+        return DBFactory::make($config['model_type'], $config['model_config'], array($this->getConfig()));
     }
 
     /**
@@ -188,12 +195,12 @@ class Module extends FrameBase
     /**
      * 获取默认model的实例
      *
-     * @return \Cross\Cache\RedisCache|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver|mixed
+     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      */
     private function getLink()
     {
-        return DBFactory::make($this->link_type, $this->link_config, $this->getConfig());
+        return DBFactory::make($this->link_type, $this->link_config, array($this->getConfig()));
     }
 
     /**
@@ -231,9 +238,8 @@ class Module extends FrameBase
     /**
      * 访问link属性时才实例化model
      *
-     * @param $property
-     * @return \Cross\Cache\RedisCache|\Cross\Core\Request|\Cross\Core\Response|\Cross\DB\Drivers\CouchDriver|\Cross\DB\Drivers\MongoDriver|\Cross\DB\Drivers\PDOSqlDriver|View|null
-     * @throws CoreException
+     * @param string $property
+     * @return RedisDriver|Config|CouchDriver|MongoDriver|PDOSqlDriver|Request|Response|View|mixed|null
      */
     function __get($property)
     {

@@ -103,7 +103,7 @@ class SQLModule extends Module
      * @param string $fields
      * @return array|mixed
      */
-    function find($condition, & $page = array(), $order = 1, $group_by = 1, $fields = '*')
+    function find($condition, array & $page = array(), $order = 1, $group_by = 1, $fields = '*')
     {
         return $this->link->find($this->t, $fields, $condition, $order, $page, $group_by);
     }

@@ -13,11 +13,11 @@ use Cross\DB\SQLAssembler\SQLiteAssembler;
 use Cross\DB\Connecter\MySQLConnecter;
 use Cross\DB\Connecter\PgSQLConnecter;
 use Cross\DB\Connecter\SQLiteConnecter;
-use Cross\Cache\Driver\RedisDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\Exception\CoreException;
+use Cross\Cache\Driver\RedisDriver;
 use Closure;
 
 /**
@@ -30,18 +30,18 @@ class DBFactory
     /**
      * 为module中的link生成对象的实例,在配置文件中支持匿名函数
      *
-     * @param $link
-     * @param $params
-     * @param $config
+     * @param string $link
+     * @param array|Closure $params
+     * @param array $config
      * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      */
-    static function make($link, $params, $config)
+    static function make($link, $params, array $config = array())
     {
         //如果params是一个匿名函数
         //匿名函数的第一个参数为当前app配置, 执行匿名函数并返回
         if ($params instanceof Closure) {
-            return call_user_func_array($params, array($config));
+            return call_user_func_array($params, $config);
         }
 
         //配置的数据表前缀
@@ -82,7 +82,7 @@ class DBFactory
      *
      * @param array $params
      * @param string $type
-     * @param bool|false $use_unix_socket
+     * @param bool|true $use_unix_socket
      * @return string
      * @throws CoreException
      */

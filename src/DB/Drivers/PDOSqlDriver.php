@@ -204,7 +204,7 @@ class PDOSqlDriver
      * @param int $group_by
      * @return mixed
      */
-    public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = 1, array & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         if (!isset($page['result_count'])) {
             $total = $this->get($table, 'COUNT(*) as total', $where);

@@ -30,7 +30,7 @@ class SQLiteConnecter extends BaseConnecter
      * @param array $options
      * @throws CoreException
      */
-    private function __construct($dsn, $options)
+    private function __construct($dsn, array $options)
     {
         try {
             $this->pdo = new PDO($dsn, null, null, parent::getOptions($options));
@@ -46,7 +46,7 @@ class SQLiteConnecter extends BaseConnecter
      * @param array $options
      * @return SQLiteConnecter|PDO
      */
-    static function getInstance($dsn, $user = null, $pwd = null, $options = array())
+    static function getInstance($dsn, $user = null, $pwd = null, array $options = array())
     {
         $key = md5($dsn);
         if (empty(self::$instance[$key])) {

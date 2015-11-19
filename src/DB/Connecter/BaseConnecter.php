@@ -46,10 +46,10 @@ abstract class BaseConnecter implements PDOConnecter
     /**
      * 合并用户输入的options
      *
-     * @param $options
+     * @param array $options
      * @return array
      */
-    protected function getOptions($options)
+    protected function getOptions(array $options)
     {
         if (!empty($options)) {
             foreach ($options as $option_key => $option_val) {

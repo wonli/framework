@@ -35,7 +35,7 @@ class MySQLConnecter extends BaseConnecter
      * @param array $options
      * @throws CoreException
      */
-    private function __construct($dsn, $user, $password, $options = array())
+    private function __construct($dsn, $user, $password, array $options = array())
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions($options));
@@ -53,7 +53,7 @@ class MySQLConnecter extends BaseConnecter
      * @param array $option
      * @return mixed
      */
-    static function getInstance($dsn, $user, $password, $option = array())
+    static function getInstance($dsn, $user, $password, array $option = array())
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);

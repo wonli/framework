@@ -7,11 +7,15 @@
  */
 namespace Cross\Core;
 
+use Cross\I\RequestCacheInterface;
+use Cross\I\RouterInterface;
+use Cross\Cache\Driver\FileCacheDriver;
+use Cross\Cache\Request\Memcache;
+use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
 use Cross\Http\Request;
 use Cross\Http\Response;
-use Cross\I\RouterInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
@@ -430,15 +434,13 @@ class Application
     /**
      * 初始化RequestCache
      *
-     * @param $request_cache_config
-     * @return bool|\Cross\Cache\Driver\FileCacheDriver|\Cross\Cache\Request\Memcache|\Cross\Cache\Request\RedisCache|\Cross\I\RequestCacheInterface|object
+     * @param array $request_cache_config
+     * @return bool|FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
      * @throws CoreException
      */
-    private function initRequestCache($request_cache_config)
+    private function initRequestCache(array $request_cache_config)
     {
-        if (!is_array($request_cache_config) ||
-            !isset($request_cache_config[1]) || !is_array($request_cache_config[1])
-        ) {
+        if (!isset($request_cache_config[1]) || !is_array($request_cache_config[1])) {
             throw new CoreException('Request Cache 配置格式不正确');
         }
 
@@ -497,9 +499,9 @@ class Application
     /**
      * 设置Response
      *
-     * @param $config
+     * @param array $config
      */
-    private function setResponseConfig($config)
+    private function setResponseConfig(array $config)
     {
         if (isset($config['content_type'])) {
             Response::getInstance()->setContentType($config['content_type']);

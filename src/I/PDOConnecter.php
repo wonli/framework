@@ -24,7 +24,7 @@ interface PDOConnecter
      * @param array $options
      * @return mixed
      */
-    static function getInstance($dsn, $user, $password, $options);
+    static function getInstance($dsn, $user, $password, array $options);
 
     /**
      * 获取表的主键名

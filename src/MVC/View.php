@@ -237,7 +237,7 @@ class View extends FrameBase
      * @param string $default_value
      * @return string
      */
-    function e($data, $key, $default_value = '')
+    function e(array $data, $key, $default_value = '')
     {
         if (isset($data[$key])) {
             return $data[$key];

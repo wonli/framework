@@ -90,10 +90,10 @@ class Annotate
     /**
      * 注释配置解析
      *
-     * @param $conf
+     * @param array $conf
      * @return array
      */
-    private function parseAnnotate($conf)
+    private function parseAnnotate(array $conf)
     {
         $result = array();
         foreach ($conf as $conf_name => $params) {

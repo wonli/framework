@@ -8,6 +8,7 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Http\Request;
 use ReflectionFunction;
 use Closure;
 

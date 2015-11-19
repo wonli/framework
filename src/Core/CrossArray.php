@@ -22,18 +22,18 @@ class CrossArray
     /**
      * CrossArray
      *
-     * @param $data
+     * @param array $data
      */
-    function __construct($data)
+    function __construct(array $data)
     {
         $this->data = $data;
     }
 
     /**
-     * @param $data
+     * @param array $data
      * @return CrossArray
      */
-    static function init($data)
+    static function init(array $data)
     {
         return new CrossArray($data);
     }

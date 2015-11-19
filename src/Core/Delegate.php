@@ -96,7 +96,7 @@ class Delegate
      * @param string $app_name 要加载的app名称
      * @param array $runtime_config 运行时指定的配置
      */
-    private function __construct($app_name, $runtime_config)
+    private function __construct($app_name, array $runtime_config)
     {
         Loader::init($app_name);
         $this->app_name = $app_name;
@@ -126,7 +126,7 @@ class Delegate
      * @param array $runtime_config 运行时加载的设置
      * @return self
      */
-    static function loadApp($app_name, $runtime_config = array())
+    static function loadApp($app_name, array $runtime_config = array())
     {
         if (!isset(self::$instance[$app_name])) {
             self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
@@ -360,7 +360,7 @@ class Delegate
      * @return $this
      * @throws \Cross\Exception\FrontException
      */
-    private static function initConfig($app_name, $runtime_config)
+    private static function initConfig($app_name, array $runtime_config)
     {
         $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->parse($runtime_config);
 

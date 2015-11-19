@@ -154,7 +154,7 @@ class FrameBase
      * @return mixed
      * @throws CoreException
      */
-    protected function getDi($name, $params = array())
+    protected function getDi($name, array $params = array())
     {
         $di = $this->delegate->getDi();
         if (isset($di[$name])) {
@@ -171,7 +171,7 @@ class FrameBase
      * @return mixed
      * @throws CoreException
      */
-    protected function getDii($name, $params = array())
+    protected function getDii($name, array $params = array())
     {
         static $dii = array();
         $di = $this->delegate->getDi();

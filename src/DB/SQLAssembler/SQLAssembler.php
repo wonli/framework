@@ -631,7 +631,7 @@ class SQLAssembler implements SqlInterface
      * @return string
      * @throws CoreException
      */
-    private function parseWhereFromHashMap($where, & $params)
+    private function parseWhereFromHashMap(array $where, & $params)
     {
         $all_condition = array();
         foreach ($where as $field => $field_config) {
