@@ -325,10 +325,10 @@ class FrameBase
                 return $this->config = $this->delegate->getConfig();
 
             case 'request' :
-                return $this->request = Request::getInstance();
+                return $this->request = $this->delegate->getRequest();
 
             case 'response' :
-                return $this->response = Response::getInstance();
+                return $this->response = $this->delegate->getResponse();
 
             case 'view' :
                 return $this->view = $this->initView();

@@ -8,7 +8,6 @@
 namespace Cross\MVC;
 
 use Cross\Core\FrameBase;
-use Cross\Http\Response;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -24,7 +23,7 @@ class Controller extends FrameBase
      */
     protected function is_post()
     {
-        return $this->request->isPostRequest();
+        return $this->delegate->getRequest()->isPostRequest();
     }
 
     /**
@@ -34,7 +33,7 @@ class Controller extends FrameBase
      */
     protected function is_get()
     {
-        return $this->request->isGetRequest();
+        return $this->delegate->getRequest()->isGetRequest();
     }
 
     /**
@@ -54,7 +53,7 @@ class Controller extends FrameBase
      */
     protected function is_ajax_request()
     {
-        return $this->request->isAjaxRequest();
+        return $this->delegate->getRequest()->isAjaxRequest();
     }
 
     /**
@@ -90,7 +89,7 @@ class Controller extends FrameBase
      */
     protected function redirect($url, $http_response_status = 200)
     {
-        return $this->response->redirect($url, $http_response_status);
+        return $this->delegate->getResponse()->redirect($url, $http_response_status);
     }
 
     /**
@@ -102,7 +101,7 @@ class Controller extends FrameBase
      */
     protected function display($data = null, $method = null, $http_response_status = 200)
     {
-        Response::getInstance()->setResponseStatus($http_response_status);
+        $this->delegate->getResponse()->setResponseStatus($http_response_status);
         $this->view->display($data, $method);
     }
 
@@ -116,7 +115,7 @@ class Controller extends FrameBase
     protected function sendDownloadHeader($file_name = null, $add_header = array(), $only_add_header = false)
     {
         if (null === $file_name) {
-            $file_name = parent::getController() . '_' . parent::getAction();
+            $file_name = $this->controller . '_' . $this->action;
         }
 
         $download_header = array(
@@ -138,7 +137,7 @@ class Controller extends FrameBase
             }
         }
 
-        Response::getInstance()->setHeader($download_header);
+        $this->delegate->getResponse()->setHeader($download_header);
     }
 
     /**

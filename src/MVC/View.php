@@ -11,7 +11,6 @@ use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Helper;
 use Cross\Core\Loader;
-use Cross\Http\Response;
 use Cross\Core\Router;
 use Cross\Exception\CoreException;
 use Cross\Lib\ArrayOperate\Array2XML;
@@ -711,7 +710,7 @@ class View extends FrameBase
      */
     function JSON($data)
     {
-        Response::getInstance()->setContentType('json');
+        $this->delegate->getResponse()->setContentType('json');
         echo json_encode($data);
     }
 
@@ -723,9 +722,8 @@ class View extends FrameBase
      */
     function XML($data, $root_name = 'root')
     {
-        Response::getInstance()->setContentType('xml');
-        $xml = Array2XML::createXML($root_name, $data);
-        echo $xml->saveXML();
+        $this->delegate->getResponse()->setContentType('xml');
+        echo Array2XML::createXML($root_name, $data)->saveXML();
     }
 
     /**

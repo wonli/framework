@@ -14,8 +14,6 @@ use Cross\Cache\Request\Memcache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
 use Cross\Exception\CoreException;
-use Cross\Http\Request;
-use Cross\Http\Response;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
@@ -109,7 +107,7 @@ class Application
 
         $this->delegate->getClosureContainer()->run('dispatcher');
         $cache = false;
-        if (isset($annotate_config['cache']) && Request::getInstance()->isGetRequest()) {
+        if (isset($annotate_config['cache']) && $this->delegate->getRequest()->isGetRequest()) {
             $cache = $this->initRequestCache($annotate_config['cache']);
         }
 
@@ -118,7 +116,7 @@ class Application
         }
 
         if (!empty($annotate_config['basicAuth'])) {
-            Response::getInstance()->basicAuth($annotate_config['basicAuth']);
+            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
         }
 
         if ($cache && $cache->getExpireTime()) {
@@ -139,7 +137,7 @@ class Application
                 throw new CoreException($e->getMessage());
             }
 
-            if (Response::getInstance()->isEndFlush()) {
+            if ($this->delegate->getResponse()->isEndFlush()) {
                 return true;
             }
 
@@ -161,7 +159,7 @@ class Application
         if ($return_response_content) {
             return $response_content;
         } else {
-            Response::getInstance()->display($response_content);
+            $this->delegate->getResponse()->display($response_content);
         }
 
         if (isset($annotate_config['after'])) {
@@ -454,7 +452,7 @@ class Application
         }
 
         $display = $this->config->get('sys', 'display');
-        Response::getInstance()->setContentType($display);
+        $this->delegate->getResponse()->setContentType($display);
         if (!isset($cache_config ['cache_path'])) {
             $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request';
         }
@@ -504,11 +502,11 @@ class Application
     private function setResponseConfig(array $config)
     {
         if (isset($config['content_type'])) {
-            Response::getInstance()->setContentType($config['content_type']);
+            $this->delegate->getResponse()->setContentType($config['content_type']);
         }
 
         if (isset($config['status'])) {
-            Response::getInstance()->setResponseStatus($config['status']);
+            $this->delegate->getResponse()->setResponseStatus($config['status']);
         }
     }
 
