@@ -194,7 +194,7 @@ class FrameBase
      */
     protected function setAuth($key, $value, $exp = 86400)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('cookie'))->set($key, $value, $exp);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->set($key, $value, $exp);
     }
 
     /**
@@ -206,7 +206,7 @@ class FrameBase
      */
     protected function getAuth($key, $de = false)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('cookie'))->get($key, $de);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->get($key, $de);
     }
 
     /**
@@ -227,7 +227,7 @@ class FrameBase
      * @param string $type
      * @return string
      */
-    protected function getUrlEncryptKey($type = 'cookie')
+    protected function getUrlEncryptKey($type = 'auth')
     {
         $encrypt_key = $this->getConfig()->get('encrypt', $type);
         if (empty($encrypt_key)) {
