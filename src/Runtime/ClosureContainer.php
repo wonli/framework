@@ -86,10 +86,16 @@ class ClosureContainer
      * 检查指定的匿名方法是否已经注册
      *
      * @param string $name
+     * @param Closure|null $closure
      * @return bool
      */
-    function isRegister($name)
+    function isRegister($name, & $closure = null)
     {
-        return isset($this->actions[$name]);
+        if (isset($this->actions[$name])) {
+            $closure = $this->actions[$name];
+            return true;
+        }
+
+        return false;
     }
 }
