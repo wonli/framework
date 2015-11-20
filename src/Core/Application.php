@@ -393,7 +393,7 @@ class Application
         }
 
         if ($combine_get_params) {
-            $current_params = array_merge($_GET, $current_params);
+            $current_params += $_GET;
         }
 
         $this->setParams($current_params);

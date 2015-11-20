@@ -296,7 +296,7 @@ class FrameBase
                 break;
         }
 
-        return $result;
+        return $result + $_GET;
     }
 
     /**
