@@ -125,12 +125,19 @@ class Application
             $action = $this->getAction();
             $controller_name = $this->getController();
 
+            $runtime_config = array(
+                'action_annotate' => $annotate_config,
+                'view_controller_namespace' => $this->getViewControllerNameSpace($controller_name),
+                'controller' => $controller_name,
+                'action' => $action,
+                'params' => $this->getParams(),
+            );
+
+            $this->delegate->getClosureContainer()->add('~controller~runtime~', function() use($runtime_config) {
+                return $runtime_config;
+            });
+
             try {
-                $cr->setStaticPropertyValue('action_annotate', $annotate_config);
-                $cr->setStaticPropertyValue('view_controller_namespace', $this->getViewControllerNameSpace($controller_name));
-                $cr->setStaticPropertyValue('controller_name', $controller_name);
-                $cr->setStaticPropertyValue('call_action', $action);
-                $cr->setStaticPropertyValue('url_params', $this->getParams());
                 $cr->setStaticPropertyValue('app_delegate', $this->delegate);
                 $controller = $cr->newInstance();
             } catch (Exception $e) {

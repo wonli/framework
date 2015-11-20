@@ -45,6 +45,11 @@ class FrameBase
     protected $controller;
 
     /**
+     * @var Delegate
+     */
+    protected $delegate;
+
+    /**
      * 视图控制器命名空间
      *
      * @var string
@@ -52,57 +57,27 @@ class FrameBase
     protected $view_controller;
 
     /**
-     * @var Delegate
+     * 当前方法的注释配置
+     *
+     * @var array
      */
-    protected $delegate;
+    protected $action_annotate;
 
     /**
      * @var Delegate
      */
     public static $app_delegate;
 
-    /**
-     * 参数列表
-     *
-     * @var array
-     */
-    public static $url_params;
-
-    /**
-     * 当前调用的方法名
-     *
-     * @var string
-     */
-    public static $call_action;
-
-    /**
-     * 控制器名称
-     *
-     * @var string
-     */
-    public static $controller_name;
-
-    /**
-     * 默认视图控制器命名空间
-     *
-     * @var string
-     */
-    public static $view_controller_namespace;
-
-    /**
-     * 当前方法的注释配置
-     *
-     * @var array
-     */
-    public static $action_annotate;
-
     public function __construct()
     {
         $this->delegate = self::$app_delegate;
-        $this->view_controller = self::$view_controller_namespace;
-        $this->controller = self::$controller_name;
-        $this->action = self::$call_action;
-        $this->params = self::$url_params;
+        $runtime_config = $this->delegate->getClosureContainer()->run('~controller~runtime~');
+
+        $this->view_controller = $runtime_config['view_controller_namespace'];
+        $this->action_annotate = $runtime_config['action_annotate'];
+        $this->controller = $runtime_config['controller'];
+        $this->action = $runtime_config['action'];
+        $this->params = $runtime_config['params'];
     }
 
     /**
@@ -245,24 +220,27 @@ class FrameBase
      */
     protected function sParams($params = null)
     {
+        $addition_params = $this->params;
         $url_type = $this->getConfig()->get('url', 'type');
         if (null === $params) {
             switch ($url_type) {
                 case 1:
                 case 5:
-                    $params = $this->params;
-                    if (is_array($this->params)) {
-                        $params = current(array_values($this->params));
+                    $params = $addition_params;
+                    if (is_array($addition_params)) {
+                        $params = current(array_values($addition_params));
+                        array_shift($addition_params);
                     }
                     break;
 
                 case 2:
-                    $params = current(array_keys($this->params));
+                    $params = current(array_keys($addition_params));
+                    array_shift($addition_params);
                     break;
 
                 case 3:
                 case 4:
-                    $params = current($this->params);
+                    $params = array_shift($addition_params);
                     break;
             }
         }
@@ -281,8 +259,8 @@ class FrameBase
             case 1:
             case 5:
                 $result_array = explode($this->getConfig()->get('url', 'dot'), $decode_params_str);
-                if (!empty(self::$action_annotate['params'])) {
-                    $result = Application::combineParamsAnnotateConfig($result_array, self::$action_annotate['params']);
+                if (!empty($this->action_annotate['params'])) {
+                    $result = Application::combineParamsAnnotateConfig($result_array, $this->action_annotate['params']);
                 } else {
                     $result = $result_array;
                 }
@@ -296,7 +274,7 @@ class FrameBase
                 break;
         }
 
-        return $result + $_GET;
+        return $result + $addition_params;
     }
 
     /**
