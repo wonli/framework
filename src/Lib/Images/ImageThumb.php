@@ -114,10 +114,11 @@ class ImageThumb
      *
      * @param bool $interlace
      * @param bool $return_full_path
+     * @param int $quality
      * @return bool|string
-     * @throws \cross\exception\CoreException
+     * @throws CoreException
      */
-    function thumb($interlace = true, $return_full_path = false)
+    function thumb($interlace = true, $return_full_path = false, $quality = 100)
     {
         if (!$this->save_dir || !$this->src_images) {
             throw new CoreException('请设置文件路径和文件名');
@@ -174,7 +175,7 @@ class ImageThumb
 
         //返回缩略图的路径，字符串
         $save_path = $this->save_dir . $thumb_file_name;
-        $this->saveImage($thumb_images, $save_path, $type, 100);
+        $this->saveImage($thumb_images, $save_path, $type, $quality);
         imagedestroy($thumb_images);
         imagedestroy($src_images);
 
