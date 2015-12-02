@@ -7,11 +7,10 @@
  */
 namespace Cross\Core;
 
-use Cross\Exception\CoreException;
-use Cross\Http\Request;
-use Cross\Http\Response;
 use Cross\Runtime\ClosureContainer;
 use Cross\I\RouterInterface;
+use Cross\Http\Response;
+use Cross\Http\Request;
 use Closure;
 
 //检查环境版本
@@ -42,13 +41,6 @@ class Delegate
      * @var string
      */
     public $app_name;
-
-    /**
-     * 允许的请求列表(mRun)时生效
-     *
-     * @var array
-     */
-    private static $map;
 
     /**
      * Delegate的实例
@@ -184,39 +176,6 @@ class Delegate
     public function rest()
     {
         return Rest::getInstance($this);
-    }
-
-    /**
-     * 配置uri
-     * @see mRun()
-     *
-     * @param string $uri 指定uri
-     * @param null $controller "控制器:方法"
-     */
-    public function map($uri, $controller = null)
-    {
-        self::$map[$uri] = $controller;
-    }
-
-    /**
-     * 执行self::$map中匹配的url
-     *
-     * @param null $args 参数
-     * @throws CoreException
-     */
-    public function mRun($args = null)
-    {
-        $req = $this->router->getUriRequest('/');
-        if (isset(self::$map[$req])) {
-            $this->get(self::$map[$req], $args);
-        } else {
-            $closure_container = $this->getClosureContainer();
-            if ($closure_container->isRegister('mismatching')) {
-                $closure_container->run('mismatching');
-            } else {
-                throw new CoreException('Not Specified Uri');
-            }
-        }
     }
 
     /**
