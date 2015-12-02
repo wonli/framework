@@ -156,29 +156,28 @@ class Rest
     function run()
     {
         $match = false;
+        $params = array();
+        $process_closure = null;
         if (!empty($this->custom_router_config[$this->request_type])) {
-            $match_routers = array();
-            $custom_router_config = $this->custom_router_config[$this->request_type];
-
-            if (!empty($custom_router_config['high_level'])) {
-                $match_routers = $custom_router_config['high_level'];
-            }
-
-            if (!empty($custom_router_config['low_level'])) {
-                $match_routers += $custom_router_config['low_level'];
-            }
-
-            foreach ($match_routers as $custom_router => $router_config) {
-                $params = array();
-                if (true === $this->matchCustomRouter($custom_router, $router_config['params_key'], $params)) {
-                    $this->response($router_config['process_closure'], $params);
-                    $match = true;
-                    break;
+            $custom_routers = $this->custom_router_config[$this->request_type];
+            if (!empty($custom_routers['high_level']) && isset($custom_routers['high_level'][$this->request_string])) {
+                $match = true;
+                $process_closure = $custom_routers['high_level'][$this->request_string];
+            } elseif (!empty($custom_routers['low_level'])) {
+                foreach ($custom_routers['low_level'] as $router => $router_config) {
+                    $params = array();
+                    if (true === $this->matchCustomRouter($router, $router_config['params_key'], $params)) {
+                        $match = true;
+                        $process_closure = $router_config['process_closure'];
+                        break;
+                    }
                 }
             }
         }
 
-        if (false === $match) {
+        if ($match && $process_closure !== null) {
+            $this->response($process_closure, $params);
+        } else {
             $closure_container = $this->delegate->getClosureContainer();
             if ($closure_container->isRegister('mismatching')) {
                 $closure_container->run('mismatching');
@@ -199,21 +198,13 @@ class Rest
     private function matchCustomRouter($custom_router, array $params_keys = array(), array & $params = array())
     {
         $request_uri_string = $this->request_string;
-        if (!$custom_router) {
-            return false;
-        }
-
-        if (strcasecmp($custom_router, $request_uri_string) == 0) {
-            return true;
-        }
-
         $custom_router_params_token = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $custom_router);
         while (strlen($custom_router_params_token) > 0) {
             $defined_params_pos = strpos($custom_router_params_token, '{PARAMS}');
             if ($defined_params_pos) {
-                $compare_ret = substr_compare($custom_router_params_token, $request_uri_string, 0, $defined_params_pos, true);
+                $compare_ret = substr_compare($custom_router_params_token, $request_uri_string, 0, $defined_params_pos);
             } else {
-                $compare_ret = strcasecmp($custom_router_params_token, $request_uri_string);
+                $compare_ret = strcmp($custom_router_params_token, $request_uri_string);
             }
 
             if ($compare_ret !== 0) {
@@ -293,6 +284,7 @@ class Rest
     private function addCustomRouter($request_type, $custom_router, Closure $process_closure)
     {
         if ($this->request_type === $request_type) {
+            $custom_router = trim($custom_router);
             $preg_match_result = preg_match_all("/\{:(.*?)\}/", $custom_router, $params_keys);
             if ($preg_match_result) {
                 $this->custom_router_config[$request_type]['low_level'][$custom_router] = array(
@@ -300,10 +292,7 @@ class Rest
                     'params_key' => $params_keys[1]
                 );
             } else {
-                $this->custom_router_config[$request_type]['high_level'][$custom_router] = array(
-                    'process_closure' => $process_closure,
-                    'params_key' => array()
-                );
+                $this->custom_router_config[$request_type]['high_level'][$custom_router] = $process_closure;
             }
         }
     }
