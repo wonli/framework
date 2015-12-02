@@ -89,7 +89,7 @@ class ClosureContainer
      * @param Closure|null $closure
      * @return bool
      */
-    function isRegister($name, & $closure = null)
+    function has($name, & $closure = null)
     {
         if (isset($this->actions[$name])) {
             $closure = $this->actions[$name];

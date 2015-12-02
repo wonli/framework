@@ -179,7 +179,7 @@ class Rest
             $this->response($process_closure, $params);
         } else {
             $closure_container = $this->delegate->getClosureContainer();
-            if ($closure_container->isRegister('mismatching')) {
+            if ($closure_container->has('mismatching')) {
                 $closure_container->run('mismatching');
             } else {
                 throw new CoreException('Not match uri');

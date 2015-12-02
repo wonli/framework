@@ -433,7 +433,7 @@ class Application
      */
     private function setParams($params)
     {
-        $params_checker = $this->delegate->getClosureContainer()->isRegister('setParams', $closure);
+        $params_checker = $this->delegate->getClosureContainer()->has('setParams', $closure);
         if ($params_checker && !empty($params)) {
             array_walk($params, $closure);
         }
