@@ -20,11 +20,6 @@ use Closure;
 class Rest
 {
     /**
-     * @var Rest
-     */
-    private static $instance;
-
-    /**
      * @var array
      */
     protected $rules;
@@ -53,6 +48,11 @@ class Rest
      * @var array
      */
     protected $custom_router_config = array();
+
+    /**
+     * @var Rest
+     */
+    private static $instance;
 
     /**
      * 初始化request
@@ -124,6 +124,17 @@ class Rest
     function delete($custom_router, Closure $process_closure)
     {
         $this->addCustomRouter('delete', $custom_router, $process_closure);
+    }
+
+    /**
+     * GET, POST, PUT, DELETE
+     *
+     * @param string $custom_router
+     * @param callable|Closure $process_closure
+     */
+    function any($custom_router, Closure $process_closure)
+    {
+        $this->addCustomRouter($this->request_type, $custom_router, $process_closure);
     }
 
     /**
