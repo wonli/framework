@@ -133,7 +133,7 @@ class Application
                 'params' => $this->getParams(),
             );
 
-            $this->delegate->getClosureContainer()->add('~controller~runtime~', function() use($runtime_config) {
+            $this->delegate->getClosureContainer()->add('~controller~runtime~', function () use ($runtime_config) {
                 return $runtime_config;
             });
 
@@ -353,28 +353,12 @@ class Application
      */
     private function initParams($url_params, array $annotate_params = array())
     {
-        $url_config = $this->config->get('url');
-        //获取附加参数
         $combine_get_params = true;
-        $reset_annotate_params = false;
-        $router_addition_params = array();
-        if (!empty($url_config['router_addition_params']) && is_array($url_config['router_addition_params'])) {
-            $router_addition_params = $url_config['router_addition_params'];
-            $reset_annotate_params = true;
-        }
+        $url_config = $this->config->get('url');
 
         switch ($url_config['type']) {
             case 1:
             case 5:
-                if ($reset_annotate_params) {
-                    $now_annotate_params = array();
-                    foreach ($annotate_params as $key) {
-                        if (!isset($router_addition_params[$key])) {
-                            $now_annotate_params[] = $key;
-                        }
-                    }
-                    $annotate_params = $now_annotate_params;
-                }
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
@@ -385,25 +369,18 @@ class Application
                     $params = $url_params;
                 }
                 break;
+
             default:
                 $params = $url_params;
                 $combine_get_params = false;
                 break;
         }
 
-        if (empty($params)) {
-            $current_params = $router_addition_params;
-        } elseif (is_array($params)) {
-            $current_params = array_merge($router_addition_params, $params);
-        } else {
-            $current_params = $params;
-        }
-
         if ($combine_get_params) {
-            $current_params += $_GET;
+            $params += $_GET;
         }
 
-        $this->setParams($current_params);
+        $this->setParams($params);
     }
 
     /**

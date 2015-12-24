@@ -288,7 +288,6 @@ class Router implements RouterInterface
      */
     private function initRouter($request)
     {
-        $router_config = $this->config->get('router');
         $_controller = array_shift($request);
         $this->config->set('url', array('ori_controller' => $_controller));
 
@@ -297,7 +296,8 @@ class Router implements RouterInterface
             $combine_alias_key = $_controller . ':' . $request[0];
         }
 
-        $controller_alias = array();
+        $controller_alias = '';
+        $router_config = $this->config->get('router');
         if (isset($router_config [$combine_alias_key])) {
             array_shift($request);
             $controller_alias = $router_config [$combine_alias_key];
@@ -306,40 +306,14 @@ class Router implements RouterInterface
         }
 
         if (!empty($controller_alias)) {
-            if (is_array($controller_alias)) {
-                list($alias_controller, $alias_addition_params) = $controller_alias;
-                if (strpos($alias_controller, ':') !== false) {
-                    list($_controller, $_action) = explode(':', $alias_controller);
-                } else {
-                    $_controller = $alias_controller;
-                }
-
-                $this->config->set('url', array(
-                    'router_addition_params' => $alias_addition_params,
-                ));
-
-                if (!isset($_action)) {
-                    if (isset($request[0])) {
-                        $_action = array_shift($request);
-                        $this->config->set('url', array('ori_action' => $_action));
-                    } else {
-                        $_action = self::$default_action;
-                    }
-                }
+            if (false !== strpos($controller_alias, ':')) {
+                list($_controller, $_action) = explode(':', $controller_alias);
             } else {
-                if (false !== strpos($controller_alias, ':')) {
-                    list($_controller, $_action) = explode(':', $controller_alias);
-                } else {
-                    $_controller = $controller_alias;
-
-                    if (isset($request [0])) {
-                        $_action = array_shift($request);
-                    } else {
-                        $_action = self::$default_action;
-                    }
-                }
+                $_controller = $controller_alias;
             }
-        } else {
+        }
+
+        if (!isset($_action)) {
             if (isset($request[0])) {
                 $_action = array_shift($request);
                 $this->config->set('url', array('ori_action' => $_action));
@@ -348,15 +322,9 @@ class Router implements RouterInterface
             }
         }
 
-        if (isset($alias_params) && !empty($alias_params)) {
-            $_params = array_merge($request, $alias_params);
-        } else {
-            $_params = $request;
-        }
-
         $this->setController($_controller);
         $this->setAction($_action);
-        $this->setParams($_params);
+        $this->setParams($request);
     }
 
     /**

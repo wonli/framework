@@ -327,10 +327,8 @@ class View extends FrameBase
     private function makeUri($app_name, $check_app_name, $controller = null, $params = null, $sec = null)
     {
         $uri = '';
-        $use_controller_cache = false;
-        //用来缓存当前运行中config中的url项配置
-        //在运行过程中,如果url的配置有变化,可能会产生意料之外的结果,这时候需要调用
-        //cleanLinkCache() 来刷新缓存
+        $enable_controller_cache = false;
+        //在运行过程中,如果url的配置有变化,需要调用cleanLinkCache()来刷新缓存
         if (!isset(self::$url_config_cache[$app_name])) {
             $this_app_name = $app_name;
             if ($check_app_name) {
@@ -346,30 +344,30 @@ class View extends FrameBase
 
             self::$url_config_cache[$app_name] = $url_config;
         } else {
-            $use_controller_cache = true;
+            $enable_controller_cache = true;
             $url_config = self::$url_config_cache[$app_name];
         }
 
         $url_params = '';
-        $url_controller_uri = $this->makeControllerUri($app_name, $use_controller_cache, $controller, $params, $url_config);
+        $url_controller = $this->makeControllerUri($app_name, $enable_controller_cache, $controller, $url_config);
         if (!empty($params)) {
             $url_params = $this->makeParams($params, $url_config, $sec);
         }
 
-        if (!empty($url_config['ext']) && !empty($url_controller_uri)) {
+        if (!empty($url_config['ext']) && !empty($url_controller)) {
             switch ($url_config['type']) {
                 case 2:
-                    $uri .= $url_controller_uri . $url_config['ext'] . $url_params;
+                    $uri .= $url_controller . $url_config['ext'] . $url_params;
                     break;
                 case 1:
                 case 3:
                 case 4:
                 case 5:
-                    $uri .= $url_controller_uri . $url_params . $url_config['ext'];
+                    $uri .= $url_controller . $url_params . $url_config['ext'];
                     break;
             }
         } else {
-            $uri .= $url_controller_uri . $url_params;
+            $uri .= $url_controller . $url_params;
         }
 
         return $uri;
@@ -381,34 +379,22 @@ class View extends FrameBase
      * @param string $app_name
      * @param bool $use_cache 是否使用缓存
      * @param string $controller
-     * @param null|array $params
      * @param array $url_config
      * @return string
      * @throws CoreException
      */
-    private function makeControllerUri($app_name, $use_cache, $controller, & $params, array $url_config)
+    private function makeControllerUri($app_name, $use_cache, $controller, array $url_config)
     {
-        static $uri_cache;
-        if (isset($uri_cache[$app_name][$controller]) && $use_cache) {
-            return $uri_cache[$app_name][$controller];
+        static $controller_uri_cache;
+        if (isset($controller_uri_cache[$app_name][$controller]) && $use_cache) {
+            return $controller_uri_cache[$app_name][$controller];
         }
 
         $_action = null;
         $real_controller = $controller;
         $app_alias_config = $this->parseControllerAlias($app_name);
-        if (isset($app_alias_config['config'][$controller])) {
-            $controller_alias = $app_alias_config['config'][$controller];
-            if (isset($app_alias_config['_ARRAY_'][$controller])) {
-                $url_controller_config = key($controller_alias);
-                $alias_params = $controller_alias[$url_controller_config];
-
-                if ($params === $alias_params) {
-                    $real_controller = $url_controller_config;
-                    $params = null;
-                }
-            } else {
-                $real_controller = $controller_alias;
-            }
+        if (isset($app_alias_config[$controller])) {
+            $real_controller = $app_alias_config[$controller];
         }
 
         if (false !== strpos($real_controller, ':')) {
@@ -448,14 +434,11 @@ class View extends FrameBase
             $controller_uri .= $_dot . $_controller;
         }
 
-        if (null != $_action) {
+        if (null !== $_action) {
             $controller_uri .= $url_config['dot'] . $_action;
         }
 
-        if (!isset($app_alias_config['_ARRAY_'][$controller])) {
-            $uri_cache[$app_name][$controller] = $controller_uri;
-        }
-
+        $controller_uri_cache[$app_name][$controller] = $controller_uri;
         return $controller_uri;
     }
 
@@ -516,21 +499,7 @@ class View extends FrameBase
             $router_alias_cache[$app_name] = array();
             if (!empty($router)) {
                 foreach ($router as $controller_alias => $alias_config) {
-                    if (is_array($alias_config)) {
-                        $alias_params = array();
-                        if (isset($alias_config[1])) {
-                            list($real_controller, $alias_params) = $alias_config;
-                        } else {
-                            $real_controller = $alias_config[0];
-                        }
-
-                        $router_alias_cache[$app_name]['config'][$real_controller] = array();
-                        $router_alias_cache[$app_name]['config'][$real_controller][$controller_alias] = $alias_params;
-
-                        $router_alias_cache[$app_name]['_ARRAY_'][$real_controller] = true;
-                    } else {
-                        $router_alias_cache[$app_name]['config'][$alias_config] = $controller_alias;
-                    }
+                    $router_alias_cache[$app_name][$alias_config] = $controller_alias;
                 }
             }
         }
