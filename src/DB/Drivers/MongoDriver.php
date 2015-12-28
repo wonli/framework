@@ -9,6 +9,7 @@ namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
 use MongoClient;
+use Exception;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -28,17 +29,17 @@ class MongoDriver
      * @param $link_params
      * @throws CoreException
      */
-    function __construct($link_params)
+    function __construct(array $link_params)
     {
-        if (!extension_loaded('mongo')) {
-            throw new CoreException('NOT_SUPPORT : mongo');
+        if (!class_exists('MongoClient')) {
+            throw new CoreException('Class MongoClient not found!');
         }
 
-        if (class_exists('MongoClient')) {
-            $m = new MongoClient($link_params['dsn'], $link_params['options']);
-            $this->db = $m->$link_params['db'];
-        } else {
-            throw new CoreException('please use PCEL MongoDB extends');
+        try {
+            $mongoClient = new MongoClient($link_params['dsn'], $link_params['options']);
+            $this->db = $mongoClient->$link_params['db'];
+        } catch (Exception $e) {
+            throw new CoreException($e->getMessage());
         }
     }
 

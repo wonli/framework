@@ -8,7 +8,7 @@
 namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
-use Cross\Lib\Reference\Couchbase;
+use CouchbaseCluster;
 use Exception;
 
 /**
@@ -19,17 +19,21 @@ use Exception;
 class CouchDriver
 {
     /**
-     * @param $link_params
+     * @param array $link_params
      * @throws CoreException
      */
-    function __construct($link_params)
+    function __construct(array $link_params)
     {
-        $host = !is_array($link_params['host']) ? array($link_params['host']) : $link_params['host'];
+        if (!class_exists('CouchbaseCluster')) {
+            throw new CoreException('Class CouchbaseCluster not found!');
+        }
+
         $bucket = isset($link_params['bucket']) ? $link_params['bucket'] : 'default';
-        $persistent = isset($link_params['persistent']) ? $link_params['persistent'] : true;
+        $bucket_password = isset($link_params['bucket_password']) ? $link_params['bucket_password'] : '';
 
         try {
-            $this->link = new Couchbase($host, $link_params['user'], $link_params['pwd'], $bucket, $persistent);
+            $myCluster = new CouchbaseCluster($link_params['dsn'], $link_params['username'], $link_params['password']);
+            $this->link = $myCluster->openBucket($bucket, $bucket_password);
         } catch (Exception $e) {
             throw new CoreException ($e->getMessage());
         }
