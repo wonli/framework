@@ -9,7 +9,6 @@ namespace Cross\Module;
 
 use Cross\Exception\CoreException;
 use Cross\MVC\Module;
-use ReflectionClass;
 
 /**
  * 提供简单的CRUD功能
@@ -33,22 +32,32 @@ class SQLModule extends Module
     protected static $instance;
 
     /**
+     * 是否自动添加表前缀
+     *
+     * @var bool
+     */
+    protected $auto_prefix = true;
+
+    function __construct($params = '')
+    {
+        parent::__construct($params);
+        if ($this->auto_prefix) {
+            $this->t = $this->getPrefix($this->t);
+        }
+    }
+
+    /**
      * 实例化当前类的子类
      *
-     * @param array $args
+     * @param string $args
      * @return static::get_called_class()
      * @throws CoreException
      */
-    static function init($args = array())
+    static public function init($args = '')
     {
         $called_class_name = get_called_class();
         if (empty(self::$instance[$called_class_name])) {
-            $obj = new ReflectionClass($called_class_name);
-            if ($obj->hasProperty('t')) {
-                self::$instance[$called_class_name] = $obj->newInstance($args);
-            } else {
-                throw new CoreException('请定义一个成员属性t指定默认表名');
-            }
+            self::$instance[$called_class_name] = new $called_class_name($args);
         }
 
         return self::$instance[$called_class_name];
@@ -57,29 +66,34 @@ class SQLModule extends Module
     /**
      * 设置表名
      *
-     * @param $table_name
-     * @return static::get_called_class()
+     * @param string $table_name
+     * @param bool $add_prefix
+     * @return static ::get_called_class()
      */
-    function setTable($table_name)
+    public function setTable($table_name, $add_prefix = true)
     {
         $this->t = $table_name;
+        if ($add_prefix) {
+            $this->t = $this->getPrefix($table_name);
+        }
+
         return $this;
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::get()
+     * @see PDOSqlDriver::get()
      *
      * @param $condition
      * @param string $fields
      * @return mixed
      */
-    function get($condition, $fields = '*')
+    public function get($condition, $fields = '*')
     {
         return $this->link->get($this->t, $fields, $condition);
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::getAll()
+     * @see PDOSqlDriver::getAll()
      *
      * @param null $where
      * @param int $order
@@ -88,13 +102,13 @@ class SQLModule extends Module
      * @param string $fields
      * @return array
      */
-    function getAll($where = null, $order = 1, $group_by = 1, $limit = 0, $fields = '*')
+    public function getAll($where = null, $order = 1, $group_by = 1, $limit = 0, $fields = '*')
     {
         return $this->link->getAll($this->t, $fields, $where, $order, $group_by, $limit);
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::find()
+     * @see PDOSqlDriver::find()
      *
      * @param $condition
      * @param array $page
@@ -103,13 +117,13 @@ class SQLModule extends Module
      * @param string $fields
      * @return array|mixed
      */
-    function find($condition, array & $page = array(), $order = 1, $group_by = 1, $fields = '*')
+    public function find($condition, array & $page = array(), $order = 1, $group_by = 1, $fields = '*')
     {
         return $this->link->find($this->t, $fields, $condition, $order, $page, $group_by);
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::add()
+     * @see PDOSqlDriver::add()
      *
      * @param $data
      * @param bool $multi
@@ -123,7 +137,7 @@ class SQLModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::update()
+     * @see PDOSqlDriver::update()
      *
      * @param $data
      * @param $where
@@ -135,14 +149,14 @@ class SQLModule extends Module
     }
 
     /**
-     * @see Cross\DB\Drivers\PDOSqlDriver::del()
+     * @see PDOSqlDriver::del()
      *
      * @param $where
      * @param bool $multi
      * @param bool $openTA
      * @return bool|mixed
      */
-    function del($where, $multi = false, $openTA = false)
+    public function del($where, $multi = false, $openTA = false)
     {
         return $this->link->del($this->t, $where, $multi, $openTA);
     }

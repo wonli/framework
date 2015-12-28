@@ -62,7 +62,6 @@ class SQLAssembler implements SqlInterface
     function get($table, $fields, $where)
     {
         $params = array();
-        $table = $this->table_prefix . $table;
         $one_sql = "SELECT %s FROM {$table} WHERE %s LIMIT 1";
 
         $field_str = $this->parseFields($fields);
@@ -88,7 +87,6 @@ class SQLAssembler implements SqlInterface
     public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
         $params = array();
-        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
@@ -138,7 +136,6 @@ class SQLAssembler implements SqlInterface
     {
         $params = array();
         $field = $value = '';
-        $table = $this->table_prefix . $table;
         $insert_sql = "INSERT INTO {$table} (%s) VALUES (%s)";
 
         if (true === $multi) {
@@ -183,7 +180,6 @@ class SQLAssembler implements SqlInterface
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
-        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
@@ -213,7 +209,6 @@ class SQLAssembler implements SqlInterface
      */
     public function update($table, $data, $where)
     {
-        $table = $this->table_prefix . $table;
         $up_sql = "UPDATE {$table} SET %s WHERE %s";
 
         $field = '';
@@ -272,14 +267,14 @@ class SQLAssembler implements SqlInterface
             }
 
             $where_str = implode(' AND ', $where_condition);
-            $sql = sprintf($del_sql, $this->table_prefix . $table, $where_str);
+            $sql = sprintf($del_sql, $table, $where_str);
             foreach ($where ['values'] as $p) {
                 $params[] = $p;
             }
 
         } else {
             $where_str = $this->parseWhere($where, $params);
-            $sql = sprintf($del_sql, $this->table_prefix . $table, $where_str);
+            $sql = sprintf($del_sql, $table, $where_str);
         }
 
         $this->setSQL($sql);
@@ -301,7 +296,7 @@ class SQLAssembler implements SqlInterface
      */
     public function from($table)
     {
-        return sprintf("FROM %s ", $this->table_prefix . $table);
+        return sprintf("FROM %s ", $table);
     }
 
     /**
