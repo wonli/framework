@@ -29,7 +29,7 @@
  *       echo $xml->saveXML();
  */
 
-namespace Cross\Lib\ArrayOperate;
+namespace Cross\Lib;
 
 use DOMDocument;
 use DOMNode;

@@ -4,7 +4,7 @@
  * StringToPHPStream.php
  */
 
-namespace Cross\Lib\Other;
+namespace Cross\Lib;
 
 /**
  * 字符串php代码通过wrapper转换为可以执行的php代码

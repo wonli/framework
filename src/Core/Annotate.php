@@ -38,7 +38,7 @@ class Annotate
      */
     private function __construct()
     {
-        stream_register_wrapper('annotate', 'Cross\Lib\Other\StringToPHPStream');
+        stream_register_wrapper('annotate', 'Cross\Lib\StringToPHPStream');
     }
 
     /**

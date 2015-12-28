@@ -7,13 +7,13 @@
  */
 namespace Cross\MVC;
 
+use Cross\Exception\CoreException;
 use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
+use Cross\Lib\Array2XML;
 use Cross\Core\Helper;
 use Cross\Core\Loader;
 use Cross\Core\Router;
-use Cross\Exception\CoreException;
-use Cross\Lib\ArrayOperate\Array2XML;
 
 /**
  * @Auth: wonli <wonli@live.com>
