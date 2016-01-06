@@ -443,45 +443,45 @@ class View extends FrameBase
     }
 
     /**
-     * 生成link参数
+     * 生成uri参数字符串
      *
-     * @param array $params
+     * @param array $params 当url_type的值不为2时, 值必须是标量(bool型需要在外部转换为int型)
      * @param array $url_config
-     * @param bool $sec
+     * @param bool $encrypt_params
      * @return string
      */
-    private function makeParams(array $params, array $url_config, $sec = false)
+    private function makeParams(array $params, array $url_config, $encrypt_params = false)
     {
-        $_params = '';
-        $_dot = $url_config['dot'];
+        $url_params = '';
+        $url_dot = $url_config['dot'];
 
         if ($params) {
             switch ($url_config['type']) {
                 case 1:
                 case 5:
-                    $_params = implode($_dot, $params);
+                    $url_params = implode($url_dot, $params);
                     break;
 
                 case 2:
-                    $_dot = '?';
-                    $_params = http_build_query($params);
+                    $url_dot = '?';
+                    $url_params = http_build_query($params);
                     break;
 
                 case 3:
                 case 4:
                     foreach ($params as $p_key => $p_val) {
-                        $_params .= $p_key . $_dot . $p_val . $_dot;
+                        $url_params .= $p_key . $url_dot . $p_val . $url_dot;
                     }
-                    $_params = rtrim($_params, $_dot);
+                    $url_params = rtrim($url_params, $url_dot);
                     break;
             }
 
-            if (true === $sec) {
-                $_params = $this->urlEncrypt($_params);
+            if (true === $encrypt_params) {
+                $url_params = $this->urlEncrypt($url_params);
             }
         }
 
-        return $_dot . $_params;
+        return $url_dot . $url_params;
     }
 
     /**

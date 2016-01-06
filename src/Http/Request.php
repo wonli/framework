@@ -16,35 +16,11 @@ use Cross\Exception\FrontException;
  */
 class Request
 {
-    /**
-     * @var
-     */
-    private $_scriptUrl;
-
-    /**
-     * @var
-     */
-    private $_baseUrl;
-
-    /**
-     * @var
-     */
-    private $_hostInfo;
-
-    /**
-     * @var
-     */
-    private $_indexName;
-
-    /**
-     * @var
-     */
-    static $instance;
-
-    private function __construct()
-    {
-
-    }
+    private $baseUrl;
+    private $hostInfo;
+    private $scriptUrl;
+    private $indexName;
+    private static $instance;
 
     /**
      * 实例化类
@@ -54,7 +30,7 @@ class Request
     public static function getInstance()
     {
         if (!self::$instance) {
-            self::$instance = new Request();
+            self::$instance = new self();
         }
 
         return self::$instance;
@@ -73,21 +49,21 @@ class Request
         }
         $scriptName = basename($scriptName);
         if (($_scriptName = $this->_SERVER('SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName) {
-            $this->_scriptUrl = $_scriptName;
+            $this->scriptUrl = $_scriptName;
         } elseif (($_scriptName = $this->_SERVER('PHP_SELF')) != null && basename($_scriptName) === $scriptName) {
-            $this->_scriptUrl = $_scriptName;
+            $this->scriptUrl = $_scriptName;
         } elseif (($_scriptName = $this->_SERVER('ORIG_SCRIPT_NAME')) != null && basename(
                 $_scriptName
             ) === $scriptName
         ) {
-            $this->_scriptUrl = $_scriptName;
+            $this->scriptUrl = $_scriptName;
         } elseif (($pos = strpos($this->_SERVER('PHP_SELF'), '/' . $scriptName)) !== false) {
-            $this->_scriptUrl = substr($this->_SERVER('SCRIPT_NAME'), 0, $pos) . '/' . $scriptName;
+            $this->scriptUrl = substr($this->_SERVER('SCRIPT_NAME'), 0, $pos) . '/' . $scriptName;
         } elseif (($_documentRoot = $this->_SERVER('DOCUMENT_ROOT')) != null && ($_scriptName = $this->_SERVER(
                 'SCRIPT_FILENAME'
             )) != null && strpos($_scriptName, $_documentRoot) === 0
         ) {
-            $this->_scriptUrl = str_replace('\\', '/', str_replace($_documentRoot, '', $_scriptName));
+            $this->scriptUrl = str_replace('\\', '/', str_replace($_documentRoot, '', $_scriptName));
         } else {
             throw new FrontException('determine the entry script URL failed!!');
         }
@@ -111,11 +87,11 @@ class Request
      */
     public function getScriptUrl()
     {
-        if (!$this->_scriptUrl) {
+        if (!$this->scriptUrl) {
             $this->initScriptUrl();
         }
 
-        return $this->_scriptUrl;
+        return $this->scriptUrl;
     }
 
     /**
@@ -125,7 +101,7 @@ class Request
      */
     public function setBaseUrl($url)
     {
-        $this->_baseUrl = $url;
+        $this->baseUrl = $url;
     }
 
     /**
@@ -136,10 +112,10 @@ class Request
      */
     public function getBaseUrl($absolute = false)
     {
-        if ($this->_baseUrl === null) {
-            $this->_baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
+        if ($this->baseUrl === null) {
+            $this->baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
         }
-        return $absolute ? $this->getHostInfo() . $this->_baseUrl : $this->_baseUrl;
+        return $absolute ? $this->getHostInfo() . $this->baseUrl : $this->baseUrl;
     }
 
     /**
@@ -160,10 +136,10 @@ class Request
      */
     public function getIndexName()
     {
-        if ($this->_indexName === null) {
+        if ($this->indexName === null) {
             return $this->getScriptName();
         }
-        return $this->_indexName;
+        return $this->indexName;
     }
 
     /**
@@ -171,7 +147,7 @@ class Request
      */
     public function setIndexName($index_name)
     {
-        $this->_indexName = $index_name;
+        $this->indexName = $index_name;
     }
 
     /**
@@ -181,10 +157,10 @@ class Request
      */
     public function getHostInfo()
     {
-        if (!$this->_hostInfo) {
+        if (!$this->hostInfo) {
             $this->initHostInfo();
         }
-        return $this->_hostInfo;
+        return $this->hostInfo;
     }
 
     /**
@@ -201,11 +177,11 @@ class Request
 
         $http = $this->_SERVER('HTTPS') == 'on' ? 'https' : 'http';
         if (($httpHost = $this->_SERVER('HTTP_HOST')) != null) {
-            $this->_hostInfo = $http . '://' . $httpHost;
+            $this->hostInfo = $http . '://' . $httpHost;
         } elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null) {
-            $this->_hostInfo = $http . '://' . $httpHost;
+            $this->hostInfo = $http . '://' . $httpHost;
             if (($port = $this->getServerPort()) != null) {
-                $this->_hostInfo .= ':' . $port;
+                $this->hostInfo .= ':' . $port;
             }
         } else {
             throw new FrontException('determine the entry script URL failed!!');
@@ -221,9 +197,7 @@ class Request
      */
     public function getServerPort()
     {
-        $_default = $this->_SERVER('HTTPS') == 'on' ? 443 : 80;
-
-        return $_default;
+        return $this->_SERVER('HTTPS') == 'on' ? 443 : 80;
     }
 
     /**
@@ -265,15 +239,15 @@ class Request
 
                 array_shift($_GET);
                 if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
-                    list(, $_query_get) = explode('?', $request_uri);
+                    list(, $get_string) = explode('?', $request_uri);
 
-                    parse_str($_query_get, $add_get);
-                    $_GET = array_merge($_GET, $add_get);
+                    parse_str($get_string, $addition_get_params);
+                    $_GET += $addition_get_params;
                     if ($this->isPostRequest()) {
-                        $_POST = array_merge($_POST, $add_get);
+                        $_POST += $addition_get_params;
                     }
 
-                    if ($_query_get == $query_string) {
+                    if ($get_string == $query_string) {
                         return '';
                     }
                 }
