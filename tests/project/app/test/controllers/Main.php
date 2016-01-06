@@ -94,6 +94,8 @@ class Main extends Controller
 
     /**
      * url加密 参数解密
+     *
+     * @cp_params p1, p2, p3
      */
     function makeEncryptLinkAndDecryptParams()
     {
@@ -110,37 +112,35 @@ class Main extends Controller
             'type'  =>  $link_type
         ));
 
+        $controller = 'Main';
+        $action = 'getUrlSecurityParams';
+
         $this->view->setLinkBase('');
-        $link = $this->view->slink('Main:getUrlSecurityParams', array(
+        $url = $this->view->slink(sprintf('%s:%s', $controller, $action), array(
             'p1'    =>  $params['p1'],
             'p2'    =>  $params['p2'],
             'p3'    =>  $params['p3']
         ));
 
-        $url_start = 0;
+        $custom_router_params[] = $controller;
+        $custom_router_params[] = $action;
+
         switch($link_type)
         {
-            case 1:
-            case 3:
-                $url_start = 2;
-                $index_file_name = $this->config->get('url', 'index');
-                if (strcasecmp($index_file_name, 'index.php') != 0) {
-                    $url_start += strlen($index_file_name);
-                } else {
-                    $url_start += 1;
-                }
+            case 2:
+                list(, $params_string) = explode('?', $url);
+                $custom_router_params[$params_string] = '';
                 break;
 
-            case 2:
-            case 4:
-            case 5:
-                $url_start = strlen($this->config->get('url', 'index')) + 2;
-                break;
+            default:
+                $url_array = explode($dot, $url);
+                $params_string = end($url_array);
+                $custom_router_params[] = $params_string;
         }
 
         $router = new Router(parent::getConfig());
-        $r = $router->setRouterParams(explode($dot, substr($link, $url_start)))->getRouter();
-        $result = $this->sParams($r->getParams());
+        $router->setRouterParams($custom_router_params)->getRouter();
+        $result = $this->sParams();
 
         $this->display($result);
     }

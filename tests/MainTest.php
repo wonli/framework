@@ -136,13 +136,13 @@ class MainTest extends PHPUnit_Framework_TestCase
     {
         $dot = '/';
         $ext = '';
-        $params = array('p1'=>1, 'p2'=>2, 'p3'=>3);
-        $params['dot'] = $dot;
-        $params['ext'] = $ext;
+        $params = array('p1'=>'1', 'p2'=>'2', 'p3'=>'3');
 
         for($link_type=1; $link_type <= 5; $link_type ++) {
-            $params['link_type'] = $link_type;
-            $result = $this->getAppResponse('Main:makeEncryptLinkAndDecryptParams', $params);
+            $result = $this->getAppResponse('Main:makeEncryptLinkAndDecryptParams', $params + array(
+                    'dot' => $dot, 'ext' => $ext, 'link_type' => $link_type
+                ));
+
             $this->assertEquals(json_encode($params), $result, "url type {$link_type} encrypt link failure!");
         }
     }
@@ -202,15 +202,15 @@ class MainTest extends PHPUnit_Framework_TestCase
             )),
             'c' =>  array('between', array(1, 2))
         ), $p7);
-        $this->assertEquals($r7, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 6 failure');
-        $this->assertEquals($p7, array(1, 10, 1, 2, 1, 2), 'condition 6 failure');
+        $this->assertEquals($r7, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 7 failure');
+        $this->assertEquals($p7, array(1, 10, 1, 2, 1, 2), 'condition 7 failure');
 
         $p8 = array();
         $r8 = $SQL->parseWhere(array(
             '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', array(1, 10, 1, 2, 1, 2)
         ), $p8);
-        $this->assertEquals($r8, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 6 failure');
-        $this->assertEquals($p8, array(1, 10, 1, 2, 1, 2), 'condition 6 failure');
+        $this->assertEquals($r8, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 8 failure');
+        $this->assertEquals($p8, array(1, 10, 1, 2, 1, 2), 'condition 8 failure');
     }
 
     /**

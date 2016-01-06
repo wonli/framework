@@ -25,11 +25,11 @@ return array(
         'display' => 'JSON'
     ),
     /**
-     * 用于uri和cookie加密的key
+     * uri和auth加解密key
      */
     'encrypt'   =>  array(
         'uri'   =>  'crossphp',
-        'cookie'    =>  '',
+        'auth'    =>  ''
     ),
     /**
      * url配置
