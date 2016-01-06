@@ -288,8 +288,7 @@ class Router implements RouterInterface
      */
     private function initRouter($request)
     {
-        $_controller = array_shift($request);
-        $this->config->set('url', array('ori_controller' => $_controller));
+        $ori_controller = $_controller = array_shift($request);
 
         $combine_alias_key = '';
         if (isset($request[0])) {
@@ -313,14 +312,20 @@ class Router implements RouterInterface
             }
         }
 
+        $ori_action = '';
         if (!isset($_action)) {
             if (isset($request[0])) {
-                $_action = array_shift($request);
-                $this->config->set('url', array('ori_action' => $_action));
+                $ori_action = $_action = array_shift($request);
             } else {
                 $_action = self::$default_action;
             }
         }
+
+        $this->config->set('ori_router', array(
+            'controller' => $ori_controller,
+            'action' => $ori_action,
+            'params' => $request
+        ));
 
         $this->setController($_controller);
         $this->setAction($_action);
