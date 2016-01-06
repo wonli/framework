@@ -215,66 +215,70 @@ class FrameBase
     /**
      * 还原加密后的参数
      *
-     * @param null|string $params
+     * @param bool $use_annotate
+     * @param string $params
      * @return bool|string
      */
-    protected function sParams($params = null)
+    protected function sParams($use_annotate = true,  $params = null)
     {
-        $addition_params = $this->params;
-        $url_type = $this->getConfig()->get('url', 'type');
-        if (null === $params) {
-            switch ($url_type) {
-                case 1:
-                case 5:
-                    $params = $addition_params;
-                    if (is_array($addition_params)) {
-                        $params = current(array_values($addition_params));
-                        array_shift($addition_params);
-                    }
-                    break;
+        $addition_params = $_GET;
+        $url_config = $this->getConfig()->get('url');
 
+        if (null === $params) {
+            $ori_params = $this->getConfig()->get('ori_router', 'params');
+            switch ($url_config['type']) {
                 case 2:
-                    $params = current(array_keys($addition_params));
+                    $params = current(array_keys($ori_params));
                     array_shift($addition_params);
                     break;
 
-                case 3:
-                case 4:
-                    $params = array_shift($addition_params);
-                    break;
+                default:
+                    if (is_array($ori_params)) {
+                        $params = array_shift($ori_params);
+                    } else {
+                        $params = $ori_params;
+                    }
             }
         }
 
-        $result = array();
         $decode_params_str = false;
         if (is_string($params)) {
             $decode_params_str = $this->urlEncrypt($params, 'decode');
         }
 
         if (false == $decode_params_str) {
+            if ($params !== null) return $params;
             return $this->params;
         }
 
-        switch ($url_type) {
+        $op_type = 2;
+        $ori_result = array();
+        switch ($url_config['type']) {
             case 1:
             case 5:
-                $result_array = explode($this->getConfig()->get('url', 'dot'), $decode_params_str);
-                if (!empty($this->action_annotate['params'])) {
-                    $result = Application::combineParamsAnnotateConfig($result_array, $this->action_annotate['params']);
-                } else {
-                    $result = $result_array;
-                }
+                $op_type = 1;
+                $ori_result = explode($url_config['dot'], $decode_params_str);
                 break;
             case 2:
-                parse_str($decode_params_str, $result);
+                parse_str($decode_params_str, $ori_result);
                 break;
             case 3:
             case 4:
-                $result = Application::stringParamsToAssociativeArray($decode_params_str, $this->getConfig()->get('url', 'dot'));
+                $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_config['dot']);
                 break;
         }
 
-        return $result + $addition_params;
+        if (!empty($this->action_annotate['params']) && $use_annotate) {
+            $result = Application::combineParamsAnnotateConfig($ori_result, $this->action_annotate['params'], $op_type);
+        } else {
+            $result = $ori_result;
+        }
+
+        if (!empty($addition_params) && is_array($addition_params)) {
+            $result += $addition_params;
+        }
+
+        return $result;
     }
 
     /**

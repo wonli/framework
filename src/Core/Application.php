@@ -181,9 +181,10 @@ class Application
      *
      * @param array $params
      * @param array $annotate_params
+     * @param int $op_mode 处理参数的方式
      * @return array
      */
-    public static function combineParamsAnnotateConfig(array $params = array(), array $annotate_params = array())
+    public static function combineParamsAnnotateConfig(array $params = array(), array $annotate_params = array(), $op_mode = 1)
     {
         if (empty($params)) {
             return $annotate_params;
@@ -191,15 +192,23 @@ class Application
 
         if (!empty($annotate_params)) {
             $params_set = array();
-            foreach ($annotate_params as $params_key => $default_value) {
-                $params_value = array_shift($params);
-                if ($params_value != '') {
-                    $params_set[$params_key] = $params_value;
+            foreach ($annotate_params as $params_name => $default_value) {
+                if ($op_mode == 1) {
+                    $params_value = array_shift($params);
                 } else {
-                    $params_set[$params_key] = $default_value;
+                    if (isset($params[$params_name])) {
+                        $params_value = $params[$params_name];
+                    } else {
+                        $params_value = $default_value;
+                    }
+                }
+
+                if ($params_value != '') {
+                    $params_set[$params_name] = $params_value;
+                } else {
+                    $params_set[$params_name] = $default_value;
                 }
             }
-            unset($params);
             return $params_set;
         }
 
@@ -353,30 +362,28 @@ class Application
      */
     private function initParams($url_params, array $annotate_params = array())
     {
-        $combine_get_params = true;
-        $url_config = $this->config->get('url');
-
-        switch ($url_config['type']) {
+        $url_type = $this->config->get('url', 'type');
+        switch ($url_type) {
             case 1:
             case 5:
-                $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
+                $combined_params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
             case 3:
             case 4:
-                $params = self::oneDimensionalToAssociativeArray($url_params);
-                if (empty($params)) {
-                    $params = $url_params;
-                }
-                break;
-
-            default:
-                $params = $url_params;
-                $combine_get_params = false;
+                $url_params = self::oneDimensionalToAssociativeArray($url_params);
                 break;
         }
 
-        if ($combine_get_params) {
+        if (isset($combined_params)) {
+            $params = $combined_params;
+        } else if (!empty($annotate_params)) {
+            $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
+        } else {
+            $params = $url_params;
+        }
+
+        if (!empty($_GET)) {
             $params += $_GET;
         }
 
