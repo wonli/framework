@@ -100,9 +100,14 @@ class View extends FrameBase
      *
      * @param $tpl_name
      * @param array|mixed $data
+     * @param bool $extract
      */
-    function renderTpl($tpl_name, $data = array())
+    function renderTpl($tpl_name, $data = array(), $extract = false)
     {
+        if ($extract) {
+            extract($data, EXTR_PREFIX_SAME, 'extract');
+        }
+
         include $this->tpl($tpl_name);
     }
 
@@ -250,17 +255,17 @@ class View extends FrameBase
      *
      * @param null|string $controller
      * @param null|string|array $params
-     * @param bool $sec
+     * @param bool $encrypt_params
      * @return string
      */
-    function url($controller = null, $params = null, $sec = false)
+    function url($controller = null, $params = null, $encrypt_params = false)
     {
         static $link_base = null;
         if ($link_base === null) {
             $link_base = $this->getLinkBase();
         }
 
-        $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $sec);
+        $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
         return $link_base . '/' . $uri;
     }
 
@@ -304,12 +309,12 @@ class View extends FrameBase
      * @param string $app_name
      * @param null|string $controller
      * @param null|string|array $params
-     * @param null|bool $sec
+     * @param null|bool $encrypt_params
      * @return string
      */
-    function appUrl($base_link, $app_name, $controller = null, $params = null, $sec = null)
+    function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
     {
-        $uri = $this->makeUri($app_name, true, $controller, $params, $sec);
+        $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
         return rtrim($base_link, '/') . '/' . $uri;
     }
 
@@ -320,11 +325,11 @@ class View extends FrameBase
      * @param bool $check_app_name
      * @param null|string $controller
      * @param null|array $params
-     * @param null|bool $sec
+     * @param null|bool $encrypt_params
      * @return string
      * @throws CoreException
      */
-    private function makeUri($app_name, $check_app_name, $controller = null, $params = null, $sec = null)
+    private function makeUri($app_name, $check_app_name, $controller = null, $params = null, $encrypt_params = null)
     {
         $uri = '';
         $enable_controller_cache = false;
@@ -349,15 +354,24 @@ class View extends FrameBase
         }
 
         $url_params = '';
+        $has_controller_string = true;
         $url_controller = $this->makeControllerUri($app_name, $enable_controller_cache, $controller, $url_config);
-        if (!empty($params)) {
-            $url_params = $this->makeParams($params, $url_config, $sec);
+        if ($url_controller === '') {
+            $has_controller_string = false;
         }
 
-        if (!empty($url_config['ext']) && !empty($url_controller)) {
+        if (!empty($params)) {
+            $url_params = $this->makeParams($params, $url_config, $encrypt_params, $has_controller_string);
+        }
+
+        if (!empty($url_config['ext'])) {
             switch ($url_config['type']) {
                 case 2:
-                    $uri .= $url_controller . $url_config['ext'] . $url_params;
+                    if ($has_controller_string) {
+                        $uri .= $url_controller . $url_config['ext'];
+                    }
+
+                    $uri .= $url_params;
                     break;
                 case 1:
                 case 3:
@@ -448,9 +462,10 @@ class View extends FrameBase
      * @param array $params 当url_type的值不为2时, 值必须是标量(bool型需要在外部转换为int型)
      * @param array $url_config
      * @param bool $encrypt_params
+     * @param bool $add_prefix_dot 当控制器字符串为空时,参数不添加前缀
      * @return string
      */
-    private function makeParams(array $params, array $url_config, $encrypt_params = false)
+    private function makeParams(array $params, array $url_config, $encrypt_params = false, $add_prefix_dot = true)
     {
         $url_params = '';
         $url_dot = $url_config['dot'];
@@ -464,6 +479,7 @@ class View extends FrameBase
 
                 case 2:
                     $url_dot = '?';
+                    $add_prefix_dot = true;
                     $url_params = http_build_query($params);
                     break;
 
@@ -481,7 +497,11 @@ class View extends FrameBase
             }
         }
 
-        return $url_dot . $url_params;
+        if ($add_prefix_dot) {
+            return $url_dot . $url_params;
+        }
+
+        return $url_params;
     }
 
     /**
