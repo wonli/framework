@@ -28,11 +28,11 @@ interface RequestCacheInterface
     function get($key = '');
 
     /**
-     * 缓存是否过期
+     * 是否有效
      *
      * @return bool
      */
-    function getExpireTime();
+    function isValid();
 
     /**
      * 缓存配置

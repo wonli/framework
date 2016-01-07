@@ -7,8 +7,9 @@
  */
 namespace Cross\Cache\Driver;
 
-use Cross\Core\Helper;
+use Cross\Exception\CoreException;
 use Cross\I\CacheInterface;
+use Cross\Core\Helper;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -41,8 +42,11 @@ class FileCacheDriver implements CacheInterface
     function __construct(array $cache_config)
     {
         $this->setConfig($cache_config);
-        $file_ext = isset($cache_config['file_ext']) ? $cache_config['file_ext'] : '.html';
-        $this->cache_file = $cache_config['cache_path'] . DIRECTORY_SEPARATOR . $cache_config['key'] . $file_ext;
+        if (empty($cache_config['cache_path'] || empty($cache_config['key']))) {
+            throw new CoreException('请指定缓存文件路径和缓存key');
+        }
+
+        $this->cache_file = $cache_config['cache_path'] . DIRECTORY_SEPARATOR . $cache_config['key'];
         $this->expire_time = isset($cache_config ['expire_time']) ? $cache_config ['expire_time'] : 3600;
     }
 
@@ -72,11 +76,11 @@ class FileCacheDriver implements CacheInterface
     }
 
     /**
-     * 检查过期时间
+     * 检查是否有效
      *
      * @return bool
      */
-    function getExpireTime()
+    function isValid()
     {
         if (!file_exists($this->cache_file)) {
             return false;

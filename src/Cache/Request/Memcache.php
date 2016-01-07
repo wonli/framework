@@ -8,6 +8,7 @@
 namespace Cross\Cache\Request;
 
 use Cross\Cache\Driver\MemcacheDriver;
+use Cross\Exception\CoreException;
 use Cross\I\RequestCacheInterface;
 
 /**
@@ -23,6 +24,20 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
     protected $config;
 
     /**
+     * 缓存key
+     *
+     * @var string
+     */
+    protected $cache_key;
+
+    /**
+     * 有效时间
+     *
+     * @var int
+     */
+    protected $expire_time;
+
+    /**
      * @var string
      */
     static private $value_cache;
@@ -30,14 +45,19 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
     /**
      * 初始化key和过期时间
      *
-     * @param $option
+     * @param array $option
+     * @throws CoreException
      */
     function __construct(array $option)
     {
         parent::__construct($option);
         $this->setConfig($option);
+        if (empty($option['key']) || empty($option['expire_time'])) {
+            throw new CoreException('请指定缓存key和过期时间');
+        }
+
         $this->cache_key = $option ['key'];
-        $this->expire = time() + $option ['expire_time'];
+        $this->expire_time = time() + $option ['expire_time'];
     }
 
     /**
@@ -72,7 +92,7 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
             $key = $this->cache_key;
         }
 
-        $this->link->set($key, $value, $this->expire);
+        $this->link->set($key, $value, $this->expire_time);
     }
 
     /**
@@ -80,7 +100,7 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
      *
      * @return bool
      */
-    function getExpireTime()
+    function isValid()
     {
         if (isset(self::$value_cache[$this->cache_key])) {
             return true;

@@ -8,6 +8,7 @@
 namespace Cross\Cache\Request;
 
 use Cross\Cache\Driver\RedisDriver;
+use Cross\Exception\CoreException;
 use Cross\I\RequestCacheInterface;
 
 /**
@@ -23,16 +24,35 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
     protected $config;
 
     /**
+     * 缓存key
+     *
+     * @var string
+     */
+    protected $cache_key;
+
+    /**
+     * 有效时间
+     *
+     * @var int
+     */
+    protected $expire_time;
+
+    /**
      * 设置缓存key和缓存有效期
      *
-     * @param $option
+     * @param array $option
+     * @throws CoreException
      */
     function __construct(array $option)
     {
         parent::__construct($option);
         $this->setConfig($option);
+        if (empty($option['key']) || empty($option['expire_time'])) {
+            throw new CoreException('请指定缓存key和过期时间');
+        }
+
         $this->cache_key = $option ['key'];
-        $this->key_ttl = $option ['expire_time'];
+        $this->expire_time = $option ['expire_time'];
     }
 
     /**
@@ -44,7 +64,7 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
      */
     function set($key, $value)
     {
-        $this->link->setex($this->cache_key, $this->key_ttl, $value);
+        $this->link->setex($this->cache_key, $this->expire_time, $value);
     }
 
     /**
@@ -52,7 +72,7 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
      *
      * @return bool
      */
-    function getExpireTime()
+    function isValid()
     {
         return $this->link->ttl($this->cache_key) > 0;
     }
