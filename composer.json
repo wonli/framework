@@ -7,10 +7,10 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://git.oschina.net/ideaa/crossphp.git"
+            "url": "https://github.com/wonli/crossphp.git"
         }
     ],
-    "license": "Apache-2.0",
+    "license": "MIT",
     "authors": [
         {
             "name": "wonli",
