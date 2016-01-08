@@ -17,7 +17,6 @@ use Cross\Exception\CoreException;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
-use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -94,21 +93,25 @@ class Application
         $router = $this->parseRouter($router, $args, $init_prams);
         $cr = $this->initController($router['controller'], $router['action']);
 
+        $closureContainer = $this->delegate->getClosureContainer();
         $annotate_config = $this->getAnnotateConfig();
+
+        $action_params = array();
+        if (isset($annotate_config['params'])) {
+            $action_params = $annotate_config['params'];
+        }
+
         if ($init_prams) {
-            $action_params = array();
-            if (isset($annotate_config['params'])) {
-                $action_params = $annotate_config['params'];
-            }
             $this->initParams($router['params'], $action_params);
         } else {
             $this->setParams($router['params']);
         }
 
-        $this->delegate->getClosureContainer()->run('dispatcher');
+        $closureContainer->run('dispatcher');
+
         $cache = false;
         if (isset($annotate_config['cache']) && $this->delegate->getRequest()->isGetRequest()) {
-            $cache = $this->initRequestCache($annotate_config['cache']);
+            $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
         if (isset($annotate_config['before'])) {
@@ -119,7 +122,7 @@ class Application
             $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
         }
 
-        if ($cache && $cache->getExpireTime()) {
+        if ($cache && $cache->isValid()) {
             $response_content = $cache->get();
         } else {
             $action = $this->getAction();
@@ -133,7 +136,7 @@ class Application
                 'params' => $this->getParams(),
             );
 
-            $this->delegate->getClosureContainer()->add('~controller~runtime~', function () use ($runtime_config) {
+            $closureContainer->add('~controller~runtime~', function () use ($runtime_config) {
                 return $runtime_config;
             });
 
@@ -429,65 +432,72 @@ class Application
      * 初始化RequestCache
      *
      * @param array $request_cache_config
+     * @param array $action_annotate_params
      * @return bool|FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
      * @throws CoreException
      */
-    private function initRequestCache(array $request_cache_config)
+    private function initRequestCache(array $request_cache_config, array $action_annotate_params)
     {
         if (!isset($request_cache_config[1]) || !is_array($request_cache_config[1])) {
-            throw new CoreException('Request Cache 配置格式不正确');
+            throw new CoreException('请求缓存配置格式不正确');
         }
 
-        list($cache_enable, $cache_config) = $request_cache_config;
-        if (!$cache_enable) {
-            return false;
+        $display_type = $this->config->get('sys', 'display');
+        $this->delegate->getResponse()->setContentType($display_type);
+
+        $default_cache_config = array(
+            'type' => 1,
+            'expire_time' => 3600,
+            'limit_params' => false,
+            'cache_path' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request',
+            'key_suffix' => '',
+            'key_dot' => DIRECTORY_SEPARATOR
+        );
+
+        $cache_config = $request_cache_config[1];
+        foreach ($default_cache_config as $default_config_key => $default_value) {
+            if (!isset($cache_config[$default_config_key])) {
+                $cache_config[$default_config_key] = $default_value;
+            }
         }
 
-        if (empty($cache_config['type'])) {
-            throw new CoreException('请指定Cache类型');
-        }
-
-        $display = $this->config->get('sys', 'display');
-        $this->delegate->getResponse()->setContentType($display);
-        if (!isset($cache_config ['cache_path'])) {
-            $cache_config ['cache_path'] = PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request';
-        }
-
-        if (!isset($cache_config ['file_ext'])) {
-            $cache_config ['file_ext'] = '.' . strtolower($display);
-        }
-
-        if (!isset($cache_config['key_dot'])) {
-            $cache_config ['key_dot'] = DIRECTORY_SEPARATOR;
-        }
-
-        $cache_key_conf = array(
+        $cache_key_config = $default_cache_key_config = array(
             'app_name' => $this->app_name,
             'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
-            'controller' => strtolower($this->getController()),
-            'action' => $this->getAction(),
+            'controller' => lcfirst($this->getController()),
+            'action' => $this->getAction()
         );
 
         $params = $this->getParams();
-        if (isset($cache_config ['key'])) {
-            if ($cache_config ['key'] instanceof Closure) {
-                $cache_key = call_user_func_array($cache_config ['key'], array($cache_key_conf, $params));
-            } else {
-                $cache_key = $cache_config['key'];
+        if ($cache_config['limit_params'] && !empty($action_annotate_params)) {
+            $params_member = array();
+            foreach ($params as $params_key => $params_value) {
+                if (isset($action_annotate_params[$params_key])) {
+                    $params_member[$params_key] = $params_value;
+                }
             }
-
-            if (empty($cache_key)) {
-                throw new CoreException("缓存key不能为空");
-            }
+            $cache_key_config['params'] = implode($cache_config['key_dot'], $params_member);
         } else {
-            if (!empty($params)) {
-                $cache_key_conf['params'] = md5(implode($cache_config ['key_dot'], $params));
-            }
-            $cache_key = implode($cache_config['key_dot'], $cache_key_conf);
+            $cache_key_config['params'] = md5(implode($cache_config['key_dot'], $params));
         }
 
-        $cache_config['key'] = $cache_key;
-        return RequestCache::factory($cache_config['type'], $cache_config);
+        $cache_config['key'] = implode($cache_config['key_dot'], $cache_key_config) . $cache_config['key_suffix'];
+        $closureContainer = $this->delegate->getClosureContainer();
+        $has_cache_closure = $closureContainer->has('cpCache');
+        if ($has_cache_closure) {
+            $cache_config['params'] = $params;
+            $cache_config['cache_key_config'] = $default_cache_key_config;
+            $enable_cache = $closureContainer->run('cpCache', array(&$cache_config));
+            unset($cache_config['cache_key_config'], $cache_config['params']);
+        } else {
+            $enable_cache = $request_cache_config[0];
+        }
+
+        if ($enable_cache) {
+            return RequestCache::factory($cache_config['type'], $cache_config);
+        }
+
+        return false;
     }
 
     /**
