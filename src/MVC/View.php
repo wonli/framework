@@ -190,7 +190,7 @@ class View extends FrameBase
      */
     function setLinkBase($link_base)
     {
-        $this->link_base = $link_base;
+        $this->link_base = rtrim($link_base, '/') . '/';
     }
 
     /**
@@ -265,8 +265,12 @@ class View extends FrameBase
             $link_base = $this->getLinkBase();
         }
 
-        $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
-        return $link_base . '/' . $uri;
+        if ($controller === null && $params === null) {
+            return $link_base;
+        } else {
+            $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
+            return $link_base . $uri;
+        }
     }
 
     /**
@@ -314,8 +318,13 @@ class View extends FrameBase
      */
     function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
     {
-        $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
-        return rtrim($base_link, '/') . '/' . $uri;
+        $base_link = rtrim($base_link, '/') . '/';
+        if ($controller === null && $params === null) {
+            return $base_link;
+        } else {
+            $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
+            return $base_link . $uri;
+        }
     }
 
     /**
