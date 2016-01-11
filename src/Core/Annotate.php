@@ -6,6 +6,7 @@
  * @license     MIT License
  */
 namespace Cross\Core;
+use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -102,12 +103,30 @@ class Annotate
                     $result['params'] = $this->parseConfigValue($params);
                     break;
 
+                case 'after':
+                case 'before':
+                    $result[$conf_name] = $this->bindToClosure($params);
+                    break;
+
                 default:
                     $result[$conf_name] = $this->parseAnnotateConfig($params);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * 把PHP代码绑定到匿名函数中
+     *
+     * @param string $params
+     * @return Closure
+     */
+    protected function bindToClosure($params)
+    {
+        return function ($self) use ($params) {
+            return include("annotate://{$params}");
+        };
     }
 
     /**

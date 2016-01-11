@@ -17,6 +17,7 @@ use Cross\Exception\CoreException;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
+use Closure;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -114,10 +115,6 @@ class Application
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
-        if (isset($annotate_config['before'])) {
-            $this->getClassInstanceByName($annotate_config['before']);
-        }
-
         if (!empty($annotate_config['basicAuth'])) {
             $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
         }
@@ -151,6 +148,10 @@ class Application
                 return true;
             }
 
+            if (isset($annotate_config['before'])) {
+                $this->callReliesControllerClosure($annotate_config['before'], $controller);
+            }
+
             ob_start();
             $response_content = $controller->$action();
             if (!$response_content) {
@@ -172,8 +173,8 @@ class Application
             $this->delegate->getResponse()->display($response_content);
         }
 
-        if (isset($annotate_config['after'])) {
-            $this->getClassInstanceByName($annotate_config['after']);
+        if (isset($annotate_config['after']) && isset($controller)) {
+            $this->callReliesControllerClosure($annotate_config['after'], $controller);
         }
 
         return true;
@@ -517,29 +518,14 @@ class Application
     }
 
     /**
-     * 实例化一个数组中指定的所有类
+     * 调用依赖控制器实例的匿名函数
      *
-     * @param string|array $class_name
-     * @throws CoreException
+     * @param Closure $closure
+     * @param $controller
      */
-    private function getClassInstanceByName($class_name)
+    private function callReliesControllerClosure(Closure $closure, $controller)
     {
-        if (!is_array($class_name)) {
-            $class_array = array($class_name);
-        } else {
-            $class_array = $class_name;
-        }
-
-        foreach ($class_array as $class) {
-            try {
-                if (is_string($class)) {
-                    $obj = new ReflectionClass($class);
-                    $obj->newInstance();
-                }
-            } catch (Exception $e) {
-                throw new CoreException('初始化类失败');
-            }
-        }
+        $closure($controller);
     }
 
     /**
