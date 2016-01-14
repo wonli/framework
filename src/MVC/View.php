@@ -10,6 +10,7 @@ namespace Cross\MVC;
 use Cross\Exception\CoreException;
 use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
+use Cross\Lib\Document\HTML;
 use Cross\Lib\Array2XML;
 use Cross\Core\Helper;
 use Cross\Core\Loader;
@@ -51,6 +52,11 @@ class View extends FrameBase
     private $link_base = null;
 
     /**
+     * @var array
+     */
+    private $wrap_stack = array();
+
+    /**
      * 模板数据
      *
      * @var array
@@ -79,6 +85,238 @@ class View extends FrameBase
     protected static $url_config_cache = array();
 
     /**
+     * 渲染模板
+     *
+     * @param null $data
+     * @param null $method
+     */
+    function display($data = null, $method = null)
+    {
+        $load_layer = true;
+        $this->data = $data;
+        if ($method === null) {
+            $display_type = $this->config->get('sys', 'display');
+            if ($display_type && strcasecmp($display_type, 'html') !== 0) {
+                $load_layer = false;
+                $method = trim($display_type);
+            } else if ($this->action) {
+                $method = $this->action;
+            } else {
+                $method = Router::$default_action;
+            }
+        }
+
+        $this->obRenderAction($data, $method, $load_layer);
+    }
+
+    /**
+     * 生成url
+     *
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @param bool $encrypt_params
+     * @return string
+     */
+    function url($controller = null, $params = null, $encrypt_params = false)
+    {
+        static $link_base = null;
+        if ($link_base === null) {
+            $link_base = $this->getLinkBase();
+        }
+
+        if ($controller === null && $params === null) {
+            return $link_base;
+        } else {
+            $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
+            return $link_base . $uri;
+        }
+    }
+
+    /**
+     * @see View::url() 生成加密连接
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @return string
+     */
+    function sUrl($controller = null, $params = null)
+    {
+        return $this->url($controller, $params, true);
+    }
+
+    /**
+     * 超链接
+     *
+     * @param string $content
+     * @param string $href
+     * @param array $element_tags
+     * @return mixed|string
+     */
+    function a($content, $href = '', array $element_tags = array())
+    {
+        $element_tags['href'] = $href;
+        $element_tags['@content'] = $content;
+        return $this->wrapTag('a', $element_tags);
+    }
+
+    /**
+     * 输出img标签
+     *
+     * @param string $src
+     * @param array $element_tags
+     * @return mixed|string
+     */
+    function img($src, array $element_tags = array())
+    {
+        $element_tags['src'] = $src;
+        return $this->wrapTag('img', $element_tags);
+    }
+
+    /**
+     * 输出HTML
+     * <pre>
+     * 带wrap时, 先处理wrap
+     * 单独输出HTML内容时候, $encode表示是否转换HTML实体
+     * </pre>
+     *
+     * @param string $content 内容
+     * @param bool $encode 是否转码
+     * @return mixed
+     */
+    function html($content, $encode = true)
+    {
+        return $this->wrapContent($content, $encode);
+    }
+
+    /**
+     * 输出任意HTML标签
+     *
+     * @param $element
+     * @param array $element_tags
+     * @return string
+     */
+    static function htmlTag($element, $element_tags = array())
+    {
+        return html_entity_decode(HTML::$element($element_tags));
+    }
+
+    /**
+     * HTML标签入栈
+     *
+     * @param string $element
+     * @param string|array $element_tags
+     * @return $this
+     */
+    function wrap($element, $element_tags = array())
+    {
+        if (!is_array($element_tags)) {
+            $element_tags = array('@content' => $element_tags);
+        }
+
+        array_unshift($this->wrap_stack, array($element, $element_tags));
+        return $this;
+    }
+
+    /**
+     * 带wrap的块级元素
+     *
+     * @param string $content 内容
+     * @param array $element_tags
+     * @param string $element
+     * @return string
+     */
+    function block($content, array $element_tags = array(), $element = 'div')
+    {
+        $element_tags['@content'] = $content;
+        return $this->wrapTag($element, $element_tags);
+    }
+
+    /**
+     * 处理带模板的block元素
+     *
+     * @param string $tpl_name 模板名称
+     * @param array $tpl_data 模板中的数据
+     * @param array $element_tags
+     * @param string $element
+     * @return string
+     */
+    function section($tpl_name, array $tpl_data = array(), array $element_tags = array(), $element = 'div')
+    {
+        return $this->block($this->obRenderTpl($tpl_name, $tpl_data), $element_tags, $element);
+    }
+
+    /**
+     * 生成表单
+     * <pre>
+     * 使用$this->on('buildForm', ....), 来干预所有生成的表单内容
+     * </pre>
+     *
+     * @param string $tpl_name 包含表单的模板文件路径
+     * @param array $form_tags 生成表单tag的参数
+     * @param array $tpl_data 模板数据
+     * @return string
+     */
+    function buildForm($tpl_name, array $form_tags = array(), array $tpl_data = array())
+    {
+        $content = $this->delegate->getClosureContainer()->run('buildForm');
+        $content .= $this->obRenderTpl($tpl_name, $tpl_data);
+
+        $form_tags += array('action' => '', 'method' => 'post');
+        $form_tags['@content'] = $content;
+
+        return $this->wrapTag('form', $form_tags);
+    }
+
+    /**
+     * 加载指定名称的模板文件
+     *
+     * @param string $tpl_name
+     * @param array|mixed $data
+     */
+    function renderTpl($tpl_name, $data = array())
+    {
+        include $this->tpl($tpl_name);
+    }
+
+    /**
+     * 加载指定绝对路径的文件
+     *
+     * @param string $file 文件绝对路径
+     * @param array $data
+     */
+    function renderFile($file, $data = array())
+    {
+        include $file;
+    }
+
+    /**
+     * 带缓存的renderTpl
+     *
+     * @param string $tpl_name
+     * @param array $data
+     * @return string
+     */
+    function obRenderTpl($tpl_name, array $data = array())
+    {
+        ob_start();
+        $this->renderTpl($tpl_name, $data);
+        return ob_get_clean();
+    }
+
+    /**
+     * 带缓存的renderFile
+     *
+     * @param string $file
+     * @param array $data
+     * @return string
+     */
+    function obRenderFile($file, $data = array())
+    {
+        ob_start();
+        $this->renderFile($file, $data);
+        return ob_get_clean();
+    }
+
+    /**
      * 模板的绝对路径
      *
      * @param $tpl_name
@@ -96,19 +334,43 @@ class View extends FrameBase
     }
 
     /**
-     * 载入模板, 并输出$data变量中的数据
+     * 输出JSON
      *
-     * @param $tpl_name
-     * @param array|mixed $data
-     * @param bool $extract
+     * @param $data
      */
-    function renderTpl($tpl_name, $data = array(), $extract = false)
+    function JSON($data)
     {
-        if ($extract) {
-            extract($data, EXTR_PREFIX_SAME, 'extract');
+        $this->delegate->getResponse()->setContentType('json');
+        echo json_encode($data);
+    }
+
+    /**
+     * 输出XML
+     *
+     * @param $data
+     * @param string $root_name
+     */
+    function XML($data, $root_name = 'root')
+    {
+        $this->delegate->getResponse()->setContentType('xml');
+        echo Array2XML::createXML($root_name, $data)->saveXML();
+    }
+
+    /**
+     * 安全的输出数组中的值
+     *
+     * @param array $data
+     * @param string|int $key
+     * @param string $default_value
+     * @return string
+     */
+    function e(array $data, $key, $default_value = '')
+    {
+        if (isset($data[$key])) {
+            return $data[$key];
         }
 
-        include $this->tpl($tpl_name);
+        return $default_value;
     }
 
     /**
@@ -118,7 +380,7 @@ class View extends FrameBase
      * @param null $value
      * @return $this
      */
-    final function set($name, $value = null)
+    final public function set($name, $value = null)
     {
         if (is_array($name)) {
             $this->set = array_merge($this->set, $name);
@@ -152,6 +414,67 @@ class View extends FrameBase
         }
 
         return $res_base_url[$use_static_url] . $res_url;
+    }
+
+    /**
+     * @see View::url()
+     * @param null|string $controller 控制器:方法
+     * @param null|string|array $params
+     * @return string
+     */
+    function link($controller = null, $params = null)
+    {
+        return $this->url($controller, $params);
+    }
+
+    /**
+     * @see View::sUrl()
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @return string
+     */
+    function slink($controller = null, $params = null)
+    {
+        return $this->url($controller, $params, true);
+    }
+
+    /**
+     * 生成指定app,指定控制器的url
+     *
+     * @param string $base_link
+     * @param string $app_name
+     * @param null|string $controller
+     * @param null|string|array $params
+     * @param null|bool $encrypt_params
+     * @return string
+     */
+    function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
+    {
+        $base_link = rtrim($base_link, '/') . '/';
+        if ($controller === null && $params === null) {
+            return $base_link;
+        } else {
+            $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
+            return $base_link . $uri;
+        }
+    }
+
+    /**
+     * 清除link中使用到的缓存(config->url配置在运行过程中发生变动时先清除缓存)
+     */
+    function cleanLinkCache()
+    {
+        unset(self::$url_config_cache[$this->getAppName()]);
+    }
+
+    /**
+     * 设置模板dir
+     *
+     * @param $dir_name
+     */
+    function setTplDir($dir_name)
+    {
+        $this->tpl_dir = $dir_name;
     }
 
     /**
@@ -234,97 +557,169 @@ class View extends FrameBase
     }
 
     /**
-     * 安全的输出数组中的值
+     * 取得模板路径前缀
+     *
+     * @return string
+     */
+    function getTplDir()
+    {
+        if (!$this->tpl_dir) {
+            $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
+            if ($default_tpl_dir) {
+                $default_tpl_dir = rtrim($default_tpl_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            } else {
+                $default_tpl_dir = 'default';
+            }
+            $this->setTplDir($default_tpl_dir);
+        }
+
+        return $this->tpl_dir;
+    }
+
+    /**
+     * 运行时分组添加css/js
+     *
+     * @param $res_url
+     * @param string $location
+     * @param bool $convert
+     */
+    function addRes($res_url, $location = 'header', $convert = true)
+    {
+        $this->res_list[$location][] = array(
+            'url' => $res_url,
+            'convert' => $convert
+        );
+    }
+
+    /**
+     * 分组加载css|js
+     *
+     * @param string $location
+     * @return string
+     */
+    function loadRes($location = 'header')
+    {
+        $result = '';
+        if (empty($this->res_list) || empty($this->res_list[$location])) {
+            return $result;
+        }
+
+        if (isset($this->res_list[$location]) && !empty($this->res_list[$location])) {
+            $data = $this->res_list[$location];
+        }
+
+        if (!empty($data)) {
+            if (is_array($data)) {
+                foreach ($data as $r) {
+                    $result .= $this->outputResLink($r['url'], $r['convert']);
+                }
+            } else {
+                $result .= $this->outputResLink($data);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 输出带layer的view
      *
      * @param array $data
-     * @param string|int $key
-     * @param string $default_value
-     * @return string
+     * @param string $method
+     * @param bool $load_layer
+     * @return string|void
+     * @throws CoreException
      */
-    function e(array $data, $key, $default_value = '')
+    private function obRenderAction($data, $method, $load_layer)
     {
-        if (isset($data[$key])) {
-            return $data[$key];
-        }
+        ob_start();
+        $this->$method($data);
+        $method_content = ob_get_clean();
 
-        return $default_value;
-    }
-
-    /**
-     * 生成url
-     *
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @param bool $encrypt_params
-     * @return string
-     */
-    function url($controller = null, $params = null, $encrypt_params = false)
-    {
-        static $link_base = null;
-        if ($link_base === null) {
-            $link_base = $this->getLinkBase();
-        }
-
-        if ($controller === null && $params === null) {
-            return $link_base;
+        if ($load_layer) {
+            $this->loadLayer($method_content);
         } else {
-            $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
-            return $link_base . $uri;
+            echo $method_content;
         }
     }
 
     /**
-     * @see View::url() 生成加密连接
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @return string
-     */
-    function sUrl($controller = null, $params = null)
-    {
-        return $this->url($controller, $params, true);
-    }
-
-    /**
-     * @see View::url() 生成非加密连接
-     * @param null|string $controller 控制器:方法
-     * @param null|string|array $params
-     * @return string
-     */
-    function link($controller = null, $params = null)
-    {
-        return $this->url($controller, $params);
-    }
-
-    /**
-     * @see View::sUrl()
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @return string
-     */
-    function slink($controller = null, $params = null)
-    {
-        return $this->url($controller, $params, true);
-    }
-
-    /**
-     * 生成指定app,指定控制器的url
+     * 节点入栈并生成HTML
      *
-     * @param string $base_link
-     * @param string $app_name
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @param null|bool $encrypt_params
-     * @return string
+     * @param string $element
+     * @param array $element_tags
+     * @return mixed|string
      */
-    function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
+    private function wrapTag($element, $element_tags = array())
     {
-        $base_link = rtrim($base_link, '/') . '/';
-        if ($controller === null && $params === null) {
-            return $base_link;
-        } else {
-            $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
-            return $base_link . $uri;
+        if (!empty($this->wrap_stack)) {
+            array_unshift($this->wrap_stack, array($element, $element_tags));
+            return $this->buildWrapTags($this->wrap_stack);
         }
+
+        return self::htmlTag($element, $element_tags);
+    }
+
+    /**
+     * 处理带wrap的HTML
+     *
+     * @param string $content
+     * @param bool $encode 是否转码
+     * @return mixed
+     */
+    private function wrapContent($content, $encode = true)
+    {
+        if (!empty($this->wrap_stack)) {
+            $stack_top = &$this->wrap_stack[0];
+            if (isset($stack_top[1]['@content'])) {
+                $stack_top[1]['@content'] .= $content;
+            } else {
+                $stack_top[1]['@content'] = $content;
+            }
+            return $this->buildWrapTags($this->wrap_stack);
+        } else if ($encode) {
+            return htmlentities($content, ENT_IGNORE);
+        } else {
+            return $content;
+        }
+    }
+
+    /**
+     * 处理wrap
+     *
+     * @param array $wrap_tags
+     * @return mixed
+     */
+    private function buildWrapTags(array &$wrap_tags)
+    {
+        $i = 0;
+        $wrap_content = '';
+        $stack_size = count($wrap_tags) - 1;
+        while ($wrap_config = array_shift($wrap_tags)) {
+            list($wrap_element, $wrap_element_tags) = $wrap_config;
+            if ($wrap_content === '') {
+                $wrap_content = HTML::$wrap_element($wrap_element_tags);
+            } else {
+                if (isset($wrap_element_tags['@content'])) {
+                    $wrap_element_tags['@content'] .= $wrap_content;
+                } else {
+                    $wrap_element_tags['@content'] = $wrap_content;
+                }
+
+                if ($i == $stack_size) {
+                    return $this->wrapTag($wrap_element, $wrap_element_tags);
+                } else {
+                    $wrap_content = HTML::$wrap_element($wrap_element_tags);
+                }
+            }
+            $i++;
+        }
+
+        if ($wrap_content) {
+            $wrap_content = html_entity_decode($wrap_content);
+        }
+
+        return $wrap_content;
     }
 
     /**
@@ -537,144 +932,13 @@ class View extends FrameBase
     }
 
     /**
-     * 清除link中使用到的缓存(config->url配置在运行过程中发生变动时先清除缓存)
-     */
-    function cleanLinkCache()
-    {
-        unset(self::$url_config_cache[$this->getAppName()]);
-    }
-
-    /**
-     * 渲染模板
-     *
-     * @param null $data
-     * @param null $method
-     */
-    function display($data = null, $method = null)
-    {
-        $load_layer = true;
-        $this->data = $data;
-        if ($method === null) {
-            $display_type = $this->config->get('sys', 'display');
-            if ($display_type && strcasecmp($display_type, 'html') !== 0) {
-                $load_layer = false;
-                $method = trim($display_type);
-            } else if ($this->action) {
-                $method = $this->action;
-            } else {
-                $method = Router::$default_action;
-            }
-        }
-
-        $this->obRender($data, $method, $load_layer);
-    }
-
-    /**
-     * 输出带layer的view
-     *
-     * @param array $data
-     * @param string $method
-     * @param bool $load_layer
-     * @return string|void
-     * @throws CoreException
-     */
-    function obRender($data, $method, $load_layer)
-    {
-        ob_start();
-        $this->$method($data);
-        $method_content = ob_get_clean();
-        parent::getDelegate()->getClosureContainer()->run('obRender', $method_content);
-
-        if ($load_layer) {
-            $this->loadLayer($method_content);
-        } else {
-            echo $method_content;
-        }
-    }
-
-    /**
-     * 设置模板dir
-     *
-     * @param $dir_name
-     */
-    function setTplDir($dir_name)
-    {
-        $this->tpl_dir = $dir_name;
-    }
-
-    /**
-     * 取得模板路径前缀
-     *
-     * @return string
-     */
-    function getTplDir()
-    {
-        if (!$this->tpl_dir) {
-            $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
-            if ($default_tpl_dir) {
-                $default_tpl_dir = rtrim($default_tpl_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-            } else {
-                $default_tpl_dir = 'default';
-            }
-            $this->setTplDir($default_tpl_dir);
-        }
-
-        return $this->tpl_dir;
-    }
-
-    /**
-     * 运行时加载css/js
-     *
-     * @param $res_url
-     * @param string $location
-     * @param bool $convert
-     */
-    function addRes($res_url, $location = 'header', $convert = true)
-    {
-        $this->res_list [$location][] = array(
-            'url' => $res_url,
-            'convert' => $convert
-        );
-    }
-
-    /**
-     * 加载 css|js
-     *
-     * @param string $location
-     * @return string
-     */
-    function loadRes($location = 'header')
-    {
-        $result = '';
-        if (empty($this->res_list) || empty($this->res_list[$location])) {
-            return $result;
-        }
-
-        if (isset($this->res_list [$location]) && !empty($this->res_list [$location])) {
-            $data = $this->res_list [$location];
-        }
-
-        if (!empty($data)) {
-            if (is_array($data)) {
-                foreach ($data as $r) {
-                    $result .= $this->outputResLink($r['url'], $r['convert']);
-                }
-            } else {
-                $result .= $this->outputResLink($data);
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * 输出js/css连接
      *
      * @param $res_link
      * @param bool $make_link
      * @return null|string
      */
-    function outputResLink($res_link, $make_link = true)
+    private function outputResLink($res_link, $make_link = true)
     {
         $t = Helper::getExt($res_link);
         switch (strtolower($t)) {
@@ -702,36 +966,13 @@ class View extends FrameBase
     }
 
     /**
-     * 输出JSON
-     *
-     * @param $data
-     */
-    function JSON($data)
-    {
-        $this->delegate->getResponse()->setContentType('json');
-        echo json_encode($data);
-    }
-
-    /**
-     * 输出XML
-     *
-     * @param $data
-     * @param string $root_name
-     */
-    function XML($data, $root_name = 'root')
-    {
-        $this->delegate->getResponse()->setContentType('xml');
-        echo Array2XML::createXML($root_name, $data)->saveXML();
-    }
-
-    /**
      * 加载布局
      *
      * @param string $content
      * @param string $layer_ext
      * @throws CoreException
      */
-    function loadLayer($content, $layer_ext = '.layer.php')
+    private function loadLayer($content, $layer_ext = '.layer.php')
     {
         if ($this->set) {
             extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
