@@ -168,7 +168,38 @@ class View extends FrameBase
     function img($src, array $element_tags = array())
     {
         $element_tags['src'] = $src;
+        $element_tags['alt'] = 'images';
+        $element_tags['border'] = 0;
         return $this->wrapTag('img', $element_tags);
+    }
+
+    /**
+     * 输出select
+     *
+     * @param array $option
+     * @param int $default_value
+     * @param array $select_params
+     * @param array $user_option_params
+     * @return mixed
+     */
+    function select(array $option, $default_value = 1, array $select_params = array(), array $user_option_params = array())
+    {
+        $option_string = '';
+        foreach($option as $value => $name) {
+            $option_params = array();
+            if (!empty($user_option_params)) {
+                $option_params = $user_option_params;
+            }
+
+            $option_params['value'] = $value;
+            if ($value == $default_value) {
+                $option_params['selected'] = true;
+            }
+
+            $option_string .= $this->block($name, $option_params, 'option');
+        }
+
+        return $this->wrap('select', $select_params)->html($option_string);
     }
 
     /**
