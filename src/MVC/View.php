@@ -168,8 +168,7 @@ class View extends FrameBase
     function img($src, array $element_tags = array())
     {
         $element_tags['src'] = $src;
-        $element_tags['alt'] = 'images';
-        $element_tags['border'] = 0;
+        $element_tags += array('border' => 0, 'alt' => 'image');
         return $this->wrapTag('img', $element_tags);
     }
 
@@ -185,7 +184,7 @@ class View extends FrameBase
     function select(array $option, $default_value = 1, array $select_params = array(), array $user_option_params = array())
     {
         $option_string = '';
-        foreach($option as $value => $name) {
+        foreach ($option as $value => $name) {
             $option_params = array();
             if (!empty($user_option_params)) {
                 $option_params = $user_option_params;
