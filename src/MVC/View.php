@@ -173,32 +173,77 @@ class View extends FrameBase
     }
 
     /**
+     * input标签
+     *
+     * @param string $type
+     * @param array $element_tags
+     * @return mixed|string
+     */
+    function input($type, array $element_tags = array())
+    {
+        $element_tags['type'] = $type;
+        return $this->wrapTag('input', $element_tags);
+    }
+
+    /**
+     * 单选
+     *
+     * @see View::buildRadioOrCheckbox
+     * @param array $data
+     * @param string $default_value
+     * @param array $radio_tags
+     * @param array $label_tags
+     * @return string
+     */
+    function radio(array $data, $default_value = '', array $radio_tags = array(), array $label_tags = array())
+    {
+        return $this->buildRadioOrCheckbox('radio', $data, $default_value, $radio_tags, $label_tags);
+    }
+
+    /**
+     * 多选
+     *
+     * @see View::buildRadioOrCheckbox
+     * @param array $data
+     * @param string $default_value
+     * @param array $checkbox_tags
+     * @param array $label_tags
+     * @return string
+     */
+    function checkbox(array $data, $default_value = '', array $checkbox_tags = array(), array $label_tags = array())
+    {
+        return $this->buildRadioOrCheckbox('checkbox', $data, $default_value, $checkbox_tags, $label_tags);
+    }
+
+    /**
      * 输出select
      *
      * @param array $option
-     * @param int $default_value
+     * @param int|string $default_value
      * @param array $select_params
      * @param array $user_option_params
      * @return mixed
      */
-    function select(array $option, $default_value = 1, array $select_params = array(), array $user_option_params = array())
+    function select(array $option, $default_value = null, array $select_params = array(), array $user_option_params = array())
     {
-        $option_string = '';
-        foreach ($option as $value => $name) {
+        $content = '';
+        foreach ($option as $value => $option_text) {
             $option_params = array();
             if (!empty($user_option_params)) {
                 $option_params = $user_option_params;
             }
 
             $option_params['value'] = $value;
+            $option_params['@content'] = $option_text;
             if ($value == $default_value) {
                 $option_params['selected'] = true;
             }
 
-            $option_string .= $this->block($name, $option_params, 'option');
+            $content .= self::htmlTag('option', $option_params);
         }
 
-        return $this->wrap('select', $select_params)->html($option_string);
+        $select_params['@content'] = $content;
+        return $this->wrapContent(self::htmlTag('select', $select_params), false);
     }
 
     /**
@@ -234,15 +279,16 @@ class View extends FrameBase
      *
      * @param string $element
      * @param string|array $element_tags
+     * @param bool $content_rear 自身内容是否放在被包裹内容之后
      * @return $this
      */
-    function wrap($element, $element_tags = array())
+    function wrap($element, $element_tags = array(), $content_rear = false)
     {
         if (!is_array($element_tags)) {
             $element_tags = array('@content' => $element_tags);
         }
 
-        array_unshift($this->wrap_stack, array($element, $element_tags));
+        array_unshift($this->wrap_stack, array($element, $element_tags, $content_rear));
         return $this;
     }
 
@@ -683,7 +729,7 @@ class View extends FrameBase
     private function wrapTag($element, $element_tags = array())
     {
         if (!empty($this->wrap_stack)) {
-            array_unshift($this->wrap_stack, array($element, $element_tags));
+            $this->wrap($element, $element_tags);
             return $this->buildWrapTags($this->wrap_stack);
         }
 
@@ -701,11 +747,13 @@ class View extends FrameBase
     {
         if (!empty($this->wrap_stack)) {
             $stack_top = &$this->wrap_stack[0];
-            if (isset($stack_top[1]['@content'])) {
-                $stack_top[1]['@content'] .= $content;
-            } else {
-                $stack_top[1]['@content'] = $content;
+            if (isset($stack_top[1]['@content']) && $stack_top[2]) {
+                $content .= $stack_top[1]['@content'];
+            } else if (isset($stack_top[1]['@content'])) {
+                $content = $stack_top[1]['@content'] . $content;
             }
+
+            $stack_top[1]['@content'] = $content;
             return $this->buildWrapTags($this->wrap_stack);
         } else if ($encode) {
             return htmlentities($content, ENT_IGNORE);
@@ -726,18 +774,20 @@ class View extends FrameBase
         $wrap_content = '';
         $stack_size = count($wrap_tags) - 1;
         while ($wrap_config = array_shift($wrap_tags)) {
-            list($wrap_element, $wrap_element_tags) = $wrap_config;
+            list($wrap_element, $wrap_element_tags, $after) = $wrap_config;
             if ($wrap_content === '') {
                 $wrap_content = HTML::$wrap_element($wrap_element_tags);
             } else {
-                if (isset($wrap_element_tags['@content'])) {
+                if (isset($wrap_element_tags['@content']) && $after) {
+                    $wrap_element_tags['@content'] = $wrap_content . $wrap_element_tags['@content'];
+                } else if (isset($wrap_element_tags['@content'])) {
                     $wrap_element_tags['@content'] .= $wrap_content;
                 } else {
                     $wrap_element_tags['@content'] = $wrap_content;
                 }
 
                 if ($i == $stack_size) {
-                    return $this->wrapTag($wrap_element, $wrap_element_tags);
+                    return self::htmlTag($wrap_element, $wrap_element_tags);
                 } else {
                     $wrap_content = HTML::$wrap_element($wrap_element_tags);
                 }
@@ -750,6 +800,38 @@ class View extends FrameBase
         }
 
         return $wrap_content;
+    }
+
+    /**
+     * 生成radio或checkbox标签
+     *
+     * @param string $type 指定类型
+     * @param array $data 数据 值和label的关联数组
+     * @param string $default_value 默认值
+     * @param array $input_tags input附加参数
+     * @param array $label_tags label附加参数
+     * @return string
+     */
+    private function buildRadioOrCheckbox($type, array $data, $default_value = '', array $input_tags = array(), array $label_tags = array())
+    {
+        $content = '';
+        foreach ($data as $value => $label_text) {
+            $build_input_tags = array();
+            if (!empty($input_tags)) {
+                $build_input_tags = $input_tags;
+            }
+
+            $build_input_tags['type'] = $type;
+            $build_input_tags['value'] = $value;
+            if ($value == $default_value) {
+                $build_input_tags['checked'] = true;
+            }
+
+            $label_tags['@content'] = self::htmlTag('input', $build_input_tags) . $label_text;
+            $content .= self::htmlTag('label', $label_tags);
+        }
+
+        return $this->wrapContent($content, false);
     }
 
     /**
