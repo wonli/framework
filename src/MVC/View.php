@@ -236,6 +236,7 @@ class View extends FrameBase
             if (is_array($option)) {
                 $opt_content = '';
                 foreach ($option as $opt_value => $opt_option) {
+                    unset($option_params['selected']);
                     $option_params['value'] = $opt_value;
                     $option_params['@content'] = $opt_option;
                     if ($opt_value == $default_value) {
