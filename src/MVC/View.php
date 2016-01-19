@@ -218,28 +218,45 @@ class View extends FrameBase
     /**
      * 输出select
      *
-     * @param array $option
+     * @param array $options_data 二维数组时, 生成optgroup
      * @param int|string $default_value
      * @param array $select_params
      * @param array $user_option_params
      * @return mixed
      */
-    function select(array $option, $default_value = null, array $select_params = array(), array $user_option_params = array())
+    function select(array $options_data, $default_value = null, array $select_params = array(), array $user_option_params = array())
     {
         $content = '';
-        foreach ($option as $value => $option_text) {
+        foreach ($options_data as $value => $option) {
             $option_params = array();
             if (!empty($user_option_params)) {
                 $option_params = $user_option_params;
             }
 
-            $option_params['value'] = $value;
-            $option_params['@content'] = $option_text;
-            if ($value == $default_value) {
-                $option_params['selected'] = true;
-            }
+            if (is_array($option)) {
+                $opt_content = '';
+                foreach ($option as $opt_value => $opt_option) {
+                    $option_params['value'] = $opt_value;
+                    $option_params['@content'] = $opt_option;
+                    if ($opt_value == $default_value) {
+                        $option_params['selected'] = true;
+                    }
 
-            $content .= self::htmlTag('option', $option_params);
+                    $opt_content .= self::htmlTag('option', $option_params);
+                }
+
+                $opt_params['label'] = $value;
+                $opt_params['@content'] = $opt_content;
+                $content .= self::htmlTag('optgroup', $opt_params);
+            } else {
+                $option_params['value'] = $value;
+                $option_params['@content'] = $option;
+                if ($value == $default_value) {
+                    $option_params['selected'] = true;
+                }
+
+                $content .= self::htmlTag('option', $option_params);
+            }
         }
 
         $select_params['@content'] = $content;
