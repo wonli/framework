@@ -197,6 +197,7 @@ class View extends FrameBase
      */
     function radio(array $data, $default_value = '', array $radio_tags = array(), array $label_tags = array())
     {
+        $default_value = array($default_value => true);
         return $this->buildRadioOrCheckbox('radio', $data, $default_value, $radio_tags, $label_tags);
     }
 
@@ -205,13 +206,19 @@ class View extends FrameBase
      *
      * @see View::buildRadioOrCheckbox
      * @param array $data
-     * @param string $default_value
+     * @param string|array $default_value
      * @param array $checkbox_tags
      * @param array $label_tags
      * @return string
      */
     function checkbox(array $data, $default_value = '', array $checkbox_tags = array(), array $label_tags = array())
     {
+        if (is_array($default_value)) {
+            $default_value = array_flip($default_value);
+        } else {
+            $default_value = array($default_value => true);
+        }
+
         return $this->buildRadioOrCheckbox('checkbox', $data, $default_value, $checkbox_tags, $label_tags);
     }
 
@@ -219,7 +226,7 @@ class View extends FrameBase
      * 输出select
      *
      * @param array $options_data 二维数组时, 生成optgroup
-     * @param int|string $default_value
+     * @param int|string|array $default_value
      * @param array $select_params
      * @param array $user_option_params
      * @return mixed
@@ -227,6 +234,12 @@ class View extends FrameBase
     function select(array $options_data, $default_value = null, array $select_params = array(), array $user_option_params = array())
     {
         $content = '';
+        if (is_array($default_value)) {
+            $default_value = array_flip($default_value);
+        } else {
+            $default_value = array($default_value => true);
+        }
+
         foreach ($options_data as $value => $option) {
             $option_params = array();
             if (!empty($user_option_params)) {
@@ -239,7 +252,7 @@ class View extends FrameBase
                     unset($option_params['selected']);
                     $option_params['value'] = $opt_value;
                     $option_params['@content'] = $opt_option;
-                    if ($opt_value == $default_value) {
+                    if (isset($default_value[$opt_value])) {
                         $option_params['selected'] = true;
                     }
 
@@ -252,7 +265,7 @@ class View extends FrameBase
             } else {
                 $option_params['value'] = $value;
                 $option_params['@content'] = $option;
-                if ($value == $default_value) {
+                if (isset($default_value[$value])) {
                     $option_params['selected'] = true;
                 }
 
@@ -825,12 +838,12 @@ class View extends FrameBase
      *
      * @param string $type 指定类型
      * @param array $data 数据 值和label的关联数组
-     * @param string $default_value 默认值
+     * @param array $default_value 默认值
      * @param array $input_tags input附加参数
      * @param array $label_tags label附加参数
      * @return string
      */
-    private function buildRadioOrCheckbox($type, array $data, $default_value = '', array $input_tags = array(), array $label_tags = array())
+    private function buildRadioOrCheckbox($type, array $data, array $default_value = array(), array $input_tags = array(), array $label_tags = array())
     {
         $content = '';
         foreach ($data as $value => $label_text) {
@@ -841,7 +854,7 @@ class View extends FrameBase
 
             $build_input_tags['type'] = $type;
             $build_input_tags['value'] = $value;
-            if ($value == $default_value) {
+            if (isset($default_value[$value])) {
                 $build_input_tags['checked'] = true;
             }
 
