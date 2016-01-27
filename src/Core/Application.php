@@ -240,11 +240,8 @@ class Application
     public static function oneDimensionalToAssociativeArray(array $oneDimensional)
     {
         $result = array();
-        for ($max = count($oneDimensional), $i = 0; $i < $max; $i++) {
-            if (isset($oneDimensional[$i]) && isset($oneDimensional[$i + 1])) {
-                $result[$oneDimensional[$i]] = $oneDimensional[$i + 1];
-            }
-            array_shift($oneDimensional);
+        while($p = array_shift($oneDimensional)) {
+            $result[$p] = array_shift($oneDimensional);
         }
 
         return $result;
