@@ -355,7 +355,7 @@ class SQLAssembler implements SqlInterface
      */
     public function groupBy($group)
     {
-        return "GROUP BY {$this->parseOrder($group)} ";
+        return "GROUP BY {$this->groupBy($group)} ";
     }
 
     /**
