@@ -297,13 +297,13 @@ class Response
     /**
      * 重定向
      *
-     * @param $url
+     * @param string $url
      * @param int $status
-     * @return string
      */
-    function redirect($url, $status = 200)
+    function redirect($url, $status = 302)
     {
-        return $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
+        $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
+        exit(0);
     }
 
     /**

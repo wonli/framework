@@ -58,26 +58,23 @@ class Controller extends FrameBase
 
     /**
      * 返回执行的前一页
-     *
-     * @return string
      */
     protected function return_referer()
     {
-        return $this->redirect($_SERVER['HTTP_REFERER']);
+        $this->redirect($_SERVER['HTTP_REFERER']);
     }
 
     /**
      * 先生成连接再redirect
      *
-     * @param string|null $_controller
+     * @param string|null $controller controller:action
      * @param string|array $params
      * @param bool $sec
-     * @return string
      */
-    protected function to($_controller = null, $params = null, $sec = false)
+    protected function to($controller = null, $params = null, $sec = false)
     {
-        $url = $this->view->url($_controller, $params, $sec);
-        return $this->redirect($url);
+        $url = $this->view->url($controller, $params, $sec);
+        $this->redirect($url);
     }
 
     /**
@@ -85,11 +82,10 @@ class Controller extends FrameBase
      *
      * @param string $url
      * @param int $http_response_status
-     * @return string
      */
     protected function redirect($url, $http_response_status = 200)
     {
-        return $this->delegate->getResponse()->redirect($url, $http_response_status);
+        $this->delegate->getResponse()->redirect($url, $http_response_status);
     }
 
     /**
@@ -121,7 +117,7 @@ class Controller extends FrameBase
         $download_header = array(
             "Pragma: public",
             "Expires: 0",
-            "Cache-Control:must-revalidate, post-check=0, pre-check=0",
+            "Cache-Control: must-revalidate, post-check=0, pre-check=0",
             "Content-Type: application/force-download",
             "Content-Type: application/octet-stream",
             "Content-Type: application/download",
