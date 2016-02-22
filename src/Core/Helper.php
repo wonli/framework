@@ -48,7 +48,7 @@ class Helper
      *
      * @param string $str
      * @param string $charset 字符编码 默认utf-8
-     * @return Array
+     * @return array
      */
     static function stringToArray($str, $charset = 'utf-8')
     {
@@ -79,12 +79,12 @@ class Helper
      * 取得文件扩展名
      *
      * @param string $file 文件名
-     * @return mixed
+     * @return string
      */
     static function getExt($file)
     {
-        $_info = pathinfo($file);
-        return $_info['extension'];
+        $file_info = pathinfo($file);
+        return $file_info['extension'];
     }
 
     /**
@@ -209,11 +209,7 @@ class Helper
      */
     static function convertTags($str)
     {
-        if ($str) {
-            $str = str_replace(array('<', '>', "'", '"'), array('&lt;', '&gt;', '&#039;', '&quot;'), $str);
-        }
-
-        return $str;
+        return str_replace(array('<', '>', "'", '"'), array('&lt;', '&gt;', '&#039;', '&quot;'), $str);
     }
 
     /**
