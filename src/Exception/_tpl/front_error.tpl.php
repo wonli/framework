@@ -33,6 +33,7 @@
     .data-table .empty { color: rgba(0, 0, 0, .3); font-style: italic; }
     .exception{ font-family: "microsoft yahei",serif; }
     .line{border-right:1px solid #bbb;position: absolute;padding-right:5px;margin-right: 20px;left: 3px;width: 30px;text-align: right}
+    .footer {text-align:center;height:30px;background: #333;color:#808080;line-height:30px;box-sizing:border-box;border-top:2px solid rgba(0, 0, 0, 0.35)}
     </style>
 </head>
 
@@ -113,10 +114,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($_GET as $c_key => $c_value) : ?>
+                <?php foreach ($_GET as $g_key => $g_value) : ?>
                     <tr>
-                        <td><?php echo $c_key ?></td>
-                        <td><?php echo $c_value ?></td>
+                        <td><?php echo $g_key ?></td>
+                        <td><?php echo var_export($g_value, true) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
@@ -137,10 +138,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($_POST as $c_key => $c_value) : ?>
+                <?php foreach ($_POST as $p_key => $p_value) : ?>
                     <tr>
-                        <td><?php echo $c_key ?></td>
-                        <td><?php echo $c_value ?></td>
+                        <td><?php echo $p_key ?></td>
+                        <td><?php echo var_export($p_value, true) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
@@ -161,10 +162,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($_FILES as $c_key => $c_value) : ?>
+                <?php foreach ($_FILES as $f_key => $f_value) : ?>
                     <tr>
-                        <td><?php echo $c_key ?></td>
-                        <td><?php echo $c_value ?></td>
+                        <td><?php echo $f_key ?></td>
+                        <td><?php echo var_export($f_value, true) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
@@ -189,7 +190,7 @@
                 <?php foreach ($_COOKIE as $c_key => $c_value) : ?>
                     <tr>
                         <td><?php echo $c_key ?></td>
-                        <td><?php echo $c_value ?></td>
+                        <td><?php echo var_export($c_value, true) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
@@ -213,7 +214,7 @@
                 <?php foreach ($_SESSION as $s_key => $s_value) : ?>
                     <tr>
                         <td><?php echo $s_key ?></td>
-                        <td><?php echo $s_value ?></td>
+                        <td><?php echo var_export($s_value, true) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
@@ -224,6 +225,9 @@
     </div>
 </div>
 </div>
+</div>
+<div class="container footer">
+    <?php printf('CrossPHP v%s', Cross\Core\Delegate::getVersion()) ?>
 </div>
 
 <script type="text/javascript">
