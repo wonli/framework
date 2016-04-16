@@ -28,11 +28,9 @@ class PgSQLAssembler extends SQLAssembler
     public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
-        $table = $this->table_prefix . $table;
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
-        $group_str = $this->parseGroup($group_by);
 
         $page['limit'] = max(1, (int)$page['limit']);
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
@@ -40,13 +38,11 @@ class PgSQLAssembler extends SQLAssembler
 
         //offset 起始位置
         $offset = $page['limit'] * ($page['p'] - 1);
-
         if (1 !== $group_by) {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s OFFSET %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str, $page['limit'], $offset);
+            $group_str = $this->parseGroup($group_by);
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str} LIMIT {$page['limit']} OFFSET {$offset}";
         } else {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s OFFSET %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str, $page['limit'], $offset);
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} ORDER BY {$order_str} LIMIT {$page['limit']} OFFSET {$offset}";
         }
 
         $this->setSQL($sql);

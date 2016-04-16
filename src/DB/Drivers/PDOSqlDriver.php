@@ -136,7 +136,7 @@ class PDOSqlDriver
      */
     public function add($table, $data, $multi = false, & $insert_data = array(), $openTA = false)
     {
-        $this->SQLAssembler->add($table, $data, $multi, $insert_data);
+        $this->SQLAssembler->add($table, $data, $multi);
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();
 

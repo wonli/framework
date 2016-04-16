@@ -62,13 +62,10 @@ class SQLAssembler implements SqlInterface
     function get($table, $fields, $where)
     {
         $params = array();
-        $one_sql = "SELECT %s FROM {$table} WHERE %s LIMIT 1";
-
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
 
-        $sql = sprintf($one_sql, $field_str, $where_str);
-        $this->setSQL($sql);
+        $this->setSQL("SELECT {$field_str} FROM {$table} WHERE {$where_str} LIMIT 1");
         $this->setParams($params);
     }
 
@@ -78,8 +75,8 @@ class SQLAssembler implements SqlInterface
      * @param string $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
      * @param string $fields 要查询的字段 所有字段的时候 $fields='*'
      * @param string $where 查询条件
-     * @param int $order 排序
-     * @param int $group_by
+     * @param int|string $order 排序
+     * @param int|string $group_by
      * @param int|string $limit
      * @return array
      * @throws CoreException
@@ -90,24 +87,16 @@ class SQLAssembler implements SqlInterface
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
-        $group_str = $this->parseGroup($group_by);
 
         if (1 !== $group_by) {
-            if (0 !== $limit) {
-                $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s";
-                $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str, $limit);
-            } else {
-                $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s";
-                $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str);
-            }
+            $group_str = $this->parseGroup($group_by);
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str}";
         } else {
-            if (0 !== $limit) {
-                $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s";
-                $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str, $limit);
-            } else {
-                $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s";
-                $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str);
-            }
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} ORDER BY {$order_str}";
+        }
+
+        if (0 !== $limit) {
+            $sql .= " LIMIT {$limit}";
         }
 
         $this->setSQL($sql);
@@ -118,25 +107,24 @@ class SQLAssembler implements SqlInterface
      * 插入
      *
      * @param string $table 表名称
-     * @param array $data 要处理的数据,跟表中的字段对应
-     * @param bool $multi <pre>
-     * @param array $insert_data
-     *  是否批量插入数据,如果是
+     * @param array $data 要处理的数据关联数组
+     * @param bool $multi 是否批量插入数据
+     * <pre>
+     *  批量插入数据时$data的结构如下:
      *      $data = array(
      *          'fields' => array(字段1,字段2,...),
      *          'values' => array(
      *                      array(字段1的值, 字段2的值),
      *                      array(字段1的值, 字段2的值))
      *      );
-     *  </pre>
+     * </pre>
      * @return array|bool
      * @throws CoreException
      */
-    public function add($table, $data, $multi = false, & $insert_data = array())
+    public function add($table, $data, $multi = false)
     {
         $params = array();
-        $field = $value = '';
-        $insert_sql = "INSERT INTO {$table} (%s) VALUES (%s)";
+        $field_str = $value_str = '';
 
         if (true === $multi) {
             if (empty($data['fields']) || empty($data['values'])) {
@@ -144,35 +132,35 @@ class SQLAssembler implements SqlInterface
             }
 
             foreach ($data ['fields'] as $d) {
-                $field .= "{$d},";
-                $value .= '?,';
+                $field_str .= "{$d},";
+                $value_str .= '?,';
             }
 
             $params = array();
-            $sql = sprintf($insert_sql, rtrim($field, ','), rtrim($value, ','));
             foreach ($data ['values'] as $p) {
                 $params[] = $p;
             }
         } else {
             foreach ($data as $_field => $_value) {
-                $field .= "{$_field},";
-                $value .= '?,';
+                $field_str .= "{$_field},";
+                $value_str .= '?,';
                 $params[] = $_value;
             }
-            $sql = sprintf($insert_sql, rtrim($field, ','), rtrim($value, ','));
         }
 
-        $this->setSQL($sql);
+        $fields = trim($field_str, ',');
+        $values = trim($value_str, ',');
+        $this->setSQL("INSERT INTO {$table} ({$fields}) VALUES ({$values})");
         $this->setParams($params);
     }
 
     /**
      * 带分页功能的查询
      *
-     * @param string $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
-     * @param string $fields 要查询的字段 所有字段的时候 $fields='*'
+     * @param string $table 表名称, 复杂情况下, 以LEFT JOIN为例: table_a a LEFT JOIN table_b b ON a.id=b.aid
+     * @param string $fields 要查询的字段 所有字段的时候为'*'
      * @param string $where 查询条件
-     * @param int $order 排序
+     * @param int|string $order 排序
      * @param array $page 分页参数 默认返回50条记录
      * @param int|string $group_by
      * @return mixed|void
@@ -183,15 +171,13 @@ class SQLAssembler implements SqlInterface
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
-        $group_str = $this->parseGroup($group_by);
 
         $p = ($page['p'] - 1) * $page['limit'];
         if (1 !== $group_by) {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s GROUP BY %s ORDER BY %s LIMIT %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $group_str, $order_str, "{$p}, {$page['limit']}");
+            $group_str = $this->parseGroup($group_by);
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str} LIMIT {$p}, {$page['limit']}";
         } else {
-            $sql_tpl = "SELECT %s FROM {$table} WHERE %s ORDER BY %s LIMIT %s";
-            $sql = sprintf($sql_tpl, $field_str, $where_str, $order_str, "{$p}, {$page['limit']}");
+            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} ORDER BY {$order_str} LIMIT {$p}, {$page['limit']}";
         }
 
         $this->setSQL($sql);
@@ -209,30 +195,27 @@ class SQLAssembler implements SqlInterface
      */
     public function update($table, $data, $where)
     {
-        $up_sql = "UPDATE {$table} SET %s WHERE %s";
-
-        $field = '';
+        $fields = '';
         $params = array();
         if (!empty($data)) {
             if (is_array($data)) {
                 foreach ($data as $d_key => $d_value) {
-                    $field .= "{$d_key} = ? ,";
+                    $fields .= "{$d_key} = ? ,";
                     $params [] = strval($d_value);
                 }
             } else {
-                $field = $data;
+                $fields = $data;
             }
         }
 
         $where_params = array();
         $where_str = $this->parseWhere($where, $where_params);
-
         foreach ($where_params as $wp) {
             $params [] = $wp;
         }
 
-        $sql = sprintf($up_sql, trim($field, ','), $where_str);
-        $this->setSQL($sql);
+        $fields = trim($fields, ',');
+        $this->setSQL("UPDATE {$table} SET {$fields} WHERE {$where_str}");
         $this->setParams($params);
     }
 
@@ -253,8 +236,6 @@ class SQLAssembler implements SqlInterface
      */
     public function del($table, $where, $multi = false)
     {
-        $del_sql = "DELETE FROM %s WHERE %s";
-
         $params = array();
         if (true === $multi) {
             if (empty($where ['fields']) || empty($where ['values'])) {
@@ -267,17 +248,15 @@ class SQLAssembler implements SqlInterface
             }
 
             $where_str = implode(' AND ', $where_condition);
-            $sql = sprintf($del_sql, $table, $where_str);
             foreach ($where ['values'] as $p) {
                 $params[] = $p;
             }
 
         } else {
             $where_str = $this->parseWhere($where, $params);
-            $sql = sprintf($del_sql, $table, $where_str);
         }
 
-        $this->setSQL($sql);
+        $this->setSQL("DELETE FROM {$table} WHERE {$where_str}");
         $this->setParams($params);
     }
 
@@ -296,7 +275,7 @@ class SQLAssembler implements SqlInterface
      */
     public function from($table)
     {
-        return sprintf("FROM %s ", $table);
+        return "FROM {$table} ";
     }
 
     /**
