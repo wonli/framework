@@ -13,11 +13,12 @@ use Cross\DB\SQLAssembler\SQLiteAssembler;
 use Cross\DB\Connecter\MySQLConnecter;
 use Cross\DB\Connecter\PgSQLConnecter;
 use Cross\DB\Connecter\SQLiteConnecter;
+use Cross\Cache\Driver\MemcacheDriver;
+use Cross\Cache\Driver\RedisDriver;
+use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
-use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\Exception\CoreException;
-use Cross\Cache\Driver\RedisDriver;
 use Closure;
 
 /**
@@ -68,6 +69,9 @@ class DBFactory
 
             case 'redis':
                 return new RedisDriver($params);
+
+            case 'memcache':
+                return new MemcacheDriver($params);
 
             case 'couch':
                 return new CouchDriver($params);
