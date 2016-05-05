@@ -386,8 +386,9 @@ class PDOSqlDriver
      */
     function select($fields = '*')
     {
-        $this->makeQueryID();
+        $this->generateQueryID();
         $this->querySQL[$this->qid] = $this->SQLAssembler->select($fields);
+        $this->queryParams[$this->qid] = array();
         return $this;
     }
 
@@ -488,14 +489,18 @@ class PDOSqlDriver
     /**
      * 返回链式查询当前生成的prepare语句
      *
+     * @param bool $only_sql
      * @return mixed
      */
-    function getSQL()
+    function getSQL($only_sql = false)
     {
-        return array(
-            'sql' => $this->querySQL[$this->qid],
-            'params' => $this->queryParams[$this->qid]
-        );
+        $sql = $this->querySQL[$this->qid];
+        if ($only_sql) {
+            return $sql;
+        }
+
+        $params = $this->queryParams[$this->qid];
+        return array('sql' => $sql, 'params' => $params);
     }
 
     /**
@@ -511,7 +516,7 @@ class PDOSqlDriver
     /**
      * 生成qid
      */
-    private function makeQueryID()
+    private function generateQueryID()
     {
         do {
             $qid = mt_rand(1, 99999);
@@ -541,10 +546,7 @@ class PDOSqlDriver
         try {
             $stmt = $this->pdo->prepare($sql, $prepare_params);
             if ($execute) {
-                $execute_params = array();
-                if (isset($this->queryParams[$this->qid])) {
-                    $execute_params = $this->queryParams[$this->qid];
-                }
+                $execute_params = $this->queryParams[$this->qid];
                 $stmt->execute($execute_params);
             }
 
