@@ -329,7 +329,7 @@ class Application
         $controller_annotate = array();
         $class_annotate_content = $class_reflection->getDocComment();
         if ($class_annotate_content) {
-            $controller_annotate = Annotate::getInstance($class_annotate_content)->parse();
+            $controller_annotate = Annotate::getInstance($class_annotate_content, $this->delegate)->parse();
         }
 
         if ($action) {
@@ -346,7 +346,7 @@ class Application
             if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
                 $this->setAction($action);
                 //获取Action的注释配置
-                $this->setAnnotateConfig(Annotate::getInstance($is_callable->getDocComment())->parse(), $controller_annotate);
+                $this->setAnnotateConfig(Annotate::getInstance($is_callable->getDocComment(), $this->delegate)->parse(), $controller_annotate);
             } else {
                 throw new CoreException("{$controller_name_space}->{$action} 不允许访问的方法");
             }

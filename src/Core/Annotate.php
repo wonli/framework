@@ -6,6 +6,7 @@
  * @license     MIT License
  */
 namespace Cross\Core;
+
 use Closure;
 
 /**
@@ -30,28 +31,37 @@ class Annotate
     private $content;
 
     /**
+     * @var Delegate
+     */
+    private $delegate;
+
+    /**
      * @var Annotate
      */
     private static $instance;
 
     /**
      * 注册一个wrapper
+     *
+     * @param Delegate $delegate
      */
-    private function __construct()
+    private function __construct(Delegate $delegate)
     {
+        $this->delegate = $delegate;
         stream_register_wrapper('annotate', 'Cross\Lib\StringToPHPStream');
     }
 
     /**
      * 生成解析注释配置单例对象
      *
-     * @param $annotate
+     * @param string $annotate
+     * @param Delegate $delegate
      * @return Annotate
      */
-    public static function getInstance($annotate)
+    public static function getInstance($annotate, Delegate $delegate)
     {
         if (!self::$instance) {
-            self::$instance = new Annotate();
+            self::$instance = new Annotate($delegate);
         }
 
         return self::$instance->setContent($annotate);
@@ -82,8 +92,8 @@ class Annotate
             return array();
         }
 
-        $conf = array_combine($content[1], $content[2]);
-        $res = $this->parseAnnotate($conf);
+        $configs = array_combine($content[1], $content[2]);
+        $res = $this->parseAnnotate($configs);
 
         return $res;
     }
@@ -91,25 +101,31 @@ class Annotate
     /**
      * 注释配置解析
      *
-     * @param array $conf
+     * @param array $annotateConfigs
      * @return array
      */
-    private function parseAnnotate(array $conf)
+    private function parseAnnotate(array $annotateConfigs)
     {
         $result = array();
-        foreach ($conf as $conf_name => $params) {
-            switch ($conf_name) {
+        foreach ($annotateConfigs as $conf => $params) {
+            switch ($conf) {
                 case 'params':
                     $result['params'] = $this->parseConfigValue($params);
                     break;
 
                 case 'after':
                 case 'before':
-                    $result[$conf_name] = $this->bindToClosure($params);
+                    $result[$conf] = $this->bindToClosure($params);
                     break;
 
                 default:
-                    $result[$conf_name] = $this->parseAnnotateConfig($params);
+                    $closureContainer = $this->delegate->getClosureContainer();
+                    $hasClosure = $closureContainer->has('parseAnnotate');
+                    if ($hasClosure) {
+                        $closureContainer->run('parseAnnotate', array($conf, $params));
+                    } else {
+                        $result[$conf] = $params;
+                    }
             }
         }
 
