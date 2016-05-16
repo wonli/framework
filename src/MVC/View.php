@@ -64,11 +64,26 @@ class View extends FrameBase
     protected $data;
 
     /**
-     * 设置layer中变量的值
+     * 初始化布局文件中的变量
+     * <pre>
+     * title 标题
+     * keywords 关键词
+     * description 页面描述
+     *
+     * layer 布局模板名称
+     * load_layer 是否加载布局模板
+     * </pre>
      *
      * @var array
      */
-    protected $set = array();
+    protected $set = array(
+        'title' => '',
+        'keywords' => '',
+        'description' => '',
+
+        'layer' => 'default',
+        'load_layer' => true,
+    );
 
     /**
      * 模版扩展文件名
@@ -92,12 +107,11 @@ class View extends FrameBase
      */
     function display($data = null, $method = null)
     {
-        $load_layer = true;
         $this->data = $data;
         if ($method === null) {
             $display_type = $this->config->get('sys', 'display');
             if ($display_type && strcasecmp($display_type, 'html') !== 0) {
-                $load_layer = false;
+                $this->set['load_layer'] = false;
                 $method = trim($display_type);
             } else if ($this->action) {
                 $method = $this->action;
@@ -106,7 +120,7 @@ class View extends FrameBase
             }
         }
 
-        $this->obRenderAction($data, $method, $load_layer);
+        $this->obRenderAction($data, $method);
     }
 
     /**
@@ -447,6 +461,7 @@ class View extends FrameBase
      */
     function JSON($data)
     {
+        $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('json');
         echo json_encode($data);
     }
@@ -459,6 +474,7 @@ class View extends FrameBase
      */
     function XML($data, $root_name = 'root')
     {
+        $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('xml');
         echo Array2XML::createXML($root_name, $data)->saveXML();
     }
@@ -633,7 +649,7 @@ class View extends FrameBase
         static $tpl_path;
         $app_name = $this->getAppName();
         if (!isset($tpl_path[$app_name])) {
-            $tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir();
+            $tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir() . DIRECTORY_SEPARATOR;
         }
 
         return $tpl_path[$app_name];
@@ -672,9 +688,7 @@ class View extends FrameBase
     {
         if (!$this->tpl_dir) {
             $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
-            if ($default_tpl_dir) {
-                $default_tpl_dir = rtrim($default_tpl_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-            } else {
+            if (!$default_tpl_dir) {
                 $default_tpl_dir = 'default';
             }
             $this->setTplDir($default_tpl_dir);
@@ -733,20 +747,19 @@ class View extends FrameBase
      *
      * @param array $data
      * @param string $method
-     * @param bool $load_layer
      * @return string|void
      * @throws CoreException
      */
-    private function obRenderAction($data, $method, $load_layer)
+    private function obRenderAction($data, $method)
     {
         ob_start();
         $this->$method($data);
-        $method_content = ob_get_clean();
+        $content = ob_get_clean();
 
-        if ($load_layer) {
-            $this->loadLayer($method_content);
+        if ($this->set['load_layer']) {
+            $this->loadLayer($content);
         } else {
-            echo $method_content;
+            echo $content;
         }
     }
 
@@ -1117,22 +1130,12 @@ class View extends FrameBase
      */
     private function loadLayer($content, $layer_ext = '.layer.php')
     {
-        if ($this->set) {
-            extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
-        }
-        $_real_path = $this->getTplPath();
-
-        //运行时>配置>默认
-        if (isset($layer)) {
-            $layer_file = $_real_path . $layer . $layer_ext;
-        } else {
-            $layer_file = $_real_path . 'default' . $layer_ext;
-        }
-
+        $layer_file = $this->getTplPath() . $this->set['layer'] . $layer_ext;
         if (!is_file($layer_file)) {
             throw new CoreException($layer_file . ' layer Not found!');
         }
 
+        extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
         include $layer_file;
     }
 }
