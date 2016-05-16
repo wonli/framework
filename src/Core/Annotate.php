@@ -86,16 +86,13 @@ class Annotate
      */
     public function parse()
     {
-        $flag = preg_match_all(sprintf('/@%s(.*?)\s+(.*?)\n/', $this->prefix), $this->content, $content);
-
+        $flag = preg_match_all(sprintf('/@%s(.*?)\s+(.*?)%s/', $this->prefix, PHP_EOL), $this->content, $content);
         if (!$flag) {
             return array();
         }
 
         $configs = array_combine($content[1], $content[2]);
-        $res = $this->parseAnnotate($configs);
-
-        return $res;
+        return $this->parseAnnotate($configs);
     }
 
     /**
