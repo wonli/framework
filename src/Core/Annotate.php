@@ -113,6 +113,10 @@ class Annotate
                     $result['params'] = $this->parseConfigValue($params);
                     break;
 
+                case 'cache':
+                    $result['cache'] = $this->parseAnnotateConfig($params);
+                    break;
+
                 case 'after':
                 case 'before':
                     $result[$conf] = $this->bindToClosure($params);
