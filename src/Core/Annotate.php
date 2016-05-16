@@ -111,7 +111,9 @@ class Annotate
                     break;
 
                 case 'cache':
-                    $result['cache'] = $this->parseAnnotateConfig($params);
+                case 'response':
+                case 'basicAuth':
+                    $result[$conf] = $this->parseAnnotateConfig($params);
                     break;
 
                 case 'after':
@@ -123,10 +125,10 @@ class Annotate
                     $closureContainer = $this->delegate->getClosureContainer();
                     $hasClosure = $closureContainer->has('parseAnnotate');
                     if ($hasClosure) {
-                        $closureContainer->run('parseAnnotate', array($conf, $params));
-                    } else {
-                        $result[$conf] = $params;
+                        $closureContainer->run('parseAnnotate', array($conf, &$params));
                     }
+
+                    $result[$conf] = $params;
             }
         }
 
