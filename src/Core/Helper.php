@@ -7,6 +7,8 @@
  */
 namespace Cross\Core;
 
+use Cross\Http\Request;
+
 /**
  * @Auth: wonli <wonli@live.com>
  * Class Helper
@@ -600,24 +602,7 @@ class Helper
      */
     static function getIp()
     {
-        $ip = null;
-        if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-            $ip = getenv('HTTP_CLIENT_IP');
-        } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-            $ip = getenv('HTTP_X_FORWARDED_FOR');
-        } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-            $ip = getenv('REMOTE_ADDR');
-        } elseif (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp(
-                $_SERVER['REMOTE_ADDR'],
-                'unknown'
-            )
-        ) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-
-        //是否是一个合法的ip地址
-        $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
-        return $ip;
+        return Request::getInstance()->getUserHostAddress();
     }
 
     /**

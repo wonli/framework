@@ -61,7 +61,7 @@ class Controller extends FrameBase
      */
     protected function return_referer()
     {
-        $this->redirect($_SERVER['HTTP_REFERER']);
+        $this->redirect($this->request->getUrlReferrer());
     }
 
     /**

@@ -164,6 +164,21 @@ class Request
     }
 
     /**
+     * 获取当前页面URL路径
+     *
+     * @param bool $absolute
+     * @return string
+     */
+    public function getCurrentUrl($absolute = true)
+    {
+        if ($absolute) {
+            return $this->getHostInfo() . $this->_SERVER('REQUEST_URI');
+        }
+
+        return $this->_SERVER('REQUEST_URI');
+    }
+
+    /**
      * 设置Host信息
      *
      * @throws FrontException
@@ -172,7 +187,7 @@ class Request
     private function initHostInfo()
     {
         if (PHP_SAPI === 'cli') {
-            return 'cli';
+            return '';
         }
 
         $http = $this->_SERVER('HTTPS') == 'on' ? 'https' : 'http';
@@ -366,7 +381,20 @@ class Request
      */
     public function getUserHostAddress()
     {
-        return $this->_SERVER('REMOTE_ADDR') !== '' ? $this->_SERVER('REMOTE_ADDR') : '127.0.0.1';
+        $ip = null;
+        $remote_address = $this->_SERVER('REMOTE_ADDR');
+        if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
+            $ip = getenv('HTTP_CLIENT_IP');
+        } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
+            $ip = getenv('HTTP_X_FORWARDED_FOR');
+        } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
+            $ip = getenv('REMOTE_ADDR');
+        } elseif (!empty($remote_address) && strcasecmp($remote_address, 'unknown')) {
+            $ip = $remote_address;
+        }
+
+        $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
+        return $ip;
     }
 
     /**
