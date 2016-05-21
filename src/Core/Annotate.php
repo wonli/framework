@@ -86,7 +86,7 @@ class Annotate
      */
     public function parse()
     {
-        $flag = preg_match_all(sprintf('/@%s(.*?)\s+(.*?)%s/', $this->prefix, PHP_EOL), $this->content, $content);
+        $flag = preg_match_all("/@{$this->prefix}(.*?)\s+(.*)/", $this->content, $content);
         if (!$flag) {
             return array();
         }
@@ -131,6 +131,8 @@ class Annotate
                     $result[$conf] = $params;
             }
         }
+
+        print_r($result);
 
         return $result;
     }
