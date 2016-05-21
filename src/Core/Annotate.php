@@ -132,8 +132,6 @@ class Annotate
             }
         }
 
-        print_r($result);
-
         return $result;
     }
 
