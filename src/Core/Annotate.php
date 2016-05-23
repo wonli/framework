@@ -122,6 +122,7 @@ class Annotate
                     break;
 
                 default:
+                    $params = trim($params);
                     $closureContainer = $this->delegate->getClosureContainer();
                     $hasClosure = $closureContainer->has('parseAnnotate');
                     if ($hasClosure) {
