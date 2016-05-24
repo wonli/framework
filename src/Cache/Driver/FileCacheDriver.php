@@ -42,7 +42,7 @@ class FileCacheDriver implements CacheInterface
     function __construct(array $cache_config)
     {
         $this->setConfig($cache_config);
-        if (empty($cache_config['cache_path'] || empty($cache_config['key']))) {
+        if (empty($cache_config['cache_path']) || empty($cache_config['key'])) {
             throw new CoreException('请指定缓存文件路径和缓存key');
         }
 
