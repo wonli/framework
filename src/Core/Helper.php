@@ -8,6 +8,7 @@
 namespace Cross\Core;
 
 use Cross\Http\Request;
+use DOMDocument;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -31,6 +32,33 @@ class Helper
         } else {
             return $str;
         }
+    }
+
+    /**
+     * 安全的截取HTML字符串
+     *
+     * @param string $str 要截取的字符串参数
+     * @param string $len 截取的长度
+     * @param string $enc 字符串编码
+     * @return string
+     */
+    public static function subStrHTML($str, $len, $enc = 'utf8')
+    {
+        $str = self::subStr($str, $len, $enc);
+        return self::formatHTMLString($str);
+    }
+
+    /**
+     * 处理HTML字符串，清除未闭合的HTML标签等
+     *
+     * @param string $str HTML字符串
+     * @return string
+     */
+    public static function formatHTMLString($str)
+    {
+        $DOCUMENT = new DOMDocument();
+        @$DOCUMENT->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
+        return $DOCUMENT->saveHTML($DOCUMENT->documentElement->firstChild->firstChild);
     }
 
     /**
