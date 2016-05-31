@@ -25,16 +25,12 @@ class PgSQLAssembler extends SQLAssembler
      * @param int|string $group_by
      * @return mixed|void
      */
-    public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
-
-        $page['limit'] = max(1, (int)$page['limit']);
-        $page['total_page'] = ceil($page['result_count'] / $page['limit']);
-        $page['p'] = max(1, min($page['p'], $page['total_page']));
 
         //offset 起始位置
         $offset = $page['limit'] * ($page['p'] - 1);

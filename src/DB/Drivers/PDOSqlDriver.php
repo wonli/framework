@@ -10,6 +10,7 @@ namespace Cross\DB\Drivers;
 use Cross\DB\SQLAssembler\SQLAssembler;
 use Cross\Exception\CoreException;
 use Cross\I\PDOConnecter;
+use Cross\I\SqlInterface;
 use PDOException;
 use PDOStatement;
 use Exception;
@@ -20,7 +21,7 @@ use PDO;
  * Class PDOSqlDriver
  * @package Cross\DB\Drivers
  */
-class PDOSqlDriver
+class PDOSqlDriver implements SqlInterface
 {
     /**
      * @var PDOStatement
@@ -101,8 +102,7 @@ class PDOSqlDriver
      */
     public function get($table, $fields, $where)
     {
-        $this->SQLAssembler->get($table, $fields, $where);
-        return $this->getPrepareResult();
+        return $this->select($fields)->from($table)->where($where)->stmt()->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -118,8 +118,24 @@ class PDOSqlDriver
      */
     public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
-        $this->SQLAssembler->getAll($table, $fields, $where, $order, $group_by, $limit);
-        return $this->getPrepareResult(true);
+        $data = $this->select($fields)->from($table);
+        if ($where) {
+            $data->where($where);
+        }
+
+        if (1 !== $group_by) {
+            $data->groupBy($group_by);
+        }
+
+        if (1 !== $order) {
+            $data->orderBy($order);
+        }
+
+        if (0 !== $limit) {
+            $data->limit($limit);
+        }
+
+        return $data->stmt()->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -204,7 +220,7 @@ class PDOSqlDriver
      * @param int $group_by
      * @return mixed
      */
-    public function find($table, $fields, $where, $order = 1, array & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         if (!isset($page['result_count'])) {
             $total = $this->get($table, 'COUNT(*) as total', $where);
@@ -363,38 +379,55 @@ class PDOSqlDriver
     }
 
     /**
-     * 绑定sql语句,执行后给出返回结果
-     *
-     * @param bool $_fetchAll
-     * @param int $fetch_style
-     * @return mixed
-     * @throws CoreException
-     */
-    public function getPrepareResult($_fetchAll = false, $fetch_style = PDO::FETCH_ASSOC)
-    {
-        $this->sql = $this->SQLAssembler->getSQL();
-        $this->params = $this->SQLAssembler->getParams();
-
-        return $this->prepare($this->sql)->exec($this->params)->stmtFetch($_fetchAll, $fetch_style);
-    }
-
-    /**
      * 链式查询以select开始,跟原生的sql语句保持一致
      *
      * @param string $fields
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @param string $modifier
+     * @return PDOSqlDriver
      */
-    function select($fields = '*')
+    function select($fields = '*', $modifier = '')
     {
         $this->generateQueryID();
-        $this->querySQL[$this->qid] = $this->SQLAssembler->select($fields);
+        $this->querySQL[$this->qid] = $this->SQLAssembler->select($fields, $modifier);
+        $this->queryParams[$this->qid] = array();
+        return $this;
+    }
+
+    /**
+     * insert
+     *
+     * @param string $table
+     * @param array $data
+     * @param string $modifier
+     * @return PDOSqlDriver
+     */
+    function insert($table, array $data = array(), $modifier = '')
+    {
+        $params = array();
+        $this->generateQueryID();
+        $this->querySQL[$this->qid] = $this->SQLAssembler->insert($table, $modifier, $data, $params);
+        $this->queryParams[$this->qid] = $params;
+        return $this;
+    }
+
+    /**
+     * replace
+     *
+     * @param string $table
+     * @param string $modifier
+     * @return PDOSqlDriver
+     */
+    function replace($table, $modifier = '')
+    {
+        $this->generateQueryID();
+        $this->querySQL[$this->qid] = $this->SQLAssembler->replace($table, $modifier);
         $this->queryParams[$this->qid] = array();
         return $this;
     }
 
     /**
      * @param $table
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function from($table)
     {
@@ -404,13 +437,12 @@ class PDOSqlDriver
 
     /**
      * @param $where
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function where($where)
     {
-        $params = array();
+        $params = &$this->queryParams[$this->qid];
         $this->querySQL[$this->qid] .= $this->SQLAssembler->where($where, $params);
-        $this->queryParams[$this->qid] = $params;
 
         return $this;
     }
@@ -418,7 +450,7 @@ class PDOSqlDriver
     /**
      * @param $start
      * @param bool $end
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function limit($start, $end = false)
     {
@@ -428,7 +460,7 @@ class PDOSqlDriver
 
     /**
      * @param $offset
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function offset($offset)
     {
@@ -438,7 +470,7 @@ class PDOSqlDriver
 
     /**
      * @param $order
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function orderBy($order)
     {
@@ -448,7 +480,7 @@ class PDOSqlDriver
 
     /**
      * @param $group
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function groupBy($group)
     {
@@ -458,7 +490,7 @@ class PDOSqlDriver
 
     /**
      * @param $having
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function having($having)
     {
@@ -468,7 +500,7 @@ class PDOSqlDriver
 
     /**
      * @param $procedure
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     function procedure($procedure)
     {
@@ -478,11 +510,33 @@ class PDOSqlDriver
 
     /**
      * @param $var_name
-     * @return \Cross\DB\Drivers\PDOSqlDriver
+     * @return PDOSqlDriver
      */
     public function into($var_name)
     {
         $this->querySQL[$this->qid] .= $this->SQLAssembler->into($var_name);
+        return $this;
+    }
+
+    /**
+     * @param $set
+     * @return PDOSqlDriver
+     */
+    public function set($set)
+    {
+        $params = &$this->queryParams[$this->qid];
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->set($set, $params);
+
+        return $this;
+    }
+
+    /**
+     * @param string $on
+     * @return PDOSqlDriver
+     */
+    function on($on)
+    {
+        $this->querySQL[$this->qid] .= $this->SQLAssembler->on($on);
         return $this;
     }
 
@@ -514,20 +568,6 @@ class PDOSqlDriver
     }
 
     /**
-     * 生成qid
-     */
-    private function generateQueryID()
-    {
-        do {
-            $qid = mt_rand(1, 99999);
-            if (!isset($this->querySQL[$qid])) {
-                $this->qid = $qid;
-                break;
-            }
-        } while (true);
-    }
-
-    /**
      * 绑定链式查询生成的sql语句并返回stmt对象
      *
      * @param bool $execute 是否调用stmt的execute
@@ -537,7 +577,6 @@ class PDOSqlDriver
      */
     public function stmt($execute = true, $prepare_params = array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY))
     {
-        //如果不是以select开始调用,抛出异常
         if ($this->qid == 0) {
             throw new CoreException("链式风格的查询必须以->select()开始");
         }
@@ -552,6 +591,31 @@ class PDOSqlDriver
 
             unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
             return $stmt;
+        } catch (Exception $e) {
+            throw new CoreException(sprintf("%s<br>SQL: %s", $e->getMessage(), $sql));
+        }
+    }
+
+    /**
+     * 链式执行操作
+     *
+     * @param array $prepare_params
+     * @return bool
+     * @throws CoreException
+     */
+    public function stmtExecute($prepare_params = array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY))
+    {
+        if ($this->qid == 0) {
+            throw new CoreException("无效的执行语句");
+        }
+
+        $sql = $this->querySQL[$this->qid];
+        try {
+            $stmt = $this->pdo->prepare($sql, $prepare_params);
+            $execute_params = $this->queryParams[$this->qid];
+
+            unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
+            return $stmt->execute($execute_params);
         } catch (Exception $e) {
             throw new CoreException(sprintf("%s<br>SQL: %s", $e->getMessage(), $sql));
         }
@@ -745,5 +809,35 @@ class PDOSqlDriver
     public function insertId()
     {
         return $this->connecter->lastInsertID();
+    }
+
+    /**
+     * 绑定sql语句,执行后给出返回结果
+     *
+     * @param bool $_fetchAll
+     * @param int $fetch_style
+     * @return mixed
+     * @throws CoreException
+     */
+    protected function getPrepareResult($_fetchAll = false, $fetch_style = PDO::FETCH_ASSOC)
+    {
+        $this->sql = $this->SQLAssembler->getSQL();
+        $this->params = $this->SQLAssembler->getParams();
+
+        return $this->prepare($this->sql)->exec($this->params)->stmtFetch($_fetchAll, $fetch_style);
+    }
+
+    /**
+     * 生成qid
+     */
+    private function generateQueryID()
+    {
+        do {
+            $qid = mt_rand(1, 99999);
+            if (!isset($this->querySQL[$qid])) {
+                $this->qid = $qid;
+                break;
+            }
+        } while (true);
     }
 }

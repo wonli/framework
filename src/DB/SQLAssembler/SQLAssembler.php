@@ -8,14 +8,13 @@
 namespace Cross\DB\SQLAssembler;
 
 use Cross\Exception\CoreException;
-use Cross\I\SqlInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class SQLAssembler
  * @package Cross\DB\SQLAssembler
  */
-class SQLAssembler implements SqlInterface
+class SQLAssembler
 {
     /**
      * @var string
@@ -49,58 +48,6 @@ class SQLAssembler implements SqlInterface
     function __construct($table_prefix = '')
     {
         $this->table_prefix = $table_prefix;
-    }
-
-    /**
-     * 获取单条数据sql语句
-     *
-     * @param string $table database table
-     * @param string $fields fields
-     * @param string $where conditions
-     * @return mixed
-     */
-    function get($table, $fields, $where)
-    {
-        $params = array();
-        $field_str = $this->parseFields($fields);
-        $where_str = $this->parseWhere($where, $params);
-
-        $this->setSQL("SELECT {$field_str} FROM {$table} WHERE {$where_str} LIMIT 1");
-        $this->setParams($params);
-    }
-
-    /**
-     * 取出所有结果
-     *
-     * @param string $table 联合查询$table变量 $table = table_a a LEFT JOIN table_b b ON a.id=b.aid;
-     * @param string $fields 要查询的字段 所有字段的时候 $fields='*'
-     * @param string $where 查询条件
-     * @param int|string $order 排序
-     * @param int|string $group_by
-     * @param int|string $limit
-     * @return array
-     * @throws CoreException
-     */
-    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
-    {
-        $params = array();
-        $field_str = $this->parseFields($fields);
-        $where_str = $this->parseWhere($where, $params);
-        $order_str = $this->parseOrder($order);
-
-        if (1 !== $group_by) {
-            $group_str = $this->parseGroup($group_by);
-            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str}";
-        } else {
-            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} ORDER BY {$order_str}";
-        }
-
-        if (0 !== $limit) {
-            $sql .= " LIMIT {$limit}";
-        }
-
-        $this->setSQL($sql);
-        $this->setParams($params);
     }
 
     /**
@@ -140,17 +87,15 @@ class SQLAssembler implements SqlInterface
             foreach ($data ['values'] as $p) {
                 $params[] = $p;
             }
+
+            $fields = trim($field_str, ',');
+            $values = trim($value_str, ',');
+            $into_fields = "({$fields}) VALUES ({$values})";
         } else {
-            foreach ($data as $_field => $_value) {
-                $field_str .= "{$_field},";
-                $value_str .= '?,';
-                $params[] = $_value;
-            }
+            $into_fields = $this->parseData($data, $params, 'insert');
         }
 
-        $fields = trim($field_str, ',');
-        $values = trim($value_str, ',');
-        $this->setSQL("INSERT INTO {$table} ({$fields}) VALUES ({$values})");
+        $this->setSQL("INSERT INTO {$table} {$into_fields}");
         $this->setParams($params);
     }
 
@@ -165,7 +110,7 @@ class SQLAssembler implements SqlInterface
      * @param int|string $group_by
      * @return mixed|void
      */
-    public function find($table, $fields, $where, $order = 1, & $page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
         $params = array();
         $field_str = $this->parseFields($fields);
@@ -195,24 +140,9 @@ class SQLAssembler implements SqlInterface
      */
     public function update($table, $data, $where)
     {
-        $fields = '';
         $params = array();
-        if (!empty($data)) {
-            if (is_array($data)) {
-                foreach ($data as $d_key => $d_value) {
-                    $fields .= "{$d_key} = ? ,";
-                    $params [] = strval($d_value);
-                }
-            } else {
-                $fields = $data;
-            }
-        }
-
-        $where_params = array();
-        $where_str = $this->parseWhere($where, $where_params);
-        foreach ($where_params as $wp) {
-            $params [] = $wp;
-        }
+        $fields = $this->parseData($data, $params);
+        $where_str = $this->parseWhere($where, $params);
 
         $fields = trim($fields, ',');
         $this->setSQL("UPDATE {$table} SET {$fields} WHERE {$where_str}");
@@ -261,12 +191,41 @@ class SQLAssembler implements SqlInterface
     }
 
     /**
+     * select
+     *
      * @param string $fields
+     * @param string $modifier
      * @return string
      */
-    public function select($fields = '*')
+    public function select($fields = '*', $modifier = '')
     {
-        return "SELECT {$this->parseFields($fields)} ";
+        return "SELECT {$modifier} {$this->parseFields($fields)} ";
+    }
+
+    /**
+     * insert
+     *
+     * @param string $table
+     * @param string $modifier
+     * @param array $data
+     * @param array $params
+     * @return string
+     */
+    public function insert($table, $modifier = '', $data, array &$params = array())
+    {
+        return "INSERT {$modifier} INTO {$table} {$this->parseData($data, $params, 'insert')} ";
+    }
+
+    /**
+     * replace
+     *
+     * @param string $table
+     * @param string $modifier
+     * @return string
+     */
+    public function replace($table, $modifier = '')
+    {
+        return "REPLACE {$modifier} {$table} ";
     }
 
     /**
@@ -284,7 +243,7 @@ class SQLAssembler implements SqlInterface
      * @return string
      * @throws CoreException
      */
-    public function where($where, & $params)
+    public function where($where, array &$params)
     {
         return "WHERE {$this->parseWhere($where, $params)} ";
     }
@@ -365,6 +324,25 @@ class SQLAssembler implements SqlInterface
     }
 
     /**
+     * @param string $data
+     * @param array $params
+     * @return string
+     */
+    public function set($data, array &$params = array())
+    {
+        return "SET {$this->parseData($data, $params)} ";
+    }
+
+    /**
+     * @param string $on
+     * @return string
+     */
+    public function on($on)
+    {
+        return "ON {$on} ";
+    }
+
+    /**
      * 解析字段
      *
      * @param string|array $fields
@@ -393,16 +371,18 @@ class SQLAssembler implements SqlInterface
      * @return string
      * @throws CoreException
      */
-    public function parseWhere($where, & $params)
+    public function parseWhere($where, array &$params)
     {
         if (!empty($where)) {
             if (is_array($where)) {
                 if (isset($where[1])) {
                     $where_str = $where[0];
                     if (!is_array($where[1])) {
-                        $params = array($where[1]);
+                        $params[] = $where[1];
                     } else {
-                        $params = $where[1];
+                        foreach ($where[1] as $w) {
+                            $params[] = $w;
+                        }
                     }
                 } else {
                     $where_str = $this->parseWhereFromHashMap($where, $params);
@@ -509,7 +489,7 @@ class SQLAssembler implements SqlInterface
      * @return array
      * @throws CoreException
      */
-    protected function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, & $params)
+    protected function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, array &$params)
     {
         $condition = array();
         switch ($connector) {
@@ -568,9 +548,8 @@ class SQLAssembler implements SqlInterface
                     $in_where_condition [] = '?';
                 }
 
-                $condition[" {$condition_connector} "][] = sprintf('%s %s (%s)', $field, $connector,
-                    implode(',', $in_where_condition)
-                );
+                $in_where_condition_string = implode(',', $in_where_condition);
+                $condition[" {$condition_connector} "][] = "{$field} {$connector} ($in_where_condition_string)";
                 break;
 
             case 'BETWEEN':
@@ -583,7 +562,7 @@ class SQLAssembler implements SqlInterface
                     throw new CoreException('BETWEEN parameter error!');
                 }
 
-                $condition[" {$condition_connector} "][] = sprintf('%s %s ? AND ?', $field, $connector);
+                $condition[" {$condition_connector} "][] = "{$field} {$connector} ? AND ?";
                 $params[] = $field_config[0];
                 $params[] = $field_config[1];
                 break;
@@ -598,6 +577,58 @@ class SQLAssembler implements SqlInterface
     }
 
     /**
+     * 解析数据
+     *
+     * @param $data
+     * @param array $params
+     * @param string $format
+     * @return string
+     */
+    private function parseData($data, array &$params, $format = 'normal')
+    {
+        if (!empty($data)) {
+            if (is_array($data)) {
+                if (isset($data[1])) {
+                    $sql_segment = $data[0];
+                    if (!is_array($data[1])) {
+                        $params[] = $data[1];
+                    } else {
+                        foreach ($data[1] as $d) {
+                            $params[] = $d;
+                        }
+                    }
+                } else {
+                    if ('insert' === $format) {
+                        $data_keys = $data_values = array();
+                        foreach ($data as $key => $value) {
+                            $data_keys[] = $key;
+                            $data_values[] = '?';
+                            $params[] = $value;
+                        }
+
+                        $fields = implode(',', $data_keys);
+                        $values = implode(',', $data_values);
+                        $sql_segment = "({$fields}) VALUES ({$values})";
+                    } else {
+                        $segment = '';
+                        foreach ($data as $key => $value) {
+                            $segment .= ", {$key} = ?";
+                            $params[] = $value;
+                        }
+
+                        $sql_segment = trim($segment, ',');
+                    }
+                }
+            } else {
+                $sql_segment = $data;
+            }
+        } else {
+            $sql_segment = '';
+        }
+        return $sql_segment;
+    }
+
+    /**
      * 解析关联数组
      *
      * @param array $where
@@ -605,7 +636,7 @@ class SQLAssembler implements SqlInterface
      * @return string
      * @throws CoreException
      */
-    private function parseWhereFromHashMap(array $where, & $params)
+    private function parseWhereFromHashMap(array $where, array &$params)
     {
         $all_condition = array();
         foreach ($where as $field => $field_config) {
@@ -649,7 +680,8 @@ class SQLAssembler implements SqlInterface
         foreach ($where_condition as $condition) {
             foreach ($condition as $where_connector => $where_condition) {
                 if (isset($where_condition[1])) {
-                    $where_snippet = sprintf('(%s)', implode($where_connector, $where_condition));
+                    $where_snippet_string = implode($where_connector, $where_condition);
+                    $where_snippet = "($where_snippet_string)";
                     $where_connector = ' AND ';
                 } else {
                     $where_snippet = $where_condition[0];

@@ -27,7 +27,7 @@ class MySQLAssembler extends SQLAssembler
      * @return array
      * @throws \Cross\Exception\CoreException
      */
-    function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, & $params)
+    function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, array &$params)
     {
         $condition = array();
         switch ($connector) {
