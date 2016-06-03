@@ -18,13 +18,19 @@ use PDO;
  */
 class PgSQLConnecter extends BaseConnecter
 {
-
     /**
      * 数据库连接实例
      *
      * @var object
      */
     private static $instance;
+
+    /**
+     * 默认连接参数
+     *
+     * @var array
+     */
+    private static $options = array();
 
     /**
      * 创建PgSQL的PDO连接
@@ -38,9 +44,9 @@ class PgSQLConnecter extends BaseConnecter
     private function __construct($dsn, $user, $password, array $options = array())
     {
         try {
-            $this->pdo = new PDO($dsn, $user, $password, parent::getOptions($options));
+            $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage() . ' line:' . $e->getLine() . ' ' . $e->getFile());
+            throw new CoreException($e->getMessage());
         }
     }
 
@@ -74,30 +80,6 @@ class PgSQLConnecter extends BaseConnecter
     }
 
     /**
-     * 获取数据表信息
-     *
-     * @param string $table_name
-     * @return array
-     * @throws CoreException
-     */
-    public function getTableInfo($table_name)
-    {
-        $sql_tpl = "SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
-                    FROM   pg_index i
-                    JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                                         AND a.attnum = ANY(i.indkey)
-                    WHERE  i.indrelid = '%s'::regclass
-                    AND    i.indisprimary";
-
-        try {
-            $data = $this->pdo->query(sprintf($sql_tpl, $table_name));
-            return $data->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
      * 获取表的主键名
      *
      * @param string $table_name
@@ -105,10 +87,10 @@ class PgSQLConnecter extends BaseConnecter
      */
     public function getPK($table_name)
     {
-        $table_info = $this->getTableInfo($table_name);
-        foreach ($table_info as $ti) {
-            if (!empty($ti['attname'])) {
-                return $ti['attname'];
+        $table_info = $this->getMetaData($table_name, false);
+        foreach ($table_info as $info) {
+            if ($info['contype'] == 'p') {
+                return $info['column_name'];
             }
         }
         return false;
@@ -127,6 +109,43 @@ class PgSQLConnecter extends BaseConnecter
             return $data['insert_id'];
         } catch (Exception $e) {
             return false;
+        }
+    }
+
+    /**
+     * 获取表的字段信息
+     *
+     * @param string $table
+     * @param bool $fields_map
+     * @return array
+     */
+    function getMetaData($table, $fields_map = true)
+    {
+        $sql = "select a.column_name, a.is_nullable, a.column_default, p.contype from (
+                    select i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
+                    from information_schema.columns i left join pg_class c on c.relname=i.table_name
+                    where i.table_name='{$table}'
+                ) a left join pg_constraint p on p.conrelid=a.oid and a.ordinal_position = ANY (p.conkey)";
+
+        try {
+            $data = $this->pdo->query($sql);
+            if ($fields_map) {
+                $result = array();
+                $data->fetchAll(PDO::FETCH_FUNC, function ($column_name, $is_null, $column_default, $con_type) use (&$result) {
+                    $auto_increment = preg_match("/nextval\((.*)\)/", $column_default);
+                    $result[$column_name] = array(
+                        'primary' => $con_type == 'p',
+                        'auto_increment' => $auto_increment,
+                        'default_value' => $column_default ? '' : strval($column_default),
+                        'not_null' => $is_null == 'NO',
+                    );
+                });
+                return $result;
+            } else {
+                return $data->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (Exception $e) {
+            return array();
         }
     }
 }

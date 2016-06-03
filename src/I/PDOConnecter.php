@@ -35,6 +35,15 @@ interface PDOConnecter
     function getPK($table_name);
 
     /**
+     * 获取表的字段信息
+     *
+     * @param string $table_name
+     * @param bool $fields_map
+     * @return mixed
+     */
+    function getMetaData($table_name, $fields_map = true);
+
+    /**
      * 返回一个PDO连接对象的实例
      *
      * @return mixed

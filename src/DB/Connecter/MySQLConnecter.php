@@ -18,13 +18,33 @@ use PDO;
  */
 class MySQLConnecter extends BaseConnecter
 {
-
     /**
      * 数据库连接实例
      *
      * @var object
      */
     private static $instance;
+
+    /**
+     * 默认连接参数
+     * <ul>
+     *  <li>PDO::ATTR_PERSISTENT => false //禁用长连接</li>
+     *  <li>PDO::ATTR_EMULATE_PREPARES => false //禁用模拟预处理</li>
+     *  <li>PDO::ATTR_STRINGIFY_FETCHES => false //禁止数值转换成字符串</li>
+     *  <li>PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true //使用缓冲查询</li>
+     *  <li>PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION //发生错误时抛出异常 </li>
+     *  <li>PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8" </li>
+     * </ul>
+     *
+     * @var array
+     */
+    private static $options = array(
+        PDO::ATTR_PERSISTENT => false,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
+    );
 
     /**
      * 创建Mysql的PDO连接
@@ -38,9 +58,9 @@ class MySQLConnecter extends BaseConnecter
     private function __construct($dsn, $user, $password, array $options = array())
     {
         try {
-            $this->pdo = new PDO($dsn, $user, $password, parent::getOptions($options));
+            $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage() . ' line:' . $e->getLine() . ' ' . $e->getFile());
+            throw new CoreException($e->getMessage());
         }
     }
 
@@ -75,32 +95,14 @@ class MySQLConnecter extends BaseConnecter
     }
 
     /**
-     * 获取数据表信息
-     *
-     * @param string $table_name
-     * @return array
-     * @throws CoreException
-     */
-    public function getTableInfo($table_name)
-    {
-        $sql = "SHOW COLUMNS FROM {$table_name}";
-        try {
-            $data = $this->pdo->query($sql);
-            return $data->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
      * 获取表的主键名
      *
-     * @param string $table_name
+     * @param string $table
      * @return bool
      */
-    public function getPK($table_name)
+    public function getPK($table)
     {
-        $table_info = $this->getTableInfo($table_name);
+        $table_info = $this->getMetaData($table, false);
         foreach ($table_info as $ti) {
             if ($ti['Extra'] == 'auto_increment') {
                 return $ti['Field'];
@@ -118,5 +120,35 @@ class MySQLConnecter extends BaseConnecter
     function lastInsertId()
     {
         return $this->pdo->lastInsertId();
+    }
+
+    /**
+     * 获取表的字段信息
+     *
+     * @param string $table
+     * @param bool $fields_map
+     * @return mixed
+     */
+    function getMetaData($table, $fields_map = true)
+    {
+        $data = $this->pdo->query("DESCRIBE {$table}");
+        try {
+            if ($fields_map) {
+                $result = array();
+                $data->fetchAll(PDO::FETCH_FUNC, function ($field, $type, $null, $key, $default, $extra) use (&$result) {
+                    $result[$field] = array(
+                        'primary' => $key == 'PRI',
+                        'auto_increment' => $extra == 'auto_increment',
+                        'default_value' => strval($default),
+                        'not_null' => $null == 'NO',
+                    );
+                });
+                return $result;
+            } else {
+                return $data->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (Exception $e) {
+            return array();
+        }
     }
 }

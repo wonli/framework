@@ -39,8 +39,7 @@ class DBFactory
      */
     static function make($link, $params, array $config = array())
     {
-        //如果params是一个匿名函数
-        //匿名函数的第一个参数为当前app配置, 执行匿名函数并返回
+        //如果params是一个匿名函数, 则调用匿名函数创建数据库连接
         if ($params instanceof Closure) {
             return call_user_func_array($params, $config);
         }
@@ -56,7 +55,7 @@ class DBFactory
                 );
 
             case 'sqlite':
-                return new PDOSqlDriver(SQLiteConnecter::getInstance($params['dsn']), new SQLiteAssembler($prefix));
+                return new PDOSqlDriver(SQLiteConnecter::getInstance($params['dsn'], null, null, $options), new SQLiteAssembler($prefix));
 
             case 'pgsql':
                 return new PDOSqlDriver(
@@ -100,13 +99,17 @@ class DBFactory
             throw new CoreException('连接数据库所需参数不足');
         }
 
-        $port = isset($params['port']) ? $params['port'] : 3306;
-        $char_set = isset($params['charset']) ? $params['charset'] : 'utf8';
-
-        if ($use_unix_socket && strcasecmp(PHP_OS, 'linux') == 0 && !empty($params['unix_socket'])) {
-            $dsn = "{$type}:dbname={$params['name']};unix_socket={$params['unix_socket']}";
+        if ($use_unix_socket && !empty($params['unix_socket'])) {
+            $dsn = "{$type}:unix_socket={$params['unix_socket']};dbname={$params['name']};";
         } else {
-            $dsn = "{$type}:host={$params['host']};port={$port};dbname={$params['name']};charset={$char_set}";
+            $dsn = "{$type}:host={$params['host']};dbname={$params['name']};";
+            if (isset($params['port'])) {
+                $dsn .= "port={$params['port']};";
+            }
+
+            if (isset($params['charset'])) {
+                $dsn .= "charset={$params['charset']};";
+            }
         }
 
         return $dsn;

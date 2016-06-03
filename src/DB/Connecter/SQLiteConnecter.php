@@ -24,6 +24,13 @@ class SQLiteConnecter extends BaseConnecter
     private static $instance;
 
     /**
+     * 默认连接参数
+     *
+     * @var array
+     */
+    private static $options = array();
+
+    /**
      * 创建一个SQLite的PDO连接
      *
      * @param string $dsn
@@ -33,9 +40,9 @@ class SQLiteConnecter extends BaseConnecter
     private function __construct($dsn, array $options)
     {
         try {
-            $this->pdo = new PDO($dsn, null, null, parent::getOptions($options));
+            $this->pdo = new PDO($dsn, null, null, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage() . ' line:' . $e->getLine() . ' ' . $e->getFile());
+            throw new CoreException($e->getMessage());
         }
     }
 
@@ -69,17 +76,17 @@ class SQLiteConnecter extends BaseConnecter
     /**
      * 获取表的主键名
      *
-     * @param string $table_name
+     * @param string $table
      * @return mixed|void
      */
-    function getPK($table_name)
+    function getPK($table)
     {
-        $sql = sprintf('PRAGMA table_info(%s)', $table_name);
-        $info = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
+        $info = $this->getMetaData($table, false);
         if (!empty($info)) {
             foreach ($info as $i) {
-                if ($i['pk'] == 1) return $i['name'];
+                if ($i['pk'] == 1) {
+                    return $i['name'];
+                }
             }
         }
 
@@ -92,5 +99,36 @@ class SQLiteConnecter extends BaseConnecter
     function lastInsertId()
     {
         return $this->pdo->lastInsertId();
+    }
+
+    /**
+     * 获取表的字段信息
+     *
+     * @param string $table
+     * @param bool $fields_map
+     * @return mixed
+     */
+    function getMetaData($table, $fields_map = true)
+    {
+        $sql = "PRAGMA table_info('{$table}')";
+        try {
+            $data = $this->pdo->query($sql);
+            if ($fields_map) {
+                $result = array();
+                $data->fetchAll(PDO::FETCH_FUNC, function ($cid, $name, $type, $notnull, $dflt_value, $pk) use (&$result) {
+                    $result[$name] = array(
+                        'primary' => $pk == 1,
+                        'auto_increment' => (bool)(($pk == 1) && ($type == 'INTEGER')), //INTEGER && PRIMARY KEY.
+                        'default_value' => strval($dflt_value),
+                        'not_null' => $notnull == 1
+                    );
+                });
+                return $result;
+            } else {
+                return $data->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (Exception $e) {
+            return array();
+        }
     }
 }

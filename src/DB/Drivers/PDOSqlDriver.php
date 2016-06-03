@@ -682,6 +682,18 @@ class PDOSqlDriver implements SqlInterface
     }
 
     /**
+     * 获取表的字段信息
+     *
+     * @param string $table
+     * @param bool $fields_map
+     * @return mixed
+     */
+    public function getMetaData($table, $fields_map = true)
+    {
+        return $this->connecter->getMetaData($table, $fields_map);
+    }
+
+    /**
      * 获取自增字段名
      *
      * @param string $table_name
