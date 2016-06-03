@@ -17,23 +17,16 @@ use Closure;
 class Annotate
 {
     /**
-     * 参数前缀
+     * @var Delegate
+     */
+    private $delegate;
+
+    /**
+     * 注释参数前缀
      *
      * @var string
      */
     private $prefix = 'cp_';
-
-    /**
-     * 要解析的字符串
-     *
-     * @var string
-     */
-    private $content;
-
-    /**
-     * @var Delegate
-     */
-    private $delegate;
 
     /**
      * @var Annotate
@@ -54,39 +47,43 @@ class Annotate
     /**
      * 生成解析注释配置单例对象
      *
-     * @param string $annotate
      * @param Delegate $delegate
      * @return Annotate
      */
-    public static function getInstance($annotate, Delegate $delegate)
+    public static function getInstance(Delegate $delegate)
     {
         if (!self::$instance) {
             self::$instance = new Annotate($delegate);
         }
 
-        return self::$instance->setContent($annotate);
+        return self::$instance;
     }
 
     /**
-     * 设置要解析的字符串
+     * 设置前缀
      *
-     * @param $annotate
+     * @param string $prefix
      * @return $this
      */
-    function setContent($annotate)
+    function setPrefix($prefix)
     {
-        $this->content = $annotate;
+        $this->prefix = $prefix;
         return $this;
     }
 
     /**
      * 注释配置转换为数组
      *
+     * @param string $annotate
      * @return array
      */
-    public function parse()
+    public function parse($annotate = '')
     {
-        $flag = preg_match_all("/@{$this->prefix}(.*?)\s+(.*)/", $this->content, $content);
+        if (empty($annotate)) {
+            return array();
+        }
+
+        $flag = preg_match_all("/@{$this->prefix}(.*?)\s+(.*)/", $annotate, $content);
         if (!$flag) {
             return array();
         }
