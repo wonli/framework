@@ -136,7 +136,7 @@ class PgSQLConnecter extends BaseConnecter
                     $result[$column_name] = array(
                         'primary' => $con_type == 'p',
                         'auto_increment' => $auto_increment,
-                        'default_value' => $column_default ? '' : strval($column_default),
+                        'default_value' => $auto_increment ? '' : strval($column_default),
                         'not_null' => $is_null == 'NO',
                     );
                 });
