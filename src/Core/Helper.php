@@ -52,13 +52,19 @@ class Helper
      * 处理HTML字符串，清除未闭合的HTML标签等
      *
      * @param string $str HTML字符串
+     * @param bool $removing_doctype
      * @return string
      */
-    public static function formatHTMLString($str)
+    public static function formatHTMLString($str, $removing_doctype = true)
     {
         $DOCUMENT = new DOMDocument();
         @$DOCUMENT->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
-        return $DOCUMENT->saveHTML($DOCUMENT->documentElement->firstChild->firstChild);
+        $content = $DOCUMENT->saveHTML($DOCUMENT->documentElement);
+        if ($removing_doctype) {
+            return preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $content);
+        }
+
+        return $content;
     }
 
     /**
