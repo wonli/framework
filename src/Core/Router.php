@@ -314,7 +314,7 @@ class Router implements RouterInterface
 
         $ori_action = '';
         if (!isset($_action)) {
-            if (isset($request[0])) {
+            if (isset($request[0]) && !empty($request[0])) {
                 $ori_action = $_action = array_shift($request);
             } else {
                 $_action = self::$default_action;
