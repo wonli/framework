@@ -169,10 +169,13 @@ class Response
      * 发送http 状态码
      *
      * @param int $code
+     * @param string $descriptions
      */
-    function sendResponseStatus($code = 200)
+    function sendResponseStatus($code = 200, $descriptions = '')
     {
-        $descriptions = self::$statusDescriptions[$code];
+        if ($descriptions == '' && isset(self::$statusDescriptions[$code])) {
+            $descriptions = self::$statusDescriptions[$code];
+        }
         header("HTTP/1.1 {$code} {$descriptions}");
     }
 
@@ -320,10 +323,6 @@ class Response
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
             self::$is_send_header = true;
-        }
-
-        if (!$content) {
-            $content = self::$statusDescriptions [$code];
         }
 
         $this->flushContent($content, $tpl);
