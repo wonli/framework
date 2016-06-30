@@ -64,7 +64,8 @@ class CallTreeToHTML
     function getHTML($node)
     {
         $dom = $this->getDom($node);
-        return $dom->saveHTML();
+        $dom->encoding = 'utf-8';
+        return $dom->saveHTML($dom->firstChild);
     }
 
     /**
