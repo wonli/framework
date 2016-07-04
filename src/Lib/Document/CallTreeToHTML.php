@@ -97,7 +97,7 @@ class CallTreeToHTML
                 }
             }
 
-            $this->element = $this->dom->createElement($root_element_name, $content);
+            $this->element = $this->dom->createElement($root_element_name, htmlentities($content));
             if (!empty($attr_set)) {
                 foreach ($attr_set as $attr_set_name => $attr_set_value) {
                     $this->element->setAttribute($attr_set_name, $attr_set_value);
@@ -135,7 +135,7 @@ class CallTreeToHTML
                         }
                     }
 
-                    $element = $this->dom->createElement($element_name, $content);
+                    $element = $this->dom->createElement($element_name, htmlentities($content));
                     if ($parentElement instanceof DOMElement) {
                         $current_element = $parentElement->appendChild($element);
                     } else {
