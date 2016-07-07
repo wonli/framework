@@ -17,7 +17,8 @@ use DOMDocument;
  * Class NodeTree
  * @package Cross\Lib\Document
  */
-class CallTree {
+class CallTree
+{
 
     private $node = array();
 
@@ -39,17 +40,16 @@ class CallTree {
      */
     function saveNode($node_name, $node_arguments)
     {
-        $this->node = array(
-            $node_name  =>  $node_arguments
-        );
+        $this->node = array($node_name => $node_arguments);
     }
 
     /**
      * 输出HTML标签
+     * @param bool $html_decode
      */
-    function html()
+    function html($html_decode = true)
     {
-        echo $this->nodeToHTML();
+        echo $this->nodeToHTML($html_decode);
     }
 
     /**
@@ -85,10 +85,11 @@ class CallTree {
     /**
      * 把node转换为html
      *
+     * @param bool $html_decode
      * @return string
      */
-    private function nodeToHTML()
+    private function nodeToHTML($html_decode = true)
     {
-        return CallTreeToHTML::getInstance()->getHTML($this->getNode());
+        return CallTreeToHTML::getInstance()->getHTML($this->getNode(), $html_decode);
     }
 }

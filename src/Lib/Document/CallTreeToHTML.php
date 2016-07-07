@@ -59,13 +59,19 @@ class CallTreeToHTML
      * DOM转HTML
      *
      * @param $node
+     * @param bool $html_decode
      * @return string
      */
-    function getHTML($node)
+    function getHTML($node, $html_decode = true)
     {
         $dom = $this->getDom($node);
         $dom->encoding = 'utf-8';
-        return $dom->saveHTML($dom->firstChild);
+        $html = $dom->saveHTML();
+        if ($html_decode) {
+            $html = html_entity_decode($html);
+        }
+
+        return $html;
     }
 
     /**
