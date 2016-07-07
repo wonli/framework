@@ -37,38 +37,46 @@ class SessionAuth implements HttpAuthInterface
     /**
      * 设置session的值
      *
-     * @param $key
-     * @param $value
-     * @param int $exp
+     * @param string $key
+     * @param string|array $value
+     * @param int $expire
      * @return bool|mixed
      */
-    function set($key, $value, $exp = 86400)
+    function set($key, $value, $expire = 0)
     {
-        $_SESSION[$key] = $value;
+        if (is_array($value)) {
+            $value = json_encode($value);
+        }
 
+        $_SESSION[$key] = $value;
         return true;
     }
 
     /**
      * 获取session的值
      *
-     * @param $key
-     * @param bool $de
-     * @return mixed
+     * @param string $key
+     * @param bool $deCode
+     * @return bool|mixed
      */
-    function get($key, $de = false)
+    function get($key, $deCode = false)
     {
-        if (false !== strpos($key, ':')) {
-            list($v_key, $c_key) = explode(':', $key);
-        } else {
-            $v_key = $key;
+        if (false !== strpos($key, ':') && $deCode) {
+            list($key, $arrKey) = explode(':', $key);
         }
 
-        $_result = $_SESSION[$v_key];
-        if (!empty($c_key) && isset($_result[$c_key])) {
-            return $_result[$c_key];
+        if (!isset($_SESSION[$key])) {
+            return false;
         }
 
-        return $_result;
+        $result = $_SESSION[$key];
+        if ($deCode) {
+            $result = json_decode($result, true);
+            if (isset($arrKey) && isset($result[$arrKey])) {
+                return $result[$arrKey];
+            }
+        }
+
+        return $result;
     }
 }

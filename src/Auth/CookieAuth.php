@@ -34,27 +34,33 @@ class CookieAuth implements HttpAuthInterface
     /**
      * 生成加密cookie
      *
-     * @param $name
-     * @param $params
-     * @param int $exp
+     * @param string $name
+     * @param string|array $params
+     * @param int $expire
      * @return bool|mixed
      */
-    function set($name, $params, $exp = 86400)
+    function set($name, $params, $expire = 0)
     {
-        $key = $this->cookieKey($name);
-        if (is_array($params)) {
-            $params = json_encode($params);
+        if ($params === '' || $params === null) {
+            $expire = time() - 3600;
+            $value = null;
+        } else {
+            $encryptKey = $this->getEncryptKey($name);
+            if (is_array($params)) {
+                $params = json_encode($params);
+            }
+            $value = Helper::authCode($params, 'ENCODE', $encryptKey);
+            if ($expire > 0) {
+                $expire = time() + $expire;
+            }
         }
-
-        $str = Helper::authCode($params, 'ENCODE', $key);
-        $expire_time = time() + $exp;
 
         $cookie_domain = null;
         if (defined('COOKIE_DOMAIN')) {
             $cookie_domain = COOKIE_DOMAIN;
         }
 
-        if (setcookie($name, $str, $expire_time, '/', $cookie_domain, null, true)) {
+        if (setcookie($name, $value, $expire, '/', $cookie_domain, null, true)) {
             return true;
         }
 
@@ -65,51 +71,45 @@ class CookieAuth implements HttpAuthInterface
      * 从已加密的cookie中取出值
      *
      * @param string $params cookie的key
-     * @param bool $de
-     * @return bool|mixed|string
+     * @param bool $deCode
+     * @return bool|string
      */
-    function get($params, $de = false)
+    function get($params, $deCode = false)
     {
-        $de_json = false;
-        if (false !== strpos($params, ':')) {
-            list($v_key, $c_key) = explode(':', $params);
-            $de_json = true;
+        if (false !== strpos($params, ':') && $deCode) {
+            list($name, $arrKey) = explode(':', $params);
         } else {
-            $v_key = $params;
+            $name = $params;
         }
 
-        if (isset($_COOKIE [$v_key])) {
-            $str = $_COOKIE [$v_key];
-        } else {
+        if (!isset($_COOKIE[$name])) {
             return false;
         }
 
-        $key = $this->cookieKey($v_key);
-        $result = Helper::authCode($str, 'DECODE', $key);
-
+        $value = $_COOKIE[$name];
+        $encryptKey = $this->getEncryptKey($name);
+        $result = Helper::authCode($value, 'DECODE', $encryptKey);
         if (!$result) {
             return false;
         }
 
-        if ($de_json || $de) {
+        if ($deCode) {
             $result = json_decode($result, true);
-            if (!empty($c_key) && !empty($result [$c_key])) {
-                return $result[$c_key];
+            if (isset($arrKey) && isset($result[$arrKey])) {
+                return $result[$arrKey];
             }
-
-            return $result;
         }
 
         return $result;
     }
 
     /**
-     * 生成加密COOKIE的密钥 用户ip.浏览器AGENT.key.params
+     * 生成密钥
      *
-     * @param $params
+     * @param string $cookieName
      * @return string
      */
-    protected function cookieKey($params)
+    protected function getEncryptKey($cookieName)
     {
         if (isset($_SERVER['HTTP_USER_AGENT'])) {
             $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
@@ -117,6 +117,6 @@ class CookieAuth implements HttpAuthInterface
             $agent = 'agent';
         }
 
-        return md5($agent . $this->key . $params);
+        return md5($agent . $this->key . $cookieName);
     }
 }

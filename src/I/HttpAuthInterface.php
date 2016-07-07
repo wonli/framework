@@ -17,19 +17,19 @@ interface HttpAuthInterface
     /**
      * 设置
      *
-     * @param     $key
-     * @param     $value
-     * @param int $exp
+     * @param string $key
+     * @param string|array $value
+     * @param int $expire
      * @return mixed
      */
-    public function set($key, $value, $exp = 86400);
+    public function set($key, $value, $expire = 0);
 
     /**
      * 获取
      *
-     * @param      $key
-     * @param bool $de
+     * @param string $key
+     * @param bool $deCode
      * @return mixed
      */
-    public function get($key, $de = false);
+    public function get($key, $deCode = false);
 }
