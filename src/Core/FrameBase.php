@@ -8,8 +8,8 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
-use Cross\Http\Request;
 use Cross\Http\Response;
+use Cross\Http\Request;
 use Cross\MVC\View;
 
 /**
@@ -105,13 +105,9 @@ class FrameBase
      * @return array|string
      * @throws CoreException
      */
-    function result($status = 1, $message = 'ok', $json_encode = false)
+    function result($status = 1, $message = '', $json_encode = false)
     {
-        $result = array(
-            'status' => $status,
-            'message' => $message,
-        );
-
+        $result = array('status' => $status, 'message' => $message);
         if ($json_encode) {
             if (($result = json_encode($result)) === false) {
                 throw new CoreException('json encode fail');
@@ -164,36 +160,36 @@ class FrameBase
      *
      * @param string $key key
      * @param string $value 值
-     * @param int $exp 过期时间
+     * @param int $expire 过期时间(默认一天过期)
      * @return bool
      */
-    protected function setAuth($key, $value, $exp = 86400)
+    protected function setAuth($key, $value, $expire = 86400)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->set($key, $value, $exp);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->set($key, $value, $expire);
     }
 
     /**
      * 解密会话
      *
      * @param string $key
-     * @param bool $de
+     * @param bool $deCode
      * @return bool|mixed|string
      */
-    protected function getAuth($key, $de = false)
+    protected function getAuth($key, $deCode = false)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->get($key, $de);
+        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->get($key, $deCode);
     }
 
     /**
-     * 参数加密
+     * uri参数加密
      *
-     * @param $tex
+     * @param string $params
      * @param string $type
      * @return bool|string
      */
-    protected function urlEncrypt($tex, $type = 'encode')
+    protected function urlEncrypt($params, $type = 'encode')
     {
-        return Helper::encodeParams($tex, $this->getUrlEncryptKey('uri'), $type);
+        return Helper::encodeParams($params, $this->getUrlEncryptKey('uri'), $type);
     }
 
     /**
@@ -219,11 +215,14 @@ class FrameBase
      * @param string $params
      * @return bool|string
      */
-    protected function sParams($use_annotate = true,  $params = null)
+    protected function sParams($use_annotate = true, $params = null)
     {
-        $addition_params = $_GET;
-        $url_config = $this->getConfig()->get('url');
+        $addition_params = array();
+        if (!empty($_GET)) {
+            $addition_params = $_GET;
+        }
 
+        $url_config = $this->getConfig()->get('url');
         if (null === $params) {
             $ori_params = $this->getConfig()->get('ori_router', 'params');
             switch ($url_config['type']) {
