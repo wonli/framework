@@ -111,7 +111,7 @@ class Application
         $closureContainer->run('dispatcher');
 
         $cache = false;
-        if (isset($annotate_config['cache']) && $this->delegate->getRequest()->isGetRequest()) {
+        if (isset($annotate_config['cache'])) {
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
@@ -240,7 +240,7 @@ class Application
     public static function oneDimensionalToAssociativeArray(array $oneDimensional)
     {
         $result = array();
-        while($p = array_shift($oneDimensional)) {
+        while ($p = array_shift($oneDimensional)) {
             $result[$p] = array_shift($oneDimensional);
         }
 
@@ -427,7 +427,16 @@ class Application
     }
 
     /**
-     * 初始化RequestCache
+     * 初始化请求缓存
+     * <pre>
+     * request_cache_config 共接受3个参数
+     * 1 缓存开关
+     * 2 缓存配置数组
+     * 3 是否强制开启请求缓存(忽略HTTP请求类型检查)
+     *
+     * 请求类型验证优先级大于缓存开关
+     * 注册匿名函数cpCache可以更灵活的控制请求缓存
+     * </pre>
      *
      * @param array $request_cache_config
      * @param array $action_annotate_params
@@ -438,6 +447,10 @@ class Application
     {
         if (!isset($request_cache_config[1]) || !is_array($request_cache_config[1])) {
             throw new CoreException('请求缓存配置格式不正确');
+        }
+
+        if (empty($request_cache_config[2]) && !$this->delegate->getRequest()->isGetRequest()) {
+            return false;
         }
 
         $display_type = $this->config->get('sys', 'display');
