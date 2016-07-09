@@ -316,7 +316,7 @@ class View extends FrameBase
      */
     static function htmlTag($element, $element_tags = array())
     {
-        return html_entity_decode(HTML::$element($element_tags));
+        return HTML::$element($element_tags);
     }
 
     /**
@@ -837,10 +837,6 @@ class View extends FrameBase
                 }
             }
             $i++;
-        }
-
-        if ($wrap_content) {
-            $wrap_content = html_entity_decode($wrap_content);
         }
 
         return $wrap_content;
