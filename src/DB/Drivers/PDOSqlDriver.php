@@ -592,7 +592,7 @@ class PDOSqlDriver implements SqlInterface
             unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
             return $stmt;
         } catch (Exception $e) {
-            throw new CoreException(sprintf("%s<br>SQL: %s", $e->getMessage(), $sql));
+            throw new CoreException($e->getMessage());
         }
     }
 
@@ -617,7 +617,7 @@ class PDOSqlDriver implements SqlInterface
             unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
             return $stmt->execute($execute_params);
         } catch (Exception $e) {
-            throw new CoreException(sprintf("%s<br>SQL: %s", $e->getMessage(), $sql));
+            throw new CoreException($e->getMessage());
         }
     }
 
