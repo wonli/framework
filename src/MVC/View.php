@@ -497,6 +497,26 @@ class View extends FrameBase
     }
 
     /**
+     * @see e
+     * <pre>
+     * 判断数组中的值是否为empty,否则返回默认值
+     * </pre>
+     *
+     * @param array $data
+     * @param string|int $key
+     * @param string $default_value
+     * @return string
+     */
+    function ee(array $data, $key, $default_value = '')
+    {
+        if (!empty($data[$key])) {
+            return $data[$key];
+        }
+
+        return $default_value;
+    }
+
+    /**
      * 设置layer附加参数
      *
      * @param $name
