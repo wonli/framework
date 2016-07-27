@@ -636,7 +636,7 @@ class Helper
      */
     static function getIp()
     {
-        return Request::getInstance()->getUserHostAddress();
+        return Request::getInstance()->getUserIPAddress();
     }
 
     /**

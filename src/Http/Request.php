@@ -379,7 +379,7 @@ class Request
     /**
      * @return string userIP
      */
-    public function getUserHostAddress()
+    public function getUserIPAddress()
     {
         $ip = null;
         $remote_address = $this->_SERVER('REMOTE_ADDR');
