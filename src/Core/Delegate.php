@@ -344,8 +344,8 @@ class Delegate
 
         //url相关设置
         $config->set('url', array(
-            'index' => $index_name,
             'host' => $host,
+            'index' => $index_name,
             'request' => $request_url,
             'full_request' => $host . $request_url,
         ));
