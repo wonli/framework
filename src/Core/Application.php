@@ -181,6 +181,36 @@ class Application
     }
 
     /**
+     * 实例化内部类
+     * <pre>
+     * 判断类中是否包含静态成员变量app_delegate并赋值
+     * 主要用于实例化Cross\MVC\Module, Cross\MVC\View命名空间下的派生类
+     * 不能实例化控制器, 实例化控制器请调用本类中的get()方法
+     * </pre>
+     *
+     * @param string $class 类名或命名空间
+     * @param array $args
+     * @return object
+     */
+    public function instanceClass($class, $args = array())
+    {
+        $rc = new ReflectionClass($class);
+        if ($rc->hasProperty('app_delegate')) {
+            $rc->setStaticPropertyValue('app_delegate', $this->delegate);
+        }
+
+        if ($rc->hasMethod('__construct')) {
+            if (!is_array($args)) {
+                $args = array($args);
+            }
+
+            return $rc->newInstanceArgs($args);
+        }
+
+        return $rc->newInstance();
+    }
+
+    /**
      * 合并参数注释配置
      *
      * @param array $params
