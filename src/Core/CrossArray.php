@@ -20,22 +20,36 @@ class CrossArray
     protected $data;
 
     /**
+     * @var self
+     */
+    protected static $instance;
+
+    /**
      * CrossArray
      *
      * @param array $data
      */
-    function __construct(array $data)
+    private function __construct(array $data)
     {
         $this->data = $data;
     }
 
     /**
      * @param array $data
+     * @param null $cache_key
      * @return CrossArray
      */
-    static function init(array $data)
+    static function init(array $data, $cache_key = null)
     {
-        return new CrossArray($data);
+        if (null === $cache_key) {
+            $cache_key = md5(json_encode($data));
+        }
+
+        if (!isset(self::$instance[$cache_key])) {
+            self::$instance[$cache_key] = new self($data);
+        }
+
+        return self::$instance[$cache_key];
     }
 
     /**
