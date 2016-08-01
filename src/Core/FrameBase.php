@@ -118,41 +118,15 @@ class FrameBase
     }
 
     /**
-     * 调用注入的匿名函数
+     * 读取配置文件
      *
-     * @param string $name
-     * @param array $params
-     * @return mixed
+     * @param string $config_file
+     * @return CrossArray
      * @throws CoreException
      */
-    protected function getDi($name, array $params = array())
+    function loadConfig($config_file)
     {
-        $di = $this->delegate->getDi();
-        if (isset($di[$name])) {
-            return call_user_func_array($di[$name], $params);
-        }
-        throw new CoreException("未定义的注入方法 {$name}");
-    }
-
-    /**
-     * 调用注入的匿名函数并缓存结果
-     *
-     * @param string $name
-     * @param array $params
-     * @return mixed
-     * @throws CoreException
-     */
-    protected function getDii($name, array $params = array())
-    {
-        static $dii = array();
-        $di = $this->delegate->getDi();
-        if (isset($dii[$name])) {
-            return $dii[$name];
-        } elseif (isset($di[$name])) {
-            $dii[$name] = call_user_func_array($di[$name], $params);
-            return $dii[$name];
-        }
-        throw new CoreException("未定义的注入方法 {$name}");
+        return Config::load($this->config->get('path', 'config') . $config_file);
     }
 
     /**
