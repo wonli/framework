@@ -8,13 +8,12 @@
 namespace Cross\MVC;
 
 use Cross\Exception\CoreException;
-use Cross\Core\CrossArray;
-use Cross\Core\FrameBase;
 use Cross\Lib\Document\HTML;
 use Cross\Lib\Array2XML;
-use Cross\Core\Helper;
-use Cross\Core\Loader;
+use Cross\Core\FrameBase;
+use Cross\Core\Config;
 use Cross\Core\Router;
+use Cross\Core\Helper;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -545,9 +544,7 @@ class View extends FrameBase
     {
         static $res_base_url = null;
         if (!isset($res_base_url[$use_static_url])) {
-            if ($this->config->get('res_url')) {
-                $base_url = $this->config->get('res_url');
-            } elseif ($use_static_url) {
+            if ($use_static_url) {
                 $base_url = $this->config->get('static', 'url');
             } else {
                 $base_url = $this->config->get('url', 'full_request');
@@ -917,7 +914,7 @@ class View extends FrameBase
             }
 
             if ($check_app_name && $app_name != $this_app_name) {
-                $config = CrossArray::init(Loader::read(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php'));
+                $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php');
                 $url_config = $config->get('url');
             } else {
                 $url_config = $this->config->get('url');
