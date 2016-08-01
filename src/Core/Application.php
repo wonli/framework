@@ -490,7 +490,7 @@ class Application
             'type' => 1,
             'expire_time' => 3600,
             'limit_params' => false,
-            'cache_path' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request',
+            'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
             'key_suffix' => '',
             'key_dot' => DIRECTORY_SEPARATOR
         );
