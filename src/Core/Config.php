@@ -17,12 +17,17 @@ use Cross\Exception\CoreException;
 class Config
 {
     /**
+     * @var string
+     */
+    private $res_file;
+
+    /**
      * @var array
      */
     private $config_data;
 
     /**
-     * @var \Cross\Core\Config
+     * @var self
      */
     private static $instance;
 
@@ -34,6 +39,7 @@ class Config
      */
     private function __construct($res_file)
     {
+        $this->res_file = $res_file;
         $this->config_data = Loader::read($res_file);
     }
 
@@ -46,7 +52,7 @@ class Config
     static function load($file)
     {
         if (!isset(self::$instance[$file])) {
-            self::$instance[$file] = new Config($file);
+            self::$instance[$file] = new self($file);
         }
 
         return self::$instance[$file];
@@ -61,7 +67,7 @@ class Config
      */
     function get($index, $options = '')
     {
-        return CrossArray::init($this->config_data)->get($index, $options);
+        return CrossArray::init($this->config_data, $this->res_file)->get($index, $options);
     }
 
     /**
@@ -94,7 +100,7 @@ class Config
      */
     function getAll($obj = false)
     {
-        return CrossArray::init($this->config_data)->getAll($obj);
+        return CrossArray::init($this->config_data, $this->res_file)->getAll($obj);
     }
 
     /**
@@ -107,7 +113,7 @@ class Config
     {
         if (!empty($append_config)) {
             foreach ($append_config as $key => $value) {
-                if (isset($this->config_data[$key])) {
+                if (isset($this->config_data[$key]) && is_array($value)) {
                     $this->config_data[$key] = array_merge($this->config_data[$key], $value);
                 } else {
                     $this->config_data[$key] = $value;
