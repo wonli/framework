@@ -8,6 +8,7 @@
 namespace Cross\MVC;
 
 use Cross\Cache\Driver\RedisDriver;
+use Cross\Exception\CoreException;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
 use Cross\DB\Drivers\PDOSqlDriver;
@@ -15,10 +16,8 @@ use Cross\DB\DBFactory;
 use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Config;
-use Cross\Core\Loader;
 use Cross\Http\Response;
 use Cross\Http\Request;
-use Cross\Exception\CoreException;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -124,8 +123,7 @@ class Module extends FrameBase
     protected function databaseConfig()
     {
         if (!self::$module_config) {
-            $link_config_file = $this->getModuleConfigFile();
-            self::$module_config = CrossArray::init(Loader::read("::config/{$link_config_file}"));
+            self::$module_config = parent::loadConfig($this->getModuleConfigFile());
         }
 
         return self::$module_config;
