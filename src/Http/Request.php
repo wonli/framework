@@ -251,8 +251,10 @@ class Request
             case 'QUERY_STRING':
                 $request_uri = $this->_SERVER('REQUEST_URI');
                 $query_string = $this->_SERVER('QUERY_STRING');
+                if (isset($query_string[0]) && $query_string[0] != '&') {
+                    array_shift($_GET);
+                }
 
-                array_shift($_GET);
                 if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
                     list(, $get_string) = explode('?', $request_uri);
 
