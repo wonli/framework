@@ -280,32 +280,34 @@ class Application
     /**
      * 解析router
      * <pre>
-     * router类型为字符串时, 第二个参数生效, dispatcher中也不再调用initParams()方法
+     * router类型为字符串时, 第二个参数生效
+     * 当router类型为数组或字符串时,dispatcher中不再调用initParams()
      * </pre>
      *
      * @param RouterInterface|string $router
-     * @param array $args
+     * @param array $params
      * @param bool $init_params
      * @return array
      */
-    private function parseRouter($router, $args = array(), & $init_params = true)
+    private function parseRouter($router, $params = array(), &$init_params = true)
     {
-        $controller = '';
-        $action = 'index';
-        $params = array();
-
         if ($router instanceof RouterInterface) {
             $controller = $router->getController();
             $action = $router->getAction();
             $params = $router->getParams();
-        } elseif (is_string($router)) {
+        } elseif (is_array($router)) {
+            $init_params = false;
+            $controller = $router['controller'];
+            $action = $router['action'];
+            $params = $router['params'];
+        } else {
             $init_params = false;
             if (strpos($router, ':')) {
                 list($controller, $action) = explode(':', $router);
             } else {
                 $controller = $router;
+                $action = Router::$default_action;
             }
-            $params = $args;
         }
 
         return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params);
@@ -414,10 +416,6 @@ class Application
             $params = $url_params;
         }
 
-        if (!empty($_GET)) {
-            $params += $_GET;
-        }
-
         $this->setParams($params);
     }
 
@@ -448,6 +446,16 @@ class Application
      */
     private function setParams($params)
     {
+        if (!empty($_GET)) {
+            $url_type = $this->config->get('url', 'type');
+            $addition_params = array_map('htmlentities', $_GET);
+            if ($url_type == 2) {
+                $params = array_merge($params, $addition_params);
+            } else {
+                $params += $addition_params;
+            }
+        }
+
         $params_checker = $this->delegate->getClosureContainer()->has('setParams', $closure);
         if ($params_checker && !empty($params)) {
             array_walk($params, $closure);
@@ -490,7 +498,7 @@ class Application
             'type' => 1,
             'expire_time' => 3600,
             'limit_params' => false,
-            'cache_path' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR . 'request',
+            'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
             'key_suffix' => '',
             'key_dot' => DIRECTORY_SEPARATOR
         );
