@@ -89,11 +89,10 @@ class Router implements RouterInterface
     {
         $router_params = $this->getRouterParams();
         if (empty($router_params)) {
-            $_defaultRouter = $this->getDefaultRouter($this->config->get('url', '*'));
-
-            $this->setController($_defaultRouter['controller']);
-            $this->setAction($_defaultRouter['action']);
-            $this->setParams($_defaultRouter['params']);
+            $defaultRouter = $this->getDefaultRouter();
+            $this->setController($defaultRouter['controller']);
+            $this->setAction($defaultRouter['action']);
+            $this->setParams($defaultRouter['params']);
         } else {
             $this->initRouter($router_params);
         }
@@ -191,11 +190,7 @@ class Router implements RouterInterface
             case 2:
             case 4:
             case 5:
-                $request = $this->parseRequestString($request, $url_config);
-                if (!empty($request)) {
-                    return array_merge($request, $_REQUEST);
-                }
-                return $request;
+                return $this->parseRequestString($request, $url_config);
 
             default:
                 throw new CoreException('不支持的 url type');
@@ -204,79 +199,66 @@ class Router implements RouterInterface
 
     /**
      * 解析请求字符串
-     * <pre>
-     * [0] 解析的结果
-     * [1] 抛出异常
-     * [2] 返回空字符串
-     * </pre>
      *
-     * @param string $_query_string
+     * @param string $query_string
      * @param array $url_config
      * @param bool $parse_mixed_params
      * @return array
      * @throws FrontException
      */
-    private static function parseRequestString($_query_string, $url_config, $parse_mixed_params = false)
+    private static function parseRequestString($query_string, $url_config, $parse_mixed_params = false)
     {
-        if (true === $parse_mixed_params && false !== strpos($_query_string, '&')) {
-            $_query_string_array = explode('&', $_query_string);
-            $_query_string = array_shift($_query_string_array);
+        if (true === $parse_mixed_params && false !== strpos($query_string, '&')) {
+            $tmp = explode('&', $query_string);
+            $query_string = array_shift($tmp);
         }
 
         $router_params = array();
-        if (!$_query_string) {
-            return $router_params;
-        }
-
-        $_url_ext = $url_config['ext'];
-        if ($_query_string != '' && isset($_url_ext[0]) && ($_url_ext_len = strlen(trim($_url_ext))) > 0) {
-            if (0 === strcasecmp($_url_ext, substr($_query_string, -$_url_ext_len))) {
-                $_query_string = substr($_query_string, 0, -$_url_ext_len);
-            } else {
-                throw new FrontException('Page not found !');
+        if ($query_string) {
+            $url_ext = &$url_config['ext'];
+            if (isset($url_ext[0]) && ($url_ext_len = strlen(trim($url_ext))) > 0) {
+                if (0 === strcasecmp($url_ext, substr($query_string, -$url_ext_len))) {
+                    $query_string = substr($query_string, 0, -$url_ext_len);
+                } else {
+                    throw new FrontException('Page not found !');
+                }
             }
-        }
 
-        if (false !== strpos($_query_string, $url_config['dot'])) {
-            $router_params = explode($url_config['dot'], $_query_string);
-        } else {
-            $router_params = array($_query_string);
+            if (false !== strpos($query_string, $url_config['dot'])) {
+                $router_params = explode($url_config['dot'], $query_string);
+            } else {
+                $router_params = array($query_string);
+            }
         }
 
         return $router_params;
     }
 
     /**
-     * 默认控制器和方法 init['url']['*']
+     * 默认控制器和方法
      *
-     * @param $init_default
      * @return array
      * @throws CoreException
      */
-    private function getDefaultRouter($init_default)
+    private function getDefaultRouter()
     {
-        if ($init_default) {
-            list($_defController, $_defAction) = explode(':', $init_default);
-            $_defaultRouter = array();
-
-            if (isset($_defController)) {
-                $_defaultRouter['controller'] = $_defController;
-            } else {
-                throw new CoreException('please define the default controller in the APP_PATH/APP_NAME/init.php file!');
-            }
-
-            if (isset($_defAction)) {
-                $_defaultRouter['action'] = $_defAction;
-            } else {
-                throw new CoreException('please define the default action in the APP_PATH/APP_NAME/init.php file!');
-            }
-
-            $_defaultRouter['params'] = $_REQUEST;
-
-            return $_defaultRouter;
-        } else {
-            throw new CoreException('undefined default router!');
+        $default_router = $this->config->get('url', '*');
+        if (empty($default_router)) {
+            throw new CoreException('Undefined default router!');
         }
+
+        if (false !== strpos($default_router, ':')) {
+            list($controller, $action) = explode(':', $default_router);
+        } else {
+            $controller = $default_router;
+            $action = self::$default_action;
+        }
+
+        return array(
+            'controller' => $controller,
+            'action' => $action,
+            'params' => array()
+        );
     }
 
     /**
@@ -288,11 +270,11 @@ class Router implements RouterInterface
      */
     private function initRouter($request)
     {
-        $ori_controller = $_controller = array_shift($request);
+        $ori_controller = $controller = array_shift($request);
 
         $combine_alias_key = '';
         if (isset($request[0])) {
-            $combine_alias_key = $_controller . ':' . $request[0];
+            $combine_alias_key = $controller . ':' . $request[0];
         }
 
         $controller_alias = '';
@@ -300,24 +282,24 @@ class Router implements RouterInterface
         if (isset($router_config [$combine_alias_key])) {
             array_shift($request);
             $controller_alias = $router_config [$combine_alias_key];
-        } elseif (isset($router_config [$_controller])) {
-            $controller_alias = $router_config [$_controller];
+        } elseif (isset($router_config [$controller])) {
+            $controller_alias = $router_config [$controller];
         }
 
         if (!empty($controller_alias)) {
             if (false !== strpos($controller_alias, ':')) {
-                list($_controller, $_action) = explode(':', $controller_alias);
+                list($controller, $action) = explode(':', $controller_alias);
             } else {
-                $_controller = $controller_alias;
+                $controller = $controller_alias;
             }
         }
 
         $ori_action = '';
-        if (!isset($_action)) {
+        if (!isset($action)) {
             if (isset($request[0]) && !empty($request[0])) {
-                $ori_action = $_action = array_shift($request);
+                $ori_action = $action = array_shift($request);
             } else {
-                $_action = self::$default_action;
+                $action = self::$default_action;
             }
         }
 
@@ -327,8 +309,8 @@ class Router implements RouterInterface
             'params' => $request
         ));
 
-        $this->setController($_controller);
-        $this->setAction($_action);
+        $this->setController($controller);
+        $this->setAction($action);
         $this->setParams($request);
     }
 
