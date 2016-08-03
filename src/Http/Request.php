@@ -383,19 +383,22 @@ class Request
      */
     public function getUserIPAddress()
     {
-        $ip = null;
-        $remote_address = $this->_SERVER('REMOTE_ADDR');
-        if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-            $ip = getenv('HTTP_CLIENT_IP');
-        } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-            $ip = getenv('HTTP_X_FORWARDED_FOR');
-        } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-            $ip = getenv('REMOTE_ADDR');
-        } elseif (!empty($remote_address) && strcasecmp($remote_address, 'unknown')) {
-            $ip = $remote_address;
+        static $ip = null;
+        if(null === $ip) {
+            $remote_address = $this->_SERVER('REMOTE_ADDR');
+            if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
+                $ip = getenv('HTTP_CLIENT_IP');
+            } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
+                $ip = getenv('HTTP_X_FORWARDED_FOR');
+            } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
+                $ip = getenv('REMOTE_ADDR');
+            } elseif (!empty($remote_address) && strcasecmp($remote_address, 'unknown')) {
+                $ip = $remote_address;
+            }
+
+            $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
         }
 
-        $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
         return $ip;
     }
 
