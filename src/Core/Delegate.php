@@ -14,7 +14,7 @@ use Cross\Http\Request;
 use Closure;
 
 //检查环境版本
-version_compare(PHP_VERSION, '5.3.0', '>=') or die('requires PHP 5.3.0 Please upgrade!');
+version_compare(PHP_VERSION, '5.3.0', '>=') or die('requires PHP 5.3.0!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
@@ -23,7 +23,7 @@ defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 
 //项目APP路径
-defined('APP_PATH_DIR') or define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
+define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 
 //框架路径
 define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
@@ -48,13 +48,6 @@ class Delegate
      * @var Delegate
      */
     private static $instance;
-
-    /**
-     * 注入的匿名函数数组
-     *
-     * @var array
-     */
-    private $di;
 
     /**
      * @var Router
@@ -223,19 +216,6 @@ class Delegate
     }
 
     /**
-     * 注册注入匿名函数
-     *
-     * @param string $name
-     * @param Closure $f
-     * @return $this
-     */
-    function di($name, Closure $f)
-    {
-        $this->di[$name] = $f;
-        return $this;
-    }
-
-    /**
      * 注册运行时匿名函数
      *
      * @param string $name
@@ -303,16 +283,6 @@ class Delegate
     }
 
     /**
-     * 返回依赖注入对象
-     *
-     * @return array
-     */
-    function getDi()
-    {
-        return $this->di;
-    }
-
-    /**
      * 初始化App配置
      * @param string $app_name
      * @param array $runtime_config
@@ -321,35 +291,49 @@ class Delegate
      */
     private static function initConfig($app_name, array $runtime_config)
     {
-        $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->parse($runtime_config);
-
         $request = Request::getInstance();
         $host = $request->getHostInfo();
         $index_name = $request->getIndexName();
 
         $request_url = $request->getBaseUrl();
-        $base_script_path = $request->getScriptFilePath();
+        $script_path = $request->getScriptFilePath();
 
-        //设置app名称和路径
-        $config->set('app', array(
+        //app名称和路径
+        $runtime_config['app'] = array(
             'name' => $app_name,
             'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
-        ));
+        );
 
-        //静态文件url和绝对路径
-        $config->set('static', array(
-            'url' => $host . $request_url . '/static/',
-            'path' => $base_script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
-        ));
+        $env_config = array(
+            //url相关设置
+            'url' => array(
+                'host' => $host,
+                'index' => $index_name,
+                'request' => $request_url,
+                'full_request' => $host . $request_url
+            ),
 
-        //url相关设置
-        $config->set('url', array(
-            'host' => $host,
-            'index' => $index_name,
-            'request' => $request_url,
-            'full_request' => $host . $request_url,
-        ));
+            //配置和缓存的绝对路径
+            'path' => array(
+                'cache' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR,
+                'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR
+            ),
 
-        return $config;
+            //静态文件url和绝对路径
+            'static' => array(
+                'url' => $host . $request_url . '/static/',
+                'path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+            )
+        );
+
+        foreach ($env_config as $key => $value) {
+            if (isset($runtime_config[$key]) && is_array($runtime_config[$key])) {
+                $runtime_config[$key] = array_merge($value, $runtime_config[$key]);
+            } elseif (!isset($runtime_config[$key])) {
+                $runtime_config[$key] = $value;
+            }
+        }
+
+        return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->parse($runtime_config);
     }
 }
