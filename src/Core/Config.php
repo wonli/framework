@@ -71,7 +71,7 @@ class Config
     }
 
     /**
-     * 设定配置项的值
+     * @see CrossArray::get()
      *
      * @param string $index
      * @param array|string $values
@@ -79,17 +79,7 @@ class Config
      */
     function set($index, $values = '')
     {
-        if (is_array($values)) {
-            if (isset($this->config_data[$index])) {
-                $this->config_data[$index] = array_merge($this->config_data[$index], $values);
-            } else {
-                $this->config_data[$index] = $values;
-            }
-        } else {
-            $this->config_data[$index] = $values;
-        }
-
-        return true;
+        return CrossArray::init($this->config_data, $this->res_file)->set($index, $values);
     }
 
     /**

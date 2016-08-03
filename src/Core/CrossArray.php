@@ -29,17 +29,17 @@ class CrossArray
      *
      * @param array $data
      */
-    private function __construct(array $data)
+    private function __construct(array &$data)
     {
-        $this->data = $data;
+        $this->data = &$data;
     }
 
     /**
      * @param array $data
-     * @param null $cache_key
+     * @param string $cache_key
      * @return CrossArray
      */
-    static function init(array $data, $cache_key = null)
+    static function init(array &$data, $cache_key = null)
     {
         if (null === $cache_key) {
             $cache_key = md5(json_encode($data));
@@ -81,6 +81,28 @@ class CrossArray
             return $this->data[$config];
         }
         return false;
+    }
+
+    /**
+     * 更新成员或赋值
+     *
+     * @param string $index
+     * @param string|array $values
+     * @return bool
+     */
+    function set($index, $values = '')
+    {
+        if (is_array($values)) {
+            if (isset($this->data[$index])) {
+                $this->data[$index] = array_merge($this->data[$index], $values);
+            } else {
+                $this->data[$index] = $values;
+            }
+        } else {
+            $this->data[$index] = $values;
+        }
+
+        return true;
     }
 
     /**
