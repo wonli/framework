@@ -915,24 +915,28 @@ class View extends FrameBase
 
             if ($check_app_name && $app_name != $this_app_name) {
                 $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php');
-                $url_config = $config->get('url');
             } else {
-                $url_config = $this->config->get('url');
+                $config = $this->config;
             }
 
-            self::$url_config_cache[$app_name] = $url_config;
+            $url_router_config = array(
+                'url' => $config->get('url'),
+                'router' => $config->get('router')
+            );
+            self::$url_config_cache[$app_name] = $url_router_config;
         } else {
             $enable_controller_cache = true;
-            $url_config = self::$url_config_cache[$app_name];
+            $url_router_config = self::$url_config_cache[$app_name];
         }
 
         $url_params = '';
         $has_controller_string = true;
-        $url_controller = $this->makeControllerUri($app_name, $enable_controller_cache, $controller, $url_config);
+        $url_controller = $this->makeControllerUri($app_name, $enable_controller_cache, $controller, $url_router_config);
         if ($url_controller === '') {
             $has_controller_string = false;
         }
 
+        $url_config = &$url_router_config['url'];
         if (!empty($params)) {
             $url_params = $this->makeParams($params, $url_config, $encrypt_params, $has_controller_string);
         }
@@ -977,13 +981,14 @@ class View extends FrameBase
             return $controller_uri_cache[$app_name][$controller];
         }
 
-        $_action = null;
-        $real_controller = $controller;
-        $app_alias_config = $this->parseControllerAlias($app_name);
+        $app_alias_config = $this->parseControllerAlias($app_name, $url_config['router']);
         if (isset($app_alias_config[$controller])) {
             $real_controller = $app_alias_config[$controller];
+        } else {
+            $real_controller = $controller;
         }
 
+        $_action = null;
         if (false !== strpos($real_controller, ':')) {
             list($_controller, $_action) = explode(':', $real_controller);
         } else {
@@ -991,11 +996,12 @@ class View extends FrameBase
         }
 
         $controller_uri = '';
-        if ($url_config ['rewrite']) {
+        $url = &$url_config['url'];
+        if ($url['rewrite']) {
             $controller_uri .= $_controller;
         } else {
-            $index_file_name = $url_config ['index'];
-            switch ($url_config['type']) {
+            $index_file_name = $url['index'];
+            switch ($url['type']) {
                 case 1:
                 case 3:
                     if (strcasecmp($index_file_name, 'index.php') == 0) {
@@ -1022,7 +1028,7 @@ class View extends FrameBase
         }
 
         if (null !== $_action) {
-            $controller_uri .= $url_config['dot'] . $_action;
+            $controller_uri .= $url['dot'] . $_action;
         }
 
         $controller_uri_cache[$app_name][$controller] = $controller_uri;
@@ -1081,14 +1087,13 @@ class View extends FrameBase
      * 解析路由别名配置
      *
      * @param string $app_name
+     * @param array $router
      * @return array
-     * @throws CoreException
      */
-    private function parseControllerAlias($app_name)
+    private function parseControllerAlias($app_name, array $router)
     {
         static $router_alias_cache;
         if (!isset($router_alias_cache[$app_name])) {
-            $router = $this->config->get('router');
             $router_alias_cache[$app_name] = array();
             if (!empty($router)) {
                 foreach ($router as $controller_alias => $alias_config) {
