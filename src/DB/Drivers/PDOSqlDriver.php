@@ -215,7 +215,7 @@ class PDOSqlDriver implements SqlInterface
      * @param string $table
      * @param string $fields 字段名
      * @param string|array $where
-     * @param int $order
+     * @param string|int $order
      * @param array $page
      * @param int $group_by
      * @return mixed
