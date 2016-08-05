@@ -187,7 +187,7 @@ class FrameBase
                 default:
                     $prefix_path = PROJECT_REAL_PATH;
             }
-            $cache[$prefix_name] = trim($prefix_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $cache[$prefix_name] = rtrim($prefix_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         }
 
         return $cache[$prefix_name] . str_replace('/', DIRECTORY_SEPARATOR, $file_name);
