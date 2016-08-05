@@ -119,8 +119,7 @@ class Helper
      */
     static function getExt($file)
     {
-        $file_info = pathinfo($file);
-        return $file_info['extension'];
+        return pathinfo($file, PATHINFO_EXTENSION);
     }
 
     /**
