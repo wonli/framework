@@ -483,6 +483,10 @@ class Application
      */
     private function initRequestCache(array $request_cache_config, array $action_annotate_params)
     {
+        if (empty($request_cache_config[0])) {
+            return false;
+        }
+
         if (!isset($request_cache_config[1]) || !is_array($request_cache_config[1])) {
             throw new CoreException('请求缓存配置格式不正确');
         }
@@ -518,16 +522,18 @@ class Application
         );
 
         $params = $this->getParams();
-        if ($cache_config['limit_params'] && !empty($action_annotate_params)) {
-            $params_member = array();
-            foreach ($params as $params_key => $params_value) {
-                if (isset($action_annotate_params[$params_key])) {
-                    $params_member[$params_key] = $params_value;
+        if(!empty($params)) {
+            if ($cache_config['limit_params'] && !empty($action_annotate_params)) {
+                $params_member = array();
+                foreach ($params as $params_key => $params_value) {
+                    if (isset($action_annotate_params[$params_key])) {
+                        $params_member[$params_key] = $params_value;
+                    }
                 }
+                $cache_key_config['params'] = implode($cache_config['key_dot'], $params_member);
+            } else {
+                $cache_key_config['params'] = md5(implode($cache_config['key_dot'], $params));
             }
-            $cache_key_config['params'] = implode($cache_config['key_dot'], $params_member);
-        } else {
-            $cache_key_config['params'] = md5(implode($cache_config['key_dot'], $params));
         }
 
         $cache_config['key'] = implode($cache_config['key_dot'], $cache_key_config) . $cache_config['key_suffix'];
