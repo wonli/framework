@@ -39,7 +39,7 @@ abstract class CrossException extends Exception
         $trace = $e->getTrace();
 
         $result = array();
-        $result['main'] = array('file' => $e->getFile(), 'line' => $e->getLine(), 'message' => $e->getMessage());
+        $result['main'] = array('file' => $e->getFile(), 'line' => $e->getLine(), 'message' => $this->hiddenFileRealPath($e->getMessage()));
         $result['main']['show_file'] = $this->hiddenFileRealPath($result['main']['file']);
 
         foreach ($result as &$_i) {
