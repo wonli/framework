@@ -36,18 +36,14 @@ define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 class Delegate
 {
     /**
-     * app名称
-     *
      * @var string
      */
     public $app_name;
 
     /**
-     * Delegate的实例
-     *
-     * @var Delegate
+     * @var Application
      */
-    private static $instance;
+    private $app;
 
     /**
      * @var Router
@@ -55,18 +51,14 @@ class Delegate
     private $router;
 
     /**
-     * 运行时匿名函数容器
-     *
-     * @var ClosureContainer
-     */
-    private $action_container;
-
-    /**
-     * app配置
-     *
      * @var Config
      */
     private $config;
+
+    /**
+     * @var Loader
+     */
+    private $loader;
 
     /**
      * 运行时配置 (高于配置文件)
@@ -76,6 +68,20 @@ class Delegate
     private $runtime_config;
 
     /**
+     * 运行时匿名函数容器
+     *
+     * @var ClosureContainer
+     */
+    private $action_container;
+
+    /**
+     * Delegate的实例
+     *
+     * @var Delegate
+     */
+    private static $instance;
+
+    /**
      * 初始化框架
      *
      * @param string $app_name 要加载的app名称
@@ -83,14 +89,13 @@ class Delegate
      */
     private function __construct($app_name, array $runtime_config)
     {
-        Loader::init($app_name);
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
 
+        $this->loader = Loader::init();
         $this->config = self::initConfig($app_name, $runtime_config);
         $this->action_container = new ClosureContainer();
         $this->router = new Router($this->config);
-
         $this->app = new Application($app_name, $this);
     }
 
@@ -229,6 +234,16 @@ class Delegate
     }
 
     /**
+     * application对象
+     *
+     * @return Application
+     */
+    function getApplication()
+    {
+        return $this->app;
+    }
+
+    /**
      * app配置对象
      *
      * @return Config
@@ -236,6 +251,16 @@ class Delegate
     function getConfig()
     {
         return $this->config;
+    }
+
+    /**
+     * Loader
+     *
+     * @return Loader
+     */
+    function getLoader()
+    {
+        return $this->loader;
     }
 
     /**
