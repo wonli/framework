@@ -121,12 +121,76 @@ class FrameBase
      * 读取配置文件
      *
      * @param string $config_file
-     * @return CrossArray
+     * @return Config
      * @throws CoreException
      */
     function loadConfig($config_file)
     {
         return Config::load($this->config->get('path', 'config') . $config_file);
+    }
+
+    /**
+     * @see Loader::read()
+     *
+     * @param string $name
+     * @param bool $get_file_content
+     * @return mixed
+     * @throws CoreException
+     */
+    function parseGetFile($name, $get_file_content = false)
+    {
+        return Loader::read($this->getFilePath($name), $get_file_content);
+    }
+
+    /**
+     * 解析文件路径
+     * <pre>
+     *  格式如下:
+     *  1 ::[path/file_name] 从当前项目根目录查找
+     *  2 app::[path/file_name] 当前app路径
+     *  3 static::[path/file_name] 静态资源目录
+     *  4 cache::[path/file_name] 缓存路径
+     *  5 config::[path/file_name] 配置路径
+     * </pre>
+     *
+     * @param string $name
+     * @return string
+     */
+    function getFilePath($name)
+    {
+        $prefix_name = 'project';
+        if (false !== strpos($name, '::')) {
+            list($prefix_name, $file_name) = explode('::', $name);
+            if (!empty($prefix_name)) {
+                $prefix_name = strtolower(trim($prefix_name));
+            }
+        } else {
+            $file_name = $name;
+        }
+
+        static $cache = null;
+        if (!isset($cache[$prefix_name])) {
+            switch ($prefix_name) {
+                case 'app':
+                    $prefix_path = $this->config->get('app', 'path');
+                    break;
+
+                case 'cache':
+                case 'config':
+                    $prefix_path = $this->config->get('path', $prefix_name);
+                    break;
+
+                case 'static':
+                    $prefix_path = $this->config->get('static', 'path');
+                    break;
+
+                default:
+                    $prefix_path = PROJECT_REAL_PATH;
+            }
+            $cache[$prefix_name] = trim($prefix_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        }
+
+        return $cache[$prefix_name] . str_replace('/', DIRECTORY_SEPARATOR, $file_name);
     }
 
     /**
