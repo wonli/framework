@@ -6,19 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CrossPHP Exception</title>
     <style type="text/css">
-    body {font:14px helvetica,arial,sans-serif;color:#525252;background-color:#f5f5f5;padding:0;margin: 0;max-height:100%;}
+    body {font:14px helvetica,arial,sans-serif;color:#333;background-color:#f5f5f5;padding:0;margin: 0;max-height:100%;}
     a {text-decoration:none;}
-    .header {padding:20px 20px 10px 20px;color:white;background:#a94442;box-sizing:border-box;border-top:3px solid #cc3f3f;}
+    .header {padding:20px 20px 10px 20px;color:white;background:#a94442;box-sizing:border-box;border-top:2px solid #c62d2d;}
     .container{height:100%;width:100%;margin:0;padding:0;left:0;top:0;}
     .exc-title {margin:0;color:#dadada;text-shadow:0 1px 2px rgba(0, 0, 0, .1);}
     .exc-message {font-size:30px;margin:5px 0;word-wrap:break-word;}
-    .stack-container {height:100%;position:relative;}
+    .stack-container {height:100%;position:relative;border-top:3px solid #be0000}
     .details {padding:10px;}
     .frame {padding:14px;background:#efefef;cursor:pointer;}
     .frame.active {background-color:#666666;color:#f3f3f3;}
     .frame:not(.active):hover {background:#dadada;color:#5d5d5d;}
-    .code-block {padding:0;margin:0;border-bottom:8px dotted #dadada;}
-    .code-segment {padding:6px 6px 0 30px;min-height:200px;background-color:#fff;border-bottom:1px dashed #f1f1f1;border-top:1px solid #f1f1f1;}
+    .code-block {padding:0;margin:0;border-bottom:3px dashed #dadada;}
+    .code-segment {padding:10px 6px 0 30px;min-height:250px;background-color:#fff;border-bottom:1px dashed #f1f1f1;border-top:1px solid #f1f1f1;}
     .data-table-container {padding:10px;}
     .data-table {width:100%; margin:10px 0;}
     .data-table label {font-size:16px;font-weight:bold;color:#525252;margin:10px 0;padding:10px 0;display:block;border-bottom:1px dotted #b0b0b0;}
@@ -30,7 +30,7 @@
     .exception{font-family:"microsoft yahei",serif;}
     .line{border-right:1px solid #bbb;position:absolute;padding-right:5px;margin-right:20px;left:3px;width:30px;text-align:right}
     .footer{text-align:center;height:30px;background: #333;color:#808080;line-height:30px;box-sizing:border-box;border-top:2px solid rgba(0, 0, 0, 0.35)}
-    .footer>a{color:#565656}
+    .footer>a{color:#565656}@media (max-width: 768px) {.code-segment {display:none}}
     </style>
 </head>
 
@@ -65,6 +65,20 @@
             </div>
         <?php endforeach ?>
     <?php endif ?>
+    <?php if (!empty($message['previous_trace'])) : ?>
+        <?php foreach ($message['previous_trace'] as $pk => $pm) : ?>
+            <div id="previous_trace_info_<?php echo $pk ?>" class="trace_info_div" style="display:none">
+                <div class="code-block"></div>
+                <div class="code-segment">
+                    <?php
+                    foreach ($pm['source'] as $s_line => $s_source) {
+                        printf('<span class="line">%s</span>&nbsp;&nbsp;%s', $s_line, $s_source);
+                    }
+                    ?>
+                </div>
+            </div>
+        <?php endforeach ?>
+    <?php endif ?>
 
     <div id="main_info" style="display:block">
         <div class="code-block"></div>
@@ -79,21 +93,25 @@
 </div>
 
 <div class="details">
-    <label></label>
-
-    <div>
-        <h1>Exception File</h1>
-        <div class="frame active" id="frame_active"
-             onclick="cp_exception.main(null)"><?php echo $message["main"]["show_file"] ?></div>
-        <?php if (!empty($message['trace'])) : ?>
-            <h1>Trace</h1>
-            <?php foreach ($message['trace'] as $k => $m) : ?>
-                <div class="frame" onclick="cp_exception.track(<?php echo $k ?>, this)" style="display:block">
-                    <?php echo $m['show_file'] ?> Line: <?php echo $m['line'] ?>
-                </div>
-            <?php endforeach ?>
-        <?php endif ?>
-    </div>
+    <h1>Exception File</h1>
+    <div class="frame active" id="frame_active"
+         onclick="cp_exception.main(null)"><?php echo $message["main"]["show_file"] ?></div>
+    <?php if (!empty($message['trace'])) : ?>
+        <h1>Trace</h1>
+        <?php foreach ($message['trace'] as $kf => $mf) : ?>
+            <div class="frame" onclick="cp_exception.track(<?php echo $kf ?>, this, '')">
+                <?php echo $mf['show_file'] ?> Line: <?php echo $mf['line'] ?>
+            </div>
+        <?php endforeach ?>
+    <?php endif ?>
+    <?php if (!empty($message['previous_trace'])) : ?>
+        <h1>Previous Trace</h1>
+        <?php foreach ($message['previous_trace'] as $pkf => $pmf) : ?>
+            <div class="frame" onclick="cp_exception.track(<?php echo $pkf ?>, this, 'previous')">
+                <?php echo $pmf['show_file'] ?> Line: <?php echo $pmf['line'] ?>
+            </div>
+        <?php endforeach ?>
+    <?php endif ?>
 </div>
 
 <div class="data-table-container" id="data-tables">
@@ -234,8 +252,8 @@
                 this.hide_track();
             }
         },
-        track: function (id, o) {
-            var tid = 'trace_info_' + id;
+        track: function (id, o, p) {
+            var tid = p?p+'_trace_info_'+id:'trace_info_'+id;
             this.display(tid);
             o.className = 'frame active';
         },
