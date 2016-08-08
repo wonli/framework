@@ -9,13 +9,13 @@ namespace Cross\Core;
 
 use Cross\I\RequestCacheInterface;
 use Cross\I\RouterInterface;
+use Cross\Exception\CoreException;
 use Cross\Cache\Driver\FileCacheDriver;
 use Cross\Cache\Request\Memcache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
-use Cross\Exception\CoreException;
-use ReflectionClass;
 use ReflectionMethod;
+use ReflectionClass;
 use Exception;
 use Closure;
 
@@ -141,7 +141,7 @@ class Application
                 $cr->setStaticPropertyValue('app_delegate', $this->delegate);
                 $controller = $cr->newInstance();
             } catch (Exception $e) {
-                throw new CoreException($e->getMessage());
+                throw new CoreException($e->getMessage(), 200, $e);
             }
 
             if ($this->delegate->getResponse()->isEndFlush()) {
@@ -522,7 +522,7 @@ class Application
         );
 
         $params = $this->getParams();
-        if(!empty($params)) {
+        if (!empty($params)) {
             if ($cache_config['limit_params'] && !empty($action_annotate_params)) {
                 $params_member = array();
                 foreach ($params as $params_key => $params_value) {
