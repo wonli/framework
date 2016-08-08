@@ -4,39 +4,33 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CrossPHP Framework Exception</title>
+    <title>CrossPHP Exception</title>
     <style type="text/css">
-    body { font: 14px helvetica, arial, sans-serif; color: #2c2c2c; background-color: #D4D4D4; padding:0; margin: 0; max-height: 100%; }
-    a { text-decoration: none; }
-    .header { padding: 20px 20px 10px 20px; color: white; background: #282828; box-sizing: border-box; border-top: 5px solid #cc3f3f; }
-    .container{ height: 100%; width: 100%; margin: 0; padding: 0; left: 0; top: 0; }
-    .exc-title { margin: 0; color: #616161; text-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
-    .exc-message { font-size: 30px; margin: 5px 0; word-wrap: break-word; }
-    .stack-container { height: 100%; position: relative; }
-    .details {padding: 10px;}
-    .frame { padding: 14px; background: #F3F3F3; cursor: pointer; }
-    .frame.active { background-color: #4F5B93; color: #f3f3f3;text-shadow: 0 1px 0 rgba(0, 0, 0, .2); }
-    .frame:not(.active):hover { background: #8892BF; color:#f3f3f3; }
-    .frame-file { font-family: consolas, monospace; word-wrap:break-word; }
-    .frame-code .frame-file { background: #C6C6C6; color: #525252; text-shadow: 0 1px 0 #E7E7E7; padding: 10px 10px 5px 10px;  border-top-right-radius: 6px; border-top-left-radius:  6px;  border: 1px solid rgba(0, 0, 0, .1); border-bottom: none; box-shadow: inset 0 1px 0 #DADADA; }
-    .code-block {background: #333;box-shadow: inset 0 0 6px rgba(0, 0, 0, .5); padding: 10px; margin: 0;}
-    .frame-comments {background: #333;box-shadow: inset 0 0 6px rgba(0, 0, 0, .5); border: 1px solid rgba(0, 0, 0, .2); border-top: none;  padding: 10px; font-size: 12px;}
-    .frame-comments.empty { padding: 8px 15px; }
-    .frame-comments.empty:before { content: "No comments for this stack frame."; font-style: italic; color: #828282; }
-    .frame-comment a { color: #BEE9EA; font-weight: bold; text-decoration: none; }
-    .frame-comment a:hover { color: #4bb1b1; }
+    body {font:14px helvetica,arial,sans-serif;color:#525252;background-color:#f5f5f5;padding:0;margin: 0;max-height:100%;}
+    a {text-decoration:none;}
+    .header {padding:20px 20px 10px 20px;color:white;background:#a94442;box-sizing:border-box;border-top:3px solid #cc3f3f;}
+    .container{height:100%;width:100%;margin:0;padding:0;left:0;top:0;}
+    .exc-title {margin:0;color:#dadada;text-shadow:0 1px 2px rgba(0, 0, 0, .1);}
+    .exc-message {font-size:30px;margin:5px 0;word-wrap:break-word;}
+    .stack-container {height:100%;position:relative;}
+    .details {padding:10px;}
+    .frame {padding:14px;background:#efefef;cursor:pointer;}
+    .frame.active {background-color:#666666;color:#f3f3f3;}
+    .frame:not(.active):hover {background:#dadada;color:#5d5d5d;}
+    .code-block {padding:0;margin:0;border-bottom:8px dotted #dadada;}
+    .code-segment {padding:6px 6px 0 30px;min-height:200px;background-color:#fff;border-bottom:1px dashed #f1f1f1;border-top:1px solid #f1f1f1;}
     .data-table-container {padding:10px;}
-    .data-table { width: 100%; margin: 10px 0; }
-    .data-table label { font-size: 16px; font-weight: bold; color: #4288CE; margin: 10px 0; padding: 10px 0;  display: block; border-bottom: 1px dotted #b0b0b0; }
-    .data-table tbody { font: 13px consolas, monospace; }
-    .data-table thead { display: none; }  .data-table tr { padding: 5px 0; }
-    .data-table td:first-child { width: 20%; min-width: 130px; overflow: hidden; font-weight: bold; color: #463C54; padding-right: 5px;  }
-    .data-table td:last-child { width: 80%; -ms-word-break: break-all; word-break: break-all; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; }
-    .data-table .empty { color: rgba(0, 0, 0, .3); font-style: italic; }
-    .exception{ font-family: "microsoft yahei",serif; }
-    .line{border-right:1px solid #bbb;position: absolute;padding-right:5px;margin-right: 20px;left: 3px;width: 30px;text-align: right}
+    .data-table {width:100%; margin:10px 0;}
+    .data-table label {font-size:16px;font-weight:bold;color:#525252;margin:10px 0;padding:10px 0;display:block;border-bottom:1px dotted #b0b0b0;}
+    .data-table tbody {font:13px consolas, monospace;}
+    .data-table thead {display:none;} .data-table tr {padding:5px 0;}
+    .data-table td:first-child {width:20%;min-width:130px;overflow:hidden;font-weight:bold;color:#463C54;padding-right:5px;}
+    .data-table td:last-child {width:80%;-ms-word-break:break-all;word-break:break-all;-webkit-hyphens:auto;-moz-hyphens:auto;hyphens:auto;}
+    .data-table .empty {color:rgba(0, 0, 0, .3);font-style:italic;}
+    .exception{font-family:"microsoft yahei",serif;}
+    .line{border-right:1px solid #bbb;position:absolute;padding-right:5px;margin-right:20px;left:3px;width:30px;text-align:right}
     .footer{text-align:center;height:30px;background: #333;color:#808080;line-height:30px;box-sizing:border-box;border-top:2px solid rgba(0, 0, 0, 0.35)}
-    .footer>a{color:#808080}
+    .footer>a{color:#565656}
     </style>
 </head>
 
@@ -60,30 +54,27 @@
     <?php if (!empty($message['trace'])) : ?>
         <?php foreach ($message['trace'] as $k => $m) : ?>
             <div id="trace_info_<?php echo $k ?>" class="trace_info_div" style="display:none">
-                <div class="code-block frame-file"></div>
-                <div style="padding:6px 6px 0px 30px;min-height:200px;">
+                <div class="code-block"></div>
+                <div class="code-segment">
                     <?php
                     foreach ($m['source'] as $s_line => $s_source) {
                         printf('<span class="line">%s</span>&nbsp;&nbsp;%s', $s_line, $s_source);
                     }
                     ?>
                 </div>
-                <div class="frame-comments"></div>
             </div>
         <?php endforeach ?>
     <?php endif ?>
 
     <div id="main_info" style="display:block">
-        <div class="frame-file"></div>
         <div class="code-block"></div>
-        <div style="padding:6px 6px 0px 30px;min-height:200px;">
+        <div class="code-segment">
             <?php
             foreach ($message['main']['source'] as $s_line => $s_source) {
                 printf('<span class="line">%s</span>&nbsp;&nbsp;%s', $s_line, $s_source);
             }
             ?>
         </div>
-        <div class="frame-comments"></div>
     </div>
 </div>
 
