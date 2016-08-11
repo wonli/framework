@@ -59,7 +59,7 @@ class Rest
      *
      * @param Delegate $delegate
      */
-    private function __construct(Delegate $delegate)
+    private function __construct(Delegate &$delegate)
     {
         $this->delegate = $delegate;
         $this->request = $delegate->getRequest();
@@ -73,7 +73,7 @@ class Rest
      * @param Delegate $delegate
      * @return Rest
      */
-    static function getInstance(Delegate $delegate)
+    static function getInstance(Delegate &$delegate)
     {
         if (!self::$instance) {
             self::$instance = new Rest($delegate);

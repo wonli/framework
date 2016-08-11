@@ -38,7 +38,7 @@ class Annotate
      *
      * @param Delegate $delegate
      */
-    private function __construct(Delegate $delegate)
+    private function __construct(Delegate &$delegate)
     {
         $this->delegate = $delegate;
         stream_register_wrapper('annotate', 'Cross\Lib\StringToPHPStream');
@@ -50,7 +50,7 @@ class Annotate
      * @param Delegate $delegate
      * @return Annotate
      */
-    public static function getInstance(Delegate $delegate)
+    public static function getInstance(Delegate &$delegate)
     {
         if (!self::$instance) {
             self::$instance = new Annotate($delegate);

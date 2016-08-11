@@ -72,7 +72,7 @@ class Application
      * @param string $app_name
      * @param Delegate $delegate
      */
-    function __construct($app_name, Delegate $delegate)
+    function __construct($app_name, Delegate &$delegate)
     {
         $this->app_name = $app_name;
         $this->delegate = $delegate;
@@ -446,7 +446,7 @@ class Application
      */
     private function setParams($params)
     {
-        if (!empty($_GET)) {
+        if (is_array($params) && !empty($_GET)) {
             $url_type = $this->config->get('url', 'type');
             $addition_params = array_map('htmlentities', $_GET);
             if ($url_type == 2) {
