@@ -1,6 +1,6 @@
 <?php
-define('PROJECT_PATH', __DIR__.DIRECTORY_SEPARATOR.'project'.DIRECTORY_SEPARATOR);
-require __DIR__."/../boot.php";
+define('PROJECT_PATH', __DIR__ . DIRECTORY_SEPARATOR . 'project' . DIRECTORY_SEPARATOR);
+require __DIR__ . "/../boot.php";
 
 use Cross\Core\Delegate;
 use Cross\Core\Loader;
@@ -26,7 +26,7 @@ class MainTest extends PHPUnit_Framework_TestCase
     function testReadAppConfig()
     {
         $result = $this->getAppResponse('Main:getAppConfig');
-        $ori_file = Loader::read('::app/test/init.php');
+        $ori_file = Loader::read(PROJECT_REAL_PATH . 'app/test/init.php');
         $this->assertJsonStringEqualsJsonString($result, json_encode($ori_file['router'], true), 'read app/init.php error...');
     }
 
@@ -35,7 +35,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      */
     function testSetAppConfig()
     {
-        $params = array('a'=>array(1, 2, 3, 'name' => array('a', 'b', 'c')));
+        $params = array('a' => array(1, 2, 3, 'name' => array('a', 'b', 'c')));
         $result = $this->getAppResponse('Main:setAppConfig', $params);
 
         $this->assertEquals($result, json_encode($params), 'set app config error...');
@@ -59,17 +59,16 @@ class MainTest extends PHPUnit_Framework_TestCase
     {
         $dot = '/';
         $ext = '';
-        $params = array('p1'=>1, 'p2'=>2, 'p3'=>3);
+        $params = array('p1' => 1, 'p2' => 2, 'p3' => 3);
         $params['dot'] = $dot;
         $params['ext'] = $ext;
         $params['index'] = 'index.php';
 
-        for($link_type=1; $link_type <= 5; $link_type ++) {
+        for ($link_type = 1; $link_type <= 5; $link_type++) {
             $params['type'] = $link_type;
             $result = $this->getAppResponse('Main:makeLink', $params);
 
-            switch($link_type)
-            {
+            switch ($link_type) {
                 case 1:
                     $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}1{$dot}2{$dot}3{$ext}", $result, 'url->type=>1 make link error');
                     break;
@@ -97,17 +96,16 @@ class MainTest extends PHPUnit_Framework_TestCase
     {
         $dot = '/';
         $ext = '';
-        $params = array('p1'=>1, 'p2'=>2, 'p3'=>3);
+        $params = array('p1' => 1, 'p2' => 2, 'p3' => 3);
         $params['dot'] = $dot;
         $params['ext'] = $ext;
         $params['index'] = 'index.php';
 
-        for($link_type=1; $link_type <= 5; $link_type ++) {
+        for ($link_type = 1; $link_type <= 5; $link_type++) {
             $params['type'] = $link_type;
             $result = $this->getAppResponse('Main:makeEncryptLink', $params);
 
-            switch($link_type)
-            {
+            switch ($link_type) {
                 case 1:
                     $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>1 make link error');
                     break;
@@ -136,9 +134,9 @@ class MainTest extends PHPUnit_Framework_TestCase
     {
         $dot = '/';
         $ext = '';
-        $params = array('p1'=>'1', 'p2'=>'2', 'p3'=>'3');
+        $params = array('p1' => '1', 'p2' => '2', 'p3' => '3');
 
-        for($link_type=1; $link_type <= 5; $link_type ++) {
+        for ($link_type = 1; $link_type <= 5; $link_type++) {
             $result = $this->getAppResponse('Main:makeEncryptLinkAndDecryptParams', $params + array(
                     'dot' => $dot, 'ext' => $ext, 'link_type' => $link_type
                 ));
@@ -181,26 +179,26 @@ class MainTest extends PHPUnit_Framework_TestCase
 
         $p5 = array();
         $r5 = $SQL->parseWhere(array(
-            'a' =>  array('between', array(1, 10))
+            'a' => array('between', array(1, 10))
         ), $p5);
         $this->assertEquals($r5, 'a BETWEEN ? AND ?', 'condition 5 failure');
         $this->assertEquals($p5, array(1, 10), 'condition 5 failure');
 
         $p6 = array();
         $r6 = $SQL->parseWhere(array(
-            'a' =>  array('or', array(1, 10))
+            'a' => array('or', array(1, 10))
         ), $p6);
         $this->assertEquals($r6, '(a = ? OR a = ?)', 'condition 6 failure');
         $this->assertEquals($p6, array(1, 10), 'condition 6 failure');
 
         $p7 = array();
         $r7 = $SQL->parseWhere(array(
-            'a' =>  array('or', array(1, 10)),
-            'b' =>  array('and', array(
+            'a' => array('or', array(1, 10)),
+            'b' => array('and', array(
                 array('>=', 1),
                 array('<=', 2)
             )),
-            'c' =>  array('between', array(1, 2))
+            'c' => array('between', array(1, 2))
         ), $p7);
         $this->assertEquals($r7, '(a = ? OR a = ?) AND (b >= ? AND b <= ?) AND c BETWEEN ? AND ?', 'condition 7 failure');
         $this->assertEquals($p7, array(1, 10, 1, 2, 1, 2), 'condition 7 failure');
@@ -220,8 +218,8 @@ class MainTest extends PHPUnit_Framework_TestCase
      * @param array $params
      * @return string
      */
-    protected function getAppResponse($controller, $params=array())
+    protected function getAppResponse($controller, $params = array())
     {
-        return Delegate::loadApp('test')->get($controller, $params, true) ;
+        return Delegate::loadApp('test')->get($controller, $params, true);
     }
 }
