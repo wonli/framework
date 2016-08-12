@@ -43,13 +43,6 @@ class Response
     protected $is_end_flush = false;
 
     /**
-     * 防止重复发送header头
-     *
-     * @var bool
-     */
-    static $is_send_header = false;
-
-    /**
      * Response instance
      *
      * @var object
@@ -319,10 +312,9 @@ class Response
     function display($content = '', $tpl = '')
     {
         $code = $this->getResponseStatus();
-        if (false == self::$is_send_header && PHP_SAPI != 'cli') {
+        if (!headers_sent() && PHP_SAPI != 'cli') {
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
-            self::$is_send_header = true;
         }
 
         $this->flushContent($content, $tpl);
