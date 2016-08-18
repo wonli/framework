@@ -62,6 +62,13 @@ class Application
     private $action_annotate;
 
     /**
+     * 输出缓冲状态
+     *
+     * @var bool
+     */
+    private $ob_cache_status = true;
+
+    /**
      * @var Delegate
      */
     private $delegate;
@@ -99,7 +106,7 @@ class Application
 
         $action_params = array();
         if (isset($annotate_config['params'])) {
-            $action_params = $annotate_config['params'];
+            $action_params = &$annotate_config['params'];
         }
 
         if ($init_prams) {
@@ -133,7 +140,7 @@ class Application
                 'params' => $this->getParams(),
             );
 
-            $closureContainer->add('~controller~runtime~', function () use ($runtime_config) {
+            $closureContainer->add('~controller~runtime~', function () use (&$runtime_config) {
                 return $runtime_config;
             });
 
@@ -152,12 +159,17 @@ class Application
                 $this->callReliesControllerClosure($annotate_config['before'], $controller);
             }
 
-            ob_start();
-            $response_content = $controller->$action();
-            if (!$response_content) {
-                $response_content = ob_get_contents();
+            if ($this->ob_cache_status) {
+                ob_start();
+                $response_content = $controller->$action();
+                if (!$response_content) {
+                    $response_content = ob_get_contents();
+                }
+                ob_end_clean();
+            } else {
+                $response_content = $controller->$action();
             }
-            ob_end_clean();
+
             if ($cache) {
                 $cache->set(null, $response_content);
             }
@@ -178,6 +190,16 @@ class Application
         }
 
         return true;
+    }
+
+    /**
+     * 设置控制器结果是否使用输出缓冲
+     *
+     * @param mixed $status
+     */
+    public function setObStatus($status)
+    {
+        $this->ob_cache_status = (bool)$status;
     }
 
     /**
@@ -442,23 +464,28 @@ class Application
     /**
      * 设置params
      *
-     * @param array $params
+     * @param array|string $params
      */
     private function setParams($params)
     {
-        if (is_array($params) && !empty($_GET)) {
+        $additionParams = &$_GET;
+        $isArrayParams = is_array($params);
+        if (null === $params) {
+            $params = &$additionParams;
+        } elseif ($isArrayParams && !empty($additionParams)) {
             $url_type = $this->config->get('url', 'type');
-            $addition_params = array_map('htmlentities', $_GET);
             if ($url_type == 2) {
-                $params = array_merge($params, $addition_params);
+                $params = array_merge($params, $additionParams);
             } else {
-                $params += $addition_params;
+                $params += $additionParams;
             }
         }
 
-        $params_checker = $this->delegate->getClosureContainer()->has('setParams', $closure);
-        if ($params_checker && !empty($params)) {
+        $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
+        if ($paramsChecker && $isArrayParams) {
             array_walk($params, $closure);
+        } elseif ($paramsChecker) {
+            call_user_func($closure, $params);
         }
 
         $this->params = $params;
