@@ -157,7 +157,7 @@ ASC_LOGO;
     echo PHP_EOL;
     ascLogo($table);
     line($table, '--  Exception Start  --');
-    printf("\n Line: %s \n File: %s \n\n", $message['line'], $message['file']);
+    printf("\n Message: %s \n File: %s   Line: %s \n\n", $message['message'], $message['file'], $message['line']);
 
     th($table);
     thead($table);

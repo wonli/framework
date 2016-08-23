@@ -94,6 +94,7 @@ abstract class CrossException extends Exception
 
         $result['line'] = $e->getLine();
         $result['file'] = $e->getFile();
+        $result['message'] = $e->getMessage();
 
         $result['trace'] = $trace;
         $result['trace_table'] = $trace_table;
@@ -145,12 +146,13 @@ abstract class CrossException extends Exception
                         case 'line':
                         case 'function':
                             $line_max_width = max(strlen($type_name), strlen($trace_content));
+                            if (($line_max_width % 2) != 0) {
+                                $line_max_width += 5;
+                            } else {
+                                $line_max_width += 4;
+                            }
+
                             if (!isset($trace_table[$type_name]) || $line_max_width > $trace_table[$type_name]) {
-                                if (($line_max_width) % 2 != 0) {
-                                    $line_max_width += 9;
-                                } else {
-                                    $line_max_width += 8;
-                                }
                                 $trace_table[$type_name] = $line_max_width;
                             }
                             break;
