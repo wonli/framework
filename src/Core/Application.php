@@ -343,7 +343,7 @@ class Application
      */
     protected function getControllerNamespace($controller_name)
     {
-        return 'app\\' . $this->app_name . '\\controllers\\' . $controller_name;
+        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\controllers\\' . $controller_name;
     }
 
     /**
@@ -354,7 +354,7 @@ class Application
      */
     protected function getViewControllerNameSpace($controller_name)
     {
-        return 'app\\' . $this->app_name . '\\views\\' . $controller_name . 'View';
+        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\views\\' . $controller_name . 'View';
     }
 
     /**
