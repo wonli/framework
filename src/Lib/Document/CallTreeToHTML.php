@@ -66,7 +66,7 @@ class CallTreeToHTML
     {
         $dom = $this->getDom($node);
         $dom->encoding = 'utf-8';
-        $html = $dom->saveHTML();
+        $html = $dom->saveHTML($dom->firstChild);
         if ($html_decode) {
             $html = html_entity_decode($html);
         }
