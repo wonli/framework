@@ -14,7 +14,7 @@ use Cross\Http\Request;
 use Closure;
 
 //检查环境版本
-version_compare(PHP_VERSION, '5.3.0', '>=') or die('requires PHP 5.3.0!');
+version_compare(PHP_VERSION, '5.3.6', '>=') or die('requires PHP 5.3.6!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
