@@ -548,13 +548,13 @@ class PDOSqlDriver implements SqlInterface
      */
     function getSQL($only_sql = false)
     {
-        $sql = $this->querySQL[$this->qid];
+        $this->sql = &$this->querySQL[$this->qid];
         if ($only_sql) {
-            return $sql;
+            return $this->sql;
         }
 
         $params = $this->queryParams[$this->qid];
-        return array('sql' => $sql, 'params' => $params);
+        return array('sql' => $this->sql, 'params' => $params);
     }
 
     /**
@@ -581,9 +581,9 @@ class PDOSqlDriver implements SqlInterface
             throw new CoreException("链式风格的查询必须以->select()开始");
         }
 
-        $sql = $this->querySQL[$this->qid];
+        $this->sql = &$this->querySQL[$this->qid];
         try {
-            $stmt = $this->pdo->prepare($sql, $prepare_params);
+            $stmt = $this->pdo->prepare($this->sql, $prepare_params);
             if ($execute) {
                 $execute_params = $this->queryParams[$this->qid];
                 $stmt->execute($execute_params);
@@ -609,9 +609,9 @@ class PDOSqlDriver implements SqlInterface
             throw new CoreException("无效的执行语句");
         }
 
-        $sql = $this->querySQL[$this->qid];
+        $this->sql = &$this->querySQL[$this->qid];
         try {
-            $stmt = $this->pdo->prepare($sql, $prepare_params);
+            $stmt = $this->pdo->prepare($this->sql, $prepare_params);
             $execute_params = $this->queryParams[$this->qid];
 
             unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
