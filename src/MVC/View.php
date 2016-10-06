@@ -557,6 +557,23 @@ class View extends FrameBase
     }
 
     /**
+     * 输出资源相对路径
+     *
+     * @param string $res_url
+     * @param string $res_dir
+     * @return string
+     */
+    function relRes($res_url, $res_dir = 'static')
+    {
+        static $res_base_url = null;
+        if (null === $res_base_url) {
+            $res_base_url = rtrim($this->config->get('url', 'request'), '/') . '/' . $res_dir . '/';
+        }
+
+        return $res_base_url . $res_url;
+    }
+
+    /**
      * @see View::url()
      * @param null|string $controller 控制器:方法
      * @param null|string|array $params
