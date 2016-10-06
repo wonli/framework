@@ -190,12 +190,17 @@ class Request
             return '';
         }
 
-        $http = $this->_SERVER('HTTPS') == 'on' ? 'https' : 'http';
-        if (($httpHost = $this->_SERVER('HTTP_HOST')) != null) {
-            $this->hostInfo = $http . '://' . $httpHost;
-        } elseif (($httpHost = $this->_SERVER('SERVER_NAME')) != null) {
-            $this->hostInfo = $http . '://' . $httpHost;
-            if (($port = $this->getServerPort()) != null) {
+        $protocol = 'http';
+        if (strcasecmp($this->_SERVER('HTTPS'), 'on') === 0) {
+            $protocol = 'https';
+        }
+
+        if (($host = $this->_SERVER('HTTP_HOST')) != null) {
+            $this->hostInfo = $protocol . '://' . $host;
+        } elseif (($host = $this->_SERVER('SERVER_NAME')) != null) {
+            $this->hostInfo = $protocol . '://' . $host;
+            $port = $this->getServerPort();
+            if (($protocol == 'http' && $port != 80) || ($protocol == 'https' && $port != 443)) {
                 $this->hostInfo .= ':' . $port;
             }
         } else {
@@ -212,7 +217,7 @@ class Request
      */
     public function getServerPort()
     {
-        return $this->_SERVER('HTTPS') == 'on' ? 443 : 80;
+        return $this->_SERVER('SERVER_PORT');
     }
 
     /**
@@ -384,7 +389,7 @@ class Request
     public function getUserIPAddress()
     {
         static $ip = null;
-        if(null === $ip) {
+        if (null === $ip) {
             $remote_address = $this->_SERVER('REMOTE_ADDR');
             if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
                 $ip = getenv('HTTP_CLIENT_IP');
