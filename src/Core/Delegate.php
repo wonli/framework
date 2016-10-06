@@ -126,15 +126,6 @@ class Delegate
     }
 
     /**
-     * @return \Cross\Net\Server
-     */
-    function server()
-    {
-        $s = \Cross\Net\Server::delegate($this);
-        return $s;
-    }
-
-    /**
      * 直接调用控制器类中的方法
      * <pre>
      * 忽略路由别名相关配置和URL参数, @cp_params注释不生效
