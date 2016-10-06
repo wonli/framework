@@ -350,7 +350,8 @@ class Delegate
             //配置和缓存的绝对路径
             'path' => array(
                 'cache' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR,
-                'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR
+                'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR,
+                'script' => $script_path . DIRECTORY_SEPARATOR,
             ),
 
             //静态文件url和绝对路径
