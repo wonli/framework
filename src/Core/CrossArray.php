@@ -109,12 +109,12 @@ class CrossArray
      * 返回全部数据
      *
      * @param bool $obj 是否返回对象
-     * @return array|\stdClass
+     * @return array|object
      */
     function getAll($obj = false)
     {
         if ($obj) {
-            return $this->arrayToObject($this->data);
+            return self::arrayToObject($this->data);
         }
 
         return $this->data;
@@ -123,15 +123,15 @@ class CrossArray
     /**
      * 数组转对象
      *
-     * @param array $d
-     * @return \stdClass
+     * @param $data
+     * @return object|string
      */
-    function arrayToObject($d)
+    static function arrayToObject($data)
     {
-        if (is_array($d)) {
-            return (object)array_map(array($this, __FUNCTION__), $d);
+        if (is_array($data)) {
+            return (object)array_map('self::arrayToObject', $data);
         } else {
-            return $d;
+            return $data;
         }
     }
 }
