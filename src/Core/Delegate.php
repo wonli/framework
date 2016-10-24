@@ -360,6 +360,6 @@ class Delegate
             }
         }
 
-        return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->parse($runtime_config);
+        return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->combine($runtime_config);
     }
 }
