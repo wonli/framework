@@ -59,6 +59,27 @@ class Config
     }
 
     /**
+     * 合并附加数组到源数组
+     *
+     * @param array $append_config
+     * @return $this
+     */
+    function combine(array $append_config = array())
+    {
+        if (!empty($append_config)) {
+            foreach ($append_config as $key => $value) {
+                if (isset($this->config_data[$key]) && is_array($value)) {
+                    $this->config_data[$key] = array_merge($this->config_data[$key], $value);
+                } else {
+                    $this->config_data[$key] = $value;
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @see CrossArray::get()
      *
      * @param string $index
@@ -90,27 +111,10 @@ class Config
      */
     function getAll($obj = false)
     {
-        return CrossArray::init($this->config_data, $this->res_file)->getAll($obj);
-    }
-
-    /**
-     * 合并运行时定义的配置
-     *
-     * @param array $append_config
-     * @return $this
-     */
-    function parse(array $append_config = array())
-    {
-        if (!empty($append_config)) {
-            foreach ($append_config as $key => $value) {
-                if (isset($this->config_data[$key]) && is_array($value)) {
-                    $this->config_data[$key] = array_merge($this->config_data[$key], $value);
-                } else {
-                    $this->config_data[$key] = $value;
-                }
-            }
+        if ($obj) {
+            return CrossArray::arrayToObject($this->config_data);
         }
 
-        return $this;
+        return $this->config_data;
     }
 }
