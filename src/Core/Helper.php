@@ -140,13 +140,14 @@ class Helper
      *
      * @param string $file_name
      * @param int $mode
+     * @param int $dir_mode
      * @return bool
      */
-    static function mkfile($file_name, $mode = 0775)
+    static function mkfile($file_name, $mode = 0644, $dir_mode = 0755)
     {
         if (!file_exists($file_name)) {
             $file_path = dirname($file_name);
-            self::createFolders($file_path, $mode);
+            self::createFolders($file_path, $dir_mode);
 
             $fp = fopen($file_name, 'w+');
             if ($fp) {
