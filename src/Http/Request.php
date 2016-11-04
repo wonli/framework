@@ -247,10 +247,9 @@ class Request
      * 按type返回uri请求
      *
      * @param string $type
-     * @param bool $fix_query_string rewrite状态下,如果request_uri包含问号要进行特殊处理
      * @return string
      */
-    public function getUriRequest($type = 'QUERY_STRING', $fix_query_string = false)
+    public function getUriRequest($type = 'QUERY_STRING')
     {
         switch ($type) {
             case 'QUERY_STRING':
@@ -260,7 +259,8 @@ class Request
                     array_shift($_GET);
                 }
 
-                if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
+                if ($request_uri && false !== strpos($request_uri, '?')) {
+                    //如果request_uri包含问号特殊处理$_GET和$_POST
                     list(, $get_string) = explode('?', $request_uri);
 
                     parse_str($get_string, $addition_get_params);
