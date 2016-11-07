@@ -143,13 +143,13 @@ class Router implements RouterInterface
         switch ($url_config ['type']) {
             case 1:
             case 3:
-                $request = Request::getInstance()->getUriRequest('QUERY_STRING');
+                $request = Request::getInstance()->getUriRequest('QUERY_STRING', $url_config['rewrite']);
                 break;
 
             case 2:
             case 4:
             case 5:
-                $request = Request::getInstance()->getUriRequest('PATH_INFO');
+                $request = Request::getInstance()->getUriRequest('PATH_INFO', $url_config['rewrite']);
                 break;
 
             default:
