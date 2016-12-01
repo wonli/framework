@@ -136,7 +136,7 @@ class Delegate
      * @param bool $return_content 是输出还是直接返回结果
      * @return mixed
      */
-    public function get($controller, $args = null, $return_content = false)
+    public function get($controller, $args = array(), $return_content = false)
     {
         return $this->app->dispatcher($controller, $args, $return_content);
     }

@@ -90,12 +90,12 @@ class Application
      * 运行框架
      *
      * @param object|string $router
-     * @param null $args 指定参数
+     * @param array|string $args 指定参数
      * @param bool $return_response_content 是否输出执行结果
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function dispatcher($router, $args = null, $return_response_content = false)
+    public function dispatcher($router, $args = array(), $return_response_content = false)
     {
         $init_prams = true;
         $router = $this->parseRouter($router, $args, $init_prams);
