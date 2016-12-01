@@ -111,6 +111,9 @@ class Application
 
         if ($init_prams) {
             $this->initParams($router['params'], $action_params);
+        } elseif (is_array($router['params'])) {
+            $params = $router['params'] + $action_params;
+            $this->setParams($params);
         } else {
             $this->setParams($router['params']);
         }
@@ -321,7 +324,6 @@ class Application
             $init_params = false;
             $controller = $router['controller'];
             $action = $router['action'];
-            $params = $router['params'];
         } else {
             $init_params = false;
             if (strpos($router, ':')) {
@@ -438,6 +440,17 @@ class Application
             $params = $url_params;
         }
 
+        $additionParams = &$_GET;
+        if (null === $params) {
+            $params = $additionParams;
+        } elseif (is_array($params) && !empty($additionParams)) {
+            if ($url_type == 2) {
+                $params = array_merge($params, $additionParams);
+            } else {
+                $params += $additionParams;
+            }
+        }
+
         $this->setParams($params);
     }
 
@@ -468,21 +481,8 @@ class Application
      */
     private function setParams($params)
     {
-        $additionParams = &$_GET;
-        $isArrayParams = is_array($params);
-        if (null === $params) {
-            $params = &$additionParams;
-        } elseif ($isArrayParams && !empty($additionParams)) {
-            $url_type = $this->config->get('url', 'type');
-            if ($url_type == 2) {
-                $params = array_merge($params, $additionParams);
-            } else {
-                $params += $additionParams;
-            }
-        }
-
         $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
-        if ($paramsChecker && $isArrayParams) {
+        if ($paramsChecker && is_array($params)) {
             array_walk($params, $closure);
         } elseif ($paramsChecker) {
             call_user_func($closure, $params);
