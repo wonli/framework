@@ -134,7 +134,8 @@ class Delegate
      * @param string $controller "控制器:方法"
      * @param string|array $args 参数
      * @param bool $return_content 是输出还是直接返回结果
-     * @return mixed
+     * @return array|mixed|string
+     * @throws \Cross\Exception\CoreException
      */
     public function get($controller, $args = array(), $return_content = false)
     {
@@ -143,6 +144,8 @@ class Delegate
 
     /**
      * 解析url并运行
+     *
+     * @throws \Cross\Exception\CoreException
      */
     public function run()
     {
@@ -152,7 +155,8 @@ class Delegate
     /**
      * 自定义router运行
      *
-     * @param RouterInterface $router RouterInterface的实现
+     * @param RouterInterface $router
+     * @throws \Cross\Exception\CoreException
      */
     public function rRun(RouterInterface $router)
     {
