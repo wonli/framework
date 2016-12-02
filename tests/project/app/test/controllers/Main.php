@@ -31,7 +31,7 @@ class Main extends Controller
     /**
      * 测试注释配置
      *
-     * @cp_params a, b, c
+     * @cp_params a=1, b=2, c=3
      */
     function annotate()
     {
@@ -129,19 +129,14 @@ class Main extends Controller
         {
             case 2:
                 list(, $params_string) = explode('?', $url);
-                $custom_router_params[$params_string] = '';
                 break;
 
             default:
                 $url_array = explode($dot, $url);
                 $params_string = end($url_array);
-                $custom_router_params[] = $params_string;
         }
 
-        $router = new Router(parent::getConfig());
-        $router->setRouterParams($custom_router_params)->getRouter();
-        $result = $this->sParams();
-
+        $result = $this->sParams(true, $params_string);
         $this->display($result);
     }
 }
