@@ -330,7 +330,7 @@ class Application
                 list($controller, $action) = explode(':', $router);
             } else {
                 $controller = $router;
-                $action = Router::$default_action;
+                $action = Router::DEFAULT_ACTION;
             }
         }
 

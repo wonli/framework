@@ -115,7 +115,7 @@ class View extends FrameBase
             } else if ($this->action) {
                 $method = $this->action;
             } else {
-                $method = Router::$default_action;
+                $method = Router::DEFAULT_ACTION;
             }
         }
 
