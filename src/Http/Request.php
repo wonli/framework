@@ -19,7 +19,6 @@ class Request
     private $baseUrl;
     private $hostInfo;
     private $scriptUrl;
-    private $indexName;
     private static $instance;
 
     /**
@@ -119,35 +118,13 @@ class Request
     }
 
     /**
-     * 返回当前脚本文件名
-     *
-     * @return string 当前请求的脚本名
-     */
-    public function getScriptName()
-    {
-        $s = explode('/', $this->_SERVER('SCRIPT_NAME'));
-        return end($s);
-    }
-
-    /**
      * 当前执行的脚本名
      *
      * @return string
      */
     public function getIndexName()
     {
-        if ($this->indexName === null) {
-            return $this->getScriptName();
-        }
-        return $this->indexName;
-    }
-
-    /**
-     * @param $index_name
-     */
-    public function setIndexName($index_name)
-    {
-        $this->indexName = $index_name;
+        return basename($this->getScriptName());
     }
 
     /**
@@ -244,44 +221,19 @@ class Request
     }
 
     /**
-     * 按type返回uri请求
-     *
-     * @param string $type
-     * @param bool $fix_query_string
      * @return string
      */
-    public function getUriRequest($type = 'QUERY_STRING', $fix_query_string = false)
+    function getRequestURI()
     {
-        switch ($type) {
-            case 'QUERY_STRING':
-                $request_uri = $this->_SERVER('REQUEST_URI');
-                $query_string = $this->_SERVER('QUERY_STRING');
-                if (isset($query_string[0]) && $query_string[0] != '&') {
-                    array_shift($_GET);
-                }
+        return $this->_SERVER('REQUEST_URI');
+    }
 
-                //rewrite模式下如果request_uri包含问号特殊处理$_GET和$_POST
-                if ($fix_query_string && $request_uri && false !== strpos($request_uri, '?')) {
-                    list(, $get_string) = explode('?', $request_uri);
-
-                    parse_str($get_string, $addition_get_params);
-                    $_GET += $addition_get_params;
-                    if ($this->isPostRequest()) {
-                        $_POST += $addition_get_params;
-                    }
-
-                    if ($get_string == $query_string) {
-                        return '';
-                    }
-                }
-
-                return $query_string;
-            case 'PATH_INFO':
-                return $this->_SERVER('PATH_INFO');
-
-            default:
-                return '';
-        }
+    /**
+     * @return string
+     */
+    function getPathInfo()
+    {
+        return $this->_SERVER('PATH_INFO');
     }
 
     /**
@@ -293,16 +245,48 @@ class Request
     }
 
     /**
+     * @return string
+     */
+    public function getScriptName()
+    {
+        return $this->_SERVER('SCRIPT_NAME');
+    }
+
+    /**
+     * HTTP_REFERER;
+     *
+     * @return string
+     */
+    public function getUrlReferrer()
+    {
+        return $this->_SERVER('HTTP_REFERER');
+    }
+
+    /**
+     * @return string userAgent
+     */
+    public function getUserAgent()
+    {
+        return $this->_SERVER('HTTP_USER_AGENT');
+    }
+
+    /**
+     * @return string ACCEPT TYPE
+     */
+    public function getAcceptTypes()
+    {
+        return $this->_SERVER('HTTP_ACCEPT');
+    }
+
+    /**
      * 是否是PUT请求
      *
      * @return bool
      */
     public function isPutRequest()
     {
-        return ($this->_SERVER('REQUEST_METHOD') && !strcasecmp(
-                $this->_SERVER('REQUEST_METHOD'),
-                'PUT'
-            )) || $this->isPutViaPostRequest();
+        return ($this->_SERVER('REQUEST_METHOD')
+            && !strcasecmp($this->_SERVER('REQUEST_METHOD'), 'PUT')) || $this->isPutViaPostRequest();
     }
 
     /**
@@ -367,24 +351,6 @@ class Request
     }
 
     /**
-     * HTTP_REFERER;
-     *
-     * @return string
-     */
-    public function getUrlReferrer()
-    {
-        return $this->_SERVER('HTTP_REFERER');
-    }
-
-    /**
-     * @return string userAgent
-     */
-    public function getUserAgent()
-    {
-        return $this->_SERVER('HTTP_USER_AGENT');
-    }
-
-    /**
      * @return string userIP
      */
     public function getUserIPAddress()
@@ -406,14 +372,6 @@ class Request
         }
 
         return $ip;
-    }
-
-    /**
-     * @return string ACCEPT TYPE
-     */
-    public function getAcceptTypes()
-    {
-        return $this->_SERVER('HTTP_ACCEPT');
     }
 }
 
