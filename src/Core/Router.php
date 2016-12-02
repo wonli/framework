@@ -7,10 +7,10 @@
  */
 namespace Cross\Core;
 
-use Cross\Exception\CoreException;
-use Cross\Exception\FrontException;
-use Cross\Http\Request;
 use Cross\I\RouterInterface;
+use Cross\Exception\FrontException;
+use Cross\Exception\CoreException;
+use Cross\Http\Request;
 
 /**
  * @Auth: wonli <wonli@live.com>
@@ -19,13 +19,6 @@ use Cross\I\RouterInterface;
  */
 class Router implements RouterInterface
 {
-    /**
-     * url参数
-     *
-     * @var array
-     */
-    private $params;
-
     /**
      * Action名称
      *
@@ -41,25 +34,34 @@ class Router implements RouterInterface
     private $controller;
 
     /**
+     * url参数
+     *
+     * @var array
+     */
+    private $params = array();
+
+    /**
+     * @var string
+     */
+    private $uriRequest;
+
+    /**
+     * @var string
+     */
+    private $originUriRequest;
+
+    /**
      * @var Config
      */
     private $config;
 
     /**
-     * 默认action
-     *
-     * @var string
+     * 默认Action名称
      */
-    public static $default_action = 'index';
+    const DEFAULT_ACTION = 'index';
 
     /**
-     * @var array;
-     */
-    private $router_params = array();
-
-    /**
-     * 初始化router
-     *
+     * Router constructor.
      * @param Config $config
      */
     function __construct(Config $config)
@@ -68,33 +70,39 @@ class Router implements RouterInterface
     }
 
     /**
-     * 设置url解析参数
+     * 设置URI字符串
      *
-     * @param array $params
+     * @param string $request_string
      * @return $this
      */
-    public function setRouterParams(array $params)
+    public function setUriRequest($request_string)
     {
-        $this->router_params = $params;
+        $this->originUriRequest = $request_string;
+
+        $uri = parse_url($request_string);
+        $this->uriRequest = $uri['path'];
+        if (!empty($uri['query'])) {
+            parse_str($uri['query'], $addition_params);
+            $_GET += $addition_params;
+        }
+
         return $this;
     }
 
     /**
-     * 设置router
+     * Router
      *
      * @return $this
      * @throws FrontException
      */
     public function getRouter()
     {
-        $router_params = $this->getRouterParams();
-        if (empty($router_params)) {
-            $defaultRouter = $this->getDefaultRouter();
-            $this->setController($defaultRouter['controller']);
-            $this->setAction($defaultRouter['action']);
-            $this->setParams($defaultRouter['params']);
+        $request = $this->getUriRequest('', $url_config);
+        if (!empty($request)) {
+            $request = $this->parseRequestString($request, $url_config);
+            $this->initRouter($request);
         } else {
-            $this->initRouter($router_params);
+            $this->initByDefaultRouter($url_config['*']);
         }
 
         return $this;
@@ -136,113 +144,61 @@ class Router implements RouterInterface
      * @param string $prefix
      * @param array $url_config
      * @return string
+     * @throws CoreException
      */
-    public function getUriRequest($prefix = '/', & $url_config = array())
+    public function getUriRequest($prefix = '/', &$url_config = array())
     {
         $url_config = $this->config->get('url');
-        switch ($url_config ['type']) {
+        if (!empty($this->uriRequest)) {
+            return $this->uriRequest;
+        }
+
+        switch ($url_config['type']) {
             case 1:
             case 3:
-                $request = Request::getInstance()->getUriRequest('QUERY_STRING', $url_config['rewrite']);
+                $request = Request::getInstance()->getQueryString();
+                if (isset($request[0]) && $request[0] != '&') {
+                    array_shift($_GET);
+                }
+
+                //rewrite下带问号的请求参数追加到$_GET数组
+                $request_uri = Request::getInstance()->getRequestURI();
+                if ($url_config['rewrite'] && $request_uri && false !== strpos($request_uri, '?')) {
+                    $query_string = parse_url($request_uri, PHP_URL_QUERY);
+                    parse_str($query_string, $addition_params);
+                    $_GET += $addition_params;
+
+                    if ($query_string == $request) {
+                        $request = '';
+                    }
+                } elseif (false !== strpos($request, '&')) {
+                    list($request,) = explode('&', $request);
+                }
                 break;
 
             case 2:
             case 4:
             case 5:
-                $request = Request::getInstance()->getUriRequest('PATH_INFO', $url_config['rewrite']);
+                $request = Request::getInstance()->getPathInfo();
                 break;
 
             default:
-                $request = '';
+                throw new CoreException('Not support URL type!');
         }
 
+        $this->originUriRequest = $request;
         return $prefix . htmlspecialchars(urldecode(ltrim($request, '/')), ENT_QUOTES);
     }
 
     /**
-     * 要解析的请求string
+     * 从默认配置初始化Router
      *
-     * @return array
-     */
-    private function getRouterParams()
-    {
-        if (empty($this->router_params)) {
-            $this->router_params = $this->initRequestParams();
-        }
-
-        return $this->router_params;
-    }
-
-    /**
-     * 初始化参数 按类型返回要解析的url字符串
-     *
-     * @return array|string
-     * @throws \cross\exception\CoreException
-     */
-    private function initRequestParams()
-    {
-        $request = $this->getUriRequest('', $url_config);
-        switch ($url_config ['type']) {
-            case 1:
-            case 3:
-                return $this->parseRequestString($request, $url_config, true);
-
-            case 2:
-            case 4:
-            case 5:
-                return $this->parseRequestString($request, $url_config);
-
-            default:
-                throw new CoreException('不支持的 url type');
-        }
-    }
-
-    /**
-     * 解析请求字符串
-     *
-     * @param string $query_string
-     * @param array $url_config
-     * @param bool $parse_mixed_params
-     * @return array
-     * @throws FrontException
-     */
-    private static function parseRequestString($query_string, $url_config, $parse_mixed_params = false)
-    {
-        if (true === $parse_mixed_params && false !== strpos($query_string, '&')) {
-            $tmp = explode('&', $query_string);
-            $query_string = array_shift($tmp);
-        }
-
-        $router_params = array();
-        if ($query_string) {
-            $url_ext = &$url_config['ext'];
-            if (isset($url_ext[0]) && ($url_ext_len = strlen(trim($url_ext))) > 0) {
-                if (0 === strcasecmp($url_ext, substr($query_string, -$url_ext_len))) {
-                    $query_string = substr($query_string, 0, -$url_ext_len);
-                } else {
-                    throw new FrontException('Page not found !');
-                }
-            }
-
-            if (false !== strpos($query_string, $url_config['dot'])) {
-                $router_params = explode($url_config['dot'], $query_string);
-            } else {
-                $router_params = array($query_string);
-            }
-        }
-
-        return $router_params;
-    }
-
-    /**
-     * 默认控制器和方法
-     *
+     * @param string $default_router
      * @return array
      * @throws CoreException
      */
-    private function getDefaultRouter()
+    private function initByDefaultRouter($default_router)
     {
-        $default_router = $this->config->get('url', '*');
         if (empty($default_router)) {
             throw new CoreException('Undefined default router!');
         }
@@ -251,14 +207,11 @@ class Router implements RouterInterface
             list($controller, $action) = explode(':', $default_router);
         } else {
             $controller = $default_router;
-            $action = self::$default_action;
+            $action = self::DEFAULT_ACTION;
         }
 
-        return array(
-            'controller' => $controller,
-            'action' => $action,
-            'params' => array()
-        );
+        $this->setController($controller);
+        $this->setAction($action);
     }
 
     /**
@@ -268,7 +221,7 @@ class Router implements RouterInterface
      * @throws CoreException
      * @internal param $router
      */
-    private function initRouter($request)
+    private function initRouter(array $request)
     {
         $ori_controller = $controller = array_shift($request);
 
@@ -299,11 +252,12 @@ class Router implements RouterInterface
             if (isset($request[0]) && !empty($request[0])) {
                 $ori_action = $action = array_shift($request);
             } else {
-                $action = self::$default_action;
+                $action = self::DEFAULT_ACTION;
             }
         }
 
         $this->config->set('ori_router', array(
+            'request' => $this->originUriRequest,
             'controller' => $ori_controller,
             'action' => $ori_action,
             'params' => $request
@@ -312,6 +266,37 @@ class Router implements RouterInterface
         $this->setController($controller);
         $this->setAction($action);
         $this->setParams($request);
+    }
+
+    /**
+     * 将字符串参数解析成数组
+     *
+     * @param string $query_string
+     * @param array $url_config
+     * @return array
+     * @throws FrontException
+     */
+    private static function parseRequestString($query_string, $url_config)
+    {
+        $router_params = array();
+        if ($query_string) {
+            $url_suffix = &$url_config['ext'];
+            if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
+                if (0 === strcasecmp($url_suffix, substr($query_string, -$url_suffix_length))) {
+                    $query_string = substr($query_string, 0, -$url_suffix_length);
+                } else {
+                    throw new FrontException('Page not found !');
+                }
+            }
+
+            if (false !== strpos($query_string, $url_config['dot'])) {
+                $router_params = explode($url_config['dot'], $query_string);
+            } else {
+                $router_params = array($query_string);
+            }
+        }
+
+        return $router_params;
     }
 
     /**
