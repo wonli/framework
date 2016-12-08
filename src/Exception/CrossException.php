@@ -51,9 +51,9 @@ abstract class CrossException extends Exception
         $exception_file_source = array();
         $exception_file_info = new SplFileObject($file);
         foreach ($exception_file_info as $line => $code) {
-            if ($line <= $exception_line + 7 && $line >= $exception_line - 7) {
-                $highlight_code_fragment = highlight_string("<?php{$code}", true);
-                $exception_file_source[$line] = str_replace('&lt;?php', '', $highlight_code_fragment);
+            $line += 1;
+            if ($line <= $exception_line + 6 && $line >= $exception_line - 6) {
+                $exception_file_source[$line] = self::highlightCode($code);
             }
         }
 
@@ -116,10 +116,10 @@ abstract class CrossException extends Exception
             foreach ($trace as $tn => &$t) {
                 $i = 0;
                 $trace_file_info = new SplFileObject($t['file']);
-                foreach ($trace_file_info as $t_line => $t_code) {
-                    if (($t_line <= $t['end_line'] && $t_line >= $t['start_line']) && $i < 16) {
-                        $highlight_code_fragment = highlight_string("<?php{$t_code}", true);
-                        $t['source'][$t_line] = str_replace('&lt;?php', '', $highlight_code_fragment);
+                foreach ($trace_file_info as $line => $code) {
+                    $line += 1;
+                    if (($line <= $t['end_line'] && $line >= $t['start_line']) && $i < 16) {
+                        $t['source'][$line] = self::highlightCode($code);
                         $i++;
                     }
                 }
@@ -177,6 +177,23 @@ abstract class CrossException extends Exception
     }
 
     /**
+     * 高亮代码
+     *
+     * @param string $code
+     * @return mixed
+     */
+    private static function highlightCode($code)
+    {
+        $code = rtrim($code);
+        if (0 === strcasecmp(substr($code, 0, 5), '<?php ')) {
+            return highlight_string($code, true);
+        }
+
+        $highlight_code_fragment = highlight_string("<?php {$code}", true);
+        return str_replace('&lt;?php', '', $highlight_code_fragment);
+    }
+
+    /**
      * 整理trace数据
      *
      * @param array $trace
@@ -186,8 +203,8 @@ abstract class CrossException extends Exception
         foreach ($trace as &$t) {
             if (isset($t['file'])) {
                 $t['show_file'] = $this->hiddenFileRealPath($t['file']);
-                $t['start_line'] = max(1, $t['line'] - 7);
-                $t['end_line'] = $t['line'] + 7;
+                $t['start_line'] = max(1, $t['line'] - 6);
+                $t['end_line'] = $t['line'] + 6;
             } elseif (isset($t['function'])) {
                 $rc = new ReflectionClass($t['class']);
                 $t['file'] = $rc->getFileName();
