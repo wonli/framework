@@ -351,24 +351,38 @@ class Request
     }
 
     /**
+     * 获取客户端IP地址
+     *
+     * @param array $env_keys
      * @return string userIP
      */
-    public function getUserIPAddress()
+    public function getClientIPAddress($env_keys = array())
     {
         static $ip = null;
         if (null === $ip) {
-            $remote_address = $this->_SERVER('REMOTE_ADDR');
-            if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-                $ip = getenv('HTTP_CLIENT_IP');
-            } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-                $ip = getenv('HTTP_X_FORWARDED_FOR');
-            } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-                $ip = getenv('REMOTE_ADDR');
-            } elseif (!empty($remote_address) && strcasecmp($remote_address, 'unknown')) {
-                $ip = $remote_address;
+            if (empty($env_keys)) {
+                $env_keys = array(
+                    'HTTP_CLIENT_IP',
+                    'HTTP_CF_CONNECTING_IP',
+                    'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED',
+                    'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED',
+                    'REMOTE_ADDR'
+                );
             }
 
-            $ip = (false !== ip2long($ip)) ? $ip : '0.0.0.0';
+            $ip = '0.0.0.0';
+            foreach ($env_keys as $env) {
+                $env_info = $this->_SERVER($env);
+                if (!empty($env_info) && 0 !== strcasecmp($env_info, 'unknown')) {
+                    $ips = explode(',', $env_info);
+                    foreach ($ips as $ip) {
+                        $ip = trim($ip);
+                        if (false !== ip2long($ip)) {
+                            break 2;
+                        }
+                    }
+                }
+            }
         }
 
         return $ip;
