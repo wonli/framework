@@ -171,7 +171,9 @@ class Router implements RouterInterface
                     if ($query_string == $request) {
                         $request = '';
                     }
-                } elseif (false !== strpos($request, '&')) {
+                }
+
+                if (false !== strpos($request, '&')) {
                     list($request,) = explode('&', $request);
                 }
                 break;
