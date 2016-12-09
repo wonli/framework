@@ -143,10 +143,12 @@ class Router implements RouterInterface
      *
      * @param string $prefix
      * @param array $url_config
+     * @param bool $clear_ampersand
+     * @param bool $convert_html_entities
      * @return string
      * @throws CoreException
      */
-    public function getUriRequest($prefix = '/', &$url_config = array())
+    public function getUriRequest($prefix = '/', &$url_config = array(), $clear_ampersand = true, $convert_html_entities = true)
     {
         $url_config = $this->config->get('url');
         if (!empty($this->uriRequest)) {
@@ -173,7 +175,7 @@ class Router implements RouterInterface
                     }
                 }
 
-                if (false !== strpos($request, '&')) {
+                if ($clear_ampersand && false !== strpos($request, '&')) {
                     list($request,) = explode('&', $request);
                 }
                 break;
@@ -189,7 +191,12 @@ class Router implements RouterInterface
         }
 
         $this->originUriRequest = $request;
-        return $prefix . htmlspecialchars(urldecode(ltrim($request, '/')), ENT_QUOTES);
+        $request = urldecode(ltrim($request, '/'));
+        if ($convert_html_entities) {
+            $request = htmlspecialchars($request, ENT_QUOTES);
+        }
+
+        return $prefix . $request;
     }
 
     /**
