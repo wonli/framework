@@ -356,7 +356,7 @@ class Request
      * @param array $env_keys
      * @return string userIP
      */
-    public function getClientIPAddress($env_keys = array())
+    public function getClientIPAddress(array $env_keys = array())
     {
         static $ip = null;
         if (null === $ip) {
