@@ -7,6 +7,7 @@
  */
 namespace Cross\Core;
 
+use Cross\Exception\CoreException;
 use Cross\Runtime\ClosureContainer;
 use Cross\I\RouterInterface;
 use Cross\Http\Response;
@@ -94,6 +95,8 @@ class Delegate
 
         $this->loader = Loader::init();
         $this->config = self::initConfig($app_name, $runtime_config);
+
+        $this->registerNamespace();
         $this->action_container = new ClosureContainer();
         $this->router = new Router($this->config);
         $this->app = new Application($app_name, $this);
@@ -365,5 +368,25 @@ class Delegate
         }
 
         return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->combine($runtime_config);
+    }
+
+    /**
+     * 批量注册命名空间
+     *
+     * @throws CoreException
+     */
+    private function registerNamespace()
+    {
+        $namespaceConfig = $this->config->get('namespace');
+        if (!empty($namespaceConfig)) {
+            foreach ($namespaceConfig as $namespace => $libDir) {
+                $libDir = PROJECT_REAL_PATH . $libDir;
+                if (file_exists($libDir)) {
+                    $this->loader->registerNamespace($namespace, $libDir);
+                } else {
+                    throw new CoreException("Register namespace {$namespace} failed");
+                }
+            }
+        }
     }
 }
