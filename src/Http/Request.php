@@ -209,7 +209,7 @@ class Request
             throw new FrontException('determine the entry script URL failed!!!');
         }
 
-        return realpath(dirname($scriptName));
+        return dirname($scriptName);
     }
 
     /**

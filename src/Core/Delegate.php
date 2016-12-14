@@ -27,7 +27,7 @@ define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY
 define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 
 //框架路径
-define('CP_PATH', realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
 /**
  * @Auth: wonli <wonli@live.com>
