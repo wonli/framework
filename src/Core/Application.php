@@ -196,6 +196,43 @@ class Application
     }
 
     /**
+     * 设置controller
+     *
+     * @param $controller
+     */
+    function setController($controller)
+    {
+        $this->controller = $controller;
+    }
+
+    /**
+     * 设置action
+     *
+     * @param $action
+     */
+    function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    /**
+     * 设置params
+     *
+     * @param array|string $params
+     */
+    function setParams($params)
+    {
+        $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
+        if ($paramsChecker && is_array($params)) {
+            array_walk($params, $closure);
+        } elseif ($paramsChecker) {
+            call_user_func($closure, $params);
+        }
+
+        $this->params = $params;
+    }
+
+    /**
      * 设置控制器结果是否使用输出缓冲
      *
      * @param mixed $status
@@ -203,6 +240,46 @@ class Application
     public function setObStatus($status)
     {
         $this->ob_cache_status = (bool)$status;
+    }
+
+    /**
+     * 获取控制器名称
+     *
+     * @return mixed
+     */
+    function getController()
+    {
+        return $this->controller;
+    }
+
+    /**
+     * 获取action名称
+     *
+     * @return string
+     */
+    function getAction()
+    {
+        return $this->action;
+    }
+
+    /**
+     * 获取参数
+     *
+     * @return mixed
+     */
+    function getParams()
+    {
+        return $this->params;
+    }
+
+    /**
+     * 获取action注释配置
+     *
+     * @return array|bool
+     */
+    function getAnnotateConfig()
+    {
+        return $this->action_annotate;
     }
 
     /**
@@ -455,43 +532,6 @@ class Application
     }
 
     /**
-     * 设置controller
-     *
-     * @param $controller
-     */
-    private function setController($controller)
-    {
-        $this->controller = $controller;
-    }
-
-    /**
-     * 设置action
-     *
-     * @param $action
-     */
-    private function setAction($action)
-    {
-        $this->action = $action;
-    }
-
-    /**
-     * 设置params
-     *
-     * @param array|string $params
-     */
-    private function setParams($params)
-    {
-        $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
-        if ($paramsChecker && is_array($params)) {
-            array_walk($params, $closure);
-        } elseif ($paramsChecker) {
-            call_user_func($closure, $params);
-        }
-
-        $this->params = $params;
-    }
-
-    /**
      * 初始化请求缓存
      * <pre>
      * request_cache_config 共接受3个参数
@@ -622,46 +662,6 @@ class Application
         } else {
             $this->action_annotate = array_merge($controller_annotate, $annotate);
         }
-    }
-
-    /**
-     * 获取action注释配置
-     *
-     * @return array|bool
-     */
-    private function getAnnotateConfig()
-    {
-        return $this->action_annotate;
-    }
-
-    /**
-     * 获取控制器名称
-     *
-     * @return mixed
-     */
-    private function getController()
-    {
-        return $this->controller;
-    }
-
-    /**
-     * 获取action名称
-     *
-     * @return string
-     */
-    private function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * 获取参数
-     *
-     * @return mixed
-     */
-    private function getParams()
-    {
-        return $this->params;
     }
 }
 
