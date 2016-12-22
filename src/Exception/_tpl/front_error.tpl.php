@@ -99,7 +99,6 @@
                 </div>
             </div>
         </div>
-
         <div class="details">
             <h1>Exception File</h1>
             <div class="frame active" id="frame_active"
@@ -121,7 +120,6 @@
                 <?php endforeach ?>
             <?php endif ?>
         </div>
-
         <div class="data-table-container" id="data-tables">
             <div class="data-table" id="sg-get-data">
                 <label>GET</label>
@@ -244,10 +242,10 @@
                 <?php endif ?>
             </div>
         </div>
+        <div class="footer">
+            <?php printf('<a href="//www.crossphp.com" target="_blank">CrossPHP version %s</a>', Cross\Core\Delegate::getVersion()) ?>
+        </div>
     </div>
-</div>
-<div class="container footer">
-    <?php printf('<a href="//www.crossphp.com" target="_blank">CrossPHP version %s</a>', Cross\Core\Delegate::getVersion()) ?>
 </div>
 <script type="text/javascript">
     cp_exception = {
