@@ -114,6 +114,10 @@ abstract class CrossException extends Exception
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
             foreach ($trace as $tn => &$t) {
+                if (!isset($t['file'])) {
+                    continue;
+                }
+
                 $i = 0;
                 $trace_file_info = new SplFileObject($t['file']);
                 foreach ($trace_file_info as $line => $code) {
@@ -205,7 +209,7 @@ abstract class CrossException extends Exception
                 $t['show_file'] = $this->hiddenFileRealPath($t['file']);
                 $t['start_line'] = max(1, $t['line'] - 6);
                 $t['end_line'] = $t['line'] + 6;
-            } elseif (isset($t['function'])) {
+            } elseif (isset($t['function']) && isset($t['class'])) {
                 $rc = new ReflectionClass($t['class']);
                 $t['file'] = $rc->getFileName();
                 $t['show_file'] = $this->hiddenFileRealPath($rc->getFileName());
