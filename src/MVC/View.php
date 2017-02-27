@@ -419,7 +419,7 @@ class View extends FrameBase
     {
         ob_start();
         $this->renderTpl($tpl_name, $data);
-        return ob_get_clean();
+        return $this->wrapContent(ob_get_clean());
     }
 
     /**
@@ -433,7 +433,7 @@ class View extends FrameBase
     {
         ob_start();
         $this->renderFile($file, $data);
-        return ob_get_clean();
+        return $this->wrapContent(ob_get_clean());
     }
 
     /**
