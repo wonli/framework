@@ -274,7 +274,7 @@ class Helper
             base64_decode(substr($string, $c_key_length)) :
             sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
-        $result = '';
+        $result = array();
         $box = range(0, 255);
         $string_length = strlen($string);
 
