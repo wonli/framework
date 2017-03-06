@@ -413,13 +413,14 @@ class View extends FrameBase
      *
      * @param string $tpl_name
      * @param array $data
+     * @param bool $encode
      * @return string
      */
-    function obRenderTpl($tpl_name, array $data = array())
+    function obRenderTpl($tpl_name, array $data = array(), $encode = false)
     {
         ob_start();
         $this->renderTpl($tpl_name, $data);
-        return $this->wrapContent(ob_get_clean(), false);
+        return $this->wrapContent(ob_get_clean(), $encode);
     }
 
     /**
@@ -427,13 +428,14 @@ class View extends FrameBase
      *
      * @param string $file
      * @param array $data
+     * @param bool $encode
      * @return string
      */
-    function obRenderFile($file, $data = array())
+    function obRenderFile($file, $data = array(), $encode = false)
     {
         ob_start();
         $this->renderFile($file, $data);
-        return $this->wrapContent(ob_get_clean(), false);
+        return $this->wrapContent(ob_get_clean(), $encode);
     }
 
     /**
