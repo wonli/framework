@@ -89,7 +89,7 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $tpl_file_ext_name = '.tpl.php';
+    protected $tpl_file_suffix = '.tpl.php';
 
     /**
      * url配置缓存
@@ -443,11 +443,16 @@ class View extends FrameBase
      *
      * @param $tpl_name
      * @param bool $get_content 是否读取模板内容
+     * @param bool $auto_append_suffix 是否自动添加模版后缀
      * @return string
      */
-    function tpl($tpl_name, $get_content = false)
+    function tpl($tpl_name, $get_content = false, $auto_append_suffix = true)
     {
-        $file_path = $this->getTplPath() . $tpl_name . $this->tpl_file_ext_name;
+        $file_path = $this->getTplPath() . $tpl_name;
+        if($auto_append_suffix) {
+            $file_path .= $this->tpl_file_suffix;
+        }
+
         if (true === $get_content) {
             return file_get_contents($file_path, true);
         }
