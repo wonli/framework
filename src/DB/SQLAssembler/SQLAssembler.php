@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\SQLAssembler;
 
 use Cross\Exception\CoreException;
@@ -612,8 +613,17 @@ class SQLAssembler
                     } else {
                         $segment = '';
                         foreach ($data as $key => $value) {
-                            $segment .= ", {$key} = ?";
-                            $params[] = $value;
+                            if (is_array($value)) {
+                                if (isset($value[1])) {
+                                    $segment .= ", {$key} = {$value[0]}";
+                                    $params[] = $value[1];
+                                } else {
+                                    $segment .= ", {$key} = {$value[0]}";
+                                }
+                            } else {
+                                $segment .= ", {$key} = ?";
+                                $params[] = $value;
+                            }
                         }
 
                         $sql_segment = trim($segment, ',');
