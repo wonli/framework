@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Http\Request;
@@ -167,7 +168,7 @@ class Helper
      * @param string $add_valid_expr
      * @return bool
      */
-    static function validEmail($email, $add_valid_expr = "/^[^-_0][a-zA-Z0-9._-]+$/")
+    static function validEmail($email, $add_valid_expr = "/^[a-zA-Z0-9]([\w\-\.]?)+/")
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
