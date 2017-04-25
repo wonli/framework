@@ -5,15 +5,15 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\MVC;
 
 use Cross\Cache\Driver\RedisDriver;
 use Cross\Exception\CoreException;
+use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
-use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\DBFactory;
-use Cross\Core\CrossArray;
 use Cross\Core\FrameBase;
 use Cross\Core\Config;
 use Cross\Http\Response;
@@ -28,18 +28,25 @@ use Cross\Http\Request;
 class Module extends FrameBase
 {
     /**
-     * link的model类型
+     * 数据库连接的model名称
      *
      * @var string
      */
-    private $link_type;
+    private $linkName;
 
     /**
-     * link的model配置
+     * 数据库连接model类型
+     *
+     * @var string
+     */
+    private $linkType;
+
+    /**
+     * 数据库连接的model配置
      *
      * @var array
      */
-    private $link_config;
+    private $linkConfig;
 
     /**
      * 连接配置文件名
@@ -53,13 +60,6 @@ class Module extends FrameBase
     protected $db_config_file;
 
     /**
-     * module配置缓存
-     *
-     * @var object
-     */
-    protected static $module_config;
-
-    /**
      * 解析要连接model的参数
      *
      * @param string $params 指定要连接的数据库和配置项的key, 如mysql['db']这里的params应该为mysql:db
@@ -67,7 +67,11 @@ class Module extends FrameBase
     function __construct($params = '')
     {
         parent::__construct();
-        $this->initModelParams($params);
+
+        $config = $this->parseModelParams($params);
+        $this->linkName = &$config['model_name'];
+        $this->linkType = &$config['model_type'];
+        $this->linkConfig = &$config['model_config'];
     }
 
     /**
@@ -85,13 +89,23 @@ class Module extends FrameBase
     }
 
     /**
+     * 当前link的model名称
+     *
+     * @return string
+     */
+    function getLinkName()
+    {
+        return $this->linkName;
+    }
+
+    /**
      * 当前link的model类型
      *
      * @return string
      */
     function getLinkType()
     {
-        return $this->link_type;
+        return $this->linkType;
     }
 
     /**
@@ -101,7 +115,7 @@ class Module extends FrameBase
      */
     function getLinkConfig()
     {
-        return $this->link_config;
+        return $this->linkConfig;
     }
 
     /**
@@ -118,15 +132,16 @@ class Module extends FrameBase
     /**
      * 读取并解析数据库配置
      *
-     * @return CrossArray
+     * @return Config
      */
     protected function databaseConfig()
     {
-        if (!self::$module_config) {
-            self::$module_config = parent::loadConfig($this->getModuleConfigFile());
+        static $database_config = null;
+        if (null === $database_config) {
+            $database_config = parent::loadConfig($this->getModuleConfigFile());
         }
 
-        return self::$module_config;
+        return $database_config;
     }
 
     /**
@@ -173,21 +188,22 @@ class Module extends FrameBase
             $model_type = 'mysql';
         }
 
-        static $model_config_cache;
-        if (!isset($model_config_cache[$model_type][$model_name])) {
-            $all_db_config = $this->databaseConfig();
-            $model_config = $all_db_config->get($model_type, $model_name);
+        static $cache;
+        if (!isset($cache[$model_type][$model_name])) {
+            $databaseConfig = $this->databaseConfig();
+            $model_config = $databaseConfig->get($model_type, $model_name);
             if (empty($model_config)) {
                 throw new CoreException("未配置的Model: {$model_type}:{$model_name}");
             }
 
-            $model_config_cache[$model_type][$model_name] = array(
+            $cache[$model_type][$model_name] = array(
+                'model_name' => $model_name,
                 'model_type' => $model_type,
                 'model_config' => $model_config,
             );
         }
 
-        return $model_config_cache[$model_type][$model_name];
+        return $cache[$model_type][$model_name];
     }
 
     /**
@@ -198,20 +214,7 @@ class Module extends FrameBase
      */
     private function getLink()
     {
-        return DBFactory::make($this->link_type, $this->link_config, array($this->getConfig()));
-    }
-
-    /**
-     * 初始化model_type和model_config
-     *
-     * @param string $params
-     * @throws CoreException
-     */
-    private function initModelParams($params = '')
-    {
-        $config = $this->parseModelParams($params);
-        $this->link_type = $config['model_type'];
-        $this->link_config = $config['model_config'];
+        return DBFactory::make($this->linkType, $this->linkConfig, array($this->getConfig()));
     }
 
     /**
