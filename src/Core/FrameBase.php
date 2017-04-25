@@ -73,11 +73,11 @@ class FrameBase
         $this->delegate = self::$app_delegate;
         $runtime_config = $this->delegate->getClosureContainer()->run('~controller~runtime~');
 
-        $this->view_controller = $runtime_config['view_controller_namespace'];
-        $this->action_annotate = $runtime_config['action_annotate'];
-        $this->controller = $runtime_config['controller'];
-        $this->action = $runtime_config['action'];
-        $this->params = $runtime_config['params'];
+        $this->view_controller = &$runtime_config['view_controller_namespace'];
+        $this->action_annotate = &$runtime_config['action_annotate'];
+        $this->controller = &$runtime_config['controller'];
+        $this->action = &$runtime_config['action'];
+        $this->params = &$runtime_config['params'];
     }
 
     /**
