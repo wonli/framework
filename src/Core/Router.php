@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\I\RouterInterface;
@@ -93,7 +94,7 @@ class Router implements RouterInterface
      * Router
      *
      * @return $this
-     * @throws FrontException
+     * @throws CoreException
      */
     public function getRouter()
     {
@@ -159,24 +160,32 @@ class Router implements RouterInterface
             case 1:
             case 3:
                 $request = Request::getInstance()->getQueryString();
-                if (isset($request[0]) && $request[0] != '&') {
-                    array_shift($_GET);
-                }
+                $this->originUriRequest = $request;
 
-                //rewrite下带问号的请求参数追加到$_GET数组
-                $request_uri = Request::getInstance()->getRequestURI();
-                if ($url_config['rewrite'] && $request_uri && false !== strpos($request_uri, '?')) {
-                    $query_string = parse_url($request_uri, PHP_URL_QUERY);
-                    parse_str($query_string, $addition_params);
-                    $_GET += $addition_params;
+                if ($clear_ampersand) {
+                    //rewrite下带问号的请求参数追加到$_GET数组
+                    $request_uri = Request::getInstance()->getRequestURI();
+                    if ($url_config['rewrite'] && $request_uri && false !== strpos($request_uri, '?')) {
+                        $query_string = parse_url($request_uri, PHP_URL_QUERY);
+                        parse_str($query_string, $addition_params);
+                        $_GET += $addition_params;
 
-                    if ($query_string == $request) {
+                        if ($query_string == $request) {
+                            $request = '';
+                        }
+                    }
+
+                    if (false !== ($l = strpos($request, '&'))) {
+                        $request = substr($request, 0, $l);
+                    }
+
+                    if (false !== strpos($request, '=')) {
                         $request = '';
                     }
-                }
 
-                if ($clear_ampersand && false !== strpos($request, '&')) {
-                    list($request,) = explode('&', $request);
+                    if (isset($request[0]) && $request[0] != '&') {
+                        array_shift($_GET);
+                    }
                 }
                 break;
 
@@ -184,16 +193,18 @@ class Router implements RouterInterface
             case 4:
             case 5:
                 $request = Request::getInstance()->getPathInfo();
+                $this->originUriRequest = $request;
                 break;
 
             default:
                 throw new CoreException('Not support URL type!');
         }
 
-        $this->originUriRequest = $request;
-        $request = urldecode(ltrim($request, '/'));
-        if ($convert_html_entities) {
-            $request = htmlspecialchars($request, ENT_QUOTES);
+        if ($request) {
+            $request = urldecode(ltrim($request, '/'));
+            if ($convert_html_entities) {
+                $request = htmlspecialchars($request, ENT_QUOTES);
+            }
         }
 
         return $prefix . $request;
@@ -287,22 +298,32 @@ class Router implements RouterInterface
      */
     private static function parseRequestString($query_string, $url_config)
     {
-        $router_params = array();
-        if ($query_string) {
-            $url_suffix = &$url_config['ext'];
-            if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
-                if (0 === strcasecmp($url_suffix, substr($query_string, -$url_suffix_length))) {
-                    $query_string = substr($query_string, 0, -$url_suffix_length);
-                } else {
-                    throw new FrontException('Page not found !');
-                }
-            }
-
-            if (false !== strpos($query_string, $url_config['dot'])) {
-                $router_params = explode($url_config['dot'], $query_string);
+        $url_suffix = &$url_config['ext'];
+        if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
+            if (0 === strcasecmp($url_suffix, substr($query_string, -$url_suffix_length))) {
+                $query_string = substr($query_string, 0, -$url_suffix_length);
             } else {
-                $router_params = array($query_string);
+                throw new FrontException('Page not found !');
             }
+        }
+
+        $url_dot = &$url_config['dot'];
+        if ($url_dot && false !== strpos($query_string, $url_dot)) {
+            $router_params = explode($url_dot, $query_string);
+            $end_params = array_pop($router_params);
+        } else {
+            $router_params = array();
+            $end_params = $query_string;
+        }
+
+        $params_dot = &$url_config['params_dot'];
+        if ($params_dot && $params_dot != $url_dot && false !== strpos($end_params, $params_dot)) {
+            $params_data = explode($params_dot, $end_params);
+            foreach ($params_data as $p) {
+                $router_params[] = $p;
+            }
+        } else {
+            $router_params[] = $end_params;
         }
 
         return $router_params;

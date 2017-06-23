@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\MVC;
 
 use Cross\Exception\CoreException;
@@ -449,7 +450,7 @@ class View extends FrameBase
     function tpl($tpl_name, $get_content = false, $auto_append_suffix = true)
     {
         $file_path = $this->getTplPath() . $tpl_name;
-        if($auto_append_suffix) {
+        if ($auto_append_suffix) {
             $file_path .= $this->tpl_file_suffix;
         }
 
@@ -1070,14 +1071,20 @@ class View extends FrameBase
      */
     private function makeParams(array $params, array $url_config, $encrypt_params = false, $add_prefix_dot = true)
     {
-        $url_params = '';
-        $url_dot = $url_config['dot'];
+        $url_dot = &$url_config['dot'];
+        $params_dot = &$url_config['params_dot'];
+        if ($params_dot) {
+            $dot = $params_dot;
+        } else {
+            $dot = $url_dot;
+        }
 
+        $url_params = '';
         if ($params) {
             switch ($url_config['type']) {
                 case 1:
                 case 5:
-                    $url_params = implode($url_dot, $params);
+                    $url_params = implode($dot, $params);
                     break;
 
                 case 2:
@@ -1089,9 +1096,9 @@ class View extends FrameBase
                 case 3:
                 case 4:
                     foreach ($params as $p_key => $p_val) {
-                        $url_params .= $p_key . $url_dot . $p_val . $url_dot;
+                        $url_params .= $p_key . $dot . $p_val . $dot;
                     }
-                    $url_params = rtrim($url_params, $url_dot);
+                    $url_params = rtrim($url_params, $dot);
                     break;
             }
 

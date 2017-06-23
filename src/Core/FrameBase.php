@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
@@ -290,18 +291,24 @@ class FrameBase
 
         $op_type = 2;
         $ori_result = array();
+        if (!empty($url_config['params_dot'])) {
+            $url_dot = &$url_config['params_dot'];
+        } else {
+            $url_dot = &$url_config['dot'];
+        }
+
         switch ($url_config['type']) {
             case 1:
             case 5:
                 $op_type = 1;
-                $ori_result = explode($url_config['dot'], $decode_params_str);
+                $ori_result = explode($url_dot, $decode_params_str);
                 break;
             case 2:
                 parse_str($decode_params_str, $ori_result);
                 break;
             case 3:
             case 4:
-                $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_config['dot']);
+                $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_dot);
                 break;
         }
 
