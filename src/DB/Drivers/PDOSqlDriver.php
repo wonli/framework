@@ -143,7 +143,7 @@ class PDOSqlDriver implements SqlInterface
      *
      * @see SQLAssembler::add()
      * @param string $table 要插入的数据表
-     * @param string $data 要插入的数据,批量插入时的数据结构如下
+     * @param string|array $data 要插入的数据,批量插入时的数据结构如下
      * @param bool $multi 批量插入数据时,开启事务
      * @param array $insert_data 插入的数据列表
      * @param bool $openTA
