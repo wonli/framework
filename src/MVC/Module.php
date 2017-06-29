@@ -84,8 +84,17 @@ class Module extends FrameBase
      */
     function getModel($params = '', &$config = array())
     {
-        $config = $this->parseModelParams($params);
-        return DBFactory::make($config['model_type'], $config['model_config'], array($this->getConfig()));
+        static $cache = array();
+        if (!isset($cache[$params])) {
+            $config = $this->parseModelParams($params);
+            $model = DBFactory::make($config['model_type'], $config['model_config'], array($this->getConfig()));
+            $cache[$params] = array('config' => $config, 'model' => $model);
+        } else {
+            $model = $cache[$params]['model'];
+            $config = $cache[$params]['config'];
+        }
+
+        return $model;
     }
 
     /**
