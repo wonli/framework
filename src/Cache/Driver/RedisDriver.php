@@ -5,10 +5,10 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Cache\Driver;
 
 use Cross\Exception\CoreException;
-use Exception;
 use Redis;
 
 /**
@@ -22,6 +22,11 @@ class RedisDriver
      * @var Redis
      */
     protected $link;
+
+    /**
+     * @var array
+     */
+    protected $option;
 
     /**
      * 连接redis
@@ -40,28 +45,47 @@ class RedisDriver
             throw new CoreException('Not support redis extension !');
         }
 
-        $redis = new Redis();
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
-            $redis->connect($option['unix_socket']);
+            $id = $option['unix_socket'];
+            $use_unix_socket = true;
         } else {
-            $redis->connect($option['host'], $option['port'], $option['timeout']);
+            $id = "{$option['host']}:{$option['port']}:{$option['timeout']}";
+            $use_unix_socket = false;
         }
 
-        $authStatus = true;
-        if (!empty($option['pass'])) {
-            $authStatus = $redis->auth($option['pass']);
-        }
-
-        try {
-            if ($authStatus) {
-                $redis->select($option['db']);
-                $this->link = $redis;
+        static $connects;
+        if (!isset($connects[$id])) {
+            $redis = new Redis();
+            if ($use_unix_socket) {
+                $redis->connect($option['unix_socket']);
             } else {
-                throw new CoreException('Redis auth failed !');
+                $redis->connect($option['host'], $option['port'], $option['timeout']);
             }
-        } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
+
+            if (!empty($option['pass'])) {
+                $authStatus = $redis->auth($option['pass']);
+                if (!$authStatus) {
+                    throw new CoreException('Redis auth failed !');
+                }
+            }
+
+            $connects[$id] = $redis;
+        } else {
+            $redis = &$connects[$id];
         }
+
+        $this->link = $redis;
+        $this->option = $option;
+    }
+
+    /**
+     * 获取连接属性
+     *
+     * @return array
+     */
+    function getLinkOption()
+    {
+        return $this->option;
     }
 
     /**
@@ -75,11 +99,29 @@ class RedisDriver
     {
         $result = null;
         if (method_exists($this->link, $method)) {
+            $this->selectCurrentDatabase();
             $result = ($argv == null)
                 ? $this->link->$method()
                 : call_user_func_array(array($this->link, $method), $argv);
         }
 
         return $result;
+    }
+
+    /**
+     * 选择当前数据库
+     */
+    protected function selectCurrentDatabase()
+    {
+        static $selected = null;
+        $current = &$this->option['db'];
+        if ($selected !== $current) {
+            $select_ret = $this->link->select($current);
+            if ($select_ret) {
+                $selected = $current;
+            } else {
+                throw new CoreException("Redis select DB($current) failed!");
+            }
+        }
     }
 }
