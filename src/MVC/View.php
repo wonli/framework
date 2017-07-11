@@ -785,138 +785,6 @@ class View extends FrameBase
     }
 
     /**
-     * 输出带layer的view
-     *
-     * @param array $data
-     * @param string $method
-     * @return string|void
-     * @throws CoreException
-     */
-    private function obRenderAction($data, $method)
-    {
-        ob_start();
-        $this->$method($data);
-        $content = ob_get_clean();
-
-        if ($this->set['load_layer']) {
-            $this->loadLayer($content);
-        } else {
-            echo $content;
-        }
-    }
-
-    /**
-     * 节点入栈并生成HTML
-     *
-     * @param string $element
-     * @param array $element_tags
-     * @return mixed|string
-     */
-    private function wrapTag($element, $element_tags = array())
-    {
-        if (!empty($this->wrap_stack)) {
-            $this->wrap($element, $element_tags);
-            return $this->buildWrapTags($this->wrap_stack);
-        }
-
-        return self::htmlTag($element, $element_tags);
-    }
-
-    /**
-     * 处理带wrap的HTML
-     *
-     * @param string $content
-     * @param bool $encode 是否转码
-     * @return mixed
-     */
-    private function wrapContent($content, $encode = true)
-    {
-        if (!empty($this->wrap_stack)) {
-            $stack_top = &$this->wrap_stack[0];
-            if (isset($stack_top[1]['@content']) && $stack_top[2]) {
-                $content .= $stack_top[1]['@content'];
-            } else if (isset($stack_top[1]['@content'])) {
-                $content = $stack_top[1]['@content'] . $content;
-            }
-
-            $stack_top[1]['@content'] = $content;
-            return $this->buildWrapTags($this->wrap_stack);
-        } else if ($encode) {
-            return htmlentities($content, ENT_IGNORE);
-        } else {
-            return $content;
-        }
-    }
-
-    /**
-     * 处理wrap
-     *
-     * @param array $wrap_tags
-     * @return mixed
-     */
-    private function buildWrapTags(array &$wrap_tags)
-    {
-        $i = 0;
-        $wrap_content = '';
-        $stack_size = count($wrap_tags) - 1;
-        while ($wrap_config = array_shift($wrap_tags)) {
-            list($wrap_element, $wrap_element_tags, $after) = $wrap_config;
-            if ($wrap_content === '') {
-                $wrap_content = HTML::$wrap_element($wrap_element_tags);
-            } else {
-                if (isset($wrap_element_tags['@content']) && $after) {
-                    $wrap_element_tags['@content'] = $wrap_content . $wrap_element_tags['@content'];
-                } else if (isset($wrap_element_tags['@content'])) {
-                    $wrap_element_tags['@content'] .= $wrap_content;
-                } else {
-                    $wrap_element_tags['@content'] = $wrap_content;
-                }
-
-                if ($i == $stack_size) {
-                    return self::htmlTag($wrap_element, $wrap_element_tags);
-                } else {
-                    $wrap_content = HTML::$wrap_element($wrap_element_tags);
-                }
-            }
-            $i++;
-        }
-
-        return $wrap_content;
-    }
-
-    /**
-     * 生成radio或checkbox标签
-     *
-     * @param string $type 指定类型
-     * @param array $data 数据 值和label的关联数组
-     * @param array $default_value 默认值
-     * @param array $input_tags input附加参数
-     * @param array $label_tags label附加参数
-     * @return string
-     */
-    private function buildRadioOrCheckbox($type, array $data, array $default_value = array(), array $input_tags = array(), array $label_tags = array())
-    {
-        $content = '';
-        foreach ($data as $value => $label_text) {
-            $build_input_tags = array();
-            if (!empty($input_tags)) {
-                $build_input_tags = $input_tags;
-            }
-
-            $build_input_tags['type'] = $type;
-            $build_input_tags['value'] = $value;
-            if (isset($default_value[$value])) {
-                $build_input_tags['checked'] = true;
-            }
-
-            $label_tags['@content'] = self::htmlTag('input', $build_input_tags) . $label_text;
-            $content .= self::htmlTag('label', $label_tags);
-        }
-
-        return $this->wrapContent($content, false);
-    }
-
-    /**
      * 生成连接
      *
      * @param string $app_name
@@ -927,7 +795,7 @@ class View extends FrameBase
      * @return string
      * @throws CoreException
      */
-    private function makeUri($app_name, $check_app_name, $controller = null, $params = null, $encrypt_params = null)
+    protected function makeUri($app_name, $check_app_name, $controller = null, $params = null, $encrypt_params = null)
     {
         $uri = '';
         $enable_controller_cache = false;
@@ -999,11 +867,11 @@ class View extends FrameBase
      * @return string
      * @throws CoreException
      */
-    private function makeControllerUri($app_name, $use_cache, $controller, array $url_config)
+    protected function makeControllerUri($app_name, $use_cache, $controller, array $url_config)
     {
-        static $controller_uri_cache;
-        if (isset($controller_uri_cache[$app_name][$controller]) && $use_cache) {
-            return $controller_uri_cache[$app_name][$controller];
+        static $path_cache;
+        if (isset($path_cache[$app_name][$controller]) && $use_cache) {
+            return $path_cache[$app_name][$controller];
         }
 
         $app_alias_config = $this->parseControllerAlias($app_name, $url_config['router']);
@@ -1013,51 +881,89 @@ class View extends FrameBase
             $real_controller = $controller;
         }
 
-        $_action = null;
+        $action_name = null;
         if (false !== strpos($real_controller, ':')) {
-            list($_controller, $_action) = explode(':', $real_controller);
+            list($controller_name, $action_name) = explode(':', $real_controller);
         } else {
-            $_controller = $real_controller;
+            $controller_name = $real_controller;
         }
 
-        $controller_uri = '';
         $url = &$url_config['url'];
-        if ($url['rewrite']) {
-            $controller_uri .= $_controller;
+        $index = $this->makeIndex($url, true);
+        $controller_path = $index . $controller_name;
+
+        if (null !== $action_name) {
+            $controller_path .= $url['dot'] . $action_name;
+        }
+
+        $path_cache[$app_name][$controller] = $controller_path;
+        return $controller_path;
+    }
+
+    /**
+     * 生成URL中的索引部分
+     *
+     * @param array $url_config
+     * @param bool $have_controller
+     * @return string
+     * @throws CoreException
+     */
+    protected function makeIndex(array $url_config, $have_controller = false)
+    {
+        static $cache = array();
+        if (isset($cache[$have_controller])) {
+            return $cache[$have_controller];
+        }
+
+        $index = $url_config['index'];
+        $is_default_index = (0 === strcasecmp($index, 'index.php'));
+
+        switch ($url_config['type']) {
+            case 1:
+            case 3:
+                $index_dot = '?';
+                $addition_dot = '/';
+                if ($is_default_index) {
+                    $index = '';
+                }
+                break;
+
+            case 2:
+            case 4:
+            case 5:
+                $index_dot = '/';
+                $addition_dot = '';
+                break;
+
+            default:
+                throw new CoreException('Type does not support!');
+        }
+
+        if ($url_config['rewrite']) {
+            $index = $index_dot = $addition_dot = '';
+        }
+
+        $virtual_path = &$url_config['virtual_path'];
+        if ($have_controller) {
+            $index .= $index_dot . $addition_dot;
+            if ($virtual_path) {
+                $index .= $virtual_path . $url_config['dot'];
+            }
         } else {
-            $index_file_name = $url['index'];
-            switch ($url['type']) {
-                case 1:
-                case 3:
-                    if (strcasecmp($index_file_name, 'index.php') == 0) {
-                        $_dot = '?';
-                        if ($_controller) {
-                            $_dot .= '/';
-                        }
-                    } else {
-                        $_dot = $index_file_name . '?';
-                    }
-                    break;
-
-                case 2:
-                case 4:
-                case 5:
-                    $_dot = $index_file_name . '/';
-                    break;
-
-                default:
-                    throw new CoreException('不支持的url type');
+            if ($is_default_index) {
+                $index = '';
             }
 
-            $controller_uri .= $_dot . $_controller;
+            if ($virtual_path) {
+                $index .= $index_dot . $addition_dot . $virtual_path;
+                if ($url_config['ext']) {
+                    $index .= $url_config['ext'];
+                }
+            }
         }
 
-        if (null !== $_action) {
-            $controller_uri .= $url['dot'] . $_action;
-        }
-
-        $controller_uri_cache[$app_name][$controller] = $controller_uri;
-        return $controller_uri;
+        $cache[$have_controller] = $index;
+        return $index;
     }
 
     /**
@@ -1069,7 +975,7 @@ class View extends FrameBase
      * @param bool $add_prefix_dot 当控制器字符串为空时,参数不添加前缀
      * @return string
      */
-    private function makeParams(array $params, array $url_config, $encrypt_params = false, $add_prefix_dot = true)
+    protected function makeParams(array $params, array $url_config, $encrypt_params = false, $add_prefix_dot = true)
     {
         $url_dot = &$url_config['dot'];
         $params_dot = &$url_config['params_dot'];
@@ -1115,35 +1021,13 @@ class View extends FrameBase
     }
 
     /**
-     * 解析路由别名配置
-     *
-     * @param string $app_name
-     * @param array $router
-     * @return array
-     */
-    private function parseControllerAlias($app_name, array $router)
-    {
-        static $router_alias_cache;
-        if (!isset($router_alias_cache[$app_name])) {
-            $router_alias_cache[$app_name] = array();
-            if (!empty($router)) {
-                foreach ($router as $controller_alias => $alias_config) {
-                    $router_alias_cache[$app_name][$alias_config] = $controller_alias;
-                }
-            }
-        }
-
-        return $router_alias_cache[$app_name];
-    }
-
-    /**
      * 输出js/css连接
      *
      * @param $res_link
      * @param bool $make_link
      * @return null|string
      */
-    private function outputResLink($res_link, $make_link = true)
+    protected function outputResLink($res_link, $make_link = true)
     {
         $t = Helper::getExt($res_link);
         switch (strtolower($t)) {
@@ -1177,7 +1061,7 @@ class View extends FrameBase
      * @param string $layer_ext
      * @throws CoreException
      */
-    private function loadLayer($content, $layer_ext = '.layer.php')
+    protected function loadLayer($content, $layer_ext = '.layer.php')
     {
         $layer_file = $this->getTplPath() . $this->set['layer'] . $layer_ext;
         if (!is_file($layer_file)) {
@@ -1186,5 +1070,159 @@ class View extends FrameBase
 
         extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
         include $layer_file;
+    }
+
+    /**
+     * 输出带layer的view
+     *
+     * @param array $data
+     * @param string $method
+     * @return string|void
+     * @throws CoreException
+     */
+    private function obRenderAction($data, $method)
+    {
+        ob_start();
+        $this->$method($data);
+        $content = ob_get_clean();
+
+        if ($this->set['load_layer']) {
+            $this->loadLayer($content);
+        } else {
+            echo $content;
+        }
+    }
+
+    /**
+     * 解析路由别名配置
+     *
+     * @param string $app_name
+     * @param array $router
+     * @return array
+     */
+    private function parseControllerAlias($app_name, array $router)
+    {
+        static $router_alias_cache;
+        if (!isset($router_alias_cache[$app_name])) {
+            $router_alias_cache[$app_name] = array();
+            if (!empty($router)) {
+                foreach ($router as $controller_alias => $alias_config) {
+                    $router_alias_cache[$app_name][$alias_config] = $controller_alias;
+                }
+            }
+        }
+
+        return $router_alias_cache[$app_name];
+    }
+
+    /**
+     * 生成radio或checkbox标签
+     *
+     * @param string $type 指定类型
+     * @param array $data 数据 值和label的关联数组
+     * @param array $default_value 默认值
+     * @param array $input_tags input附加参数
+     * @param array $label_tags label附加参数
+     * @return string
+     */
+    private function buildRadioOrCheckbox($type, array $data, array $default_value = array(), array $input_tags = array(), array $label_tags = array())
+    {
+        $content = '';
+        foreach ($data as $value => $label_text) {
+            $build_input_tags = array();
+            if (!empty($input_tags)) {
+                $build_input_tags = $input_tags;
+            }
+
+            $build_input_tags['type'] = $type;
+            $build_input_tags['value'] = $value;
+            if (isset($default_value[$value])) {
+                $build_input_tags['checked'] = true;
+            }
+
+            $label_tags['@content'] = self::htmlTag('input', $build_input_tags) . $label_text;
+            $content .= self::htmlTag('label', $label_tags);
+        }
+
+        return $this->wrapContent($content, false);
+    }
+
+    /**
+     * 处理wrap
+     *
+     * @param array $wrap_tags
+     * @return mixed
+     */
+    private function buildWrapTags(array &$wrap_tags)
+    {
+        $i = 0;
+        $wrap_content = '';
+        $stack_size = count($wrap_tags) - 1;
+        while ($wrap_config = array_shift($wrap_tags)) {
+            list($wrap_element, $wrap_element_tags, $after) = $wrap_config;
+            if ($wrap_content === '') {
+                $wrap_content = HTML::$wrap_element($wrap_element_tags);
+            } else {
+                if (isset($wrap_element_tags['@content']) && $after) {
+                    $wrap_element_tags['@content'] = $wrap_content . $wrap_element_tags['@content'];
+                } else if (isset($wrap_element_tags['@content'])) {
+                    $wrap_element_tags['@content'] .= $wrap_content;
+                } else {
+                    $wrap_element_tags['@content'] = $wrap_content;
+                }
+
+                if ($i == $stack_size) {
+                    return self::htmlTag($wrap_element, $wrap_element_tags);
+                } else {
+                    $wrap_content = HTML::$wrap_element($wrap_element_tags);
+                }
+            }
+            $i++;
+        }
+
+        return $wrap_content;
+    }
+
+    /**
+     * 处理带wrap的HTML
+     *
+     * @param string $content
+     * @param bool $encode 是否转码
+     * @return mixed
+     */
+    private function wrapContent($content, $encode = true)
+    {
+        if (!empty($this->wrap_stack)) {
+            $stack_top = &$this->wrap_stack[0];
+            if (isset($stack_top[1]['@content']) && $stack_top[2]) {
+                $content .= $stack_top[1]['@content'];
+            } else if (isset($stack_top[1]['@content'])) {
+                $content = $stack_top[1]['@content'] . $content;
+            }
+
+            $stack_top[1]['@content'] = $content;
+            return $this->buildWrapTags($this->wrap_stack);
+        } else if ($encode) {
+            return htmlentities($content, ENT_IGNORE);
+        } else {
+            return $content;
+        }
+    }
+
+    /**
+     * 节点入栈并生成HTML
+     *
+     * @param string $element
+     * @param array $element_tags
+     * @return mixed|string
+     */
+    private function wrapTag($element, $element_tags = array())
+    {
+        if (!empty($this->wrap_stack)) {
+            $this->wrap($element, $element_tags);
+            return $this->buildWrapTags($this->wrap_stack);
+        }
+
+        return self::htmlTag($element, $element_tags);
     }
 }
