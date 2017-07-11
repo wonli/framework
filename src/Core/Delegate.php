@@ -98,7 +98,7 @@ class Delegate
 
         $this->registerNamespace();
         $this->action_container = new ClosureContainer();
-        $this->router = new Router($this->config);
+        $this->router = new Router($this);
         $this->app = new Application($app_name, $this);
     }
 
@@ -316,10 +316,10 @@ class Delegate
 
     /**
      * 初始化App配置
+     *
      * @param string $app_name
      * @param array $runtime_config
-     * @return $this
-     * @throws \Cross\Exception\FrontException
+     * @return Config
      */
     private static function initConfig($app_name, array $runtime_config)
     {
