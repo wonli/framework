@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
@@ -32,6 +33,18 @@ class Config
     private static $instance;
 
     /**
+     * @var CrossArray
+     */
+    private $ca;
+
+    /**
+     * 查询缓存
+     *
+     * @var array
+     */
+    private static $cache;
+
+    /**
      * 读取配置
      *
      * @param string $res_file 配置文件绝对路径
@@ -41,6 +54,8 @@ class Config
     {
         $this->res_file = $res_file;
         $this->config_data = Loader::read($res_file);
+
+        $this->ca = CrossArray::init($this->config_data, $this->res_file);
     }
 
     /**
@@ -73,6 +88,8 @@ class Config
                 } else {
                     $this->config_data[$key] = $value;
                 }
+
+                $this->clearIndexCache($key);
             }
         }
 
@@ -88,7 +105,20 @@ class Config
      */
     function get($index, $options = '')
     {
-        return CrossArray::init($this->config_data, $this->res_file)->get($index, $options);
+        $key = $this->getIndexCacheKey($index);
+        if (is_array($options)) {
+            $opk = implode('.', $options);
+        } elseif ($options) {
+            $opk = $options;
+        } else {
+            $opk = '-###-';
+        }
+
+        if (!isset(self::$cache[$key][$opk])) {
+            self::$cache[$key][$opk] = $this->ca->get($index, $options);
+        }
+
+        return self::$cache[$key][$opk];
     }
 
     /**
@@ -100,7 +130,10 @@ class Config
      */
     function set($index, $values = '')
     {
-        return CrossArray::init($this->config_data, $this->res_file)->set($index, $values);
+        $result = $this->ca->set($index, $values);
+        $this->clearIndexCache($index);
+
+        return $result;
     }
 
     /**
@@ -116,5 +149,27 @@ class Config
         }
 
         return $this->config_data;
+    }
+
+    /**
+     * 获取数组索引缓存key
+     *
+     * @param string $index
+     * @return string
+     */
+    protected function getIndexCacheKey($index)
+    {
+        return $this->res_file . '.' . $index;
+    }
+
+    /**
+     * 清除缓存
+     *
+     * @param string $index
+     */
+    protected function clearIndexCache($index)
+    {
+        $key = $this->getIndexCacheKey($index);
+        unset(self::$cache[$key]);
     }
 }
