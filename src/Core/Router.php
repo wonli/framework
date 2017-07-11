@@ -57,17 +57,28 @@ class Router implements RouterInterface
     private $config;
 
     /**
+     * @var Delegate
+     */
+    private $delegate;
+
+    /**
+     * @var array
+     */
+    private $defaultRouter = array();
+
+    /**
      * 默认Action名称
      */
     const DEFAULT_ACTION = 'index';
 
     /**
      * Router constructor.
-     * @param Config $config
+     * @param Delegate $delegate
      */
-    function __construct(Config $config)
+    function __construct(Delegate &$delegate)
     {
-        $this->config = $config;
+        $this->delegate = $delegate;
+        $this->config = $delegate->getConfig();
     }
 
     /**
@@ -103,10 +114,27 @@ class Router implements RouterInterface
             $request = $this->parseRequestString($request, $url_config);
             $this->initRouter($request);
         } else {
-            $this->initByDefaultRouter($url_config['*']);
+            $router = $this->parseDefaultRouter($url_config['*']);
+            $this->setController($router[0]);
+            $this->setAction($router[1]);
         }
 
         return $this;
+    }
+
+    /**
+     * 获取默认控制器
+     *
+     * @return array
+     */
+    function getDefaultRouter()
+    {
+        if (empty($this->defaultRouter)) {
+            $url_config = $this->config->get('url');
+            $this->parseDefaultRouter($url_config['*']);
+        }
+
+        return $this->defaultRouter;
     }
 
     /**
@@ -211,30 +239,6 @@ class Router implements RouterInterface
     }
 
     /**
-     * 从默认配置初始化Router
-     *
-     * @param string $default_router
-     * @return array
-     * @throws CoreException
-     */
-    private function initByDefaultRouter($default_router)
-    {
-        if (empty($default_router)) {
-            throw new CoreException('Undefined default router!');
-        }
-
-        if (false !== strpos($default_router, ':')) {
-            list($controller, $action) = explode(':', $default_router);
-        } else {
-            $controller = $default_router;
-            $action = self::DEFAULT_ACTION;
-        }
-
-        $this->setController($controller);
-        $this->setAction($action);
-    }
-
-    /**
      * 解析router别名配置
      *
      * @param array $request
@@ -243,9 +247,13 @@ class Router implements RouterInterface
      */
     private function initRouter(array $request)
     {
-        $ori_controller = $controller = array_shift($request);
+        $closure = $this->delegate->getClosureContainer();
+        if ($closure->has('initRouter')) {
+            $request = $closure->run('initRouter', array($request));
+        }
 
         $combine_alias_key = '';
+        $ori_controller = $controller = array_shift($request);
         if (isset($request[0])) {
             $combine_alias_key = $controller . ':' . $request[0];
         }
@@ -327,6 +335,33 @@ class Router implements RouterInterface
         }
 
         return $router_params;
+    }
+
+    /**
+     * 解析默认控制器和方法
+     *
+     * @param string $default_router
+     * @return array
+     * @throws CoreException
+     */
+    private function parseDefaultRouter($default_router)
+    {
+        if (empty($default_router)) {
+            throw new CoreException('Undefined default router!');
+        }
+
+        if (empty($this->defaultRouter)) {
+            if (false !== strpos($default_router, ':')) {
+                list($controller, $action) = explode(':', $default_router);
+            } else {
+                $controller = $default_router;
+                $action = self::DEFAULT_ACTION;
+            }
+
+            $this->defaultRouter = array($controller, $action);
+        }
+
+        return $this->defaultRouter;
     }
 
     /**
