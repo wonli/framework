@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Http;
 
 /**
@@ -20,6 +21,20 @@ class Response
      * @var array
      */
     protected $header;
+
+    /**
+     * cookie
+     *
+     * @var array
+     */
+    protected $cookie;
+
+    /**
+     * cookie配置
+     *
+     * @var array
+     */
+    protected $cookie_config;
 
     /**
      * 返回头http类型
@@ -98,7 +113,14 @@ class Response
      */
     function setHeader($header)
     {
-        $this->header = $header;
+        if (is_array($header)) {
+            foreach ($header as $key => $value) {
+                $this->header[] = "{$key}: {$value}";
+            }
+        } else {
+            $this->header[] = $header;
+        }
+
         return $this;
     }
 
@@ -108,6 +130,91 @@ class Response
     function getHeader()
     {
         return $this->header;
+    }
+
+    /**
+     * 添加cookie
+     *
+     * @param mixed $name
+     * @param string $value
+     * @param int $expire
+     * @return $this
+     */
+    function setCookie($name, $value = '', $expire = 0)
+    {
+        $this->cookie[$name] = array(
+            $name,
+            $value,
+            $expire,
+            $this->getCookieConfig('path'),
+            $this->getCookieConfig('domain'),
+            $this->getCookieConfig('secure'),
+            $this->getCookieConfig('httponly')
+        );
+
+        return $this;
+    }
+
+    /**
+     * 获取cookie
+     *
+     * @return array
+     */
+    function getCookie()
+    {
+        return $this->cookie;
+    }
+
+    /**
+     * 删除cookie
+     *
+     * @param string $name
+     * @return $this
+     */
+    function deleteCookie($name)
+    {
+        $this->setCookie($name, null, -1);
+        return $this;
+    }
+
+    /**
+     * 设置cookie参数默认值
+     * <pre>
+     * 参数为一个数组, 支持以下参数
+     *
+     * path 默认为空字符串
+     * domain 默认为空字符串
+     * secure 默认为false
+     * httponly 默认为true
+     * </pre>
+     *
+     * @param array $config
+     * @return $this
+     */
+    function cookieConfig(array $config)
+    {
+        $this->cookie_config = $config;
+        return $this;
+    }
+
+    /**
+     * 获取cookie参数默认值
+     *
+     * @param null $key
+     * @return array|mixed
+     */
+    function getCookieConfig($key = null)
+    {
+        $default = array('path' => '', 'domain' => '', 'secure' => false, 'httponly' => true);
+        if ($key && isset($default[$key])) {
+            if (isset($this->cookie_config[$key])) {
+                return $this->cookie_config[$key];
+            }
+
+            return $default[$key];
+        }
+
+        return null;
     }
 
     /**
@@ -180,7 +287,7 @@ class Response
         $content_type_name = $this->getContentType();
         if (isset(self::$mime_types [$content_type_name])) {
             $content_type = self::$mime_types [$content_type_name];
-        } else if ($content_type_name) {
+        } elseif ($content_type_name) {
             $content_type = $content_type_name;
         } else {
             $content_type = self::$mime_types ['html'];
@@ -238,6 +345,22 @@ class Response
 
             foreach ($contents as $content) {
                 header($content);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * 发送cookie
+     *
+     * @return $this
+     */
+    private function sendCookie()
+    {
+        if (!empty($this->cookie)) {
+            foreach ($this->cookie as $cookie) {
+                call_user_func_array('setcookie', $cookie);
             }
         }
 
@@ -311,10 +434,11 @@ class Response
      */
     function display($content = '', $tpl = '')
     {
-        $code = $this->getResponseStatus();
         if (!headers_sent() && PHP_SAPI != 'cli') {
+            $code = $this->getResponseStatus();
             $this->sendResponseStatus($code);
             $this->sendResponseHeader();
+            $this->sendCookie();
         }
 
         $this->flushContent($content, $tpl);
