@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Drivers;
 
 use Cross\DB\SQLAssembler\SQLAssembler;
@@ -157,6 +158,7 @@ class PDOSqlDriver implements SqlInterface
         $this->params = $this->SQLAssembler->getParams();
 
         if ($multi) {
+            $add_count = 0;
             if (!empty($this->params)) {
                 $inc_name = $this->getAutoIncrementName($table);
                 $stmt = $this->prepare($this->sql);
@@ -166,12 +168,13 @@ class PDOSqlDriver implements SqlInterface
                     try {
                         if (!empty($this->params)) {
                             foreach ($this->params as $p) {
-                                if ($stmt->exec($p)) {
+                                if ($stmt->exec($p, true)) {
                                     $add_data_info = array_combine($data['fields'], $p);
                                     if ($inc_name) {
-                                        $add_data_info[$inc_name] = $stmt->insertId();
+                                        $add_data_info[$inc_name] = $this->insertId();
                                     }
 
+                                    $add_count++;
                                     $insert_data[] = $add_data_info;
                                 }
                             }
@@ -185,27 +188,28 @@ class PDOSqlDriver implements SqlInterface
                 } else {
                     if (!empty($this->params)) {
                         foreach ($this->params as $p) {
-                            if ($stmt->exec($p)) {
+                            if ($stmt->exec($p, true)) {
                                 $add_data_info = array_combine($data['fields'], $p);
                                 if ($inc_name) {
-                                    $add_data_info[$inc_name] = $stmt->insertId();
+                                    $add_data_info[$inc_name] = $this->insertId();
                                 }
 
+                                $add_count++;
                                 $insert_data[] = $add_data_info;
                             }
                         }
                     }
                 }
             }
-            return true;
+            return $add_count;
         } else {
-            $result = $this->prepare($this->sql)->exec($this->params);
-            $last_insert_id = $result->insertId();
+            $add_count = $this->prepare($this->sql)->exec($this->params, true);
+            $last_insert_id = $this->insertId();
             if ($last_insert_id > 0) {
                 return $last_insert_id;
             }
 
-            return true;
+            return $add_count;
         }
     }
 
@@ -254,8 +258,7 @@ class PDOSqlDriver implements SqlInterface
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();
 
-        $this->prepare($this->sql)->exec($this->params);
-        return true;
+        return $this->prepare($this->sql)->exec($this->params, true);
     }
 
     /**
@@ -271,6 +274,7 @@ class PDOSqlDriver implements SqlInterface
      */
     public function del($table, $where, $multi = false, $openTA = false)
     {
+        $del_count = 0;
         $this->SQLAssembler->del($table, $where, $multi);
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();
@@ -281,7 +285,7 @@ class PDOSqlDriver implements SqlInterface
                     if (!empty($this->params)) {
                         $stmt = $this->prepare($this->sql);
                         foreach ($this->params as $p) {
-                            $stmt->exec($p);
+                            $del_count += $stmt->exec($p, true);
                         }
                     }
                 } catch (Exception $e) {
@@ -293,15 +297,15 @@ class PDOSqlDriver implements SqlInterface
                 if (!empty($this->params)) {
                     $stmt = $this->prepare($this->sql);
                     foreach ($this->params as $p) {
-                        $stmt->exec($p);
+                        $del_count += $stmt->exec($p, true);
                     }
                 }
             }
         } else {
-            $this->prepare($this->sql)->exec($this->params);
+            $del_count = $this->prepare($this->sql)->exec($this->params, true);
         }
 
-        return true;
+        return $del_count;
     }
 
     /**
@@ -647,13 +651,18 @@ class PDOSqlDriver implements SqlInterface
      * 执行参数绑定
      *
      * @param array $args
-     * @return $this
+     * @param bool $row_count
+     * @return int|$this
      * @throws CoreException
      */
-    public function exec($args = array())
+    public function exec($args = array(), $row_count = false)
     {
         try {
             $this->stmt->execute($args);
+            if ($row_count) {
+                return $this->stmt->rowCount();
+            }
+
             return $this;
         } catch (PDOException $e) {
             throw new CoreException($e->getMessage());
