@@ -19,6 +19,11 @@ use Redis;
 class RedisDriver
 {
     /**
+     * @var string
+     */
+    private $id;
+
+    /**
      * @var Redis
      */
     protected $link;
@@ -74,6 +79,7 @@ class RedisDriver
             $redis = &$connects[$id];
         }
 
+        $this->id = $id;
         $this->link = $redis;
         $this->option = $option;
     }
@@ -114,9 +120,11 @@ class RedisDriver
     protected function selectCurrentDatabase()
     {
         static $selected = null;
-        $current = &$this->option['db'];
+
+        $db = &$this->option['db'];
+        $current = $this->id . ':' . $db;
         if ($selected !== $current) {
-            $select_ret = $this->link->select($current);
+            $select_ret = $this->link->select($db);
             if ($select_ret) {
                 $selected = $current;
             } else {
