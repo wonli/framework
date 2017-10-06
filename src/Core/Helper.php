@@ -128,12 +128,16 @@ class Helper
      *
      * @param string $path
      * @param int $mode
+     * @param bool $recursive
+     * @return bool
      */
-    static function createFolders($path, $mode = 0755)
+    static function createFolders($path, $mode = 0755, $recursive = true)
     {
         if (!is_dir($path)) {
-            mkdir($path, $mode, true);
+            return mkdir($path, $mode, $recursive);
         }
+
+        return true;
     }
 
     /**
@@ -148,14 +152,16 @@ class Helper
     {
         if (!file_exists($file_name)) {
             $file_path = dirname($file_name);
-            self::createFolders($file_path, $dir_mode);
-
-            $fp = fopen($file_name, 'w+');
-            if ($fp) {
-                fclose($fp);
-                chmod($file_name, $mode);
-                return true;
+            $createFolder = self::createFolders($file_path, $dir_mode, true);
+            if ($createFolder) {
+                $fp = fopen($file_name, 'w+');
+                if ($fp) {
+                    fclose($fp);
+                    chmod($file_name, $mode);
+                    return true;
+                }
             }
+
             return false;
         }
         return true;
