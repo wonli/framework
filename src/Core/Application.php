@@ -74,6 +74,11 @@ class Application
     private $delegate;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * 实例化Application
      *
      * @param string $app_name
