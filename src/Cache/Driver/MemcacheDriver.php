@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Cache\Driver;
 
 use Cross\Exception\CoreException;
@@ -23,19 +24,82 @@ class MemcacheDriver
      */
     public $link;
 
+    /**
+     * 集群参数默认配置
+     *
+     * @var array
+     */
+    protected $defaultOptions = array(
+        'persistent' => true,
+        'weight' => 1,
+        'timeout' => 1,
+        'retry_interval' => 15,
+        'status' => true,
+        'failure_callback' => null
+    );
+
     function __construct(array $option)
     {
         if (!extension_loaded('memcache')) {
             throw new CoreException('Not support memcache extension !');
         }
 
+        if (!isset($option['host'])) {
+            $option['host'] = '127.0.0.1';
+        }
+
+        if (!isset($option['port'])) {
+            $option['port'] = 11211;
+        }
+
+        if (!isset($option['timeout'])) {
+            $option['timeout'] = 1;
+        }
+
         try {
             $mc = new Memcache();
-            $mc->addserver($option['host'], $option['port']);
+            //集群服务器IP用|分隔
+            if (false !== strpos($option['host'], '|')) {
+                $opt = &$this->defaultOptions;
+                foreach ($opt as $k => &$v) {
+                    if (isset($option[$k])) {
+                        $v = $option[$k];
+                    }
+                }
+
+                $serverList = explode('|', $option['host']);
+                foreach ($serverList as $server) {
+                    $host = $server;
+                    $port = $option['port'];
+                    if (false !== strpos($server, ':')) {
+                        list($host, $port) = explode(':', $server);
+                    }
+
+                    $host = trim($host);
+                    $port = trim($port);
+                    $mc->addServer($host, $port, $opt['persistent'], $opt['weight'], $opt['timeout'],
+                        $opt['retry_interval'], $opt['status'], $opt['failure_callback']);
+                }
+            } else {
+                $mc->connect($option['host'], $option['port'], $option['timeout']);
+            }
+
             $this->link = $mc;
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
         }
+    }
+
+    /**
+     * 从缓存中获取内容
+     *
+     * @param string $key
+     * @param int|array $flag
+     * @return array|string
+     */
+    function get($key, &$flag = 0)
+    {
+        return $this->link->get($key, $flag);
     }
 
     /**

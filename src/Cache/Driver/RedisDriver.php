@@ -50,6 +50,18 @@ class RedisDriver
             throw new CoreException('Not support redis extension !');
         }
 
+        if (!isset($option['host'])) {
+            $option['host'] = '127.0.0.1';
+        }
+
+        if (!isset($option['port'])) {
+            $option['port'] = 6379;
+        }
+
+        if (!isset($option['timeout'])) {
+            $option['timeout'] = 3;
+        }
+
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
             $id = $option['unix_socket'];
             $use_unix_socket = true;
