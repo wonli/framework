@@ -587,7 +587,7 @@ class Application
             }
         }
 
-        $cache_key_config = $default_cache_key_config = array(
+        $cache_key_config = array(
             'app_name' => $this->app_name,
             'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
             'controller' => lcfirst($this->getController()),
@@ -603,18 +603,22 @@ class Application
                         $params_member[$params_key] = $params_value;
                     }
                 }
-                $cache_key_config['params'] = implode($cache_config['key_dot'], $params_member);
+                $cache_params = implode($cache_config['key_dot'], $params_member);
             } else {
-                $cache_key_config['params'] = md5(implode($cache_config['key_dot'], $params));
+                $cache_params = md5(implode($cache_config['key_dot'], $params));
             }
+
+            $cache_key = implode($cache_config['key_dot'], $cache_key_config) . '@' . $cache_params . $cache_config['key_suffix'];
+        } else {
+            $cache_key = implode($cache_config['key_dot'], $cache_key_config) . $cache_config['key_suffix'];
         }
 
-        $cache_config['key'] = implode($cache_config['key_dot'], $cache_key_config) . $cache_config['key_suffix'];
+        $cache_config['key'] = $cache_key;
         $closureContainer = $this->delegate->getClosureContainer();
         $has_cache_closure = $closureContainer->has('cpCache');
         if ($has_cache_closure) {
             $cache_config['params'] = $params;
-            $cache_config['cache_key_config'] = $default_cache_key_config;
+            $cache_config['cache_key_config'] = $cache_key_config;
             $enable_cache = $closureContainer->run('cpCache', array(&$cache_config));
             unset($cache_config['cache_key_config'], $cache_config['params']);
         } else {
