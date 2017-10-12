@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\I\RequestCacheInterface;
@@ -179,7 +180,7 @@ class Application
             }
 
             if ($cache) {
-                $cache->set(null, $response_content);
+                $cache->set($response_content);
             }
         }
 

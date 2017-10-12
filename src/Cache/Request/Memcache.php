@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Cache\Request;
 
 use Cross\Cache\Driver\MemcacheDriver;
@@ -16,7 +17,7 @@ use Cross\I\RequestCacheInterface;
  * Class RequestMemcache
  * @package Cross\Cache\Request
  */
-class Memcache extends MemcacheDriver implements RequestCacheInterface
+class Memcache implements RequestCacheInterface
 {
     /**
      * @var array
@@ -28,71 +29,63 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
      *
      * @var string
      */
-    protected $cache_key;
+    protected $cacheKey;
 
     /**
      * 有效时间
      *
      * @var int
      */
-    protected $expire_time;
+    protected $expireTime = 3600;
 
     /**
-     * @var string
+     * @var int
      */
-    static private $value_cache;
+    protected $flag = 0;
 
     /**
-     * 初始化key和过期时间
-     *
-     * @param array $option
-     * @throws CoreException
+     * @var \Memcache
      */
+    protected $driver;
+
     function __construct(array $option)
     {
-        parent::__construct($option);
-        $this->setConfig($option);
-        if (empty($option['key']) || empty($option['expire_time'])) {
-            throw new CoreException('请指定缓存key和过期时间');
+        if (empty($option['key'])) {
+            throw new CoreException('请指定缓存KEY');
         }
 
-        $this->cache_key = $option ['key'];
-        $this->expire_time = time() + $option ['expire_time'];
-    }
+        $this->cacheKey = &$option['key'];
+        $this->driver = new MemcacheDriver($option);
 
-    /**
-     * 获取request缓存
-     *
-     * @param string $key
-     * @return array|mixed|string
-     */
-    function get($key = '')
-    {
-        if (self::$value_cache[$this->cache_key]) {
-            return self::$value_cache[$this->cache_key];
+        if (isset($option['flag']) && $option['flag']) {
+            $this->flag = &$option['flag'];
         }
 
-        if (!$key) {
-            $key = $this->cache_key;
+        if (isset($option['expire_time'])) {
+            $this->expireTime = &$option['expire_time'];
         }
-
-        return $this->link->get($key);
     }
 
     /**
      * 设置request缓存
      *
-     * @param $key
-     * @param $value
+     * @param string $value
      * @return mixed set
      */
-    function set($key, $value)
+    function set($value)
     {
-        if (!$key) {
-            $key = $this->cache_key;
-        }
+        $this->driver->set($this->cacheKey, $value, $this->flag, $this->expireTime);
+    }
 
-        $this->link->set($key, $value, $this->expire_time);
+    /**
+     * 获取request缓存
+     *
+     * @param int $flag
+     * @return array|mixed|string
+     */
+    function get(&$flag = 0)
+    {
+        return $this->driver->get($this->cacheKey, $flag);
     }
 
     /**
@@ -102,13 +95,7 @@ class Memcache extends MemcacheDriver implements RequestCacheInterface
      */
     function isValid()
     {
-        if (isset(self::$value_cache[$this->cache_key])) {
-            return true;
-        }
-
-        $value = $this->link->get($this->cache_key);
-        if (!empty($value)) {
-            self::$value_cache[$this->cache_key] = $value;
+        if ($this->driver->get($this->cacheKey)) {
             return true;
         }
 

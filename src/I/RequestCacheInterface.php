@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\I;
 
 /**
@@ -15,17 +16,19 @@ namespace Cross\I;
 interface RequestCacheInterface
 {
     /**
-     * @param $key
-     * @param $value
+     * 写入缓存
+     *
+     * @param string $value
      * @return mixed set
      */
-    function set($key, $value);
+    function set($value);
 
     /**
-     * @param string $key
+     * 获取缓存内容
+     *
      * @return mixed get cache
      */
-    function get($key = '');
+    function get();
 
     /**
      * 是否有效

@@ -5,13 +5,14 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Cache;
 
-use Cross\Cache\Driver\FileCacheDriver;
+use Cross\I\RequestCacheInterface;
+use Cross\Exception\CoreException;
+use Cross\Cache\Request\FileCache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\Request\Memcache;
-use Cross\Exception\CoreException;
-use Cross\I\RequestCacheInterface;
 use ReflectionClass;
 
 /**
@@ -23,63 +24,61 @@ use ReflectionClass;
  */
 class RequestCache
 {
-    const FILE_TYPE = 1;
-    const MEMCACHE_TYPE = 2;
-    const REDIS_TYPE = 3;
+    const FILE = 1;
+    const MEMCACHE = 2;
+    const REDIS = 3;
 
     /**
-     * @var RedisCache|Memcache|FileCacheDriver|RequestCacheInterface
+     * @var FileCache|Memcache|RedisCache|RequestCacheInterface
      */
     static $instance;
 
     /**
      * RequestCache
      *
-     * @param int|object|string $cache_type
-     * @param array $cache_config
-     * @return FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
+     * @param int|object|string $type
+     * @param array $options
+     * @return FileCache|Memcache|RedisCache|RequestCacheInterface
      * @throws CoreException
      */
-    static function factory($cache_type, array $cache_config)
+    static function factory($type, array $options)
     {
-        if (!self::$instance) {
-            if (is_int($cache_type)) {
-                switch ($cache_type) {
-                    case self::FILE_TYPE:
-                        self::$instance = new FileCacheDriver($cache_config);
-                        break;
+        switch ($type) {
+            case 'file':
+            case self::FILE:
+                $instance = new FileCache($options);
+                break;
 
-                    case self::MEMCACHE_TYPE:
-                        self::$instance = new Memcache($cache_config);
-                        break;
+            case 'memcache':
+            case self::MEMCACHE:
+                $instance = new Memcache($options);
+                break;
 
-                    case self::REDIS_TYPE:
-                        self::$instance = new RedisCache($cache_config);
-                        break;
+            case 'redis':
+            case self::REDIS:
+                $instance = new RedisCache($options);
+                break;
 
-                    default :
-                        throw new CoreException('不支持的缓存类型');
-                }
-            } elseif (is_object($cache_type)) {
-                if ($cache_type instanceof RequestCacheInterface) {
-                    self::$instance = $cache_type;
-                    self::$instance->setConfig($cache_config);
+            default:
+                if (is_string($type)) {
+                    $rf = new ReflectionClass($type);
+                    if ($rf->implementsInterface('Cross\I\RequestCacheInterface')) {
+                        $instance = $rf->newInstance();
+                    } else {
+                        throw new CoreException('Must implement RequestCacheInterface');
+                    }
+                } elseif (is_object($type)) {
+                    if ($type instanceof RequestCacheInterface) {
+                        $instance = $type;
+                    } else {
+                        throw new CoreException('Must implement RequestCacheInterface');
+                    }
                 } else {
-                    throw new CoreException('Request Cache必须实现RequestCacheInterface');
+                    throw new CoreException('Unsupported cache type!');
                 }
-            } elseif (is_string($cache_type)) {
-                $object = new ReflectionClass($cache_type);
-                if ($object->implementsInterface('Cross\I\RequestCacheInterface')) {
-                    self::$instance = $object->newInstance();
-                    self::$instance->setConfig($cache_config);
-                } else {
-                    throw new CoreException('Request Cache必须实现RequestCacheInterface');
-                }
-            } else {
-                throw new CoreException('不能识别的缓存类型');
-            }
         }
 
-        return self::$instance;
+        $instance->setConfig($options);
+        return $instance;
     }
 }

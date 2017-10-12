@@ -5,18 +5,19 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Cache\Request;
 
+use Cross\I\RequestCacheInterface;
 use Cross\Cache\Driver\RedisDriver;
 use Cross\Exception\CoreException;
-use Cross\I\RequestCacheInterface;
 
 /**
  * @Auth: wonli <wonli@live.com>
  * Class RequestRedisCache
  * @package Cross\Cache\Request
  */
-class RedisCache extends RedisDriver implements RequestCacheInterface
+class RedisCache implements RequestCacheInterface
 {
     /**
      * @var array
@@ -28,14 +29,24 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
      *
      * @var string
      */
-    protected $cache_key;
+    protected $cacheKey;
 
     /**
      * 有效时间
      *
      * @var int
      */
-    protected $expire_time;
+    protected $expireTime = 3600;
+
+    /**
+     * @var bool
+     */
+    protected $compress = false;
+
+    /**
+     * @var \Redis
+     */
+    protected $driver;
 
     /**
      * 设置缓存key和缓存有效期
@@ -45,26 +56,50 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
      */
     function __construct(array $option)
     {
-        parent::__construct($option);
-        $this->setConfig($option);
-        if (empty($option['key']) || empty($option['expire_time'])) {
-            throw new CoreException('请指定缓存key和过期时间');
+        if (empty($option['key'])) {
+            throw new CoreException('请指定缓存KEY');
         }
 
-        $this->cache_key = $option ['key'];
-        $this->expire_time = $option ['expire_time'];
+        if (isset($option['expire_time'])) {
+            $this->expireTime = &$option['expire_time'];
+        }
+
+        if (isset($option['compress'])) {
+            $this->compress = &$option['compress'];
+        }
+
+        $this->cacheKey = &$option['key'];
+        $this->driver = new RedisDriver($option);
     }
 
     /**
      * 设置request请求
      *
-     * @param $key
-     * @param $value
+     * @param string $value
      * @return mixed|void
      */
-    function set($key, $value)
+    function set($value)
     {
-        $this->link->setex($this->cache_key, $this->expire_time, $value);
+        if ($this->compress) {
+            $value = gzcompress($value);
+        }
+
+        $this->driver->setex($this->cacheKey, $this->expireTime, $value);
+    }
+
+    /**
+     * 返回request的内容
+     *
+     * @return bool|mixed|string
+     */
+    function get()
+    {
+        $content = $this->driver->get($this->cacheKey);
+        if ($this->compress) {
+            $content = gzuncompress($content);
+        }
+
+        return $content;
     }
 
     /**
@@ -74,22 +109,7 @@ class RedisCache extends RedisDriver implements RequestCacheInterface
      */
     function isValid()
     {
-        return $this->link->ttl($this->cache_key) > 0;
-    }
-
-    /**
-     * 返回request的内容
-     *
-     * @param string $key
-     * @return bool|mixed|string
-     */
-    function get($key = '')
-    {
-        if (!$key) {
-            $key = $this->cache_key;
-        }
-
-        return $this->link->get($key);
+        return $this->driver->ttl($this->cacheKey) > 0;
     }
 
     /**
