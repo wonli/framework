@@ -131,10 +131,6 @@ class Application
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
-        if (!empty($annotate_config['basicAuth'])) {
-            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
-        }
-
         if ($cache && $cache->isValid()) {
             $response_content = $cache->get();
         } else {
@@ -550,11 +546,11 @@ class Application
      * </pre>
      *
      * @param array $request_cache_config
-     * @param array $action_annotate_params
+     * @param array $annotate_params
      * @return bool|FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
      * @throws CoreException
      */
-    private function initRequestCache(array $request_cache_config, array $action_annotate_params)
+    private function initRequestCache(array $request_cache_config, array $annotate_params)
     {
         if (empty($request_cache_config[0])) {
             return false;
@@ -574,53 +570,54 @@ class Application
         $default_cache_config = array(
             'type' => 1,
             'expire_time' => 3600,
-            'limit_params' => false,
+            'ignore_params' => false,
             'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
-            'key_suffix' => '',
             'key_dot' => DIRECTORY_SEPARATOR
         );
 
-        $cache_config = $request_cache_config[1];
+        $cache_config = &$request_cache_config[1];
         foreach ($default_cache_config as $default_config_key => $default_value) {
             if (!isset($cache_config[$default_config_key])) {
                 $cache_config[$default_config_key] = $default_value;
             }
         }
 
-        $cache_key_config = array(
+        $params_cache_key = '';
+        $params = $this->getParams();
+        if (!$cache_config['ignore_params'] && !empty($params)) {
+            $params_member = &$params;
+            if (!empty($annotate_params)) {
+                foreach ($annotate_params as $k => &$v) {
+                    if (isset($params[$k])) {
+                        $v = $params[$k];
+                    }
+                }
+                $params_member = $annotate_params;
+            }
+
+            $params_cache_key = md5(json_encode($params_member));
+        }
+
+        $cache_key = array(
             'app_name' => $this->app_name,
             'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
             'controller' => lcfirst($this->getController()),
             'action' => $this->getAction()
         );
 
-        $params = $this->getParams();
-        if (!empty($params)) {
-            if ($cache_config['limit_params'] && !empty($action_annotate_params)) {
-                $params_member = array();
-                foreach ($params as $params_key => $params_value) {
-                    if (isset($action_annotate_params[$params_key])) {
-                        $params_member[$params_key] = $params_value;
-                    }
-                }
-                $cache_params = implode($cache_config['key_dot'], $params_member);
-            } else {
-                $cache_params = md5(implode($cache_config['key_dot'], $params));
-            }
-
-            $cache_key = implode($cache_config['key_dot'], $cache_key_config) . '@' . $cache_params . $cache_config['key_suffix'];
-        } else {
-            $cache_key = implode($cache_config['key_dot'], $cache_key_config) . $cache_config['key_suffix'];
+        $cache_config['key'] = implode($cache_config['key_dot'], $cache_key);
+        if ($params_cache_key) {
+            $cache_config['key'] .= '@' . $params_cache_key;
         }
 
-        $cache_config['key'] = $cache_key;
         $closureContainer = $this->delegate->getClosureContainer();
         $has_cache_closure = $closureContainer->has('cpCache');
         if ($has_cache_closure) {
             $cache_config['params'] = $params;
-            $cache_config['cache_key_config'] = $cache_key_config;
+            $cache_config['cache_key'] = $cache_key;
+            $cache_config['annotate_params'] = $annotate_params;
             $enable_cache = $closureContainer->run('cpCache', array(&$cache_config));
-            unset($cache_config['cache_key_config'], $cache_config['params']);
+            unset($cache_config['cache_key_config'], $cache_config['params'], $cache_config['annotate_params']);
         } else {
             $enable_cache = $request_cache_config[0];
         }
