@@ -82,26 +82,6 @@ class Router implements RouterInterface
     }
 
     /**
-     * 设置URI字符串
-     *
-     * @param string $request_string
-     * @return $this
-     */
-    public function setUriRequest($request_string)
-    {
-        $this->originUriRequest = $request_string;
-
-        $uri = parse_url($request_string);
-        $this->uriRequest = $uri['path'];
-        if (!empty($uri['query'])) {
-            parse_str($uri['query'], $addition_params);
-            $_GET += $addition_params;
-        }
-
-        return $this;
-    }
-
-    /**
      * Router
      *
      * @return $this
@@ -109,10 +89,17 @@ class Router implements RouterInterface
      */
     public function getRouter()
     {
-        $request = $this->getUriRequest('', $url_config);
-        if (!empty($request)) {
-            $request = $this->parseRequestString($request, $url_config);
-            $this->initRouter($request);
+        $rs = $this->getUriRequest('', $url_config);
+        if (!empty($rs)) {
+            $request = $this->parseRequestString($rs, $url_config);
+            $closure = $this->delegate->getClosureContainer();
+            if ($closure->has('router')) {
+                $closure->run('router', array($request, $this));
+            }
+
+            if (empty($this->controller) || empty($this->action)) {
+                $this->parseRouter($request);
+            }
         } else {
             $router = $this->parseDefaultRouter($url_config['*']);
             $this->setController($router[0]);
@@ -120,6 +107,16 @@ class Router implements RouterInterface
         }
 
         return $this;
+    }
+
+    /**
+     * 设置默认路由
+     */
+    function useDefaulterRouter()
+    {
+        $router = $this->getDefaultRouter();
+        $this->setController($router[0]);
+        $this->setAction($router[1]);
     }
 
     /**
@@ -245,13 +242,8 @@ class Router implements RouterInterface
      * @throws CoreException
      * @internal param $router
      */
-    private function initRouter(array $request)
+    function parseRouter(array $request)
     {
-        $closure = $this->delegate->getClosureContainer();
-        if ($closure->has('initRouter')) {
-            $request = $closure->run('initRouter', array($request));
-        }
-
         $combine_alias_key = '';
         $ori_controller = $controller = array_shift($request);
         if (isset($request[0])) {
@@ -294,6 +286,36 @@ class Router implements RouterInterface
         $this->setController($controller);
         $this->setAction($action);
         $this->setParams($request);
+    }
+
+    /**
+     * 设置controller
+     *
+     * @param $controller
+     */
+    function setController($controller)
+    {
+        $this->controller = $controller;
+    }
+
+    /**
+     * 设置Action
+     *
+     * @param $action
+     */
+    function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    /**
+     * 设置参数
+     *
+     * @param $params
+     */
+    function setParams($params)
+    {
+        $this->params = $params;
     }
 
     /**
@@ -362,36 +384,6 @@ class Router implements RouterInterface
         }
 
         return $this->defaultRouter;
-    }
-
-    /**
-     * 设置controller
-     *
-     * @param $controller
-     */
-    private function setController($controller)
-    {
-        $this->controller = $controller;
-    }
-
-    /**
-     * 设置Action
-     *
-     * @param $action
-     */
-    private function setAction($action)
-    {
-        $this->action = $action;
-    }
-
-    /**
-     * 设置参数
-     *
-     * @param $params
-     */
-    private function setParams($params)
-    {
-        $this->params = $params;
     }
 }
 
