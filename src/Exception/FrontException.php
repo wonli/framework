@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Exception;
 
 use Cross\Http\Response;
@@ -23,6 +24,6 @@ class FrontException extends CrossException
         $code = $e->getCode() ? $e->getCode() : 200;
 
         return Response::getInstance()->setResponseStatus($code)
-            ->display($cp_error, __DIR__ . '/_tpl/front_error.tpl.php');
+            ->display($cp_error, __DIR__ . '/tpl/front_error.tpl.php');
     }
 }

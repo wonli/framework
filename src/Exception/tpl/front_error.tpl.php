@@ -250,11 +250,11 @@
 <script type="text/javascript">
     cp_exception = {
         main: function (action) {
-            var act = action == 'hide' ? 'none' : 'block';
+            var act = action === 'hide' ? 'none' : 'block';
             this.setAct();
             document.getElementById('main_info').style.display = act;
             document.getElementById('frame_active').className = 'frame active';
-            if (act != 'none') {
+            if (act !== 'none') {
                 this.hide_track();
             }
         },

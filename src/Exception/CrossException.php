@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Exception;
 
 use Cross\Http\Response;
@@ -100,7 +101,7 @@ abstract class CrossException extends Exception
         $result['trace_table'] = $trace_table;
         $result['previous_trace'] = $previous_trace;
 
-        return Response::getInstance()->display($result, __DIR__ . '/_tpl/cli_error.tpl.php');
+        return Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
     }
 
     /**
