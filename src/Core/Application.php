@@ -126,6 +126,10 @@ class Application
 
         $closureContainer->run('dispatcher');
 
+        if (!empty($annotate_config['basicAuth'])) {
+            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
+        }
+
         $cache = false;
         if (isset($annotate_config['cache'])) {
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
