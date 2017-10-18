@@ -243,26 +243,78 @@ class Response
     }
 
     /**
-     * 发送basicAuth认证
+     * basic authentication
      *
-     * @param array $config
+     * @param array $users ['user' => 'password']
+     * @param array $options
      * @return bool
      */
-    function basicAuth($config)
+    function basicAuth(array $users, $options = array())
     {
-        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
-            if ((isset($config['user']) && $_SERVER['PHP_AUTH_USER'] == $config['user'])
-                && (isset($config['pw']) && $_SERVER['PHP_AUTH_PW'] == $config['pw'])
-            ) {
-                return true;
+        $user = &$_SERVER['PHP_AUTH_USER'];
+        $password = &$_SERVER['PHP_AUTH_PW'];
+        if (isset($users[$user]) && (0 === strcmp($password, $users[$user]))) {
+            $_SERVER['CP_AUTH_USER'] = $user;
+            return true;
+        }
+
+        $realm = &$options['realm'];
+        if (null === $realm) {
+            $realm = 'CP Login Required';
+        }
+
+        $message = &$options['fail_msg'];
+        if (null === $message) {
+            $message = self::$statusDescriptions[401];
+        }
+
+        return $this->setResponseStatus(401)
+            ->setHeader('WWW-Authenticate: Basic realm="' . $realm . '"')
+            ->displayOver($message);
+    }
+
+    /**
+     * digest authentication
+     *
+     * @param array $users ['user' => 'password']
+     * @param array $options
+     * @return bool
+     */
+    function digestAuth(array $users, array $options = array())
+    {
+        $realm = &$options['realm'];
+        if (null === $realm) {
+            $realm = 'CP Login Required';
+        }
+
+        $digest = &$_SERVER['PHP_AUTH_DIGEST'];
+        if ($digest) {
+            $data = $this->httpDigestParse($digest);
+            if (isset($data['username']) && isset($users[$data['username']])) {
+                $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
+                $A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
+                $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
+                if (0 === strcmp($valid_response, $data['response'])) {
+                    $_SERVER['CP_AUTH_USER'] = $data['username'];
+                    return true;
+                }
             }
         }
 
-        $realm = isset($config['realm']) ? $config['realm'] : 'Basic Auth';
-        $failed_msg = isset($config['failed_msg']) ? $config['failed_msg'] : 'Auth Failed';
-        return $this->setHeader(401)
-            ->setHeader(sprintf('WWW-Authenticate: Basic realm="%s"', $realm))
-            ->displayOver($failed_msg);
+        $message = &$options['fail_msg'];
+        if (null === $message) {
+            $message = self::$statusDescriptions[401];
+        }
+
+        $nonce = &$options['nonce'];
+        if (null === $nonce) {
+            $nonce = uniqid();
+        }
+
+        $this->setResponseStatus(401)
+            ->setHeader('WWW-Authenticate: Digest realm="' . $realm .
+                '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
+            ->displayOver($message);
     }
 
     /**
@@ -294,40 +346,6 @@ class Response
         }
 
         header("Content-Type: {$content_type}; charset=utf-8");
-    }
-
-    /**
-     * 为response附加返回参数
-     *
-     * @param $content
-     * @return $this
-     */
-    function addParams($content)
-    {
-        $contents = $this->makeParams($content);
-        foreach ($contents as $c_name => $c_val) {
-            $_SERVER[$c_name] = $c_val;
-        }
-
-        return $this;
-    }
-
-    /**
-     * 生成参数
-     *
-     * @param $content
-     * @return array
-     */
-    private function makeParams($content)
-    {
-        $result = array();
-        if (!is_array($content)) {
-            $result['CP_PARAMS'] = $content;
-        } else {
-            $result = $content;
-        }
-
-        return $result;
     }
 
     /**
@@ -455,6 +473,27 @@ class Response
     {
         $this->setEndFlush();
         return $this->display($content, $tpl);
+    }
+
+    /**
+     * parse digest authentication string
+     *
+     * @param string $txt
+     * @return array|bool
+     */
+    private function httpDigestParse($txt)
+    {
+        $data = array();
+        $needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
+        $keys = implode('|', array_keys($needed_parts));
+
+        preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
+        foreach ($matches as $m) {
+            $data[$m[1]] = $m[3] ? $m[3] : $m[4];
+            unset($needed_parts[$m[1]]);
+        }
+
+        return $needed_parts ? false : $data;
     }
 
     /**
