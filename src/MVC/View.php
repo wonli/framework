@@ -378,7 +378,7 @@ class View extends FrameBase
      */
     function buildForm($tpl_name, array $form_tags = array(), array $tpl_data = array())
     {
-        $content = $this->delegate->getClosureContainer()->run('buildForm');
+        $content = $this->delegate->getClosureContainer()->run('buildForm', array($this));
         $content .= $this->obRenderTpl($tpl_name, $tpl_data);
 
         $form_tags += array('action' => '', 'method' => 'post');
