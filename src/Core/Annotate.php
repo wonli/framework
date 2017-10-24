@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Closure;
@@ -93,53 +94,12 @@ class Annotate
     }
 
     /**
-     * 注释配置解析
-     *
-     * @param array $annotateConfigs
-     * @return array
-     */
-    private function parseAnnotate(array $annotateConfigs)
-    {
-        $result = array();
-        foreach ($annotateConfigs as $conf => $params) {
-            switch ($conf) {
-                case 'params':
-                    $result['params'] = $this->parseConfigValue($params);
-                    break;
-
-                case 'cache':
-                case 'response':
-                case 'basicAuth':
-                    $result[$conf] = $this->parseAnnotateConfig($params);
-                    break;
-
-                case 'after':
-                case 'before':
-                    $result[$conf] = $this->bindToClosure($params);
-                    break;
-
-                default:
-                    $params = trim($params);
-                    $closureContainer = $this->delegate->getClosureContainer();
-                    $hasClosure = $closureContainer->has('parseAnnotate');
-                    if ($hasClosure) {
-                        $closureContainer->run('parseAnnotate', array($conf, &$params));
-                    }
-
-                    $result[$conf] = $params;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * 把PHP代码绑定到匿名函数中
      *
      * @param string $params
      * @return Closure
      */
-    protected function bindToClosure($params)
+    public function bindToClosure($params)
     {
         return function ($self) use ($params) {
             return include("annotate://{$params}");
@@ -152,7 +112,7 @@ class Annotate
      * @param string $params
      * @return mixed
      */
-    protected function parseAnnotateConfig($params)
+    public function toCode($params)
     {
         return include("annotate://{$params}");
     }
@@ -171,7 +131,7 @@ class Annotate
      * @param $params
      * @return array
      */
-    private function parseConfigValue($params)
+    public function toArray($params)
     {
         $result = array();
         $conf = array_map('trim', explode(',', $params));
@@ -188,4 +148,44 @@ class Annotate
         return $result;
     }
 
+    /**
+     * 注释配置解析
+     *
+     * @param array $annotateConfigs
+     * @return array
+     */
+    private function parseAnnotate(array $annotateConfigs)
+    {
+        $result = array();
+        foreach ($annotateConfigs as $conf => $params) {
+            switch ($conf) {
+                case 'params':
+                    $result['params'] = $this->toArray($params);
+                    break;
+
+                case 'cache':
+                case 'response':
+                case 'basicAuth':
+                    $result[$conf] = $this->toCode($params);
+                    break;
+
+                case 'after':
+                case 'before':
+                    $result[$conf] = $this->bindToClosure($params);
+                    break;
+
+                default:
+                    $params = trim($params);
+                    $closureContainer = $this->delegate->getClosureContainer();
+                    $hasClosure = $closureContainer->has('parseAnnotate');
+                    if ($hasClosure) {
+                        $closureContainer->run('parseAnnotate', array($conf, &$params, $this));
+                    }
+
+                    $result[$conf] = $params;
+            }
+        }
+
+        return $result;
+    }
 }
