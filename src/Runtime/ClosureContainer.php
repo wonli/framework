@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Runtime;
 
 
@@ -47,11 +48,10 @@ class ClosureContainer
      */
     function run($name, $params = array())
     {
-        if (!is_array($params)) {
-            $params = array($params);
-        }
-
         if (isset($this->actions[$name])) {
+            if (!is_array($params)) {
+                $params = array($params);
+            }
             return call_user_func_array($this->actions[$name], $params);
         }
 
