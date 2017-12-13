@@ -15,7 +15,7 @@ use SplFileObject;
 use Exception;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class CrossException
  * @package Cross\Exception
  */
@@ -79,7 +79,6 @@ abstract class CrossException extends Exception
      * cli模式下的异常处理
      *
      * @param Exception $e
-     * @return string
      */
     function cliErrorHandler(Exception $e)
     {
@@ -101,7 +100,7 @@ abstract class CrossException extends Exception
         $result['trace_table'] = $trace_table;
         $result['previous_trace'] = $previous_trace;
 
-        return Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
+        Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
     }
 
     /**

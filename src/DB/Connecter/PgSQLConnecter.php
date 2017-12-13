@@ -12,7 +12,7 @@ use Exception;
 use PDO;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class PgSQLConnecter
  * @package Cross\DB\Connecter
  */

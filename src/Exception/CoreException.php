@@ -12,7 +12,7 @@ use Cross\Http\Response;
 use Exception;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class CoreException
  * @package Cross\Exception
  */
@@ -23,7 +23,7 @@ class CoreException extends CrossException
         $cp_error = $this->cpExceptionSource($e);
         $code = $e->getCode() ? $e->getCode() : 500;
 
-        return Response::getInstance()->setResponseStatus($code)
+        Response::getInstance()->setResponseStatus($code)
             ->display($cp_error, __DIR__ . '/tpl/front_error.tpl.php');
     }
 }

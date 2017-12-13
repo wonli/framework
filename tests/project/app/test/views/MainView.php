@@ -1,6 +1,6 @@
 <?php
 /**
- * @Author:       wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  */
 namespace app\test\views;
 

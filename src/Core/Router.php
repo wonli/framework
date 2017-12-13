@@ -14,7 +14,7 @@ use Cross\Exception\CoreException;
 use Cross\Http\Request;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Router
  * @package Cross\Core
  */
@@ -86,6 +86,7 @@ class Router implements RouterInterface
      *
      * @return $this
      * @throws CoreException
+     * @throws FrontException
      */
     public function getRouter()
     {
@@ -110,7 +111,9 @@ class Router implements RouterInterface
     }
 
     /**
-     * 设置默认路由
+     * 使用默认路由
+     *
+     * @throws CoreException
      */
     function useDefaulterRouter()
     {
@@ -123,6 +126,7 @@ class Router implements RouterInterface
      * 获取默认控制器
      *
      * @return array
+     * @throws CoreException
      */
     function getDefaultRouter()
     {
@@ -239,7 +243,6 @@ class Router implements RouterInterface
      * 解析router别名配置
      *
      * @param array $request
-     * @throws CoreException
      * @internal param $router
      */
     function parseRouter(array $request)

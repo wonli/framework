@@ -1,6 +1,6 @@
 <?php
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * StringToPHPStream.php
  */
 
@@ -13,11 +13,12 @@ namespace Cross\Lib;
  * $var = include ("自定义名字://字符串代码")
  * </pre>
  *
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class StringToPHPStream
  * @package Cross\Lib\Other
  */
-class StringToPHPStream {
+class StringToPHPStream
+{
 
     /**
      * 代码内容
@@ -45,10 +46,10 @@ class StringToPHPStream {
      * @param $opened_path
      * @return bool
      */
-    public function stream_open($path, $mode, $options, $opened_path) {
-
+    public function stream_open($path, $mode, $options, $opened_path)
+    {
         $this->key = md5($path);
-        if (! isset(self::$content[$this->key])) {
+        if (!isset(self::$content[$this->key])) {
             self::$content[$this->key] = sprintf('<?php return %s;', substr($path, 11));
         }
 
@@ -60,9 +61,10 @@ class StringToPHPStream {
      * @param $count
      * @return string
      */
-    public function stream_read($count) {
+    public function stream_read($count)
+    {
         $content = self::$content[$this->key];
-        $ret     = substr($content, $this->pos, $count);
+        $ret = substr($content, $this->pos, $count);
         $this->pos += strlen($ret);
         return $ret;
     }
@@ -70,14 +72,16 @@ class StringToPHPStream {
     /**
      *
      */
-    public function stream_stat() {
+    public function stream_stat()
+    {
 
     }
 
     /**
      *
      */
-    public function stream_eof() {
+    public function stream_eof()
+    {
 
     }
 }

@@ -12,7 +12,7 @@ use Cross\Exception\CoreException;
 use Redis;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class RedisDriver
  * @package Cross\Cache\Driver
  */
@@ -112,6 +112,7 @@ class RedisDriver
      * @param $method
      * @param $argv
      * @return mixed|null
+     * @throws CoreException
      */
     public function __call($method, $argv)
     {
@@ -128,6 +129,8 @@ class RedisDriver
 
     /**
      * 选择当前数据库
+     *
+     * @throws CoreException
      */
     protected function selectCurrentDatabase()
     {

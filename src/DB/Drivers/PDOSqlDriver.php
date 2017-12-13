@@ -18,7 +18,7 @@ use Exception;
 use PDO;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class PDOSqlDriver
  * @package Cross\DB\Drivers
  */
@@ -100,6 +100,7 @@ class PDOSqlDriver implements SqlInterface
      * @param string $fields
      * @param string|array $where
      * @return mixed
+     * @throws CoreException
      */
     public function get($table, $fields, $where)
     {
@@ -116,6 +117,7 @@ class PDOSqlDriver implements SqlInterface
      * @param int|string $group_by
      * @param int|string $limit 0 表示无限制
      * @return mixed
+     * @throws CoreException
      */
     public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
     {
@@ -223,6 +225,7 @@ class PDOSqlDriver implements SqlInterface
      * @param array $page
      * @param int $group_by
      * @return mixed
+     * @throws CoreException
      */
     public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {
@@ -442,6 +445,7 @@ class PDOSqlDriver implements SqlInterface
     /**
      * @param $where
      * @return PDOSqlDriver
+     * @throws CoreException
      */
     function where($where)
     {
@@ -766,6 +770,7 @@ class PDOSqlDriver implements SqlInterface
      * @param string|array $where
      * @param string|array $params
      * @return string
+     * @throws CoreException
      */
     public function parseWhere($where, & $params)
     {

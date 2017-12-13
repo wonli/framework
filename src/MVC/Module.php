@@ -20,7 +20,7 @@ use Cross\Http\Response;
 use Cross\Http\Request;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Module
  * @package Cross\MVC
  * @property RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver $link
@@ -63,6 +63,7 @@ class Module extends FrameBase
      * 解析要连接model的参数
      *
      * @param string $params 指定要连接的数据库和配置项的key, 如mysql['db']这里的params应该为mysql:db
+     * @throws CoreException
      */
     function __construct($params = '')
     {
@@ -250,6 +251,7 @@ class Module extends FrameBase
      *
      * @param string $property
      * @return RedisDriver|Config|CouchDriver|MongoDriver|PDOSqlDriver|Request|Response|View|mixed|null
+     * @throws CoreException
      */
     function __get($property)
     {

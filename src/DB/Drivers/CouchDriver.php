@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
@@ -12,12 +13,17 @@ use CouchbaseCluster;
 use Exception;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class CouchDriver
  * @package Cross\DB\Drivers
  */
 class CouchDriver
 {
+    /**
+     * @var \Couchbase\Bucket
+     */
+    private $link;
+
     /**
      * @param array $link_params
      * @throws CoreException

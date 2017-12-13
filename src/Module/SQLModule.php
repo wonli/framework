@@ -13,7 +13,7 @@ use Cross\MVC\Module;
 /**
  * 提供简单的CRUD功能
  *
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class MysqlModule
  * @package Cross\Module
  */
@@ -38,6 +38,12 @@ class SQLModule extends Module
      */
     protected $auto_prefix = true;
 
+    /**
+     * SQLModule constructor.
+     *
+     * @param string $params
+     * @throws CoreException
+     */
     function __construct($params = '')
     {
         parent::__construct($params);
@@ -51,7 +57,6 @@ class SQLModule extends Module
      *
      * @param string $args
      * @return static::get_called_class()
-     * @throws CoreException
      */
     static public function init($args = '')
     {
@@ -86,6 +91,7 @@ class SQLModule extends Module
      * @param $condition
      * @param string $fields
      * @return mixed
+     * @throws CoreException
      */
     public function get($condition, $fields = '*')
     {
@@ -101,6 +107,7 @@ class SQLModule extends Module
      * @param int $limit
      * @param string $fields
      * @return array
+     * @throws CoreException
      */
     public function getAll($where = null, $order = 1, $group_by = 1, $limit = 0, $fields = '*')
     {
@@ -116,6 +123,7 @@ class SQLModule extends Module
      * @param int $group_by
      * @param string $fields
      * @return array|mixed
+     * @throws CoreException
      */
     public function find($condition, array & $page = array(), $order = 1, $group_by = 1, $fields = '*')
     {
@@ -130,6 +138,7 @@ class SQLModule extends Module
      * @param array $insert_data
      * @param bool $openTA
      * @return array|bool|mixed
+     * @throws CoreException
      */
     public function add($data, $multi = false, & $insert_data = array(), $openTA = false)
     {
@@ -142,6 +151,7 @@ class SQLModule extends Module
      * @param $data
      * @param $where
      * @return $this|array|string
+     * @throws CoreException
      */
     public function update($data, $where)
     {
@@ -155,6 +165,7 @@ class SQLModule extends Module
      * @param bool $multi
      * @param bool $openTA
      * @return bool|mixed
+     * @throws CoreException
      */
     public function del($where, $multi = false, $openTA = false)
     {

@@ -12,7 +12,7 @@ use Cross\Http\Request;
 use DOMDocument;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Helper
  * @package Cross\Core
  */

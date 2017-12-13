@@ -12,7 +12,7 @@ use Cross\Exception\CoreException;
 use Cross\I\CacheInterface;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class FileCacheDriver
  * @package Cross\Cache\Driver
  */

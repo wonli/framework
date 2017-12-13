@@ -10,7 +10,7 @@ namespace Cross\Core;
 use Cross\Exception\CoreException;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Loader
  * @package Cross\Core
  */
@@ -188,6 +188,7 @@ class Loader
      *
      * @param string $class
      * @return bool|string
+     * @throws CoreException
      */
     private function loadPSRClass($class)
     {

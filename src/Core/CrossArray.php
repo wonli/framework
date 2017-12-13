@@ -8,7 +8,7 @@
 namespace Cross\Core;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class CrossArray
  * @package Cross\Core
  */

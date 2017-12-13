@@ -9,7 +9,7 @@
 namespace Cross\Http;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Response
  * @package Cross\Core
  */
@@ -247,7 +247,6 @@ class Response
      *
      * @param array $users ['user' => 'password']
      * @param array $options
-     * @return bool
      */
     function basicAuth(array $users, $options = array())
     {
@@ -255,7 +254,7 @@ class Response
         $password = &$_SERVER['PHP_AUTH_PW'];
         if (isset($users[$user]) && (0 === strcmp($password, $users[$user]))) {
             $_SERVER['CP_AUTH_USER'] = $user;
-            return true;
+            return;
         }
 
         $realm = &$options['realm'];
@@ -268,7 +267,7 @@ class Response
             $message = self::$statusDescriptions[401];
         }
 
-        return $this->setResponseStatus(401)
+        $this->setResponseStatus(401)
             ->setHeader('WWW-Authenticate: Basic realm="' . $realm . '"')
             ->displayOver($message);
     }
@@ -278,7 +277,6 @@ class Response
      *
      * @param array $users ['user' => 'password']
      * @param array $options
-     * @return bool
      */
     function digestAuth(array $users, array $options = array())
     {
@@ -296,7 +294,7 @@ class Response
                 $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
                 if (0 === strcmp($valid_response, $data['response'])) {
                     $_SERVER['CP_AUTH_USER'] = $data['username'];
-                    return true;
+                    return;
                 }
             }
         }
@@ -448,7 +446,6 @@ class Response
      *
      * @param string $content
      * @param string $tpl
-     * @return string
      */
     function display($content = '', $tpl = '')
     {
@@ -467,12 +464,11 @@ class Response
      *
      * @param string $content
      * @param string $tpl
-     * @return string
      */
     function displayOver($content = '', $tpl = '')
     {
         $this->setEndFlush();
-        return $this->display($content, $tpl);
+        $this->display($content, $tpl);
     }
 
     /**

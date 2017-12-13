@@ -13,7 +13,7 @@ use Cross\Cache\Driver\RedisDriver;
 use Cross\Exception\CoreException;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class RequestRedisCache
  * @package Cross\Cache\Request
  */
@@ -116,7 +116,6 @@ class RedisCache implements RequestCacheInterface
      * 设置配置
      *
      * @param array $config
-     * @return mixed
      */
     function setConfig(array $config = array())
     {

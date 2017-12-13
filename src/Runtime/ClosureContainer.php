@@ -12,7 +12,7 @@ namespace Cross\Runtime;
 use Closure;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class ClosureContainer
  * @package Cross\Core
  */

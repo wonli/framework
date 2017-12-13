@@ -8,7 +8,7 @@
 namespace Cross\DB\SQLAssembler;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class PgSQLAssembler
  * @package Cross\DB\SQLAssembler
  */
@@ -24,6 +24,7 @@ class PgSQLAssembler extends SQLAssembler
      * @param array $page 分页参数 默认返回50条记录
      * @param int|string $group_by
      * @return mixed|void
+     * @throws \Cross\Exception\CoreException
      */
     public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {

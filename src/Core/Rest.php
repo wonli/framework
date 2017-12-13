@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
@@ -13,7 +14,7 @@ use ReflectionFunction;
 use Closure;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Rest
  * @package Cross\Core
  */
@@ -58,6 +59,7 @@ class Rest
      * 初始化request
      *
      * @param Delegate $delegate
+     * @throws CoreException
      */
     private function __construct(Delegate &$delegate)
     {
@@ -142,7 +144,6 @@ class Rest
      *
      * @param string $name
      * @param Closure $f
-     * @return $this
      */
     function on($name, Closure $f)
     {

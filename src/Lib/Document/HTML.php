@@ -11,7 +11,7 @@ namespace Cross\Lib\Document;
 /**
  * 用PHP来描述HTML
  *
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class HTML
  * @package Cross\Lib\Document
  *

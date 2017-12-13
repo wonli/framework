@@ -8,6 +8,7 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Exception\FrontException;
 use Cross\Runtime\ClosureContainer;
 use Cross\I\RouterInterface;
 use Cross\Http\Response;
@@ -30,7 +31,7 @@ define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Delegate
  * @package Cross\Core
  */
@@ -87,6 +88,8 @@ class Delegate
      *
      * @param string $app_name 要加载的app名称
      * @param array $runtime_config 运行时指定的配置
+     * @throws CoreException
+     * @throws FrontException
      */
     private function __construct($app_name, array $runtime_config)
     {
@@ -138,7 +141,7 @@ class Delegate
      * @param string|array $args 参数
      * @param bool $return_content 是输出还是直接返回结果
      * @return array|mixed|string
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
      */
     public function get($controller, $args = array(), $return_content = false)
     {
@@ -148,7 +151,8 @@ class Delegate
     /**
      * 解析url并运行
      *
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
+     * @throws FrontException
      */
     public function run()
     {
@@ -159,7 +163,7 @@ class Delegate
      * 自定义router运行
      *
      * @param RouterInterface $router
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
      */
     public function rRun(RouterInterface $router)
     {
@@ -200,6 +204,7 @@ class Delegate
      *
      * @param int|bool $run_argc
      * @param array|bool $run_argv
+     * @throws CoreException
      */
     public function cliRun($run_argc = false, $run_argv = false)
     {
@@ -320,6 +325,7 @@ class Delegate
      * @param string $app_name
      * @param array $runtime_config
      * @return Config
+     * @throws FrontException
      */
     private static function initConfig($app_name, array $runtime_config)
     {

@@ -21,7 +21,7 @@ use Exception;
 use Closure;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Application
  * @package Cross\Core
  */

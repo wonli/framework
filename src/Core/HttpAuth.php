@@ -14,7 +14,7 @@ use Cross\I\HttpAuthInterface;
 use ReflectionClass;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class HttpAuth
  * @package Cross\Core
  */

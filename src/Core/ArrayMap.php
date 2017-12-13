@@ -10,7 +10,7 @@ namespace Cross\Core;
 use ArrayIterator;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class ArrayMap
  * @package Cross\Core
  */
@@ -35,7 +35,7 @@ class ArrayMap extends ArrayIterator
      * 实例化类
      *
      * @param $array
-     * @return CrossArray
+     * @return ArrayMap
      */
     static public function init($array)
     {

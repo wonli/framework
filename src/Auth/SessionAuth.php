@@ -10,7 +10,7 @@ namespace Cross\Auth;
 use Cross\I\HttpAuthInterface;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class SessionAuth
  * @package Cross\Auth
  */

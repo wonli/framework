@@ -1,16 +1,18 @@
 <?php
 /**
- * @Author:       wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  */
+
 namespace app\test\controllers;
 
-use Cross\Core\Router;
 use Cross\MVC\Controller;
 
 class Main extends Controller
 {
     /**
-     * 获取app配置文件
+     * 取app配置文件
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function getAppConfig()
     {
@@ -19,13 +21,15 @@ class Main extends Controller
 
     /**
      * 设置app配置文件项
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function setAppConfig()
     {
         $a = $this->params['a'];
         $this->config->set('a', $a);
 
-        $this->display(array('a'=>$this->config->get('a')));
+        $this->display(array('a' => $this->config->get('a')));
     }
 
     /**
@@ -40,6 +44,9 @@ class Main extends Controller
 
     /**
      * 生成连接
+     *
+     * @return string
+     * @throws \Cross\Exception\CoreException
      */
     function makeLink()
     {
@@ -51,22 +58,25 @@ class Main extends Controller
 
         $this->view->cleanLinkCache();
         $this->config->set('url', array(
-            'ext'   =>  $ext,
-            'dot'   =>  $dot,
-            'type'  =>  $type,
-            'index' =>  $index,
+            'ext' => $ext,
+            'dot' => $dot,
+            'type' => $type,
+            'index' => $index,
         ));
 
         $this->view->setLinkBase('');
         return $this->view->link('Main:getUrlSecurityParams', array(
-            'p1'    =>  $params['p1'],
-            'p2'    =>  $params['p2'],
-            'p3'    =>  $params['p3']
+            'p1' => $params['p1'],
+            'p2' => $params['p2'],
+            'p3' => $params['p3']
         ));
     }
 
     /**
-     * 生成加密连接
+     * 生成加密链接
+     *
+     * @return string
+     * @throws \Cross\Exception\CoreException
      */
     function makeEncryptLink()
     {
@@ -78,17 +88,17 @@ class Main extends Controller
 
         $this->view->cleanLinkCache();
         $this->config->set('url', array(
-            'ext'   =>  $ext,
-            'dot'   =>  $dot,
-            'type'  =>  $type,
-            'index' =>  $index,
+            'ext' => $ext,
+            'dot' => $dot,
+            'type' => $type,
+            'index' => $index,
         ));
 
         $this->view->setLinkBase('');
         return $this->view->slink('Main:getUrlSecurityParams', array(
-            'p1'    =>  $params['p1'],
-            'p2'    =>  $params['p2'],
-            'p3'    =>  $params['p3']
+            'p1' => $params['p1'],
+            'p2' => $params['p2'],
+            'p3' => $params['p3']
         ));
     }
 
@@ -96,6 +106,7 @@ class Main extends Controller
      * url加密 参数解密
      *
      * @cp_params p1, p2, p3
+     * @throws \Cross\Exception\CoreException
      */
     function makeEncryptLinkAndDecryptParams()
     {
@@ -106,10 +117,10 @@ class Main extends Controller
 
         $this->view->cleanLinkCache();
         $this->config->set('url', array(
-            'rewrite'   =>  false,
-            'ext'   =>  $ext,
-            'dot'   =>  $dot,
-            'type'  =>  $link_type
+            'rewrite' => false,
+            'ext' => $ext,
+            'dot' => $dot,
+            'type' => $link_type
         ));
 
         $controller = 'Main';
@@ -117,16 +128,15 @@ class Main extends Controller
 
         $this->view->setLinkBase('');
         $url = $this->view->slink(sprintf('%s:%s', $controller, $action), array(
-            'p1'    =>  $params['p1'],
-            'p2'    =>  $params['p2'],
-            'p3'    =>  $params['p3']
+            'p1' => $params['p1'],
+            'p2' => $params['p2'],
+            'p3' => $params['p3']
         ));
 
         $custom_router_params[] = $controller;
         $custom_router_params[] = $action;
 
-        switch($link_type)
-        {
+        switch ($link_type) {
             case 2:
                 list(, $params_string) = explode('?', $url);
                 break;

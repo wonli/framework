@@ -11,7 +11,7 @@ namespace Cross\DB\SQLAssembler;
 use Cross\Exception\CoreException;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class SQLAssembler
  * @package Cross\DB\SQLAssembler
  */
@@ -66,7 +66,6 @@ class SQLAssembler
      *                      array(字段1的值, 字段2的值))
      *      );
      * </pre>
-     * @return array|bool
      * @throws CoreException
      */
     public function add($table, $data, $multi = false)
@@ -110,6 +109,7 @@ class SQLAssembler
      * @param array $page 分页参数 默认返回50条记录
      * @param int|string $group_by
      * @return mixed|void
+     * @throws CoreException
      */
     public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
     {

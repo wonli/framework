@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Connecter;
 
 use Cross\Exception\CoreException;
@@ -12,7 +13,7 @@ use Exception;
 use PDO;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class SQLiteConnecter
  * @package Cross\DB\Connecter
  */
@@ -77,7 +78,7 @@ class SQLiteConnecter extends BaseConnecter
      * 获取表的主键名
      *
      * @param string $table
-     * @return mixed|void
+     * @return bool|mixed
      */
     function getPK($table)
     {

@@ -11,7 +11,7 @@ namespace Cross\Core;
 use Closure;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Annotate
  * @package Cross\Core
  */

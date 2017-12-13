@@ -7,10 +7,11 @@
  */
 namespace Cross\MVC;
 
+use Cross\Exception\CoreException;
 use Cross\Core\FrameBase;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Controller
  * @package Cross\MVC
  */
@@ -70,6 +71,7 @@ class Controller extends FrameBase
      * @param string|null $controller controller:action
      * @param string|array $params
      * @param bool $sec
+     * @throws CoreException
      */
     protected function to($controller = null, $params = null, $sec = false)
     {
@@ -94,6 +96,7 @@ class Controller extends FrameBase
      * @param null|mixed $data
      * @param null|string $method
      * @param int $http_response_status
+     * @throws CoreException
      */
     protected function display($data = null, $method = null, $http_response_status = 200)
     {

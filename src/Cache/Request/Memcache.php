@@ -13,7 +13,7 @@ use Cross\Exception\CoreException;
 use Cross\I\RequestCacheInterface;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class RequestMemcache
  * @package Cross\Cache\Request
  */
@@ -48,6 +48,12 @@ class Memcache implements RequestCacheInterface
      */
     protected $driver;
 
+    /**
+     * Memcache constructor.
+     *
+     * @param array $option
+     * @throws CoreException
+     */
     function __construct(array $option)
     {
         if (empty($option['key'])) {
@@ -70,7 +76,6 @@ class Memcache implements RequestCacheInterface
      * 设置request缓存
      *
      * @param string $value
-     * @return mixed set
      */
     function set($value)
     {
@@ -81,7 +86,7 @@ class Memcache implements RequestCacheInterface
      * 获取request缓存
      *
      * @param int $flag
-     * @return array|mixed|string
+     * @return array|string
      */
     function get(&$flag = 0)
     {
@@ -106,7 +111,6 @@ class Memcache implements RequestCacheInterface
      * 设置配置
      *
      * @param array $config
-     * @return mixed
      */
     function setConfig(array $config = array())
     {

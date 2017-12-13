@@ -1,7 +1,9 @@
 <?php
 /**
- * @Auth wonli <wonli@live.com>
- * FileCache.php
+ * Cross - a micro PHP 5 framework
+ *
+ * @link        http://www.crossphp.com
+ * @license     MIT License
  */
 
 namespace Cross\Cache\Request;
@@ -11,7 +13,7 @@ use Cross\Exception\CoreException;
 use Cross\I\RequestCacheInterface;
 
 /**
- * @Auth wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  *
  * Class FileCache
  * @package Cross\Cache\Request
@@ -45,6 +47,12 @@ class FileCache implements RequestCacheInterface
      */
     private $driver;
 
+    /**
+     * FileCache constructor.
+     * 
+     * @param array $config
+     * @throws CoreException
+     */
     function __construct(array $config)
     {
         if (!isset($config['cache_path'])) {
@@ -69,7 +77,7 @@ class FileCache implements RequestCacheInterface
      * 写入缓存
      *
      * @param string $value
-     * @return mixed set
+     * @throws CoreException
      */
     function set($value)
     {
@@ -109,7 +117,6 @@ class FileCache implements RequestCacheInterface
      * 缓存配置
      *
      * @param array $config
-     * @return mixed
      */
     function setConfig(array $config = array())
     {

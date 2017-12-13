@@ -11,7 +11,7 @@ use Cross\Core\Helper;
 use Cross\I\HttpAuthInterface;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class CookieAuth
  * @package cross\auth
  */

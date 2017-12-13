@@ -6,7 +6,7 @@ use Cross\Core\Delegate;
 use Cross\Core\Loader;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class MainTest
  */
 class MainTest extends PHPUnit_Framework_TestCase
@@ -22,6 +22,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * 读取app配置文件
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testReadAppConfig()
     {
@@ -32,6 +34,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * 设置appConfig
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testSetAppConfig()
     {
@@ -44,6 +48,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * 测试注释配置
      * 使用get调用时, 注释配置依然生效
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testAnnotate()
     {
@@ -55,6 +61,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * 测试生成连接
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testMakeLink()
     {
@@ -92,6 +100,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * 生成加密连接测试
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testMakeEncryptLink()
     {
@@ -130,6 +140,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * url加密 参数解密测试
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testMakeEncryptLinkAndDecryptParams()
     {
@@ -148,6 +160,8 @@ class MainTest extends PHPUnit_Framework_TestCase
 
     /**
      * SQL条件语句生成
+     *
+     * @throws \Cross\Exception\CoreException
      */
     function testSqlCondition()
     {
@@ -217,7 +231,8 @@ class MainTest extends PHPUnit_Framework_TestCase
      *
      * @param $controller
      * @param array $params
-     * @return string
+     * @return array|mixed|string
+     * @throws \Cross\Exception\CoreException
      */
     protected function getAppResponse($controller, $params = array())
     {

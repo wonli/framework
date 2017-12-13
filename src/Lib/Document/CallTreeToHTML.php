@@ -16,7 +16,7 @@ use DOMNode;
 /**
  * 把CallTree转换为HTML
  *
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class NodeToHTML
  * @package Cross\Lib\Document
  */

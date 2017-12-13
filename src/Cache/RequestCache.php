@@ -18,7 +18,7 @@ use ReflectionClass;
 /**
  * RequestCache工厂类
  *
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class RequestCache
  * @package Cross\Cache
  */

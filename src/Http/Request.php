@@ -10,7 +10,7 @@ namespace Cross\Http;
 use Cross\Exception\FrontException;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class Request
  * @package Cross\Core
  */
@@ -39,7 +39,6 @@ class Request
      * 初始化URL
      *
      * @throws FrontException
-     * @return null
      */
     private function initScriptUrl()
     {
@@ -80,9 +79,10 @@ class Request
     }
 
     /**
-     * 取得script的URL
+     * script url
      *
-     * @return null
+     * @return mixed
+     * @throws FrontException
      */
     public function getScriptUrl()
     {
@@ -108,6 +108,7 @@ class Request
      *
      * @param  boolean $absolute 是否返回带HOST的绝对路径
      * @return string 当前请求的url
+     * @throws FrontException
      */
     public function getBaseUrl($absolute = false)
     {
@@ -128,9 +129,10 @@ class Request
     }
 
     /**
-     * 取得Host信息
+     * get host
      *
-     * @return null
+     * @return mixed
+     * @throws FrontException
      */
     public function getHostInfo()
     {
@@ -141,10 +143,11 @@ class Request
     }
 
     /**
-     * 获取当前页面URL路径
+     * 获取当前页面URL
      *
      * @param bool $absolute
      * @return string
+     * @throws FrontException
      */
     public function getCurrentUrl($absolute = true)
     {

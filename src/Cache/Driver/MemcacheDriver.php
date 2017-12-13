@@ -13,7 +13,7 @@ use Exception;
 use Memcache;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class MemcacheDriver
  * @package Cross\Cache\Driver
  */
@@ -38,6 +38,12 @@ class MemcacheDriver
         'failure_callback' => null
     );
 
+    /**
+     * MemcacheDriver constructor.
+     *
+     * @param array $option
+     * @throws CoreException
+     */
     function __construct(array $option)
     {
         if (!extension_loaded('memcache')) {

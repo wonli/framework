@@ -12,7 +12,7 @@ use MongoClient;
 use Exception;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class MongoDriver
  * @package Cross\DB\Drivers
  */

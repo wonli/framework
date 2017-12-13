@@ -14,7 +14,7 @@ use Cross\Http\Request;
 use Cross\MVC\View;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class FrameBase
  * @package Cross\Core
  * @property Config $config
@@ -123,7 +123,6 @@ class FrameBase
      *
      * @param string $config_file
      * @return Config
-     * @throws CoreException
      */
     function loadConfig($config_file)
     {
@@ -201,6 +200,7 @@ class FrameBase
      * @param string $value 值
      * @param int $expire 过期时间(默认一天过期)
      * @return bool
+     * @throws CoreException
      */
     protected function setAuth($key, $value, $expire = 86400)
     {
@@ -213,6 +213,7 @@ class FrameBase
      * @param string $key
      * @param bool $deCode
      * @return bool|mixed|string
+     * @throws CoreException
      */
     protected function getAuth($key, $deCode = false)
     {

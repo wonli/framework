@@ -248,7 +248,7 @@
     </div>
 </div>
 <script type="text/javascript">
-    cp_exception = {
+    var cp_exception = {
         main: function (action) {
             var act = action === 'hide' ? 'none' : 'block';
             this.setAct();

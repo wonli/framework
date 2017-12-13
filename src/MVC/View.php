@@ -15,9 +15,10 @@ use Cross\Core\FrameBase;
 use Cross\Core\Config;
 use Cross\Core\Router;
 use Cross\Core\Helper;
+use Exception;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class View
  * @package Cross\MVC
  */
@@ -104,6 +105,7 @@ class View extends FrameBase
      *
      * @param null $data
      * @param null $method
+     * @throws CoreException
      */
     function display($data = null, $method = null)
     {
@@ -130,6 +132,7 @@ class View extends FrameBase
      * @param null|string|array $params
      * @param bool $encrypt_params
      * @return string
+     * @throws CoreException
      */
     function url($controller = null, $params = null, $encrypt_params = false)
     {
@@ -151,6 +154,7 @@ class View extends FrameBase
      * @param null|string $controller
      * @param null|string|array $params
      * @return string
+     * @throws CoreException
      */
     function sUrl($controller = null, $params = null)
     {
@@ -478,6 +482,7 @@ class View extends FrameBase
      *
      * @param $data
      * @param string $root_name
+     * @throws Exception
      */
     function XML($data, $root_name = 'root')
     {
@@ -586,6 +591,7 @@ class View extends FrameBase
      * @param null|string $controller 控制器:方法
      * @param null|string|array $params
      * @return string
+     * @throws CoreException
      */
     function link($controller = null, $params = null)
     {
@@ -597,6 +603,7 @@ class View extends FrameBase
      * @param null|string $controller
      * @param null|string|array $params
      * @return string
+     * @throws CoreException
      */
     function slink($controller = null, $params = null)
     {
@@ -612,6 +619,7 @@ class View extends FrameBase
      * @param null|string|array $params
      * @param null|bool $encrypt_params
      * @return string
+     * @throws CoreException
      */
     function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
     {

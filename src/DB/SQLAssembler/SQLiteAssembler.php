@@ -8,7 +8,7 @@
 namespace Cross\DB\SQLAssembler;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class SQLiteAssembler
  * @package Cross\DB\SQLAssembler
  */

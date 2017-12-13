@@ -22,7 +22,7 @@ use Cross\Exception\CoreException;
 use Closure;
 
 /**
- * @Auth: wonli <wonli@live.com>
+ * @author wonli <wonli@live.com>
  * Class DBFactory
  * @package Cross\DB
  */
