@@ -205,7 +205,7 @@ class Response
      */
     function getCookieConfig($key = null)
     {
-        $default = array('path' => '', 'domain' => '', 'secure' => false, 'httponly' => true);
+        $default = array('path' => '/', 'domain' => '', 'secure' => false, 'httponly' => true);
         if ($key && isset($default[$key])) {
             if (isset($this->cookie_config[$key])) {
                 return $this->cookie_config[$key];
