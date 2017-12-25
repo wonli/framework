@@ -568,6 +568,16 @@ class SQLAssembler
                 $params[] = $field_config[1];
                 break;
 
+            case '#SQL#':
+                if (is_array($field_config)) {
+                    list($operator, $sql_segment) = $field_config;
+                } else {
+                    $sql_segment = $field_config;
+                }
+
+                $condition[" {$condition_connector} "][] = "{$field} {$operator} {$sql_segment}";
+                break;
+
             default:
                 $operator = $connector;
                 $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
