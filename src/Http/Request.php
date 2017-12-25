@@ -313,7 +313,7 @@ class Request
      */
     function SERVER($name)
     {
-        return isset($SERVER[$name]) ? $_SERVER[$name] : '';
+        return isset($_SERVER[$name]) ? $_SERVER[$name] : '';
     }
 
     /**
