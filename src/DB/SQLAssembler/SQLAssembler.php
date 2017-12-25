@@ -66,26 +66,20 @@ class SQLAssembler
      *                      array(字段1的值, 字段2的值))
      *      );
      * </pre>
-     * @throws CoreException
      */
-    public function add($table, $data, $multi = false)
+    public function add($table, &$data, $multi = false)
     {
         $params = array();
-        $field_str = $value_str = '';
-
         if (true === $multi) {
+            $field_str = $value_str = '';
             if (empty($data['fields']) || empty($data['values'])) {
-                throw new CoreException('data format error!');
+                $data = $this->arrayToMultiAddFormat($data);
             }
 
-            foreach ($data ['fields'] as $d) {
-                $field_str .= "{$d},";
+            $params = $data['values'];
+            foreach ($data['fields'] as $d) {
+                $field_str .= "`{$d}`,";
                 $value_str .= '?,';
-            }
-
-            $params = array();
-            foreach ($data ['values'] as $p) {
-                $params[] = $p;
             }
 
             $fields = trim($field_str, ',');
@@ -715,5 +709,30 @@ class SQLAssembler
             }
         }
         return $where;
+    }
+
+    /**
+     * 将数组格式化成批量添加的格式
+     *
+     * @param array $data
+     * @return array
+     */
+    private function arrayToMultiAddFormat(array $data)
+    {
+        $fields = $values = array();
+        if (!empty($data)) {
+            while ($d = array_shift($data)) {
+                $keys = array_keys($d);
+                if (empty($fields)) {
+                    $fields = $keys;
+                } elseif ($keys !== $fields) {
+                    continue;
+                }
+
+                $values[] = array_values($d);
+            }
+        }
+
+        return array('fields' => $fields, 'values' => $values);
     }
 }
