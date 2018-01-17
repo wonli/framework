@@ -158,6 +158,14 @@ class Request
     /**
      * @return string
      */
+    function getRequestType()
+    {
+        return $this->SERVER('REQUEST_METHOD');
+    }
+
+    /**
+     * @return string
+     */
     function getPathInfo()
     {
         return $this->SERVER('PATH_INFO');
