@@ -65,7 +65,7 @@ class Rest
     {
         $this->delegate = $delegate;
         $this->request = $delegate->getRequest();
-        $this->request_type = $this->getRequestType();
+        $this->request_type = strtoupper($this->request->getRequestType());
         $this->request_string = $delegate->getRouter()->getUriRequest('/', $useless, false, false);
     }
 
@@ -92,7 +92,7 @@ class Rest
      */
     function get($custom_router, Closure $process_closure)
     {
-        $this->addCustomRouter('get', $custom_router, $process_closure);
+        $this->addCustomRouter('GET', $custom_router, $process_closure);
     }
 
     /**
@@ -103,7 +103,7 @@ class Rest
      */
     function post($custom_router, Closure $process_closure)
     {
-        $this->addCustomRouter('post', $custom_router, $process_closure);
+        $this->addCustomRouter('POST', $custom_router, $process_closure);
     }
 
     /**
@@ -114,7 +114,29 @@ class Rest
      */
     function put($custom_router, Closure $process_closure)
     {
-        $this->addCustomRouter('put', $custom_router, $process_closure);
+        $this->addCustomRouter('PUT', $custom_router, $process_closure);
+    }
+
+    /**
+     * PATCH
+     *
+     * @param string $custom_router
+     * @param Closure $process_closure
+     */
+    function patch($custom_router, Closure $process_closure)
+    {
+        $this->addCustomRouter('PATCH', $custom_router, $process_closure);
+    }
+
+    /**
+     * OPTIONS
+     *
+     * @param string $custom_router
+     * @param Closure $process_closure
+     */
+    function options($custom_router, Closure $process_closure)
+    {
+        $this->addCustomRouter('OPTIONS', $custom_router, $process_closure);
     }
 
     /**
@@ -125,11 +147,22 @@ class Rest
      */
     function delete($custom_router, Closure $process_closure)
     {
-        $this->addCustomRouter('delete', $custom_router, $process_closure);
+        $this->addCustomRouter('DELETE', $custom_router, $process_closure);
     }
 
     /**
-     * GET, POST, PUT, DELETE
+     * HEAD
+     *
+     * @param string $custom_router
+     * @param Closure $process_closure
+     */
+    function head($custom_router, Closure $process_closure)
+    {
+        $this->addCustomRouter('HEAD', $custom_router, $process_closure);
+    }
+
+    /**
+     * Any
      *
      * @param string $custom_router
      * @param callable|Closure $process_closure
@@ -328,24 +361,5 @@ class Rest
                 $this->custom_router_config[$request_type]['high'][$custom_router] = $process_closure;
             }
         }
-    }
-
-    /**
-     * 获取当前请求类型
-     *
-     * @return string
-     */
-    private function getRequestType()
-    {
-        $request_type = 'get';
-        if ($this->request->isPostRequest()) {
-            $request_type = 'post';
-        } elseif ($this->request->isPutRequest()) {
-            $request_type = 'put';
-        } elseif ($this->request->isDeleteRequest()) {
-            $request_type = 'delete';
-        }
-
-        return $request_type;
     }
 }
