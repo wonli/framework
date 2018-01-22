@@ -8,6 +8,7 @@
 
 namespace Cross\DB\Drivers;
 
+use Couchbase\PasswordAuthenticator;
 use Cross\Exception\CoreException;
 use CouchbaseCluster;
 use Exception;
@@ -22,24 +23,31 @@ class CouchDriver
     /**
      * @var \Couchbase\Bucket
      */
-    private $link;
+    protected $link;
 
     /**
-     * @param array $link_params
+     * @param array $params
      * @throws CoreException
      */
-    function __construct(array $link_params)
+    function __construct(array $params)
     {
         if (!class_exists('CouchbaseCluster')) {
             throw new CoreException('Class CouchbaseCluster not found!');
         }
 
-        $bucket = isset($link_params['bucket']) ? $link_params['bucket'] : 'default';
-        $bucket_password = isset($link_params['bucket_password']) ? $link_params['bucket_password'] : '';
-
         try {
-            $myCluster = new CouchbaseCluster($link_params['dsn'], $link_params['username'], $link_params['password']);
-            $this->link = $myCluster->openBucket($bucket, $bucket_password);
+            $authenticator = new PasswordAuthenticator();
+            $authenticator->username($params['username'])->password($params['password']);
+
+            $cluster = new CouchbaseCluster($params['dsn']);
+            $cluster->authenticate($authenticator);
+
+            $bucket = isset($params['bucket']) ? $params['bucket'] : 'default';
+            if (!empty($params['bucket_password'])) {
+                $this->link = $cluster->openBucket($bucket, $params['bucket_password']);
+            } else {
+                $this->link = $cluster->openBucket($bucket);
+            }
         } catch (Exception $e) {
             throw new CoreException ($e->getMessage());
         }
