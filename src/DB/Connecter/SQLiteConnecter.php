@@ -53,6 +53,7 @@ class SQLiteConnecter extends BaseConnecter
      * @param null $pwd
      * @param array $options
      * @return SQLiteConnecter|PDO
+     * @throws CoreException
      */
     static function getInstance($dsn, $user = null, $pwd = null, array $options = array())
     {

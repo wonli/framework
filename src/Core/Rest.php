@@ -74,6 +74,7 @@ class Rest
      *
      * @param Delegate $delegate
      * @return Rest
+     * @throws CoreException
      */
     static function getInstance(Delegate &$delegate)
     {
@@ -311,22 +312,26 @@ class Rest
      */
     private function response(Closure $process_closure, array $params = array())
     {
-        $closure_params = array();
-        $ref = new ReflectionFunction($process_closure);
-        $parameters = $ref->getParameters();
-        if (!empty($parameters)) {
-            foreach ($parameters as $p) {
-                if (!isset($params[$p->name])) {
-                    throw new CoreException("未指定的参数: {$p->name}");
+        try {
+            $ref = new ReflectionFunction($process_closure);
+            $closure_params = array();
+            $parameters = $ref->getParameters();
+            if (!empty($parameters)) {
+                foreach ($parameters as $p) {
+                    if (!isset($params[$p->name])) {
+                        throw new CoreException("未指定的参数: {$p->name}");
+                    }
+
+                    $closure_params[$p->name] = $params[$p->name];
                 }
-
-                $closure_params[$p->name] = $params[$p->name];
             }
-        }
 
-        $content = call_user_func_array($process_closure, $closure_params);
-        if (null != $content) {
-            $this->delegate->getResponse()->display($content);
+            $content = call_user_func_array($process_closure, $closure_params);
+            if (null != $content) {
+                $this->delegate->getResponse()->display($content);
+            }
+        } catch (\Exception $e) {
+            throw new CoreException('Reflection ' . $e->getMessage());
         }
     }
 

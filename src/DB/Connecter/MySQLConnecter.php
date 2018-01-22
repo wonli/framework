@@ -73,6 +73,7 @@ class MySQLConnecter extends BaseConnecter
      * @param string $password
      * @param array $option
      * @return mixed
+     * @throws CoreException
      */
     static function getInstance($dsn, $user, $password, array $option = array())
     {

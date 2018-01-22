@@ -121,6 +121,8 @@ class Delegate
      * @param string $app_name app名称
      * @param array $runtime_config 运行时加载的设置
      * @return self
+     * @throws CoreException
+     * @throws FrontException
      */
     static function loadApp($app_name, array $runtime_config = array())
     {
@@ -181,6 +183,7 @@ class Delegate
      * </pre>
      *
      * @return Rest
+     * @throws CoreException
      */
     public function rest()
     {
@@ -326,6 +329,7 @@ class Delegate
      * @param array $runtime_config
      * @return Config
      * @throws FrontException
+     * @throws CoreException
      */
     private static function initConfig($app_name, array $runtime_config)
     {

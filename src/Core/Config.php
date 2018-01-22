@@ -63,6 +63,7 @@ class Config
      *
      * @param string $file
      * @return Config
+     * @throws CoreException
      */
     static function load($file)
     {

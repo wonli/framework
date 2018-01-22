@@ -143,6 +143,7 @@ class Module extends FrameBase
      * 读取并解析数据库配置
      *
      * @return Config
+     * @throws CoreException
      */
     protected function databaseConfig()
     {

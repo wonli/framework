@@ -13,6 +13,9 @@ class MainTest extends PHPUnit_Framework_TestCase
 {
     /**
      * 是否能正确加载app
+     *
+     * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testLoadApp()
     {
@@ -24,6 +27,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 读取app配置文件
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testReadAppConfig()
     {
@@ -36,6 +40,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 设置appConfig
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testSetAppConfig()
     {
@@ -50,6 +55,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 使用get调用时, 注释配置依然生效
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testAnnotate()
     {
@@ -63,6 +69,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 测试生成连接
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testMakeLink()
     {
@@ -102,6 +109,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 生成加密连接测试
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testMakeEncryptLink()
     {
@@ -142,6 +150,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * url加密 参数解密测试
      *
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     function testMakeEncryptLinkAndDecryptParams()
     {
@@ -233,6 +242,7 @@ class MainTest extends PHPUnit_Framework_TestCase
      * @param array $params
      * @return array|mixed|string
      * @throws \Cross\Exception\CoreException
+     * @throws \Cross\Exception\FrontException
      */
     protected function getAppResponse($controller, $params = array())
     {

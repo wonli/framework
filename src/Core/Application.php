@@ -298,24 +298,29 @@ class Application
      *
      * @param string $class 类名或命名空间
      * @param array $args
-     * @return object
+     * @return object|bool
      */
     public function instanceClass($class, $args = array())
     {
-        $rc = new ReflectionClass($class);
-        if ($rc->hasProperty('app_delegate')) {
-            $rc->setStaticPropertyValue('app_delegate', $this->delegate);
-        }
+        try {
+            $rc = new ReflectionClass($class);
 
-        if ($rc->hasMethod('__construct')) {
-            if (!is_array($args)) {
-                $args = array($args);
+            if ($rc->hasProperty('app_delegate')) {
+                $rc->setStaticPropertyValue('app_delegate', $this->delegate);
             }
 
-            return $rc->newInstanceArgs($args);
-        }
+            if ($rc->hasMethod('__construct')) {
+                if (!is_array($args)) {
+                    $args = array($args);
+                }
 
-        return $rc->newInstance();
+                return $rc->newInstanceArgs($args);
+            }
+
+            return $rc->newInstance();
+        } catch (\ReflectionException $e) {
+            return false;
+        }
     }
 
     /**

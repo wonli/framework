@@ -61,11 +61,15 @@ class RequestCache
 
             default:
                 if (is_string($type)) {
-                    $rf = new ReflectionClass($type);
-                    if ($rf->implementsInterface('Cross\I\RequestCacheInterface')) {
-                        $instance = $rf->newInstance();
-                    } else {
-                        throw new CoreException('Must implement RequestCacheInterface');
+                    try {
+                        $rf = new ReflectionClass($type);
+                        if ($rf->implementsInterface('Cross\I\RequestCacheInterface')) {
+                            $instance = $rf->newInstance();
+                        } else {
+                            throw new CoreException('Must implement RequestCacheInterface');
+                        }
+                    } catch (\Exception $e) {
+                        throw new CoreException('Reflection ' . $e->getMessage());
                     }
                 } elseif (is_object($type)) {
                     if ($type instanceof RequestCacheInterface) {

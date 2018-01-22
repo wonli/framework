@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Auth\CookieAuth;
@@ -47,11 +48,15 @@ class HttpAuth
                 } elseif (strcasecmp($type, 'session') == 0) {
                     self::$obj = new SessionAuth($auth_key);
                 } else {
-                    $object = new ReflectionClass($type);
-                    if ($object->implementsInterface('Cross\I\HttpAuthInterface')) {
-                        self::$obj = $object->newInstance();
-                    } else {
-                        throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
+                    try {
+                        $object = new ReflectionClass($type);
+                        if ($object->implementsInterface('Cross\I\HttpAuthInterface')) {
+                            self::$obj = $object->newInstance();
+                        } else {
+                            throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
+                        }
+                    } catch (\Exception $e) {
+                        throw new CoreException('Reflection ' . $e->getMessage());
                     }
                 }
             } elseif (is_object($type)) {

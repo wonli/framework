@@ -123,6 +123,7 @@ class FrameBase
      *
      * @param string $config_file
      * @return Config
+     * @throws CoreException
      */
     function loadConfig($config_file)
     {

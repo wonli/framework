@@ -210,14 +210,18 @@ abstract class CrossException extends Exception
                 $t['start_line'] = max(1, $t['line'] - 6);
                 $t['end_line'] = $t['line'] + 6;
             } elseif (isset($t['function']) && isset($t['class'])) {
-                $rc = new ReflectionClass($t['class']);
-                $t['file'] = $rc->getFileName();
-                $t['show_file'] = $this->hiddenFileRealPath($rc->getFileName());
+                try {
+                    $rc = new ReflectionClass($t['class']);
+                    $t['file'] = $rc->getFileName();
+                    $t['show_file'] = $this->hiddenFileRealPath($rc->getFileName());
 
-                $rf = new ReflectionMethod($t['class'], $t['function']);
-                $t['start_line'] = $rf->getStartLine();
-                $t['end_line'] = $rf->getEndLine();
-                $t['line'] = sprintf("%s ~ %s", $t['start_line'], $t['end_line']);
+                    $rf = new ReflectionMethod($t['class'], $t['function']);
+                    $t['start_line'] = $rf->getStartLine();
+                    $t['end_line'] = $rf->getEndLine();
+                    $t['line'] = sprintf("%s ~ %s", $t['start_line'], $t['end_line']);
+                } catch (Exception $e) {
+                    continue;
+                }
             } else {
                 continue;
             }
