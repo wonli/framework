@@ -5,10 +5,11 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Drivers;
 
 use Cross\Exception\CoreException;
-use MongoClient;
+use MongoDB\Driver\Manager;
 use Exception;
 
 /**
@@ -19,28 +20,29 @@ use Exception;
 class MongoDriver
 {
     /**
-     * @var MongoClient
+     * @var Manager
      */
-    public $db;
+    public $manager;
 
     /**
      * 创建MongoDB实例
      *
-     * @param $link_params
+     * @param $params
      * @throws CoreException
      */
-    function __construct(array $link_params)
+    function __construct(array $params)
     {
-        if (!class_exists('MongoClient')) {
-            throw new CoreException('Class MongoClient not found!');
+        if (!class_exists('MongoDB\Driver\Manager')) {
+            throw new CoreException('MongoDB\Driver\Manager not found!');
         }
 
         try {
-            $mongoClient = new MongoClient($link_params['dsn'], $link_params['options']);
-            $this->db = $mongoClient->$link_params['db'];
+            $options = empty($params['options']) ? array() : $params['options'];
+            $driverOptions = empty($params['driverOptions']) ? array() : $params['driverOptions'];
+
+            $this->manager = new Manager($params['dsn'], $options, $driverOptions);
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
         }
     }
-
 }
