@@ -616,24 +616,28 @@ class Helper
     }
 
     /**
-     * encrypt 加密解密
+     * 加解密
      *
-     * @param string $crypt
-     * @param string $mode
+     * @param string $data
+     * @param string $op
      * @param string $key
-     * @return string
+     * @param string $method
+     * @return mixed|string
      */
-    static function encrypt($crypt, $mode = 'DECODE', $key = '!@#6<>?*')
+    static function encrypt($data, $op = 'DECODE', $key = '!@#%c*r&o*s^s%p$h~p&', $method = 'AES-256-CBC')
     {
-        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_DES, MCRYPT_MODE_ECB), MCRYPT_RAND);
-        if ('ENCODE' == $mode) {
-            $pass_crypt = mcrypt_encrypt(MCRYPT_DES, $key, $crypt, MCRYPT_MODE_ECB, $iv);
-            $str = str_replace(array('=', '/', '+'), array('', '-', '_'), base64_encode($pass_crypt));
+        $encrypt_key = md5($key);
+        if ($op == 'ENCODE') {
+            $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
+            $encrypted = openssl_encrypt($data, $method, $encrypt_key, 0, $iv);
+            $result = str_replace(array('=', '/', '+'), array('', '-', '_'), base64_encode($encrypted . '::' . $iv));
         } else {
-            $decoded = base64_decode(str_replace(array('-', '_'), array('/', '+'), $crypt));
-            $str = mcrypt_decrypt(MCRYPT_DES, $key, $decoded, MCRYPT_MODE_ECB, $iv);
+            $data = base64_decode(str_replace(array('-', '_'), array('/', '+'), $data));
+            list($encrypted, $iv) = explode('::', $data);
+            $result = openssl_decrypt($encrypted, $method, $encrypt_key, 0, $iv);
         }
-        return $str;
+
+        return $result;
     }
 
     /**
