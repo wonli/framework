@@ -145,15 +145,15 @@ class PDOSqlDriver implements SqlInterface
      * 插入数据
      *
      * @see SQLAssembler::add()
-     * @param string $table 要插入的数据表
-     * @param string|array $data 要插入的数据,批量插入时的数据结构如下
-     * @param bool $multi 批量插入数据时,开启事务
-     * @param array $insert_data 插入的数据列表
-     * @param bool $openTA
+     * @param string $table
+     * @param string|array $data
+     * @param bool $multi 是否批量添加
+     * @param array $insert_data 批量添加的数据
+     * @param bool $openTA 批量添加时是否开启事务
      * @return bool|mixed
      * @throws CoreException
      */
-    public function add($table, $data, $multi = false, & $insert_data = array(), $openTA = false)
+    public function add($table, $data, $multi = false, &$insert_data = array(), $openTA = false)
     {
         $this->SQLAssembler->add($table, $data, $multi);
         $this->sql = $this->SQLAssembler->getSQL();
@@ -219,7 +219,7 @@ class PDOSqlDriver implements SqlInterface
      * 带分页的数据查询
      *
      * @param string $table
-     * @param string $fields 字段名
+     * @param string $fields
      * @param string|array $where
      * @param string|int $order
      * @param array $page
@@ -271,7 +271,7 @@ class PDOSqlDriver implements SqlInterface
      * @param string $table
      * @param string|array $where
      * @param bool $multi 是否批量删除数据
-     * @param bool $openTA 是否开启事务 默认关闭
+     * @param bool $openTA 是否开启事务
      * @return bool
      * @throws CoreException
      */
