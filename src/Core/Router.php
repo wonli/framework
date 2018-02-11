@@ -99,7 +99,7 @@ class Router implements RouterInterface
             }
 
             if (empty($this->controller) || empty($this->action)) {
-                $this->parseRouter($request);
+                $this->parseRouter($request, $url_config);
             }
         } else {
             $router = $this->parseDefaultRouter($url_config['*']);
@@ -243,9 +243,10 @@ class Router implements RouterInterface
      * 解析router别名配置
      *
      * @param array $request
+     * @param array $url_config
      * @internal param $router
      */
-    function parseRouter(array $request)
+    function parseRouter(array $request, array $url_config)
     {
         $combine_alias_key = '';
         $ori_controller = $controller = array_shift($request);
@@ -279,16 +280,29 @@ class Router implements RouterInterface
             }
         }
 
+        $params = $request;
+        $addition_params = &$_GET;
         $this->config->set('ori_router', array(
             'request' => $this->originUriRequest,
+            'addition_params' => $addition_params,
             'controller' => $ori_controller,
             'action' => $ori_action,
-            'params' => $request
+            'params' => $params,
         ));
+
+        if (empty($params)) {
+            $params = $addition_params;
+        } elseif (is_array($params) && !empty($addition_params)) {
+            if ($url_config['type'] == 2) {
+                $params = array_merge($params, $addition_params);
+            } else {
+                $params += $addition_params;
+            }
+        }
 
         $this->setController($controller);
         $this->setAction($action);
-        $this->setParams($request);
+        $this->setParams($params);
     }
 
     /**

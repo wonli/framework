@@ -528,17 +528,6 @@ class Application
             $params = $url_params;
         }
 
-        $additionParams = &$_GET;
-        if (null === $params) {
-            $params = $additionParams;
-        } elseif (is_array($params) && !empty($additionParams)) {
-            if ($url_type == 2) {
-                $params = array_merge($params, $additionParams);
-            } else {
-                $params += $additionParams;
-            }
-        }
-
         $this->setParams($params);
     }
 
