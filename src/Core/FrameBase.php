@@ -258,14 +258,15 @@ class FrameBase
      */
     protected function sParams($use_annotate = true, $params = null)
     {
-        $addition_params = array();
-        if (!empty($_GET)) {
-            $addition_params = $_GET;
+        $config = $this->getConfig();
+        $addition_params = $config->get('ori_router', 'addition_params');
+        if (empty($addition_params)) {
+            $addition_params = array();
         }
 
-        $url_config = $this->getConfig()->get('url');
+        $url_config = $config->get('url');
         if (null === $params) {
-            $ori_params = $this->getConfig()->get('ori_router', 'params');
+            $ori_params = $config->get('ori_router', 'params');
             switch ($url_config['type']) {
                 case 2:
                     $params = current(array_keys($ori_params));
