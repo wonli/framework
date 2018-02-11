@@ -105,6 +105,9 @@ class Router implements RouterInterface
             $router = $this->parseDefaultRouter($url_config['*']);
             $this->setController($router[0]);
             $this->setAction($router[1]);
+
+            $params = $this->parseParams(array(), $url_config);
+            $this->setParams($params);
         }
 
         return $this;
@@ -280,25 +283,15 @@ class Router implements RouterInterface
             }
         }
 
-        $params = $request;
-        $addition_params = &$_GET;
+        $addition_params = array();
+        $params = $this->parseParams($request, $url_config, $addition_params);
         $this->config->set('ori_router', array(
             'request' => $this->originUriRequest,
             'addition_params' => $addition_params,
             'controller' => $ori_controller,
             'action' => $ori_action,
-            'params' => $params,
+            'params' => $request,
         ));
-
-        if (empty($params)) {
-            $params = $addition_params;
-        } elseif (is_array($params) && !empty($addition_params)) {
-            if ($url_config['type'] == 2) {
-                $params = array_merge($params, $addition_params);
-            } else {
-                $params += $addition_params;
-            }
-        }
 
         $this->setController($controller);
         $this->setAction($action);
@@ -401,6 +394,30 @@ class Router implements RouterInterface
         }
 
         return $this->defaultRouter;
+    }
+
+    /**
+     * 解析参数并处理附加参数
+     *
+     * @param array $params
+     * @param array $url_config
+     * @param array $addition_params
+     * @return array
+     */
+    private function parseParams(array $params, array $url_config, array &$addition_params = array())
+    {
+        $addition_params = $_GET;
+        if (empty($params)) {
+            $params = $addition_params;
+        } elseif (is_array($params) && !empty($addition_params)) {
+            if ($url_config['type'] == 2) {
+                $params = array_merge($params, $addition_params);
+            } else {
+                $params += $addition_params;
+            }
+        }
+
+        return $params;
     }
 }
 
