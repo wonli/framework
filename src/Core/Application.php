@@ -518,14 +518,23 @@ class Application
             case 4:
                 $url_params = self::oneDimensionalToAssociativeArray($url_params);
                 break;
+
+            case 2:
+                if (is_array($url_params) && !empty($annotate_params)) {
+                    $params = array_merge($annotate_params, $url_params);
+                } else {
+                    $params = $url_params;
+                }
         }
 
-        if (isset($combined_params)) {
-            $params = $combined_params;
-        } else if (!empty($annotate_params)) {
-            $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
-        } else {
-            $params = $url_params;
+        if (!isset($params)) {
+            if (isset($combined_params)) {
+                $params = $combined_params;
+            } elseif (!empty($annotate_params)) {
+                $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
+            } else {
+                $params = $url_params;
+            }
         }
 
         $this->setParams($params);
