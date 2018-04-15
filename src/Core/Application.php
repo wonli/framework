@@ -511,21 +511,27 @@ class Application
         switch ($url_type) {
             case 1:
             case 5:
-                $combined_params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
+                $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
             case 3:
             case 4:
                 $url_params = self::oneDimensionalToAssociativeArray($url_params);
+                if (!empty($annotate_params)) {
+                    $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
+                } else {
+                    $params = $url_params;
+                }
                 break;
-        }
 
-        if (isset($combined_params)) {
-            $params = $combined_params;
-        } else if (!empty($annotate_params)) {
-            $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
-        } else {
-            $params = $url_params;
+            default:
+                if (empty($url_params)) {
+                    $params = $annotate_params;
+                } elseif (is_array($url_params) && !empty($annotate_params)) {
+                    $params = array_merge($annotate_params, $url_params);
+                } else {
+                    $params = $url_params;
+                }
         }
 
         $this->setParams($params);
