@@ -211,7 +211,7 @@ class Router implements RouterInterface
                         $request = substr($request, 0, $l);
                     }
 
-                    if (false !== strpos($request, '=')) {
+                    if (false === strpos($request, $url_config['dot']) && false !== strpos($request, '=')) {
                         $request = '';
                     }
 
