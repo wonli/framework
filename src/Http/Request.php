@@ -89,13 +89,15 @@ class Request
     /**
      * get host
      *
+     * @param bool $without_protocol
      * @return mixed
      */
-    function getHostInfo()
+    function getHostInfo($without_protocol = true)
     {
         if (!$this->hostInfo) {
-            $this->initHostInfo();
+            $this->initHostInfo($without_protocol);
         }
+
         return $this->hostInfo;
     }
 
@@ -369,12 +371,12 @@ class Request
     /**
      * 设置Host信息
      *
-     * @return null|string
+     * @param bool $without_protocol 是否返回协议类型
      */
-    private function initHostInfo()
+    private function initHostInfo($without_protocol = true)
     {
         if (PHP_SAPI === 'cli') {
-            return '';
+            return;
         }
 
         $protocol = 'http';
@@ -383,16 +385,22 @@ class Request
         }
 
         if (($host = $this->SERVER('HTTP_HOST')) != null) {
-            $this->hostInfo = $protocol . '://' . $host;
+            $httpHost = &$host;
         } elseif (($host = $this->SERVER('SERVER_NAME')) != null) {
-            $this->hostInfo = $protocol . '://' . $host;
+            $httpHost = &$host;
             $port = $this->getServerPort();
             if (($protocol == 'http' && $port != 80) || ($protocol == 'https' && $port != 443)) {
-                $this->hostInfo .= ':' . $port;
+                $httpHost .= ':' . $port;
             }
         }
 
-        return '';
+        if (isset($httpHost)) {
+            if ($without_protocol) {
+                $this->hostInfo = '//' . $httpHost;
+            } else {
+                $this->hostInfo = $protocol . '://' . $httpHost;
+            }
+        }
     }
 }
 
