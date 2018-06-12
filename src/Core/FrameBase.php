@@ -198,7 +198,7 @@ class FrameBase
      * 加密会话 sys=>auth中指定是cookie/session
      *
      * @param string $key key
-     * @param string $value 值
+     * @param string|array $value 值
      * @param int $expire 过期时间(默认一天过期)
      * @return bool
      * @throws CoreException
