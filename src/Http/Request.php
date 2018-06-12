@@ -92,7 +92,7 @@ class Request
      * @param bool $without_protocol
      * @return mixed
      */
-    function getHostInfo($without_protocol = true)
+    function getHostInfo($without_protocol = false)
     {
         if (!$this->hostInfo) {
             $this->initHostInfo($without_protocol);
@@ -373,7 +373,7 @@ class Request
      *
      * @param bool $without_protocol 是否返回协议类型
      */
-    private function initHostInfo($without_protocol = true)
+    private function initHostInfo($without_protocol = false)
     {
         if (PHP_SAPI === 'cli') {
             return;
