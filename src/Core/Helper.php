@@ -539,6 +539,7 @@ class Helper
      * @param string $id_card
      * @param bool|true $just_check_length 是否只校验长度
      * @return bool
+     * @throws \Exception
      */
     static function checkIDCard($id_card, $just_check_length = true)
     {
