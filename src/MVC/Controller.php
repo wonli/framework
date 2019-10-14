@@ -85,9 +85,14 @@ class Controller extends FrameBase
      * @param string $url
      * @param int $http_response_status
      */
-    protected function redirect($url, $http_response_status = 200)
+    protected function redirect($url, $http_response_status = 302)
     {
-        $this->delegate->getResponse()->redirect($url, $http_response_status);
+        $has = $this->delegate->getClosureContainer()->has('redirect', $closure);
+        if($has) {
+            $closure($url, $http_response_status);
+        } else {
+            $this->delegate->getResponse()->redirect($url, $http_response_status);
+        }
     }
 
     /**
