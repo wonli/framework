@@ -321,11 +321,16 @@ class Response
      * @param int $code
      * @param string $descriptions
      */
-    function sendResponseStatus($code = 200, $descriptions = '')
+    function sendResponseStatus($code = 0, $descriptions = '')
     {
+        if (0 === $code) {
+            $code = $this->getResponseStatus();
+        }
+
         if ($descriptions == '' && isset(self::$statusDescriptions[$code])) {
             $descriptions = self::$statusDescriptions[$code];
         }
+
         header("HTTP/1.1 {$code} {$descriptions}");
     }
 
@@ -348,8 +353,6 @@ class Response
 
     /**
      * 发送header
-     *
-     * @return $this
      */
     private function sendHeader()
     {
@@ -363,14 +366,10 @@ class Response
                 header($content);
             }
         }
-
-        return $this;
     }
 
     /**
      * 发送cookie
-     *
-     * @return $this
      */
     private function sendCookie()
     {
@@ -379,17 +378,6 @@ class Response
                 call_user_func_array('setcookie', $cookie);
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * 发送Response头
-     */
-    private function sendResponseHeader()
-    {
-        $this->sendContentType();
-        $this->sendHeader();
     }
 
     /**
@@ -438,7 +426,6 @@ class Response
     function redirect($url, $status = 302)
     {
         $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
-        exit(0);
     }
 
     /**
@@ -450,10 +437,10 @@ class Response
     function display($content = '', $tpl = '')
     {
         if (!headers_sent() && PHP_SAPI != 'cli') {
-            $code = $this->getResponseStatus();
-            $this->sendResponseStatus($code);
-            $this->sendResponseHeader();
+            $this->sendResponseStatus();
+            $this->sendContentType();
             $this->sendCookie();
+            $this->sendHeader();
         }
 
         $this->flushContent($content, $tpl);
@@ -469,6 +456,7 @@ class Response
     {
         $this->setEndFlush();
         $this->display($content, $tpl);
+        exit(0);
     }
 
     /**
