@@ -8,7 +8,7 @@
 
 namespace Cross\DB\Connecter;
 
-use Cross\Exception\CoreException;
+use Cross\Exception\DBConnectException;
 use Exception;
 use PDO;
 
@@ -44,7 +44,7 @@ class MySQLConnecter extends BaseConnecter
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'
     );
 
     /**
@@ -54,14 +54,14 @@ class MySQLConnecter extends BaseConnecter
      * @param string $user 数据库用户名
      * @param string $password 数据库密码
      * @param array $options
-     * @throws CoreException
+     * @throws DBConnectException
      */
     private function __construct($dsn, $user, $password, array $options = array())
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
+            throw new DBConnectException($e->getMessage());
         }
     }
 
@@ -73,7 +73,7 @@ class MySQLConnecter extends BaseConnecter
      * @param string $password
      * @param array $option
      * @return mixed
-     * @throws CoreException
+     * @throws DBConnectException
      */
     static function getInstance($dsn, $user, $password, array $option = array())
     {

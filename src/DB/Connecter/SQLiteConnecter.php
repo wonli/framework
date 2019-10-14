@@ -8,7 +8,7 @@
 
 namespace Cross\DB\Connecter;
 
-use Cross\Exception\CoreException;
+use Cross\Exception\DBConnectException;
 use Exception;
 use PDO;
 
@@ -36,14 +36,14 @@ class SQLiteConnecter extends BaseConnecter
      *
      * @param string $dsn
      * @param array $options
-     * @throws CoreException
+     * @throws DBConnectException
      */
     private function __construct($dsn, array $options)
     {
         try {
             $this->pdo = new PDO($dsn, null, null, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
+            throw new DBConnectException($e->getMessage());
         }
     }
 
@@ -53,7 +53,7 @@ class SQLiteConnecter extends BaseConnecter
      * @param null $pwd
      * @param array $options
      * @return SQLiteConnecter|PDO
-     * @throws CoreException
+     * @throws DBConnectException
      */
     static function getInstance($dsn, $user = null, $pwd = null, array $options = array())
     {
