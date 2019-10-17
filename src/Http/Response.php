@@ -456,7 +456,6 @@ class Response
     {
         $this->setEndFlush();
         $this->display($content, $tpl);
-        exit(0);
     }
 
     /**
