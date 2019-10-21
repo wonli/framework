@@ -109,17 +109,12 @@ class View extends FrameBase
      */
     function display($data = null, $method = null)
     {
-        $this->data = $data;
+        $this->data = &$data;
+        $contentType = $this->config->get('sys', 'content_type');
+        $this->response->setContentType($contentType ? $contentType : 'html');
+
         if ($method === null) {
-            $display_type = $this->config->get('sys', 'display');
-            if ($display_type && strcasecmp($display_type, 'html') !== 0) {
-                $this->set['load_layer'] = false;
-                $method = trim($display_type);
-            } else if ($this->action) {
-                $method = $this->action;
-            } else {
-                $method = Router::DEFAULT_ACTION;
-            }
+            $method = $this->action ? $this->action : Router::DEFAULT_ACTION;
         }
 
         $this->obRenderAction($data, $method);
@@ -1093,6 +1088,7 @@ class View extends FrameBase
         ob_start();
         $this->$method($data);
         $content = ob_get_clean();
+        ob_clean();
 
         if ($this->set['load_layer']) {
             $this->loadLayer($content);

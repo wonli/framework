@@ -58,6 +58,13 @@ class Response
     protected $is_end_flush = false;
 
     /**
+     * 输出内容
+     *
+     * @var string
+     */
+    protected $content;
+
+    /**
      * Response instance
      *
      * @var object
@@ -243,6 +250,26 @@ class Response
     }
 
     /**
+     * 输出内容
+     *
+     * @param string $content
+     */
+    protected function setContent($content)
+    {
+        $this->content = $content;
+    }
+
+    /**
+     * 输出内容
+     *
+     * @return string
+     */
+    function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
      * basic authentication
      *
      * @param array $users ['user' => 'password']
@@ -385,17 +412,16 @@ class Response
      *
      * @param string $message
      * @param string $tpl
-     * @return bool
      */
     private function flushContent($message, $tpl = '')
     {
         if (null !== $tpl && is_file($tpl)) {
             require $tpl;
+        } else if (is_array($message)) {
+            print_r($message);
         } else {
             echo $message;
         }
-
-        return true;
     }
 
     /**
@@ -443,6 +469,7 @@ class Response
             $this->sendHeader();
         }
 
+        $this->content = $content;
         $this->flushContent($content, $tpl);
     }
 

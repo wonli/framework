@@ -135,6 +135,7 @@ class Application
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
+        $hasResponse = false;
         if ($cache && $cache->isValid()) {
             $response_content = $cache->get();
         } else {
@@ -168,15 +169,20 @@ class Application
                 $this->callReliesControllerClosure($annotate_config['before'], $controller);
             }
 
-            if ($this->ob_cache_status) {
-                ob_start();
-                $response_content = $controller->$action();
-                if (!$response_content) {
-                    $response_content = ob_get_contents();
-                }
-                ob_end_clean();
+            $response_content = $this->delegate->getResponse()->getContent();
+            if (null !== $response_content) {
+                $hasResponse = true;
             } else {
-                $response_content = $controller->$action();
+                if ($this->ob_cache_status) {
+                    ob_start();
+                    $response_content = $controller->$action();
+                    if (!$response_content) {
+                        $response_content = ob_get_contents();
+                    }
+                    ob_end_clean();
+                } else {
+                    $response_content = $controller->$action();
+                }
             }
 
             if ($cache) {
@@ -190,7 +196,7 @@ class Application
 
         if ($return_response_content) {
             return $response_content;
-        } else {
+        } else if (false === $hasResponse) {
             $this->delegate->getResponse()->display($response_content);
         }
 
