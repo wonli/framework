@@ -370,6 +370,21 @@ class PDOSqlDriver implements SqlInterface
     }
 
     /**
+     * 支持参数绑定的原生SQL查询
+     *
+     * @param string $sql
+     * @param array $params
+     * @return $this
+     */
+    public function rawSql($sql, array $params)
+    {
+        $this->generateQueryID();
+        $this->querySQL[$this->qid] = $sql;
+        $this->queryParams[$this->qid] = $params;
+        return $this;
+    }
+
+    /**
      * 执行sql 用于无返回值的操作
      *
      * @param string $sql
