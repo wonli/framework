@@ -26,7 +26,7 @@ class PgSQLAssembler extends SQLAssembler
      * @return mixed|void
      * @throws \Cross\Exception\CoreException
      */
-    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = null, array &$page = array('p' => 1, 'limit' => 50), $group_by = null)
     {
         $params = array();
         $field_str = $this->parseFields($fields);

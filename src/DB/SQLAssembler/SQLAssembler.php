@@ -105,7 +105,7 @@ class SQLAssembler
      * @return mixed|void
      * @throws CoreException
      */
-    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = null, array &$page = array('p' => 1, 'limit' => 50), $group_by = null)
     {
         $params = array();
         $field_str = $this->parseFields($fields);
@@ -113,7 +113,7 @@ class SQLAssembler
         $order_str = $this->parseOrder($order);
 
         $p = ($page['p'] - 1) * $page['limit'];
-        if (1 !== $group_by) {
+        if (null !== $group_by) {
             $group_str = $this->parseGroup($group_by);
             $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str} LIMIT {$p}, {$page['limit']}";
         } else {
@@ -206,7 +206,7 @@ class SQLAssembler
      * @param array $params
      * @return string
      */
-    public function insert($table, $modifier = '', $data, array &$params = array())
+    public function insert($table, $data, $modifier = '', array &$params = array())
     {
         return "INSERT {$modifier} INTO {$table} {$this->parseData($data, $params, 'insert')} ";
     }

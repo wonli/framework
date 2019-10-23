@@ -119,22 +119,22 @@ class PDOSqlDriver implements SqlInterface
      * @return mixed
      * @throws CoreException
      */
-    public function getAll($table, $fields, $where = '', $order = 1, $group_by = 1, $limit = 0)
+    public function getAll($table, $fields, $where = '', $order = null, $group_by = null, $limit = null)
     {
         $data = $this->select($fields)->from($table);
         if ($where) {
             $data->where($where);
         }
 
-        if (1 !== $group_by) {
+        if (null !== $group_by) {
             $data->groupBy($group_by);
         }
 
-        if (1 !== $order) {
+        if (null !== $order) {
             $data->orderBy($order);
         }
 
-        if (0 !== $limit) {
+        if (null !== $limit) {
             $data->limit($limit);
         }
 
@@ -227,7 +227,7 @@ class PDOSqlDriver implements SqlInterface
      * @return mixed
      * @throws CoreException
      */
-    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find($table, $fields, $where, $order = null, array &$page = array('p' => 1, 'limit' => 50), $group_by = null)
     {
         if (!isset($page['result_count'])) {
             $total = $this->get($table, 'COUNT(*) as total', $where);
@@ -427,7 +427,7 @@ class PDOSqlDriver implements SqlInterface
     {
         $params = array();
         $this->generateQueryID();
-        $this->querySQL[$this->qid] = $this->SQLAssembler->insert($table, $modifier, $data, $params);
+        $this->querySQL[$this->qid] = $this->SQLAssembler->insert($table, $data, $modifier, $params);
         $this->queryParams[$this->qid] = $params;
         return $this;
     }
