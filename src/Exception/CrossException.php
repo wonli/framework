@@ -8,7 +8,9 @@
 
 namespace Cross\Exception;
 
+use Cross\Http\Request;
 use Cross\Http\Response;
+
 use ReflectionMethod;
 use ReflectionClass;
 use SplFileObject;
@@ -21,6 +23,13 @@ use Exception;
  */
 abstract class CrossException extends Exception
 {
+    /**
+     * 是否返回JSON格式的异常信息
+     *
+     * @var bool
+     */
+    protected $responseJSONExceptionMsg = false;
+
     /**
      * CrossException constructor.
      *
@@ -35,6 +44,11 @@ abstract class CrossException extends Exception
             set_exception_handler(array($this, 'cliErrorHandler'));
         } else {
             set_exception_handler(array($this, 'errorHandler'));
+        }
+
+        $isAjaxRequest = Request::getInstance()->isAjaxRequest();
+        if ($isAjaxRequest) {
+            $this->responseJSONExceptionMsg = true;
         }
     }
 
@@ -101,6 +115,25 @@ abstract class CrossException extends Exception
         $result['previous_trace'] = $previous_trace;
 
         Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
+    }
+
+    /**
+     * 异常处理方法
+     *
+     * @param Exception $e
+     */
+    function errorHandler(Exception $e)
+    {
+        $cp_error = $this->cpExceptionSource($e);
+        $code = $e->getCode() ? $e->getCode() : 500;
+
+        if ($this->responseJSONExceptionMsg) {
+            Response::getInstance()->setResponseStatus($code)
+                ->display(json_encode($cp_error));
+        } else {
+            Response::getInstance()->setResponseStatus($code)
+                ->display($cp_error, __DIR__ . '/tpl/front_error.tpl.php');
+        }
     }
 
     /**
@@ -227,12 +260,4 @@ abstract class CrossException extends Exception
             }
         }
     }
-
-    /**
-     * 异常处理抽象方法
-     *
-     * @param Exception $e
-     * @return mixed
-     */
-    abstract protected function errorHandler(Exception $e);
 }

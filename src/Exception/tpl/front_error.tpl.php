@@ -8,9 +8,9 @@
     <style type="text/css">
         body {font:14px "12px/1.7 -apple-system","微软雅黑",helvetica,arial,sans-serif;color:#333;background-color:#f5f5f5;padding:0;margin: 0;}
         a {text-decoration:none;}
-        .header {padding:25px 10px 15px 10px;color:white;background:#a94442;border-top:1px solid #990808;box-shadow:#666 0 1px 1px}
+        .header {padding:25px 10px 15px 10px;color:white;background:#282828;border-top:1px solid #990808;box-shadow:#666 0 1px 1px}
         .container{height:100%;width:100%;margin:0;padding:0;left:0;top:0}
-        .title {margin:0;color:#d7b8b8;text-shadow:0 1px 2px rgba(0, 0, 0, .1)}
+        .title {margin:0;color:#666666;text-shadow:0 1px 2px rgba(0, 0, 0, .1)}
         .message {font-size:30px;padding:15px 0;word-wrap:break-word}
         .stack-container {height:100%;position:relative;border-top:5px solid #be0000}
         .details {padding:10px}
@@ -100,7 +100,7 @@
             </div>
         </div>
         <div class="details">
-            <h1>Exception File</h1>
+            <h1>Throw Exception File</h1>
             <div class="frame active" id="frame_active"
                  onclick="cp_exception.main(null)"><?php echo $message["main"]["show_file"] ?></div>
             <?php if (!empty($message['trace'])) : ?>
