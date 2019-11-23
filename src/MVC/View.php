@@ -1088,7 +1088,6 @@ class View extends FrameBase
         ob_start();
         $this->$method($data);
         $content = ob_get_clean();
-        ob_clean();
 
         if ($this->set['load_layer']) {
             $this->loadLayer($content);
