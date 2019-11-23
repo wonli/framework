@@ -158,7 +158,7 @@ class Application
                 $cr->setStaticPropertyValue('app_delegate', $this->delegate);
                 $controller = $cr->newInstance();
             } catch (Exception $e) {
-                throw new CoreException($e->getMessage(), 200, $e);
+                throw new CoreException($e->getMessage(), 500, $e);
             }
 
             if ($this->delegate->getResponse()->isEndFlush()) {

@@ -290,10 +290,12 @@ class Delegate
 
     /**
      * @return Router
+     * @throws CoreException
+     * @throws FrontException
      */
     function getRouter()
     {
-        return $this->router;
+        return $this->router->getRouter();
     }
 
     /**

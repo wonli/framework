@@ -67,6 +67,11 @@ class Router implements RouterInterface
     private $defaultRouter = array();
 
     /**
+     * @var bool
+     */
+    private $hasParseUrl = false;
+
+    /**
      * 默认Action名称
      */
     const DEFAULT_ACTION = 'index';
@@ -90,24 +95,27 @@ class Router implements RouterInterface
      */
     public function getRouter()
     {
-        $rs = $this->getUriRequest('', $url_config);
-        if (!empty($rs)) {
-            $request = $this->parseRequestString($rs, $url_config);
-            $closure = $this->delegate->getClosureContainer();
-            if ($closure->has('router')) {
-                $closure->run('router', array($request, $this));
-            }
+        if (!$this->hasParseUrl) {
+            $this->hasParseUrl = true;
+            $rs = $this->getUriRequest('', $url_config);
+            if (!empty($rs)) {
+                $request = $this->parseRequestString($rs, $url_config);
+                $closure = $this->delegate->getClosureContainer();
+                if ($closure->has('router')) {
+                    $closure->run('router', array($request, $this));
+                }
 
-            if (empty($this->controller) || empty($this->action)) {
-                $this->parseRouter($request, $url_config);
-            }
-        } else {
-            $router = $this->parseDefaultRouter($url_config['*']);
-            $this->setController($router[0]);
-            $this->setAction($router[1]);
+                if (empty($this->controller) || empty($this->action)) {
+                    $this->parseRouter($request, $url_config);
+                }
+            } else {
+                $router = $this->parseDefaultRouter($url_config['*']);
+                $this->setController($router[0]);
+                $this->setAction($router[1]);
 
-            $params = $this->parseParams(array(), $url_config);
-            $this->setParams($params);
+                $params = $this->parseParams(array(), $url_config);
+                $this->setParams($params);
+            }
         }
 
         return $this;
