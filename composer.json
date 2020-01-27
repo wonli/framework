@@ -1,7 +1,7 @@
 {
   "name": "ideaa/cross",
   "type": "library",
-  "description": "Simple php5 Framework",
+  "description": "Simple php framework",
   "keywords": [
     "cross",
     "crossphp",
