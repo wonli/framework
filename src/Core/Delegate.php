@@ -16,10 +16,10 @@ use Cross\Http\Request;
 use Closure;
 
 //检查环境版本
-version_compare(PHP_VERSION, '7.1.0', '>=') or die('requires PHP 7.1.0!');
+version_compare(PHP_VERSION, '7.1.0', '>=') or die('Requires PHP 7.1.0!');
 
 //外部定义的项目路径
-defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
+defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
 
 //项目路径
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
