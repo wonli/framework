@@ -170,7 +170,7 @@ class Application
             }
 
             $response_content = $this->delegate->getResponse()->getContent();
-            if (null !== $response_content) {
+            if (null !== $response_content && PHP_SAPI !== 'cli') {
                 $hasResponse = true;
             } else {
                 if ($this->ob_cache_status) {
