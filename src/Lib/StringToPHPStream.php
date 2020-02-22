@@ -70,6 +70,16 @@ class StringToPHPStream
     }
 
     /**
+     * @param int $option
+     * @param int $arg1
+     * @param int $arg2
+     */
+    public function stream_set_option(int $option, int $arg1, int $arg2)
+    {
+
+    }
+
+    /**
      *
      */
     public function stream_stat()
