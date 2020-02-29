@@ -85,11 +85,21 @@ class Annotate
         }
 
         $flag = preg_match_all("/@{$this->prefix}(.*?)\s+(.*)/", $annotate, $content);
-        if (!$flag) {
+        if (!$flag || empty($content[1])) {
             return array();
         }
 
-        $configs = array_combine($content[1], $content[2]);
+        $configs = [];
+        $values = &$content[2];
+        array_walk($content[1], function ($k, $index) use ($values, &$configs) {
+            $v = &$values[$index];
+            if (isset($configs[$k])) {
+                $configs[$k] .= "\n" . $v;
+            } else {
+                $configs[$k] = $v;
+            }
+        });
+
         return $this->parseAnnotate($configs);
     }
 
