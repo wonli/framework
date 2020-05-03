@@ -24,6 +24,13 @@ use Exception;
 abstract class CrossException extends Exception
 {
     /**
+     * HTTP状态码
+     *
+     * @var int
+     */
+    protected $httpStatusCode = 500;
+
+    /**
      * 是否返回JSON格式的异常信息
      *
      * @var bool
@@ -124,16 +131,22 @@ abstract class CrossException extends Exception
      */
     function errorHandler(Exception $e)
     {
-        $cp_error = $this->cpExceptionSource($e);
-        $code = $e->getCode() ? $e->getCode() : 500;
-
+        $exceptionMsg = $this->cpExceptionSource($e);
         if ($this->responseJSONExceptionMsg) {
-            Response::getInstance()->setResponseStatus($code)
-                ->display(json_encode($cp_error));
+            Response::getInstance()->setResponseStatus($this->httpStatusCode)
+                ->display(json_encode($exceptionMsg));
         } else {
-            Response::getInstance()->setResponseStatus($code)
-                ->display($cp_error, __DIR__ . '/tpl/front_error.tpl.php');
+            Response::getInstance()->setResponseStatus($this->httpStatusCode)
+                ->display($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
         }
+    }
+
+    /**
+     * @return int
+     */
+    function getHttpStatusCode()
+    {
+        return $this->httpStatusCode;
     }
 
     /**
