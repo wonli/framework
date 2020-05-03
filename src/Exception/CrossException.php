@@ -38,6 +38,13 @@ abstract class CrossException extends Exception
     protected $responseJSONExceptionMsg = false;
 
     /**
+     * 扩展数据
+     *
+     * @var array
+     */
+    protected $extData = [];
+
+    /**
      * CrossException constructor.
      *
      * @param string $message
@@ -139,6 +146,26 @@ abstract class CrossException extends Exception
             Response::getInstance()->setResponseStatus($this->httpStatusCode)
                 ->display($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
         }
+    }
+
+    /**
+     * 设置扩展数据
+     *
+     * @param mixed $data
+     */
+    function addExtData($data)
+    {
+        $this->extData = $data;
+    }
+
+    /**
+     * 获取扩展数据
+     *
+     * @return array
+     */
+    function getExtData()
+    {
+        return $this->extData;
     }
 
     /**
