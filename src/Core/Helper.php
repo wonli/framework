@@ -8,6 +8,7 @@
 
 namespace Cross\Core;
 
+use Cross\Exception\CoreException;
 use Cross\Http\Request;
 use DOMDocument;
 
@@ -411,6 +412,7 @@ class Helper
      * @param bool $CA
      * @param string $cacert http://curl.haxx.se/ca/cacert.pem
      * @return int|mixed|string
+     * @throws CoreException
      */
     static function curlRequest($url, $vars = array(), $method = 'POST', $timeout = 10, $CA = false, $cacert = '')
     {
@@ -450,11 +452,9 @@ class Helper
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); //避免data数据过长
         }
         $result = curl_exec($ch);
-        $error_no = curl_errno($ch);
-        if (!$error_no) {
-            $result = trim($result);
-        } else {
-            $result = $error_no;
+        $errorCode = curl_errno($ch);
+        if (!empty($errorCode)) {
+            throw new CoreException("curl请求失败({$errorCode})");
         }
 
         curl_close($ch);
