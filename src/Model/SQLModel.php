@@ -96,7 +96,7 @@ class SQLModel
      *
      * @var array
      */
-    protected static $fieldsInfo = [];
+    protected $fieldsInfo = [];
 
     /**
      * 获取单条数据
@@ -329,7 +329,7 @@ class SQLModel
      */
     function asIndex()
     {
-        foreach (self::$fieldsInfo as $property => $value) {
+        foreach ($this->fieldsInfo as $property => $value) {
             if (null !== $this->{$property}) {
                 $this->index[$property] = $this->{$property};
             }
@@ -436,9 +436,9 @@ class SQLModel
     function getPropertyInfo($property = null)
     {
         if (null === $property) {
-            return self::$fieldsInfo;
-        } elseif (isset(self::$fieldsInfo[$property])) {
-            return self::$fieldsInfo[$property];
+            return $this->fieldsInfo;
+        } elseif (isset($this->fieldsInfo[$property])) {
+            return $this->fieldsInfo[$property];
         } else {
             return false;
         }
@@ -471,7 +471,7 @@ class SQLModel
     function resetProperty()
     {
         $this->index = [];
-        array_walk(self::$fieldsInfo, function ($v, $p) {
+        array_walk($this->fieldsInfo, function ($v, $p) {
             $this->{$p} = null;
         });
     }
@@ -485,7 +485,7 @@ class SQLModel
      */
     function getFields($alias = '', $asPrefix = false)
     {
-        $fieldsList = array_keys(self::$fieldsInfo);
+        $fieldsList = array_keys($this->fieldsInfo);
         if (!empty($alias)) {
             array_walk($fieldsList, function (&$d) use ($alias, $asPrefix) {
                 if ($asPrefix) {
@@ -533,7 +533,7 @@ class SQLModel
     function getDefaultData()
     {
         $data = array();
-        foreach (self::$fieldsInfo as $p => $c) {
+        foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
             }
@@ -553,7 +553,7 @@ class SQLModel
     function getArrayData($hasValue = false)
     {
         $data = array();
-        foreach (self::$fieldsInfo as $p => $c) {
+        foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
             }
@@ -576,7 +576,7 @@ class SQLModel
     protected function getModifiedData()
     {
         $data = array();
-        foreach (self::$fieldsInfo as $p => $c) {
+        foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
             }
@@ -598,7 +598,7 @@ class SQLModel
     protected function makeInsertData()
     {
         $data = array();
-        foreach (self::$fieldsInfo as $p => $c) {
+        foreach ($this->fieldsInfo as $p => $c) {
             $value = $this->{$p};
             if ($c['auto_increment'] || (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP'))) {
                 continue;
