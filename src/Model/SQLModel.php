@@ -623,6 +623,14 @@ class SQLModel
      */
     protected function getDefaultCondition($strictModel = false)
     {
+        $sKey = &$this->splitConfig['field'];
+        if (null !== $sKey) {
+            $sPropertyValue = $this->{$sKey};
+            if (null === $sPropertyValue) {
+                throw new CoreException('分表字段的值不能为空');
+            }
+        }
+
         $pkName = &$this->modelInfo['primary_key'];
         if (null !== $this->{$pkName}) {
             $this->index = [$pkName => $this->{$pkName}];
