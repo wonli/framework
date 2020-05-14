@@ -16,7 +16,7 @@ use Cross\Http\Request;
 use Closure;
 
 //检查环境版本
-version_compare(PHP_VERSION, '7.1.0', '>=') or die('Requires PHP 7.1.0!');
+version_compare(PHP_VERSION, '7.3.0', '>=') or die('Requires PHP 7.3.0!');
 
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
@@ -112,7 +112,7 @@ class Delegate
      */
     static function getVersion()
     {
-        return '1.6.1';
+        return '2.0.1';
     }
 
     /**
@@ -144,6 +144,7 @@ class Delegate
      * @param bool $return_content 是输出还是直接返回结果
      * @return array|mixed|string
      * @throws CoreException
+     * @throws FrontException
      */
     public function get($controller, $args = array(), $return_content = false)
     {
@@ -166,6 +167,7 @@ class Delegate
      *
      * @param RouterInterface $router
      * @throws CoreException
+     * @throws FrontException
      */
     public function rRun(RouterInterface $router)
     {
@@ -208,6 +210,7 @@ class Delegate
      * @param int|bool $run_argc
      * @param array|bool $run_argv
      * @throws CoreException
+     * @throws FrontException
      */
     public function cliRun($run_argc = false, $run_argv = false)
     {
