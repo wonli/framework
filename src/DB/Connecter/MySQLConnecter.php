@@ -66,7 +66,7 @@ class MySQLConnecter extends BaseConnecter
     }
 
     /**
-     * @see MysqlModel::__construct
+     * 单例模式连接数据库
      *
      * @param string $dsn
      * @param string $user
@@ -133,18 +133,21 @@ class MySQLConnecter extends BaseConnecter
      */
     function getMetaData($table, $fields_map = true)
     {
-        $data = $this->pdo->query("DESCRIBE {$table}");
+        $data = $this->pdo->query("SHOW FULL FIELDS FROM {$table}");
         try {
             if ($fields_map) {
                 $result = array();
-                $data->fetchAll(PDO::FETCH_FUNC, function ($field, $type, $null, $key, $default, $extra) use (&$result) {
-                    $result[$field] = array(
-                        'primary' => $key == 'PRI',
-                        'auto_increment' => $extra == 'auto_increment',
-                        'default_value' => strval($default),
-                        'not_null' => $null == 'NO',
-                    );
-                });
+                $data->fetchAll(PDO::FETCH_FUNC,
+                    function ($field, $type, $collation, $null, $key, $default, $extra, $privileges, $comment) use (&$result) {
+                        $result[$field] = array(
+                            'primary' => $key == 'PRI',
+                            'is_index' => $key ? $key : false,
+                            'auto_increment' => $extra == 'auto_increment',
+                            'default_value' => strval($default),
+                            'not_null' => $null == 'NO',
+                            'comment' => $comment
+                        );
+                    });
                 return $result;
             } else {
                 return $data->fetchAll(PDO::FETCH_ASSOC);
