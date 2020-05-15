@@ -106,7 +106,7 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    function get($where = array(), $fields = '*')
+    function get($where = [], $fields = '*')
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -132,7 +132,7 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    function latest($where = array(), $fields = '*')
+    function latest($where = [], $fields = '*')
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -179,7 +179,7 @@ class SQLModel
      * @return bool
      * @throws CoreException
      */
-    function update($condition = array(), $data = array())
+    function update($condition = [], $data = [])
     {
         if (empty($data)) {
             $data = $this->getModifiedData();
@@ -224,7 +224,7 @@ class SQLModel
      * @return bool
      * @throws CoreException
      */
-    function del($condition = array())
+    function del($condition = [])
     {
         if (empty($condition)) {
             $condition = $this->getDefaultCondition(true);
@@ -244,8 +244,12 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    function getAll($where = array(), $fields = '*', $order = null, $group_by = null, $limit = null)
+    function getAll($where = [], $fields = '*', $order = null, $group_by = null, $limit = null)
     {
+        if (empty($where)) {
+            $where = $this->getDefaultCondition();
+        }
+
         return $this->db()->getAll($this->getTable(), $fields, $where, $order, $group_by, $limit);
     }
 
@@ -260,8 +264,12 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    function find(&$page = array('p' => 1, 'limit' => 50), $where = array(), $fields = '*', $order = null, $group_by = null)
+    function find(&$page = ['p' => 1, 'limit' => 50], $where = [], $fields = '*', $order = null, $group_by = null)
     {
+        if (empty($where)) {
+            $where = $this->getDefaultCondition();
+        }
+
         return $this->db()->find($this->getTable(), $fields, $where, $order, $page, $group_by);
     }
 
@@ -272,7 +280,7 @@ class SQLModel
      * @return $this
      * @throws CoreException
      */
-    function property($where = array())
+    function property($where = [])
     {
         $data = $this->get($where);
         if (!empty($data)) {
@@ -532,7 +540,7 @@ class SQLModel
      */
     function getDefaultData()
     {
-        $data = array();
+        $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
@@ -552,7 +560,7 @@ class SQLModel
      */
     function getArrayData($hasValue = false)
     {
-        $data = array();
+        $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
@@ -575,7 +583,7 @@ class SQLModel
      */
     protected function getModifiedData()
     {
-        $data = array();
+        $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
             if (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP')) {
                 continue;
@@ -597,7 +605,7 @@ class SQLModel
      */
     protected function makeInsertData()
     {
-        $data = array();
+        $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
             $value = $this->{$p};
             if ($c['auto_increment'] || (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP'))) {
