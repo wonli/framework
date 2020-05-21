@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
@@ -351,28 +352,39 @@ class Delegate
             'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
         );
 
-        $env_config = array(
+        //所有app公用配置
+        $app_config = [];
+        $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
+        if (file_exists($app_config_file)) {
+            $app_config = Loader::read($app_config_file);
+        }
+
+        if (!empty($app_config)) {
+            $runtime_config = array_merge($app_config, $runtime_config);
+        }
+
+        $env_config = [
             //url相关设置
-            'url' => array(
+            'url' => [
                 'host' => $host,
                 'index' => $index_name,
                 'request' => $request_url,
                 'full_request' => $host . $request_url
-            ),
+            ],
 
             //配置和缓存的绝对路径
-            'path' => array(
+            'path' => [
                 'cache' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR,
                 'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR,
                 'script' => $script_path . DIRECTORY_SEPARATOR,
-            ),
+            ],
 
             //静态文件url和绝对路径
-            'static' => array(
+            'static' => [
                 'url' => $host . $request_url . '/static/',
                 'path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
-            )
-        );
+            ]
+        ];
 
         foreach ($env_config as $key => $value) {
             if (isset($runtime_config[$key]) && is_array($runtime_config[$key])) {
