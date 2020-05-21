@@ -436,6 +436,45 @@ class SQLModel
     }
 
     /**
+     * 验证数据是否能映射到类实例
+     *
+     * @param array $data
+     * @param bool $updateProperty 为true时更新类属性
+     * @return bool
+     */
+    function verifyModelData(array $data, $updateProperty = false)
+    {
+        $isModel = true;
+        foreach ($this->fieldsInfo as $key => $value) {
+            if (!isset($data[$key])) {
+                $isModel = false;
+                break;
+            }
+        }
+
+        if ($isModel && $updateProperty) {
+            $this->updateProperty($data);
+        }
+
+        return $isModel;
+    }
+
+    /**
+     * 成员属性名称数组
+     *
+     * @return array
+     */
+    function getProperties(): array
+    {
+        $data = [];
+        foreach ($this->fieldsInfo as $p => $config) {
+            $data[] = $p;
+        }
+
+        return $data;
+    }
+
+    /**
      * 获取字段属性
      *
      * @param string $property
