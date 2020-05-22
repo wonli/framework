@@ -145,11 +145,13 @@ class View extends FrameBase
     }
 
     /**
-     * @see View::url() 生成加密连接
+     * 生成参数加密的超链接
+     *
      * @param null|string $controller
      * @param null|string|array $params
      * @return string
      * @throws CoreException
+     * @see View::url()
      */
     function sUrl($controller = null, $params = null)
     {
@@ -201,12 +203,12 @@ class View extends FrameBase
     /**
      * 单选
      *
-     * @see View::buildRadioOrCheckbox
      * @param array $data
      * @param string $default_value
      * @param array $radio_tags
      * @param array $label_tags
      * @return string
+     * @see View::buildRadioOrCheckbox
      */
     function radio(array $data, $default_value = '', array $radio_tags = array(), array $label_tags = array())
     {
@@ -217,12 +219,12 @@ class View extends FrameBase
     /**
      * 多选
      *
-     * @see View::buildRadioOrCheckbox
      * @param array $data
      * @param string|array $default_value
      * @param array $checkbox_tags
      * @param array $label_tags
      * @return string
+     * @see View::buildRadioOrCheckbox
      */
     function checkbox(array $data, $default_value = '', array $checkbox_tags = array(), array $label_tags = array())
     {
@@ -504,15 +506,13 @@ class View extends FrameBase
     }
 
     /**
-     * @see e
-     * <pre>
      * 判断数组中的值是否为empty,否则返回默认值
-     * </pre>
      *
      * @param array $data
      * @param string|int $key
      * @param string $default_value
      * @return string
+     * @see e
      */
     function ee(array $data, $key, $default_value = '')
     {
@@ -579,30 +579,6 @@ class View extends FrameBase
         }
 
         return $res_base_url . $res_url;
-    }
-
-    /**
-     * @see View::url()
-     * @param null|string $controller 控制器:方法
-     * @param null|string|array $params
-     * @return string
-     * @throws CoreException
-     */
-    function link($controller = null, $params = null)
-    {
-        return $this->url($controller, $params);
-    }
-
-    /**
-     * @see View::sUrl()
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @return string
-     * @throws CoreException
-     */
-    function slink($controller = null, $params = null)
-    {
-        return $this->url($controller, $params, true);
     }
 
     /**
@@ -838,20 +814,14 @@ class View extends FrameBase
         }
 
         if (!empty($url_config['ext'])) {
-            switch ($url_config['type']) {
-                case 2:
-                    if ($has_controller_string) {
-                        $uri .= $url_controller . $url_config['ext'];
-                    }
+            if ($url_config['type'] > 2) {
+                if ($has_controller_string) {
+                    $uri .= $url_controller . $url_config['ext'];
+                }
 
-                    $uri .= $url_params;
-                    break;
-                case 1:
-                case 3:
-                case 4:
-                case 5:
-                    $uri .= $url_controller . $url_params . $url_config['ext'];
-                    break;
+                $uri .= $url_params;
+            } else {
+                $uri .= $url_controller . $url_params . $url_config['ext'];
             }
         } else {
             $uri .= $url_controller . $url_params;
@@ -868,7 +838,6 @@ class View extends FrameBase
      * @param string $controller
      * @param array $url_config
      * @return string
-     * @throws CoreException
      */
     protected function makeControllerUri($app_name, $use_cache, $controller, array $url_config)
     {
@@ -909,7 +878,6 @@ class View extends FrameBase
      * @param array $url_config
      * @param bool $have_controller
      * @return string
-     * @throws CoreException
      */
     protected function makeIndex(array $url_config, $have_controller = false)
     {
@@ -921,27 +889,8 @@ class View extends FrameBase
         $index = $url_config['index'];
         $is_default_index = (0 === strcasecmp($index, 'index.php'));
 
-        switch ($url_config['type']) {
-            case 1:
-            case 3:
-                $index_dot = '?';
-                $addition_dot = '/';
-                if ($is_default_index) {
-                    $index = '';
-                }
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-                $index_dot = '/';
-                $addition_dot = '';
-                break;
-
-            default:
-                throw new CoreException('Type does not support!');
-        }
-
+        $index_dot = '/';
+        $addition_dot = '';
         if ($url_config['rewrite']) {
             $index = $index_dot = $addition_dot = '';
         }
@@ -992,22 +941,20 @@ class View extends FrameBase
         if ($params) {
             switch ($url_config['type']) {
                 case 1:
-                case 5:
                     $url_params = implode($dot, $params);
                     break;
 
                 case 2:
-                    $url_dot = '?';
-                    $add_prefix_dot = true;
-                    $url_params = http_build_query($params);
-                    break;
-
-                case 3:
-                case 4:
                     foreach ($params as $p_key => $p_val) {
                         $url_params .= $p_key . $dot . $p_val . $dot;
                     }
                     $url_params = rtrim($url_params, $dot);
+                    break;
+
+                default:
+                    $url_dot = '?';
+                    $add_prefix_dot = true;
+                    $url_params = http_build_query($params);
                     break;
             }
 

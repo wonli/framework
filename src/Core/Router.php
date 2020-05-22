@@ -187,7 +187,6 @@ class Router implements RouterInterface
      * @param bool $clear_ampersand
      * @param bool $convert_html_entities
      * @return string
-     * @throws CoreException
      */
     public function getUriRequest($prefix = '/', &$url_config = array(), $clear_ampersand = true, $convert_html_entities = true)
     {
@@ -196,50 +195,8 @@ class Router implements RouterInterface
             return $this->uriRequest;
         }
 
-        switch ($url_config['type']) {
-            case 1:
-            case 3:
-                $request = Request::getInstance()->getQueryString();
-                $this->originUriRequest = $request;
-
-                if ($clear_ampersand) {
-                    //rewrite下带问号的请求参数追加到$_GET数组
-                    $request_uri = Request::getInstance()->getRequestURI();
-                    if ($url_config['rewrite'] && $request_uri && false !== strpos($request_uri, '?')) {
-                        $query_string = parse_url($request_uri, PHP_URL_QUERY);
-                        parse_str($query_string, $addition_params);
-                        $_GET += $addition_params;
-
-                        if ($query_string == $request) {
-                            $request = '';
-                        }
-                    }
-
-                    if (false !== ($l = strpos($request, '&'))) {
-                        $request = substr($request, 0, $l);
-                    }
-
-                    if (false === strpos($request, $url_config['dot']) && false !== strpos($request, '=')) {
-                        $request = '';
-                    }
-
-                    if (isset($request[0]) && $request[0] != '&') {
-                        array_shift($_GET);
-                    }
-                }
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-                $request = Request::getInstance()->getPathInfo();
-                $this->originUriRequest = $request;
-                break;
-
-            default:
-                throw new CoreException('Not support URL type!');
-        }
-
+        $request = Request::getInstance()->getPathInfo();
+        $this->originUriRequest = $request;
         if ($request) {
             $request = urldecode(ltrim($request, '/'));
             if ($convert_html_entities) {
@@ -259,6 +216,12 @@ class Router implements RouterInterface
      */
     function parseRouter(array $request, array $url_config)
     {
+        $virtual_path = '';
+        $set_virtual_path = &$url_config['virtual_path'];
+        if (!empty($set_virtual_path) && $set_virtual_path == $request[0]) {
+            $virtual_path = array_shift($request);
+        }
+
         $combine_alias_key = '';
         $ori_controller = $controller = array_shift($request);
         if (isset($request[0])) {
@@ -296,6 +259,7 @@ class Router implements RouterInterface
         $this->config->set('ori_router', array(
             'request' => $this->originUriRequest,
             'addition_params' => $addition_params,
+            'virtual_path' => $virtual_path,
             'controller' => $ori_controller,
             'action' => $ori_action,
             'params' => $request,

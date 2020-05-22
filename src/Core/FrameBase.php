@@ -84,7 +84,7 @@ class FrameBase
     /**
      * @return Config
      */
-    function getConfig()
+    function getConfig(): Config
     {
         return $this->delegate->getConfig();
     }
@@ -92,7 +92,7 @@ class FrameBase
     /**
      * @return Delegate
      */
-    function getDelegate()
+    function getDelegate(): Delegate
     {
         return $this->delegate;
     }
@@ -125,18 +125,19 @@ class FrameBase
      * @return Config
      * @throws CoreException
      */
-    function loadConfig($config_file)
+    function loadConfig($config_file): Config
     {
         return Config::load($this->config->get('path', 'config') . $config_file);
     }
 
     /**
-     * @see Loader::read()
+     * 获取文件路径
      *
      * @param string $name
      * @param bool $get_file_content
      * @return mixed
      * @throws CoreException
+     * @see Loader::read()
      */
     function parseGetFile($name, $get_file_content = false)
     {
@@ -157,7 +158,7 @@ class FrameBase
      * @param string $name
      * @return string
      */
-    function getFilePath($name)
+    function getFilePath($name): string
     {
         $prefix_name = 'project';
         if (false !== strpos($name, '::')) {
@@ -254,31 +255,28 @@ class FrameBase
      *
      * @param bool $use_annotate
      * @param string $params
-     * @return bool|string
+     * @return array|bool|string
      */
     protected function sParams($use_annotate = true, $params = null)
     {
         $config = $this->getConfig();
         $addition_params = $config->get('ori_router', 'addition_params');
         if (empty($addition_params)) {
-            $addition_params = array();
+            $addition_params = [];
         }
 
         $url_config = $config->get('url');
         if (null === $params) {
             $ori_params = $config->get('ori_router', 'params');
-            switch ($url_config['type']) {
-                case 2:
-                    $params = current(array_keys($ori_params));
-                    array_shift($addition_params);
-                    break;
-
-                default:
-                    if (is_array($ori_params)) {
-                        $params = array_shift($ori_params);
-                    } else {
-                        $params = $ori_params;
-                    }
+            if ($url_config['type'] > 2) {
+                $params = current(array_keys($addition_params));
+                array_shift($addition_params);
+            } else {
+                if (is_array($ori_params)) {
+                    $params = array_shift($ori_params);
+                } else {
+                    $params = $ori_params;
+                }
             }
         }
 
@@ -302,17 +300,15 @@ class FrameBase
 
         switch ($url_config['type']) {
             case 1:
-            case 5:
                 $op_type = 1;
                 $ori_result = explode($url_dot, $decode_params_str);
                 break;
             case 2:
-                parse_str($decode_params_str, $ori_result);
-                break;
-            case 3:
-            case 4:
                 $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_dot);
                 break;
+
+            default:
+                parse_str($decode_params_str, $ori_result);
         }
 
         if (!empty($this->action_annotate['params']) && $use_annotate) {

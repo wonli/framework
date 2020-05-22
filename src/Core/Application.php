@@ -520,12 +520,10 @@ class Application
         $url_type = $this->config->get('url', 'type');
         switch ($url_type) {
             case 1:
-            case 5:
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
-            case 3:
-            case 4:
+            case 2:
                 $url_params = self::oneDimensionalToAssociativeArray($url_params);
                 if (!empty($annotate_params)) {
                     $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
