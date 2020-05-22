@@ -10,7 +10,9 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Http\Request;
+
 use ReflectionFunction;
+use Exception;
 use Closure;
 
 /**
@@ -59,7 +61,6 @@ class Rest
      * 初始化request
      *
      * @param Delegate $delegate
-     * @throws CoreException
      */
     private function __construct(Delegate &$delegate)
     {
@@ -74,9 +75,8 @@ class Rest
      *
      * @param Delegate $delegate
      * @return Rest
-     * @throws CoreException
      */
-    static function getInstance(Delegate &$delegate)
+    static function getInstance(Delegate &$delegate): self
     {
         if (!self::$instance) {
             self::$instance = new Rest($delegate);
@@ -174,10 +174,9 @@ class Rest
     }
 
     /**
-     * @see Delegate::on()
-     *
      * @param string $name
      * @param Closure $f
+     * @see Delegate::on()
      */
     function on($name, Closure $f)
     {
@@ -236,7 +235,7 @@ class Rest
      * @param array $params
      * @return bool
      */
-    private function matchProcess(array $routers, & $process_closure, & $params)
+    private function matchProcess(array $routers, &$process_closure, &$params)
     {
         uasort($routers, function ($a, $b) {
             return $a['params_count'] < $b['params_count'];
@@ -261,10 +260,10 @@ class Rest
      * @param array $params
      * @return bool
      */
-    private function matchCustomRouter($custom_router, array $params_keys = array(), array & $params = array())
+    private function matchCustomRouter($custom_router, array $params_keys = array(), array &$params = array())
     {
         $request_uri_string = $this->request_string;
-        $custom_router_params_token = preg_replace("/\{:(.*?)\}/", '{PARAMS}', $custom_router);
+        $custom_router_params_token = preg_replace("#\{:(.*?)\}#", '{PARAMS}', $custom_router);
         while (strlen($custom_router_params_token) > 0) {
             $defined_params_pos = strpos($custom_router_params_token, '{PARAMS}');
             if ($defined_params_pos) {
@@ -330,7 +329,7 @@ class Rest
             if (null != $content) {
                 $this->delegate->getResponse()->display($content);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new CoreException('Reflection ' . $e->getMessage());
         }
     }
@@ -346,7 +345,7 @@ class Rest
     {
         if ($this->request_type === $request_type) {
             $custom_router = trim($custom_router);
-            $is_contain_params = preg_match_all("/(.*?)\{:(.*?)\}/", $custom_router, $params_keys);
+            $is_contain_params = preg_match_all("#(.*?)\{:(.*?)\}#", $custom_router, $params_keys);
             if ($is_contain_params) {
                 $prefix_string_length = strlen($params_keys[1][0]);
                 $compare = substr_compare($this->request_string, $custom_router, 0, $prefix_string_length);
