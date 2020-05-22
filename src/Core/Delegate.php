@@ -92,7 +92,7 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    private function __construct($app_name, array $runtime_config)
+    private function __construct(string $app_name, array $runtime_config)
     {
         $this->app_name = $app_name;
         $this->runtime_config = $runtime_config;
@@ -111,7 +111,7 @@ class Delegate
      *
      * @return string
      */
-    static function getVersion()
+    static function getVersion(): string
     {
         return '2.0.1';
     }
@@ -125,7 +125,7 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    static function loadApp($app_name, array $runtime_config = array())
+    static function loadApp(string $app_name, array $runtime_config = array()): Delegate
     {
         if (!isset(self::$instance[$app_name])) {
             self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
@@ -188,7 +188,7 @@ class Delegate
      * @return Rest
      * @throws CoreException
      */
-    public function rest()
+    public function rest(): Rest
     {
         return Rest::getInstance($this);
     }
@@ -267,7 +267,7 @@ class Delegate
      *
      * @return Config
      */
-    function getConfig()
+    function getConfig(): Config
     {
         return $this->config;
     }
@@ -294,12 +294,10 @@ class Delegate
 
     /**
      * @return Router
-     * @throws CoreException
-     * @throws FrontException
      */
-    function getRouter()
+    function getRouter(): Router
     {
-        return $this->router->getRouter();
+        return $this->router;
     }
 
     /**
@@ -307,7 +305,7 @@ class Delegate
      *
      * @return ClosureContainer
      */
-    function getClosureContainer()
+    function getClosureContainer(): ClosureContainer
     {
         return $this->action_container;
     }
@@ -315,7 +313,7 @@ class Delegate
     /**
      * @return Request
      */
-    function getRequest()
+    function getRequest(): Request
     {
         return Request::getInstance();
     }
@@ -323,7 +321,7 @@ class Delegate
     /**
      * @return Response
      */
-    function getResponse()
+    function getResponse(): Response
     {
         return Response::getInstance();
     }
@@ -337,7 +335,7 @@ class Delegate
      * @throws FrontException
      * @throws CoreException
      */
-    private static function initConfig($app_name, array $runtime_config)
+    private static function initConfig(string $app_name, array $runtime_config): Config
     {
         $request = Request::getInstance();
         $host = $request->getHostInfo();
@@ -351,17 +349,6 @@ class Delegate
             'name' => $app_name,
             'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
         );
-
-        //所有app公用配置
-        $app_config = [];
-        $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
-        if (file_exists($app_config_file)) {
-            $app_config = Loader::read($app_config_file);
-        }
-
-        if (!empty($app_config)) {
-            $runtime_config = array_merge($app_config, $runtime_config);
-        }
 
         $env_config = [
             //url相关设置
@@ -386,15 +373,24 @@ class Delegate
             ]
         ];
 
-        foreach ($env_config as $key => $value) {
-            if (isset($runtime_config[$key]) && is_array($runtime_config[$key])) {
-                $runtime_config[$key] = array_merge($value, $runtime_config[$key]);
-            } elseif (!isset($runtime_config[$key])) {
-                $runtime_config[$key] = $value;
+        $Config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php');
+
+        //默认环境
+        $Config->combine($env_config);
+
+        //运行时配置
+        $Config->combine($runtime_config);
+
+        //app共享配置
+        $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
+        if (file_exists($app_config_file)) {
+            $app_config = Loader::read($app_config_file);
+            if (!empty($app_config)) {
+                $Config->combine($app_config, false);
             }
         }
 
-        return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->combine($runtime_config);
+        return $Config;
     }
 
     /**
