@@ -65,7 +65,7 @@ class Config
      * @return Config
      * @throws CoreException
      */
-    static function load($file)
+    static function load($file): self
     {
         if (!isset(self::$instance[$file])) {
             self::$instance[$file] = new self($file);
@@ -78,16 +78,29 @@ class Config
      * 合并附加数组到源数组
      *
      * @param array $append_config
+     * @param bool $cover 是否覆盖已有值
      * @return $this
      */
-    function combine(array $append_config = array())
+    function combine(array $append_config = array(), $cover = true): self
     {
         if (!empty($append_config)) {
             foreach ($append_config as $key => $value) {
-                if (isset($this->config_data[$key]) && is_array($value)) {
-                    $this->config_data[$key] = array_merge($this->config_data[$key], $value);
+                if ($cover) {
+                    $configValue = &$this->config_data[$key];
+                    if (is_array($value) && is_array($configValue)) {
+                        $this->config_data[$key] = array_merge($configValue, $value);
+                    } else {
+                        $this->config_data[$key] = $value;
+                    }
                 } else {
-                    $this->config_data[$key] = $value;
+                    if (isset($this->config_data[$key])) {
+                        $configValue = &$this->config_data[$key];
+                        if (is_array($value) && is_array($configValue)) {
+                            $this->config_data[$key] = array_merge($value, $configValue);
+                        }
+                    } elseif (!isset($this->config_data[$key])) {
+                        $this->config_data[$key] = $value;
+                    }
                 }
 
                 $this->clearIndexCache($key);
@@ -98,11 +111,12 @@ class Config
     }
 
     /**
-     * @see CrossArray::get()
+     * 获取指定配置
      *
      * @param string $index
      * @param string|array $options
      * @return string|array
+     * @see CrossArray::get()
      */
     function get($index, $options = '')
     {
@@ -123,11 +137,12 @@ class Config
     }
 
     /**
-     * @see CrossArray::get()
+     * 更新指定配置
      *
      * @param string $index
      * @param array|string $values
      * @return bool
+     * @see CrossArray::get()
      */
     function set($index, $values = '')
     {
@@ -138,10 +153,11 @@ class Config
     }
 
     /**
-     * @see CrossArray::getAll()
+     * 返回全部配置数据
      *
      * @param bool $obj 是否返回对象
      * @return array|object
+     * @see CrossArray::getAll()
      */
     function getAll($obj = false)
     {
