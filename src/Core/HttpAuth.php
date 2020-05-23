@@ -12,7 +12,9 @@ use Cross\Auth\CookieAuth;
 use Cross\Auth\SessionAuth;
 use Cross\Exception\CoreException;
 use Cross\I\HttpAuthInterface;
+
 use ReflectionClass;
+use Exception;
 
 /**
  * @author wonli <wonli@live.com>
@@ -39,7 +41,7 @@ class HttpAuth
      * @return CookieAuth|SessionAuth|HttpAuthInterface|object
      * @throws CoreException
      */
-    public static function factory($type = 'COOKIE', $auth_key = '')
+    public static function factory(string $type = 'COOKIE', string $auth_key = ''): object
     {
         if (!self::$obj) {
             if (is_string($type)) {
@@ -55,7 +57,7 @@ class HttpAuth
                         } else {
                             throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         throw new CoreException('Reflection ' . $e->getMessage());
                     }
                 }

@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\MVC;
 
 use Cross\Exception\CoreException;
@@ -18,41 +19,41 @@ use Cross\Core\FrameBase;
 class Controller extends FrameBase
 {
     /**
-     * 判断一个链接是否为post请求
+     * 判断是否POST请求
      *
-     * @return boolean
+     * @return bool
      */
-    protected function is_post()
+    protected function isPost(): bool
     {
         return $this->delegate->getRequest()->isPostRequest();
     }
 
     /**
-     * 判断请求类型是否为get
+     * 判断是否GET请求
      *
      * @return bool
      */
-    protected function is_get()
+    protected function isGet(): bool
     {
         return $this->delegate->getRequest()->isGetRequest();
     }
 
     /**
-     * 是否cli方式发起请求
+     * 是否在命令行下执行
      *
      * @return bool
      */
-    protected function is_cli()
+    protected function isCli(): bool
     {
         return PHP_SAPI === 'cli';
     }
 
     /**
-     * 判断是否为一个ajax请求
+     * 判断是否AJAX请求
      *
      * @return boolean
      */
-    protected function is_ajax_request()
+    protected function isAjax(): bool
     {
         return $this->delegate->getRequest()->isAjaxRequest();
     }
@@ -60,7 +61,7 @@ class Controller extends FrameBase
     /**
      * 返回执行的前一页
      */
-    protected function return_referer()
+    protected function returnReferer(): void
     {
         $this->redirect($this->request->getUrlReferrer());
     }
@@ -73,22 +74,22 @@ class Controller extends FrameBase
      * @param bool $sec
      * @throws CoreException
      */
-    protected function to($controller = null, $params = null, $sec = false)
+    protected function to(string $controller = null, $params = null, bool $sec = false): void
     {
         $url = $this->view->url($controller, $params, $sec);
         $this->redirect($url);
     }
 
     /**
-     * @see Response::redirect
-     *
      * @param string $url
      * @param int $http_response_status
+     * @see Response::redirect
+     *
      */
-    protected function redirect($url, $http_response_status = 302)
+    protected function redirect(string $url, int $http_response_status = 302): void
     {
         $has = $this->delegate->getClosureContainer()->has('redirect', $closure);
-        if($has) {
+        if ($has) {
             $closure($url, $http_response_status);
         } else {
             $this->delegate->getResponse()->redirect($url, $http_response_status);
@@ -96,14 +97,14 @@ class Controller extends FrameBase
     }
 
     /**
-     * @see View::display()
-     *
      * @param null|mixed $data
      * @param null|string $method
      * @param int $http_response_status
      * @throws CoreException
+     * @see View::display()
+     *
      */
-    protected function display($data = null, $method = null, $http_response_status = 200)
+    protected function display($data = null, string $method = null, int $http_response_status = 200): void
     {
         $this->delegate->getResponse()->setResponseStatus($http_response_status);
         $this->view->display($data, $method);
@@ -112,17 +113,17 @@ class Controller extends FrameBase
     /**
      * 发送一个包含文件名的下载头
      *
-     * @param null $file_name
+     * @param string $file_name
      * @param array $add_header
      * @param bool $only_add_header
      */
-    protected function sendDownloadHeader($file_name = null, $add_header = array(), $only_add_header = false)
+    protected function sendDownloadHeader(string $file_name = null, array $add_header = [], bool $only_add_header = false): void
     {
         if (null === $file_name) {
             $file_name = $this->controller . '_' . $this->action;
         }
 
-        $download_header = array(
+        $download_header = [
             "Pragma: public",
             "Expires: 0",
             "Cache-Control: must-revalidate, post-check=0, pre-check=0",
@@ -131,7 +132,7 @@ class Controller extends FrameBase
             "Content-Type: application/download",
             "Content-Disposition:attachment;filename={$file_name}",
             "Content-Transfer-Encoding:binary"
-        );
+        ];
 
         if (!empty($add_header)) {
             if (true === $only_add_header) {
@@ -147,10 +148,10 @@ class Controller extends FrameBase
     /**
      * 重设视图action名称
      *
-     * @param $action_name
+     * @param string $action_name
      * @return $this
      */
-    function setAction($action_name)
+    function setAction(string $action_name): self
     {
         $this->view->action = $action_name;
         return $this;

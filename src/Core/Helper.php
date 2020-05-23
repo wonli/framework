@@ -10,7 +10,10 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Http\Request;
+
 use DOMDocument;
+use Exception;
+use DateTime;
 
 /**
  * @author wonli <wonli@live.com>
@@ -23,11 +26,11 @@ class Helper
      * 截取字符串
      *
      * @param string $str 要截取的字符串参数
-     * @param string $len 截取的长度
+     * @param int $len 截取的长度
      * @param string $enc 字符串编码
      * @return string
      */
-    public static function subStr($str, $len, $enc = 'utf8')
+    public static function subStr(string $str, int $len, string $enc = 'utf8'): string
     {
         if (self::strLen($str) > $len) {
             return mb_substr($str, 0, $len, $enc) . '...';
@@ -40,11 +43,11 @@ class Helper
      * 安全的截取HTML字符串
      *
      * @param string $str 要截取的字符串参数
-     * @param string $len 截取的长度
+     * @param int $len 截取的长度
      * @param string $enc 字符串编码
      * @return string
      */
-    public static function subStrHTML($str, $len, $enc = 'utf8')
+    public static function subStrHTML(string $str, int $len, string $enc = 'utf8'): string
     {
         $str = self::subStr($str, $len, $enc);
         return self::formatHTMLString($str);
@@ -57,7 +60,7 @@ class Helper
      * @param bool $removing_doctype
      * @return string
      */
-    public static function formatHTMLString($str, $removing_doctype = true)
+    public static function formatHTMLString(string $str, bool $removing_doctype = true): string
     {
         $DOCUMENT = new DOMDocument();
         @$DOCUMENT->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
@@ -76,7 +79,7 @@ class Helper
      * @param string $enc 默认utf8编码
      * @return int
      */
-    public static function strLen($str, $enc = 'gb2312')
+    public static function strLen(string $str, string $enc = 'gb2312'): int
     {
         return min(array(mb_strlen($str, $enc), mb_strlen($str, 'utf-8')));
     }
@@ -88,7 +91,7 @@ class Helper
      * @param string $charset 字符编码 默认utf-8
      * @return array
      */
-    static function stringToArray($str, $charset = 'utf-8')
+    static function stringToArray(string $str, string $charset = 'utf-8'): array
     {
         if ($charset != 'utf-8') {
             $str = iconv($charset, 'utf-8', $str);
@@ -108,7 +111,7 @@ class Helper
      * @param string $str
      * @return string
      */
-    static function md10($str = '')
+    static function md10($str = ''): string
     {
         return substr(md5($str), 10, 10);
     }
@@ -119,7 +122,7 @@ class Helper
      * @param string $file 文件名
      * @return string
      */
-    static function getExt($file)
+    static function getExt(string $file): string
     {
         return pathinfo($file, PATHINFO_EXTENSION);
     }
@@ -132,7 +135,7 @@ class Helper
      * @param bool $recursive
      * @return bool
      */
-    static function createFolders($path, $mode = 0755, $recursive = true)
+    static function createFolders(string $path, int $mode = 0755, bool $recursive = true): bool
     {
         if (!is_dir($path)) {
             return mkdir($path, $mode, $recursive);
@@ -149,7 +152,7 @@ class Helper
      * @param int $dir_mode
      * @return bool
      */
-    static function mkfile($file_name, $mode = 0644, $dir_mode = 0755)
+    static function mkfile(string $file_name, int $mode = 0644, int $dir_mode = 0755): bool
     {
         if (!file_exists($file_name)) {
             $file_path = dirname($file_name);
@@ -175,7 +178,7 @@ class Helper
      * @param string $add_valid_expr
      * @return bool
      */
-    static function validEmail($email, $add_valid_expr = "/^[a-zA-Z0-9]([\w\-\.]?)+/")
+    static function validEmail(string $email, string $add_valid_expr = "/^[a-zA-Z0-9]([\w\-\.]?)+/"): bool
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
@@ -199,7 +202,7 @@ class Helper
      * @param int $numeric
      * @return string
      */
-    static function random($length, $numeric = 0)
+    static function random(int $length, int $numeric = 0): string
     {
         $seed = md5(print_r($_SERVER, 1) . microtime(true));
         if ($numeric) {
@@ -223,7 +226,7 @@ class Helper
      * @param string $str
      * @return array
      */
-    static function parseAt($str)
+    static function parseAt(string $str): array
     {
         preg_match_all("/@([^@^\\s^:]{1,})([\\s\\:\\,\\;]{0,1})/", $str, $result);
         return $result;
@@ -236,7 +239,7 @@ class Helper
      * @param string $disallowable
      * @return mixed
      */
-    static function stripSelectedTags($str, $disallowable = '<script><iframe><style><link>')
+    static function stripSelectedTags(string $str, string $disallowable = '<script><iframe><style><link>'): string
     {
         $disallowable = trim(str_replace(array('>', '<'), array('', '|'), $disallowable), '|');
         $str = str_replace(array('&lt;', '&gt;'), array('<', '>'), $str);
@@ -251,7 +254,7 @@ class Helper
      * @param string $str
      * @return string
      */
-    static function convertTags($str)
+    static function convertTags(string $str): string
     {
         return str_replace(array('<', '>', "'", '"'), array('&lt;', '&gt;', '&#039;', '&quot;'), $str);
     }
@@ -265,7 +268,7 @@ class Helper
      * @param int $expiry
      * @return string
      */
-    static function authCode($string, $operation = 'DECODE', $key = 'crossphp', $expiry = 0)
+    static function authCode(string $string, string $operation = 'DECODE', string $key = 'crossphp', int $expiry = 0): string
     {
         $c_key_length = 4;
         $key = md5($key);
@@ -341,7 +344,7 @@ class Helper
      * @param string $operation encode加密 其他任意字符解密
      * @return string
      */
-    static function encodeParams($str, $key, $operation = 'encode')
+    static function encodeParams(string $str, string $key, string $operation = 'encode'): string
     {
         $result = '';
         static $key_cache;
@@ -391,7 +394,7 @@ class Helper
      * @param string $path_name
      * @return string
      */
-    static function getPath($id, $path_name = '')
+    static function getPath(int $id, string $path_name = ''): string
     {
         $id = (string)abs($id);
         $id = str_pad($id, 9, '0', STR_PAD_LEFT);
@@ -411,10 +414,10 @@ class Helper
      * @param int $timeout
      * @param bool $CA
      * @param string $cacert http://curl.haxx.se/ca/cacert.pem
-     * @return int|mixed|string
+     * @return string
      * @throws CoreException
      */
-    static function curlRequest($url, $vars = array(), $method = 'POST', $timeout = 10, $CA = false, $cacert = '')
+    static function curlRequest(string $url, array $vars = array(), string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
     {
         $method = strtoupper($method);
         $SSL = substr($url, 0, 8) == "https://" ? true : false;
@@ -468,7 +471,7 @@ class Helper
      * @param int $quote_style
      * @return string
      */
-    static function escape($str, $quote_style = ENT_COMPAT)
+    static function escape(string $str, int $quote_style = ENT_COMPAT): string
     {
         return htmlspecialchars($str, $quote_style);
     }
@@ -509,7 +512,7 @@ class Helper
      * @param string $string
      * @return bool
      */
-    static function isChinese($string)
+    static function isChinese(string $string): bool
     {
         if (preg_match("/^[\\x{4e00}-\\x{9fa5}]+$/u", $string)) {
             return true;
@@ -524,7 +527,7 @@ class Helper
      * @param int $mobile
      * @return bool
      */
-    static function isMobile($mobile)
+    static function isMobile(int $mobile): bool
     {
         if (preg_match("/^1[3456789]\\d{9}$/", $mobile)) {
             return true;
@@ -539,9 +542,9 @@ class Helper
      * @param string $id_card
      * @param bool|true $just_check_length 是否只校验长度
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    static function checkIDCard($id_card, $just_check_length = true)
+    static function checkIDCard(string $id_card, bool $just_check_length = true): bool
     {
         //长度校验
         $length_validate = preg_match('/^([\d]{17}[xX\d]|[\d]{15})$/', $id_card) === 1;
@@ -553,7 +556,7 @@ class Helper
             return false;
         }
 
-        $city_code = array(
+        $city_code = [
             11 => true, 12 => true, 13 => true, 14 => true, 15 => true,
             21 => true, 22 => true, 23 => true,
             31 => true, 32 => true, 33 => true, 34 => true, 35 => true, 36 => true, 37 => true,
@@ -563,7 +566,7 @@ class Helper
             71 => true,
             81 => true, 82 => true,
             91 => true,
-        );
+        ];
 
         //地区校验
         if (!isset($city_code[$id_card[0] . $id_card[1]])) {
@@ -576,23 +579,22 @@ class Helper
                 return null;
             }
 
-            $factor = array(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2);
+            $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
             //校验码对应值
-            $verify_number_list = array('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2');
+            $verify_number_list = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
             $checksum = 0;
             for ($i = 0; $i < 17; $i++) {
                 $checksum += $id_card[$i] * $factor[$i];
             }
 
             $mod = $checksum % 11;
-            $verify_number = $verify_number_list[$mod];
-            return $verify_number;
+            return $verify_number_list[$mod];
         };
 
         $id_card_length = strlen($id_card);
         if ($id_card_length == 15) {
             //超出百岁特殊编码
-            if (array_search(substr($id_card, 12, 3), array('996', '997', '998', '999')) !== false) {
+            if (array_search(substr($id_card, 12, 3), ['996', '997', '998', '999']) !== false) {
                 $id_card = substr($id_card, 0, 6) . '18' . substr($id_card, 6, 9);
             } else {
                 $id_card = substr($id_card, 0, 6) . '19' . substr($id_card, 6, 9);
@@ -608,7 +610,7 @@ class Helper
 
         //校验出生日期
         $birth_day = substr($id_card, 6, 8);
-        $d = new \DateTime($birth_day);
+        $d = new DateTime($birth_day);
         if ($d->format('Y') > date('Y') || $d->format('m') > 12 || $d->format('d') > 31) {
             return false;
         }
@@ -623,9 +625,9 @@ class Helper
      * @param string $op
      * @param string $key
      * @param string $method
-     * @return mixed|string
+     * @return bool|string
      */
-    static function encrypt($data, $op = 'DECODE', $key = '!@#%c*r&o*s^s%p$h~p&', $method = 'AES-256-CBC')
+    static function encrypt($data, string $op = 'DECODE', string $key = '!@#%c*r&o*s^s%p$h~p&', string $method = 'AES-256-CBC')
     {
         $encrypt_key = md5($key);
         if ($op == 'ENCODE') {
@@ -646,7 +648,7 @@ class Helper
      *
      * @return string
      */
-    static function getIp()
+    static function getIp(): string
     {
         return Request::getInstance()->getClientIPAddress();
     }
@@ -657,7 +659,7 @@ class Helper
      * @param string $ip
      * @return string
      */
-    static function getLongIp($ip = '')
+    static function getLongIp(string $ip = '')
     {
         if ($ip == '') {
             $ip = self::getIp();
@@ -675,7 +677,7 @@ class Helper
      * @param string $suffix
      * @return string
      */
-    static function ftime($time, $format = 'Y-m-d H:i:s', $start_time = 0, $suffix = '前')
+    static function ftime(int $time, string $format = 'Y-m-d H:i:s', int $start_time = 0, string $suffix = '前'): string
     {
         if ($start_time == 0) {
             $start_time = time();
@@ -709,7 +711,7 @@ class Helper
      * @param int $size
      * @return string
      */
-    static function convert($size)
+    static function convert(int $size): string
     {
         $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
         $s = floor(log($size, 1024));

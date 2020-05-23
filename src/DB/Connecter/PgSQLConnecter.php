@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Connecter;
 
 use Cross\Exception\DBConnectException;
@@ -30,7 +31,7 @@ class PgSQLConnecter extends BaseConnecter
      *
      * @var array
      */
-    private static $options = array();
+    private static $options = [];
 
     /**
      * 创建PgSQL的PDO连接
@@ -41,7 +42,7 @@ class PgSQLConnecter extends BaseConnecter
      * @param array $options
      * @throws DBConnectException
      */
-    private function __construct($dsn, $user, $password, array $options = array())
+    private function __construct(string $dsn, string $user, $password, array $options = [])
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
@@ -51,15 +52,15 @@ class PgSQLConnecter extends BaseConnecter
     }
 
     /**
-     * @see MysqlModel::__construct
      * @param string $dsn
      * @param string $user
      * @param string $password
      * @param array $option
      * @return mixed
      * @throws DBConnectException
+     * @see MysqlModel::__construct
      */
-    static function getInstance($dsn, $user, $password, array $option = array())
+    static function getInstance(string $dsn, string $user, $password, array $option = []): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
@@ -75,7 +76,7 @@ class PgSQLConnecter extends BaseConnecter
      *
      * @return PDO
      */
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo;
     }
@@ -84,9 +85,9 @@ class PgSQLConnecter extends BaseConnecter
      * 获取表的主键名
      *
      * @param string $table_name
-     * @return bool
+     * @return string
      */
-    public function getPK($table_name)
+    public function getPK(string $table_name): string
     {
         $table_info = $this->getMetaData($table_name, false);
         foreach ($table_info as $info) {
@@ -94,7 +95,7 @@ class PgSQLConnecter extends BaseConnecter
                 return $info['column_name'];
             }
         }
-        return false;
+        return '';
     }
 
     /**
@@ -106,7 +107,7 @@ class PgSQLConnecter extends BaseConnecter
     {
         $sql = "SELECT LASTVAL() as insert_id";
         try {
-            $data = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);;
+            $data = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
             return $data['insert_id'];
         } catch (Exception $e) {
             return false;
@@ -120,7 +121,7 @@ class PgSQLConnecter extends BaseConnecter
      * @param bool $fields_map
      * @return array
      */
-    function getMetaData($table, $fields_map = true)
+    function getMetaData(string $table, bool $fields_map = true): array
     {
         $sql = "select a.column_name, a.is_nullable, a.column_default, p.contype from (
                     select i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
@@ -131,22 +132,22 @@ class PgSQLConnecter extends BaseConnecter
         try {
             $data = $this->pdo->query($sql);
             if ($fields_map) {
-                $result = array();
+                $result = [];
                 $data->fetchAll(PDO::FETCH_FUNC, function ($column_name, $is_null, $column_default, $con_type) use (&$result) {
                     $auto_increment = preg_match("/nextval\((.*)\)/", $column_default);
-                    $result[$column_name] = array(
+                    $result[$column_name] = [
                         'primary' => $con_type == 'p',
                         'auto_increment' => $auto_increment,
                         'default_value' => $auto_increment ? '' : strval($column_default),
                         'not_null' => $is_null == 'NO',
-                    );
+                    ];
                 });
                 return $result;
             } else {
                 return $data->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (Exception $e) {
-            return array();
+            return [];
         }
     }
 }

@@ -91,7 +91,7 @@ class Rest
      * @param string $custom_router
      * @param callable|Closure $process_closure
      */
-    function get($custom_router, Closure $process_closure)
+    function get($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('GET', $custom_router, $process_closure);
     }
@@ -102,7 +102,7 @@ class Rest
      * @param string $custom_router
      * @param callable|Closure $process_closure
      */
-    function post($custom_router, Closure $process_closure)
+    function post($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('POST', $custom_router, $process_closure);
     }
@@ -113,7 +113,7 @@ class Rest
      * @param string $custom_router
      * @param callable|Closure $process_closure
      */
-    function put($custom_router, Closure $process_closure)
+    function put($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('PUT', $custom_router, $process_closure);
     }
@@ -124,7 +124,7 @@ class Rest
      * @param string $custom_router
      * @param Closure $process_closure
      */
-    function patch($custom_router, Closure $process_closure)
+    function patch($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('PATCH', $custom_router, $process_closure);
     }
@@ -135,7 +135,7 @@ class Rest
      * @param string $custom_router
      * @param Closure $process_closure
      */
-    function options($custom_router, Closure $process_closure)
+    function options($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('OPTIONS', $custom_router, $process_closure);
     }
@@ -146,7 +146,7 @@ class Rest
      * @param string $custom_router
      * @param callable|Closure $process_closure
      */
-    function delete($custom_router, Closure $process_closure)
+    function delete($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('DELETE', $custom_router, $process_closure);
     }
@@ -157,7 +157,7 @@ class Rest
      * @param string $custom_router
      * @param Closure $process_closure
      */
-    function head($custom_router, Closure $process_closure)
+    function head($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter('HEAD', $custom_router, $process_closure);
     }
@@ -168,19 +168,22 @@ class Rest
      * @param string $custom_router
      * @param callable|Closure $process_closure
      */
-    function any($custom_router, Closure $process_closure)
+    function any($custom_router, Closure $process_closure): void
     {
         $this->addCustomRouter($this->request_type, $custom_router, $process_closure);
     }
 
     /**
+     * on
+     *
      * @param string $name
      * @param Closure $f
+     * @return Delegate
      * @see Delegate::on()
      */
-    function on($name, Closure $f)
+    function on(string $name, Closure $f): Delegate
     {
-        $this->delegate->on($name, $f);
+        return $this->delegate->on($name, $f);
     }
 
     /**
@@ -188,7 +191,7 @@ class Rest
      *
      * @param array $rules
      */
-    function rules(array $rules)
+    function rules(array $rules): void
     {
         $this->rules = $rules;
     }
@@ -198,7 +201,7 @@ class Rest
      *
      * @throws CoreException
      */
-    function run()
+    function run(): void
     {
         $match = false;
         $params = array();
@@ -235,14 +238,14 @@ class Rest
      * @param array $params
      * @return bool
      */
-    private function matchProcess(array $routers, &$process_closure, &$params)
+    private function matchProcess(array $routers, &$process_closure, &$params): bool
     {
         uasort($routers, function ($a, $b) {
             return $a['params_count'] < $b['params_count'];
         });
 
         foreach ($routers as $router => $router_config) {
-            $params = array();
+            $params = [];
             if (true === $this->matchCustomRouter($router, $router_config['params_key'], $params)) {
                 $process_closure = $router_config['process_closure'];
                 return true;
@@ -260,7 +263,7 @@ class Rest
      * @param array $params
      * @return bool
      */
-    private function matchCustomRouter($custom_router, array $params_keys = array(), array &$params = array())
+    private function matchCustomRouter(string $custom_router, array $params_keys = [], array &$params = []): bool
     {
         $request_uri_string = $this->request_string;
         $custom_router_params_token = preg_replace("#\{:(.*?)\}#", '{PARAMS}', $custom_router);
@@ -309,7 +312,7 @@ class Rest
      * @param array $params
      * @throws CoreException
      */
-    private function response(Closure $process_closure, array $params = array())
+    private function response(Closure $process_closure, array $params = array()): void
     {
         try {
             $ref = new ReflectionFunction($process_closure);
@@ -341,7 +344,7 @@ class Rest
      * @param string $custom_router
      * @param Closure $process_closure
      */
-    private function addCustomRouter($request_type, $custom_router, Closure $process_closure)
+    private function addCustomRouter(string $request_type, string $custom_router, Closure $process_closure): void
     {
         if ($this->request_type === $request_type) {
             $custom_router = trim($custom_router);

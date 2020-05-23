@@ -101,12 +101,12 @@ class SQLModel
     /**
      * 获取单条数据
      *
-     * @param array $where
+     * @param array|string $where
      * @param string $fields
      * @return mixed
      * @throws CoreException
      */
-    function get($where = [], $fields = '*')
+    function get($where = [], string $fields = '*')
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -127,12 +127,12 @@ class SQLModel
     /**
      * 最新
      *
-     * @param array $where
+     * @param array|string $where
      * @param string $fields
      * @return mixed
      * @throws CoreException
      */
-    function latest($where = [], $fields = '*')
+    function latest($where = [], string $fields = '*')
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -174,8 +174,8 @@ class SQLModel
     /**
      * 更新
      *
-     * @param array $condition
-     * @param array $data
+     * @param array|string $condition
+     * @param array|string $data
      * @return bool
      * @throws CoreException
      */
@@ -220,7 +220,7 @@ class SQLModel
     /**
      * 删除
      *
-     * @param array $condition
+     * @param array|string $condition
      * @return bool
      * @throws CoreException
      */
@@ -236,7 +236,7 @@ class SQLModel
     /**
      * 获取数据
      *
-     * @param array $where
+     * @param array|string $where
      * @param string $fields
      * @param string|int $order
      * @param string|int $group_by
@@ -244,7 +244,7 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    function getAll($where = [], $fields = '*', $order = null, $group_by = null, $limit = null)
+    function getAll($where = [], string $fields = '*', $order = null, $group_by = null, $limit = null)
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -257,14 +257,14 @@ class SQLModel
      * 按分页获取数据
      *
      * @param array $page
-     * @param array $where
+     * @param array|string $where
      * @param string $fields
      * @param string|int $order
      * @param string|int $group_by
      * @return mixed
      * @throws CoreException
      */
-    function find(&$page = ['p' => 1, 'limit' => 50], $where = [], $fields = '*', $order = null, $group_by = null)
+    function find(array &$page = ['p' => 1, 'limit' => 50], $where = [], string $fields = '*', $order = null, $group_by = null)
     {
         if (empty($where)) {
             $where = $this->getDefaultCondition();
@@ -280,7 +280,7 @@ class SQLModel
      * @return $this
      * @throws CoreException
      */
-    function property($where = [])
+    function property($where = []): self
     {
         $data = $this->get($where);
         if (!empty($data)) {
@@ -296,7 +296,7 @@ class SQLModel
      * @return PDOSqlDriver
      * @throws CoreException
      */
-    function db()
+    function db(): PDOSqlDriver
     {
         return $this->getModuleInstance()->link;
     }
@@ -306,7 +306,7 @@ class SQLModel
      *
      * @param string $table
      */
-    function setTable($table)
+    function setTable(string $table): void
     {
         $this->table = $table;
     }
@@ -319,7 +319,7 @@ class SQLModel
      * @param string $type 默认左联
      * @return $this
      */
-    function join($table, $on, $type = 'left')
+    function join(string $table, string $on, string $type = 'left'): self
     {
         $this->joinTables[] = [
             'name' => $table,
@@ -335,7 +335,7 @@ class SQLModel
      *
      * @return $this
      */
-    function asIndex()
+    function asIndex(): self
     {
         foreach ($this->fieldsInfo as $property => $value) {
             if (null !== $this->{$property}) {
@@ -353,7 +353,7 @@ class SQLModel
      * @param $indexValue
      * @throws CoreException
      */
-    function useIndex($indexName, $indexValue)
+    function useIndex(string $indexName, $indexValue): void
     {
         if (!property_exists($this, $indexName)) {
             throw new CoreException('不支持的索引名称');
@@ -368,7 +368,7 @@ class SQLModel
      *
      * @return $this
      */
-    function useLock()
+    function useLock(): self
     {
         $this->useLock = true;
         return $this;
@@ -381,7 +381,7 @@ class SQLModel
      * @return string
      * @throws CoreException
      */
-    function getTable($userJoinTable = true): string
+    function getTable(bool $userJoinTable = true): string
     {
         $table = $this->getOriTableName();
         if (!$userJoinTable) {
@@ -442,7 +442,7 @@ class SQLModel
      * @param bool $updateProperty 为true时更新类属性
      * @return bool
      */
-    function verifyModelData(array $data, $updateProperty = false)
+    function verifyModelData(array $data, bool $updateProperty = false): bool
     {
         $isModel = true;
         foreach ($this->fieldsInfo as $key => $value) {
@@ -497,7 +497,7 @@ class SQLModel
      * @param array $data
      * @param Closure|null $callback
      */
-    function updateProperty(array $data, Closure $callback = null)
+    function updateProperty(array $data, Closure $callback = null): void
     {
         if (!empty($data)) {
             foreach ($data as $property => $value) {
@@ -515,7 +515,7 @@ class SQLModel
     /**
      * 重置属性
      */
-    function resetProperty()
+    function resetProperty(): void
     {
         $this->index = [];
         array_walk($this->fieldsInfo, function ($v, $p) {
@@ -530,7 +530,7 @@ class SQLModel
      * @param bool $asPrefix 是否把别名加在字段名之前
      * @return string
      */
-    function getFields($alias = '', $asPrefix = false)
+    function getFields(string $alias = '', bool $asPrefix = false): string
     {
         $fieldsList = array_keys($this->fieldsInfo);
         if (!empty($alias)) {
@@ -550,10 +550,10 @@ class SQLModel
      * 获取查询条件
      *
      * @param string $tableAlias 表别名
-     * @return array|mixed
+     * @return array
      * @throws CoreException
      */
-    function getCondition($tableAlias = '')
+    function getCondition(string $tableAlias = ''): array
     {
         $defaultCondition = $this->getDefaultCondition();
         if (empty($defaultCondition)) {
@@ -577,7 +577,7 @@ class SQLModel
      *
      * @return array
      */
-    function getDefaultData()
+    function getDefaultData(): array
     {
         $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
@@ -597,7 +597,7 @@ class SQLModel
      * @param bool $hasValue
      * @return array
      */
-    function getArrayData($hasValue = false)
+    function getArrayData(bool $hasValue = false): array
     {
         $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
@@ -620,7 +620,7 @@ class SQLModel
      *
      * @return array
      */
-    protected function getModifiedData()
+    protected function getModifiedData(): array
     {
         $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
@@ -642,7 +642,7 @@ class SQLModel
      *
      * @return array
      */
-    protected function makeInsertData()
+    protected function makeInsertData(): array
     {
         $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
@@ -668,7 +668,7 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    protected function getDefaultCondition($strictModel = false)
+    protected function getDefaultCondition(bool $strictModel = false): array
     {
         $pkName = &$this->modelInfo['primary_key'];
         if (null !== $this->{$pkName}) {
@@ -723,7 +723,7 @@ class SQLModel
      * @return Module
      * @throws CoreException
      */
-    protected function getModuleInstance()
+    protected function getModuleInstance(): Module
     {
         static $model = null;
         if (null === $model) {

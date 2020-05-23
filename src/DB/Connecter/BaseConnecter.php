@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\Connecter;
 
 use Cross\I\PDOConnecter;
@@ -29,7 +30,7 @@ abstract class BaseConnecter implements PDOConnecter
      * @param array $options
      * @return array
      */
-    protected static function getOptions(array $default_options, array $options)
+    protected static function getOptions(array $default_options, array $options): array
     {
         if (!empty($options)) {
             foreach ($options as $option_key => $option_val) {

@@ -10,12 +10,16 @@ namespace Cross\Core;
 
 use Cross\I\RequestCacheInterface;
 use Cross\I\RouterInterface;
+
 use Cross\Exception\FrontException;
 use Cross\Exception\CoreException;
+
 use Cross\Cache\Driver\FileCacheDriver;
 use Cross\Cache\Request\Memcache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
+
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionClass;
 use Exception;
@@ -86,7 +90,7 @@ class Application
      * @param string $app_name
      * @param Delegate $delegate
      */
-    function __construct($app_name, Delegate &$delegate)
+    function __construct(string $app_name, Delegate &$delegate)
     {
         $this->app_name = $app_name;
         $this->delegate = $delegate;
@@ -103,7 +107,7 @@ class Application
      * @throws CoreException
      * @throws FrontException
      */
-    public function dispatcher($router, $args = array(), $return_response_content = false)
+    public function dispatcher($router, $args = [], bool $return_response_content = false)
     {
         $init_prams = true;
         $router = $this->parseRouter($router, $args, $init_prams);
@@ -214,9 +218,9 @@ class Application
     /**
      * 设置controller
      *
-     * @param $controller
+     * @param string $controller
      */
-    function setController($controller)
+    function setController(string $controller): void
     {
         $this->controller = $controller;
     }
@@ -224,9 +228,9 @@ class Application
     /**
      * 设置action
      *
-     * @param $action
+     * @param string $action
      */
-    function setAction($action)
+    function setAction(string $action): void
     {
         $this->action = $action;
     }
@@ -236,7 +240,7 @@ class Application
      *
      * @param array|string $params
      */
-    function setParams($params)
+    function setParams($params): void
     {
         $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
         if ($paramsChecker && is_array($params)) {
@@ -251,11 +255,11 @@ class Application
     /**
      * 设置控制器结果是否使用输出缓冲
      *
-     * @param mixed $status
+     * @param bool $status
      */
-    public function setObStatus($status)
+    public function setObStatus(bool $status): void
     {
-        $this->ob_cache_status = (bool)$status;
+        $this->ob_cache_status = $status;
     }
 
     /**
@@ -263,7 +267,7 @@ class Application
      *
      * @return mixed
      */
-    function getController()
+    function getController(): string
     {
         return $this->controller;
     }
@@ -273,7 +277,7 @@ class Application
      *
      * @return string
      */
-    function getAction()
+    function getAction(): string
     {
         return $this->action;
     }
@@ -310,7 +314,7 @@ class Application
      * @param array $args
      * @return object|bool
      */
-    public function instanceClass($class, $args = array())
+    public function instanceClass(string $class, $args = [])
     {
         try {
             $rc = new ReflectionClass($class);
@@ -321,14 +325,14 @@ class Application
 
             if ($rc->hasMethod('__construct')) {
                 if (!is_array($args)) {
-                    $args = array($args);
+                    $args = [$args];
                 }
 
                 return $rc->newInstanceArgs($args);
             }
 
             return $rc->newInstance();
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             return false;
         }
     }
@@ -341,7 +345,7 @@ class Application
      * @param int $op_mode 处理参数的方式
      * @return array
      */
-    public static function combineParamsAnnotateConfig(array $params = array(), array $annotate_params = array(), $op_mode = 1)
+    public static function combineParamsAnnotateConfig(array $params = [], array $annotate_params = [], int $op_mode = 1): array
     {
         if (empty($params)) {
             return $annotate_params;
@@ -379,7 +383,7 @@ class Application
      * @param string $separator
      * @return array
      */
-    public static function stringParamsToAssociativeArray($stringParams, $separator)
+    public static function stringParamsToAssociativeArray(string $stringParams, string $separator): array
     {
         return self::oneDimensionalToAssociativeArray(explode($separator, $stringParams));
     }
@@ -390,9 +394,9 @@ class Application
      * @param array $oneDimensional
      * @return array
      */
-    public static function oneDimensionalToAssociativeArray(array $oneDimensional)
+    public static function oneDimensionalToAssociativeArray(array $oneDimensional): array
     {
-        $result = array();
+        $result = [];
         while ($p = array_shift($oneDimensional)) {
             $result[$p] = array_shift($oneDimensional);
         }
@@ -412,7 +416,7 @@ class Application
      * @param bool $init_params
      * @return array
      */
-    private function parseRouter($router, $params = array(), &$init_params = true)
+    private function parseRouter($router, array $params = [], &$init_params = true): array
     {
         if ($router instanceof RouterInterface) {
             $controller = $router->getController();
@@ -432,7 +436,7 @@ class Application
             }
         }
 
-        return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params);
+        return ['controller' => ucfirst($controller), 'action' => $action, 'params' => $params];
     }
 
     /**
@@ -441,7 +445,7 @@ class Application
      * @param string $controller_name
      * @return string
      */
-    protected function getControllerNamespace($controller_name)
+    protected function getControllerNamespace(string $controller_name): string
     {
         return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\controllers\\' . $controller_name;
     }
@@ -452,7 +456,7 @@ class Application
      * @param string $controller_name
      * @return string
      */
-    protected function getViewControllerNameSpace($controller_name)
+    protected function getViewControllerNameSpace(string $controller_name): string
     {
         return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\views\\' . $controller_name . 'View';
     }
@@ -465,7 +469,7 @@ class Application
      * @return ReflectionClass
      * @throws CoreException
      */
-    private function initController($controller, $action = null)
+    private function initController(string $controller, $action = null): ReflectionClass
     {
         $controller_name_space = $this->getControllerNamespace($controller);
 
@@ -515,7 +519,7 @@ class Application
      * @param array|string $url_params
      * @param array $annotate_params
      */
-    private function initParams($url_params, array $annotate_params = array())
+    private function initParams($url_params, array $annotate_params = []): void
     {
         $url_type = $this->config->get('url', 'type');
         switch ($url_type) {
@@ -579,13 +583,13 @@ class Application
         $display_type = $this->config->get('sys', 'display');
         $this->delegate->getResponse()->setContentType($display_type);
 
-        $default_cache_config = array(
+        $default_cache_config = [
             'type' => 1,
             'expire_time' => 3600,
             'ignore_params' => false,
             'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
             'key_dot' => DIRECTORY_SEPARATOR
-        );
+        ];
 
         $cache_config = &$request_cache_config[1];
         foreach ($default_cache_config as $default_config_key => $default_value) {
@@ -610,12 +614,12 @@ class Application
             $params_cache_key = md5(json_encode($params_member));
         }
 
-        $cache_key = array(
+        $cache_key = [
             'app_name' => $this->app_name,
             'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
             'controller' => lcfirst($this->getController()),
             'action' => $this->getAction()
-        );
+        ];
 
         $cache_config['key'] = implode($cache_config['key_dot'], $cache_key);
         if ($params_cache_key) {
@@ -646,7 +650,7 @@ class Application
      *
      * @param array $config
      */
-    private function setResponseConfig(array $config)
+    private function setResponseConfig(array $config): void
     {
         if (isset($config['content_type'])) {
             $this->delegate->getResponse()->setContentType($config['content_type']);
@@ -663,7 +667,7 @@ class Application
      * @param Closure $closure
      * @param $controller
      */
-    private function callReliesControllerClosure(Closure $closure, $controller)
+    private function callReliesControllerClosure(Closure $closure, $controller): void
     {
         $closure($controller);
     }
@@ -674,7 +678,7 @@ class Application
      * @param array $annotate
      * @param array $controller_annotate
      */
-    private function setAnnotateConfig(array $annotate, array $controller_annotate)
+    private function setAnnotateConfig(array $annotate, array $controller_annotate): void
     {
         if (empty($controller_annotate)) {
             $this->action_annotate = $annotate;

@@ -46,7 +46,7 @@ class SQLAssembler
      *
      * @param string $table_prefix
      */
-    function __construct($table_prefix = '')
+    function __construct(string $table_prefix = '')
     {
         $this->table_prefix = $table_prefix;
     }
@@ -67,9 +67,9 @@ class SQLAssembler
      *      );
      * </pre>
      */
-    public function add($table, &$data, $multi = false)
+    public function add(string $table, &$data, bool $multi = false): void
     {
-        $params = array();
+        $params = [];
         if (true === $multi) {
             $field_str = $value_str = '';
             if (empty($data['fields']) || empty($data['values'])) {
@@ -105,9 +105,9 @@ class SQLAssembler
      * @return mixed|void
      * @throws CoreException
      */
-    public function find($table, $fields, $where, $order = null, array &$page = array('p' => 1, 'limit' => 50), $group_by = null)
+    public function find(string $table, string $fields, $where, $order = null, array &$page = ['p' => 1, 'limit' => 50], $group_by = null)
     {
-        $params = array();
+        $params = [];
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
         $order_str = $this->parseOrder($order);
@@ -133,7 +133,7 @@ class SQLAssembler
      * @return mixed|void
      * @throws CoreException
      */
-    public function update($table, $data, $where)
+    public function update(string $table, $data, $where)
     {
         $params = array();
         $fields = $this->parseData($data, $params);
@@ -159,7 +159,7 @@ class SQLAssembler
      * @return mixed|void
      * @throws CoreException
      */
-    public function del($table, $where, $multi = false)
+    public function del(string $table, $where, bool $multi = false)
     {
         $params = array();
         if (true === $multi) {
@@ -192,7 +192,7 @@ class SQLAssembler
      * @param string $modifier
      * @return string
      */
-    public function select($fields = '*', $modifier = '')
+    public function select(string $fields = '*', string $modifier = ''): string
     {
         return "SELECT {$modifier} {$this->parseFields($fields)} ";
     }
@@ -206,7 +206,7 @@ class SQLAssembler
      * @param array $params
      * @return string
      */
-    public function insert($table, $data, $modifier = '', array &$params = array())
+    public function insert(string $table, $data, string $modifier = '', &$params = []): string
     {
         return "INSERT {$modifier} INTO {$table} {$this->parseData($data, $params, 'insert')} ";
     }
@@ -218,16 +218,16 @@ class SQLAssembler
      * @param string $modifier
      * @return string
      */
-    public function replace($table, $modifier = '')
+    public function replace(string $table, string $modifier = ''): string
     {
         return "REPLACE {$modifier} {$table} ";
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      */
-    public function from($table)
+    public function from(string $table): string
     {
         return "FROM {$table} ";
     }
@@ -238,7 +238,7 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    public function where($where, array &$params)
+    public function where($where, &$params): string
     {
         return "WHERE {$this->parseWhere($where, $params)} ";
     }
@@ -248,7 +248,7 @@ class SQLAssembler
      * @param bool|int $end
      * @return string
      */
-    public function limit($start, $end = false)
+    public function limit(int $start, $end = false): string
     {
         if ($end) {
             $end = (int)$end;
@@ -264,7 +264,7 @@ class SQLAssembler
      * @param int $offset
      * @return string
      */
-    public function offset($offset)
+    public function offset(int $offset): string
     {
         if ($this->offset_is_valid) {
             return "OFFSET {$offset} ";
@@ -274,56 +274,56 @@ class SQLAssembler
     }
 
     /**
-     * @param $order
+     * @param mixed $order
      * @return string
      */
-    public function orderBy($order)
+    public function orderBy($order): string
     {
         return "ORDER BY {$this->parseOrder($order)} ";
     }
 
     /**
-     * @param $group
+     * @param string $group
      * @return string
      */
-    public function groupBy($group)
+    public function groupBy(string $group): string
     {
         return "GROUP BY {$this->parseGroup($group)} ";
     }
 
     /**
-     * @param $having
+     * @param string $having
      * @return string
      */
-    public function having($having)
+    public function having(string $having): string
     {
         return "HAVING {$having} ";
     }
 
     /**
-     * @param $procedure
+     * @param string $procedure
      * @return string
      */
-    public function procedure($procedure)
+    public function procedure(string $procedure): string
     {
         return "PROCEDURE {$procedure} ";
     }
 
     /**
-     * @param $var_name
+     * @param string $var_name
      * @return string
      */
-    public function into($var_name)
+    public function into(string $var_name): string
     {
         return "INTO {$var_name} ";
     }
 
     /**
-     * @param string $data
+     * @param mixed $data
      * @param array $params
      * @return string
      */
-    public function set($data, array &$params = array())
+    public function set($data, array &$params = []): string
     {
         return "SET {$this->parseData($data, $params)} ";
     }
@@ -332,7 +332,7 @@ class SQLAssembler
      * @param string $on
      * @return string
      */
-    public function on($on)
+    public function on(string $on): string
     {
         return "ON {$on} ";
     }
@@ -343,7 +343,7 @@ class SQLAssembler
      * @param string|array $fields
      * @return string
      */
-    public function parseFields($fields)
+    public function parseFields($fields): string
     {
         if (empty($fields)) {
             $field_str = '*';
@@ -366,7 +366,7 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    public function parseWhere($where, array &$params)
+    public function parseWhere($where, array &$params): string
     {
         if (!empty($where)) {
             if (is_array($where)) {
@@ -394,7 +394,7 @@ class SQLAssembler
     /**
      * 解析order
      *
-     * @param string $order
+     * @param mixed $order
      * @return int|string
      */
     public function parseOrder($order)
@@ -415,8 +415,8 @@ class SQLAssembler
     /**
      * 解析group by
      *
-     * @param string $group_by
-     * @return int
+     * @param mixed $group_by
+     * @return int|string
      */
     public function parseGroup($group_by)
     {
@@ -432,7 +432,7 @@ class SQLAssembler
     /**
      * @return string
      */
-    public function getSQL()
+    public function getSQL(): string
     {
         return $this->sql;
     }
@@ -440,7 +440,7 @@ class SQLAssembler
     /**
      * @param $sql
      */
-    protected function setSQL($sql)
+    protected function setSQL(string $sql): void
     {
         $this->sql = $sql;
     }
@@ -458,7 +458,7 @@ class SQLAssembler
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return $this->table_prefix;
     }
@@ -466,7 +466,7 @@ class SQLAssembler
     /**
      * @param $params
      */
-    protected function setParams($params)
+    protected function setParams($params): void
     {
         $this->params = $params;
     }
@@ -484,9 +484,9 @@ class SQLAssembler
      * @return array
      * @throws CoreException
      */
-    protected function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, array &$params)
+    protected function parseCondition(string $operator, string $field, $field_config, bool $is_mixed_field, string $condition_connector, string $connector, array &$params): array
     {
-        $condition = array();
+        $condition = [];
         switch ($connector) {
             case 'OR':
                 if (!is_array($field_config)) {
@@ -584,12 +584,12 @@ class SQLAssembler
     /**
      * 解析数据
      *
-     * @param $data
+     * @param mixed $data
      * @param array $params
      * @param string $format
      * @return string
      */
-    private function parseData($data, array &$params, $format = 'normal')
+    private function parseData($data, array &$params, $format = 'normal'): string
     {
         if (!empty($data)) {
             if (is_array($data)) {
@@ -650,7 +650,7 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    private function parseWhereFromHashMap(array $where, array &$params)
+    private function parseWhereFromHashMap(array $where, array &$params): string
     {
         $all_condition = array();
         foreach ($where as $field => $field_config) {
@@ -685,10 +685,10 @@ class SQLAssembler
     /**
      * 组合where条件
      *
-     * @param $where_condition
+     * @param array $where_condition
      * @return string
      */
-    private function combineWhereCondition($where_condition)
+    private function combineWhereCondition(array $where_condition): string
     {
         $where = '';
         foreach ($where_condition as $condition) {
@@ -717,7 +717,7 @@ class SQLAssembler
      * @param array $data
      * @return array
      */
-    private function arrayToMultiAddFormat(array $data)
+    private function arrayToMultiAddFormat(array $data): array
     {
         $fields = $values = array();
         if (!empty($data)) {
@@ -733,6 +733,6 @@ class SQLAssembler
             }
         }
 
-        return array('fields' => $fields, 'values' => $values);
+        return ['fields' => $fields, 'values' => $values];
     }
 }

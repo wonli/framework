@@ -9,11 +9,14 @@
 namespace Cross\Cache;
 
 use Cross\I\RequestCacheInterface;
-use Cross\Exception\CoreException;
+
 use Cross\Cache\Request\FileCache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\Request\Memcache;
+
+use Cross\Exception\CoreException;
 use ReflectionClass;
+use Exception;
 
 /**
  * RequestCache工厂类
@@ -68,7 +71,7 @@ class RequestCache
                         } else {
                             throw new CoreException('Must implement RequestCacheInterface');
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         throw new CoreException('Reflection ' . $e->getMessage());
                     }
                 } elseif (is_object($type)) {

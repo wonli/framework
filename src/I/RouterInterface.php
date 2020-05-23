@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\I;
 
 /**
@@ -15,17 +16,17 @@ namespace Cross\I;
 interface RouterInterface
 {
     /**
-     * @return mixed controller
+     * @return string
      */
-    function getController();
+    function getController(): string;
 
     /**
-     * @return mixed action
+     * @return string
      */
-    function getAction();
+    function getAction(): string;
 
     /**
-     * @return mixed params
+     * @return array
      */
-    function getParams();
+    function getParams(): array;
 }

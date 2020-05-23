@@ -5,10 +5,11 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Auth;
 
-use Cross\Core\Helper;
 use Cross\I\HttpAuthInterface;
+use Cross\Core\Helper;
 
 /**
  * @author wonli <wonli@live.com>
@@ -24,7 +25,7 @@ class CookieAuth implements HttpAuthInterface
      */
     private $key = '!wl<@>c(r#%o*s&s';
 
-    function __construct($key = '')
+    function __construct(string $key = '')
     {
         if ($key) {
             $this->key = $key;
@@ -37,9 +38,9 @@ class CookieAuth implements HttpAuthInterface
      * @param string $name
      * @param string|array $params
      * @param int $expire
-     * @return bool|mixed
+     * @return bool
      */
-    function set($name, $params, $expire = 0)
+    function set(string $name, $params, int $expire = 0): bool
     {
         if ($params === '' || $params === null) {
             $expire = time() - 3600;
@@ -60,11 +61,7 @@ class CookieAuth implements HttpAuthInterface
             $cookie_domain = COOKIE_DOMAIN;
         }
 
-        if (setcookie($name, $value, $expire, '/', $cookie_domain, null, true)) {
-            return true;
-        }
-
-        return false;
+        return setcookie($name, $value, $expire, '/', $cookie_domain, null, true);
     }
 
     /**
@@ -74,7 +71,7 @@ class CookieAuth implements HttpAuthInterface
      * @param bool $deCode
      * @return bool|string
      */
-    function get($params, $deCode = false)
+    function get(string $params, bool $deCode = false)
     {
         if (false !== strpos($params, ':') && $deCode) {
             list($name, $arrKey) = explode(':', $params);
@@ -109,7 +106,7 @@ class CookieAuth implements HttpAuthInterface
      * @param string $cookieName
      * @return string
      */
-    protected function getEncryptKey($cookieName)
+    protected function getEncryptKey($cookieName): string
     {
         if (isset($_SERVER['HTTP_USER_AGENT'])) {
             $agent = strtolower($_SERVER['HTTP_USER_AGENT']);

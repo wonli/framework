@@ -21,7 +21,7 @@ class ClosureContainer
     /**
      * @var array
      */
-    protected $actions;
+    protected $actions = [];
 
     function __construct()
     {
@@ -34,7 +34,7 @@ class ClosureContainer
      * @param string $name
      * @param Closure $f
      */
-    function add($name, Closure $f)
+    function add(string $name, Closure $f): void
     {
         $this->actions[$name] = $f;
     }
@@ -46,7 +46,7 @@ class ClosureContainer
      * @param array $params
      * @return mixed
      */
-    function run($name, $params = array())
+    function run(string $name, array $params = array())
     {
         if (isset($this->actions[$name])) {
             if (!is_array($params)) {
@@ -65,14 +65,14 @@ class ClosureContainer
      * @param array $params
      * @return mixed
      */
-    function runOnce($name, $params = array())
+    function runOnce(string $name, array $params = [])
     {
-        static $cache = array();
+        static $cache = [];
         if (isset($cache[$name])) {
             return $cache[$name];
         } elseif (isset($this->actions[$name])) {
             if (!is_array($params)) {
-                $params = array($params);
+                $params = [$params];
             }
 
             $cache[$name] = call_user_func_array($this->actions[$name], $params);
@@ -89,7 +89,7 @@ class ClosureContainer
      * @param Closure|null $closure
      * @return bool
      */
-    function has($name, & $closure = null)
+    function has(string $name, &$closure = null): bool
     {
         if (isset($this->actions[$name])) {
             $closure = $this->actions[$name];

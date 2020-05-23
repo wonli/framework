@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Auth;
 
 use Cross\I\HttpAuthInterface;
@@ -23,7 +24,7 @@ class SessionAuth implements HttpAuthInterface
      */
     protected $key;
 
-    function __construct($key = '')
+    function __construct(string $key = '')
     {
         if ($key) {
             $this->key = $key;
@@ -42,7 +43,7 @@ class SessionAuth implements HttpAuthInterface
      * @param int $expire
      * @return bool|mixed
      */
-    function set($key, $value, $expire = 0)
+    function set(string $key, $value, int $expire = 0):bool
     {
         if (is_array($value)) {
             $value = json_encode($value);
@@ -59,7 +60,7 @@ class SessionAuth implements HttpAuthInterface
      * @param bool $deCode
      * @return bool|mixed
      */
-    function get($key, $deCode = false)
+    function get(string $key, bool $deCode = false)
     {
         if (false !== strpos($key, ':') && $deCode) {
             list($key, $arrKey) = explode(':', $key);

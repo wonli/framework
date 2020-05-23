@@ -39,7 +39,7 @@ class Router implements RouterInterface
      *
      * @var array
      */
-    private $params = array();
+    private $params = [];
 
     /**
      * @var string
@@ -64,7 +64,7 @@ class Router implements RouterInterface
     /**
      * @var array
      */
-    private $defaultRouter = array();
+    private $defaultRouter = [];
 
     /**
      * @var bool
@@ -93,7 +93,7 @@ class Router implements RouterInterface
      * @throws CoreException
      * @throws FrontException
      */
-    public function getRouter()
+    public function getRouter(): self
     {
         if (!$this->hasParseUrl) {
             $this->hasParseUrl = true;
@@ -102,7 +102,7 @@ class Router implements RouterInterface
                 $request = $this->parseRequestString($rs, $url_config);
                 $closure = $this->delegate->getClosureContainer();
                 if ($closure->has('router')) {
-                    $closure->run('router', array($request, $this));
+                    $closure->run('router', [$request, $this]);
                 }
 
                 if (empty($this->controller) || empty($this->action)) {
@@ -113,7 +113,7 @@ class Router implements RouterInterface
                 $this->setController($router[0]);
                 $this->setAction($router[1]);
 
-                $params = $this->parseParams(array(), $url_config);
+                $params = $this->parseParams([], $url_config);
                 $this->setParams($params);
             }
         }
@@ -126,7 +126,7 @@ class Router implements RouterInterface
      *
      * @throws CoreException
      */
-    function useDefaulterRouter()
+    function useDefaulterRouter(): void
     {
         $router = $this->getDefaultRouter();
         $this->setController($router[0]);
@@ -139,7 +139,7 @@ class Router implements RouterInterface
      * @return array
      * @throws CoreException
      */
-    function getDefaultRouter()
+    function getDefaultRouter(): array
     {
         if (empty($this->defaultRouter)) {
             $url_config = $this->config->get('url');
@@ -152,9 +152,9 @@ class Router implements RouterInterface
     /**
      * 返回控制器名称
      *
-     * @return mixed
+     * @return string
      */
-    public function getController()
+    public function getController(): string
     {
         return $this->controller;
     }
@@ -162,9 +162,9 @@ class Router implements RouterInterface
     /**
      * 返回action名称
      *
-     * @return mixed
+     * @return string
      */
-    public function getAction()
+    public function getAction(): string
     {
         return $this->action;
     }
@@ -174,7 +174,7 @@ class Router implements RouterInterface
      *
      * @return mixed
      */
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -188,7 +188,7 @@ class Router implements RouterInterface
      * @param bool $convert_html_entities
      * @return string
      */
-    public function getUriRequest($prefix = '/', &$url_config = array(), $clear_ampersand = true, $convert_html_entities = true)
+    public function getUriRequest(string $prefix = '/', &$url_config = [], bool $clear_ampersand = true, bool $convert_html_entities = true): string
     {
         $url_config = $this->config->get('url');
         if (!empty($this->uriRequest)) {
@@ -214,7 +214,7 @@ class Router implements RouterInterface
      * @param array $url_config
      * @internal param $router
      */
-    function parseRouter(array $request, array $url_config)
+    function parseRouter(array $request, array $url_config): void
     {
         $virtual_path = '';
         $set_virtual_path = &$url_config['virtual_path'];
@@ -254,16 +254,16 @@ class Router implements RouterInterface
             }
         }
 
-        $addition_params = array();
+        $addition_params = [];
         $params = $this->parseParams($request, $url_config, $addition_params);
-        $this->config->set('ori_router', array(
+        $this->config->set('ori_router', [
             'request' => $this->originUriRequest,
             'addition_params' => $addition_params,
             'virtual_path' => $virtual_path,
             'controller' => $ori_controller,
             'action' => $ori_action,
             'params' => $request,
-        ));
+        ]);
 
         $this->setController($controller);
         $this->setAction($action);
@@ -275,7 +275,7 @@ class Router implements RouterInterface
      *
      * @param $controller
      */
-    function setController($controller)
+    function setController(string $controller): void
     {
         $this->controller = $controller;
     }
@@ -285,7 +285,7 @@ class Router implements RouterInterface
      *
      * @param $action
      */
-    function setAction($action)
+    function setAction(string $action): void
     {
         $this->action = $action;
     }
@@ -295,7 +295,7 @@ class Router implements RouterInterface
      *
      * @param $params
      */
-    function setParams($params)
+    function setParams(array $params): void
     {
         $this->params = $params;
     }
@@ -308,7 +308,7 @@ class Router implements RouterInterface
      * @return array
      * @throws FrontException
      */
-    private static function parseRequestString($query_string, $url_config)
+    private static function parseRequestString(string $query_string, array $url_config): array
     {
         $url_suffix = &$url_config['ext'];
         if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
@@ -324,7 +324,7 @@ class Router implements RouterInterface
             $router_params = explode($url_dot, $query_string);
             $end_params = array_pop($router_params);
         } else {
-            $router_params = array();
+            $router_params = [];
             $end_params = $query_string;
         }
 
@@ -348,7 +348,7 @@ class Router implements RouterInterface
      * @return array
      * @throws CoreException
      */
-    private function parseDefaultRouter($default_router)
+    private function parseDefaultRouter(string $default_router): array
     {
         if (empty($default_router)) {
             throw new CoreException('Undefined default router!');
@@ -362,7 +362,7 @@ class Router implements RouterInterface
                 $action = self::DEFAULT_ACTION;
             }
 
-            $this->defaultRouter = array($controller, $action);
+            $this->defaultRouter = [$controller, $action];
         }
 
         return $this->defaultRouter;
@@ -376,7 +376,7 @@ class Router implements RouterInterface
      * @param array $addition_params
      * @return array
      */
-    private function parseParams(array $params, array $url_config, array &$addition_params = array())
+    private function parseParams(array $params, array $url_config, array &$addition_params = array()): array
     {
         $addition_params = $_GET;
         if (empty($params)) {

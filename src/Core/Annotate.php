@@ -51,7 +51,7 @@ class Annotate
      * @param Delegate $delegate
      * @return Annotate
      */
-    public static function getInstance(Delegate &$delegate)
+    public static function getInstance(Delegate &$delegate): self
     {
         if (!self::$instance) {
             self::$instance = new Annotate($delegate);
@@ -66,7 +66,7 @@ class Annotate
      * @param string $prefix
      * @return $this
      */
-    function setPrefix($prefix)
+    function setPrefix(string $prefix): self
     {
         $this->prefix = $prefix;
         return $this;
@@ -78,15 +78,15 @@ class Annotate
      * @param string $annotate
      * @return array
      */
-    public function parse($annotate = '')
+    public function parse(string $annotate = ''): array
     {
         if (empty($annotate)) {
-            return array();
+            return [];
         }
 
         $flag = preg_match_all("/@{$this->prefix}(.*?)\s+(.*)/", $annotate, $content);
         if (!$flag || empty($content[1])) {
-            return array();
+            return [];
         }
 
         $configs = [];
@@ -109,7 +109,7 @@ class Annotate
      * @param string $params
      * @return Closure
      */
-    public function bindToClosure($params)
+    public function bindToClosure(string $params): Closure
     {
         return function ($self) use ($params) {
             return include("annotate://{$params}");
@@ -122,7 +122,7 @@ class Annotate
      * @param string $params
      * @return mixed
      */
-    public function toCode($params)
+    public function toCode(string $params)
     {
         return include("annotate://{$params}");
     }
@@ -138,12 +138,12 @@ class Annotate
      * )
      * </pre>
      *
-     * @param $params
+     * @param string $params
      * @return array
      */
-    public function toArray($params)
+    public function toArray(string $params): array
     {
-        $result = array();
+        $result = [];
         $conf = array_map('trim', explode(',', $params));
         foreach ($conf as $c) {
             if (false !== strpos($c, '=')) {
@@ -154,7 +154,6 @@ class Annotate
             }
         }
         unset($conf);
-
         return $result;
     }
 
@@ -164,7 +163,7 @@ class Annotate
      * @param array $annotateConfigs
      * @return array
      */
-    private function parseAnnotate(array $annotateConfigs)
+    private function parseAnnotate(array $annotateConfigs): array
     {
         $result = array();
         foreach ($annotateConfigs as $conf => $params) {

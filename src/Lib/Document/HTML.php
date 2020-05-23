@@ -18,15 +18,15 @@ namespace Cross\Lib\Document;
  * <pre>
  * example:
  *  echo HTML::div('im a div');
- *  echo HTML::a(array('@content'=>'crossphp', 'href'=>'http://www.crossphp.com'));
- *  echo HTML::div(array('@content' => 'im a div', 'style'=>'border:1px solid #dddddd;padding:20px;'),
- *          HTML::a(array('@content'=>'crossphp', 'href'=>'http://www.crossphp.com'))
+ *  echo HTML::a(['@content'=>'crossphp', 'href'=>'http://www.crossphp.com']);
+ *  echo HTML::div(['@content' => 'im a div', 'style'=>'border:1px solid #dddddd;padding:20px;'],
+ *          HTML::a(['@content'=>'crossphp', 'href'=>'http://www.crossphp.com'])
  *       );
- *  echo HTML::form(array('method'=>'get'),
+ *  echo HTML::form(['method'=>'get'],
  *          HTML::div(
- *              HTML::label('User Name:', HTML::input(array('type'=>'text'))),
- *              HTML::label('Password :', HTML::input(array('type'=>'password'))),
- *              HTML::label('          ', HTML::input(array('type'=>'submit', 'value'=>'submit')))
+ *              HTML::label('User Name:', HTML::input(['type'=>'text'])),
+ *              HTML::label('Password :', HTML::input(['type'=>'password'])),
+ *              HTML::label('          ', HTML::input(['type'=>'submit', 'value'=>'submit']))
  *          )
  *       );
  * </pre>
@@ -40,7 +40,7 @@ class HTML
      * @param mixed $arguments
      * @return CallTree
      */
-    static function __callStatic($name, $arguments)
+    static function __callStatic(string $name, $arguments): CallTree
     {
         $callTree = CallTree::getInstance();
         $callTree->saveNode($name, $arguments);

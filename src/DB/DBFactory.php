@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB;
 
 use Cross\DB\SQLAssembler\MySQLAssembler;
@@ -20,6 +21,7 @@ use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
 use Cross\Exception\CoreException;
 use Closure;
+use Cross\Exception\DBConnectException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -36,8 +38,9 @@ class DBFactory
      * @param array $config
      * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
+     * @throws DBConnectException
      */
-    static function make($link, $params, array $config = array())
+    static function make(string $link, $params, array $config = array()): object
     {
         //如果params是一个匿名函数, 则调用匿名函数创建数据库连接
         if ($params instanceof Closure) {
@@ -89,7 +92,7 @@ class DBFactory
      * @return string
      * @throws CoreException
      */
-    private static function getDsn($params, $type = 'mysql', $use_unix_socket = true)
+    private static function getDsn(array $params, string $type = 'mysql', bool $use_unix_socket = true): string
     {
         if (!empty($params['dsn'])) {
             return $params['dsn'];

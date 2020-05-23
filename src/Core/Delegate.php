@@ -125,7 +125,7 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    static function loadApp(string $app_name, array $runtime_config = array()): Delegate
+    static function loadApp(string $app_name, array $runtime_config = array()): self
     {
         if (!isset(self::$instance[$app_name])) {
             self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
@@ -147,7 +147,7 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    public function get($controller, $args = array(), $return_content = false)
+    public function get(string $controller, $args = [], bool $return_content = false)
     {
         return $this->app->dispatcher($controller, $args, $return_content);
     }
@@ -186,7 +186,6 @@ class Delegate
      * </pre>
      *
      * @return Rest
-     * @throws CoreException
      */
     public function rest(): Rest
     {
@@ -213,17 +212,17 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    public function cliRun($run_argc = false, $run_argv = false)
+    public function cliRun(int $run_argc = null, array $run_argv = null)
     {
         if (PHP_SAPI !== 'cli') {
             die('This app is only running from CLI');
         }
 
-        if (false === $run_argc) {
+        if (null === $run_argc) {
             $run_argc = $_SERVER['argc'];
         }
 
-        if (false === $run_argv) {
+        if (null === $run_argv) {
             $run_argv = $_SERVER['argv'];
         }
 
@@ -246,7 +245,7 @@ class Delegate
      * @param Closure $f
      * @return $this
      */
-    function on($name, Closure $f)
+    function on(string $name, Closure $f): self
     {
         $this->action_container->add($name, $f);
         return $this;
@@ -257,7 +256,7 @@ class Delegate
      *
      * @return Application
      */
-    function getApplication()
+    function getApplication(): Application
     {
         return $this->app;
     }
@@ -277,7 +276,7 @@ class Delegate
      *
      * @return Loader
      */
-    function getLoader()
+    function getLoader(): Loader
     {
         return $this->loader;
     }
@@ -287,7 +286,7 @@ class Delegate
      *
      * @return array
      */
-    function getRuntimeConfig()
+    function getRuntimeConfig(): array
     {
         return $this->runtime_config;
     }
@@ -398,7 +397,7 @@ class Delegate
      *
      * @throws CoreException
      */
-    private function registerNamespace()
+    private function registerNamespace(): void
     {
         $namespaceConfig = $this->config->get('namespace');
         if (!empty($namespaceConfig)) {

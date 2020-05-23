@@ -20,21 +20,21 @@ class Response
      *
      * @var array
      */
-    protected $header;
+    protected $header = [];
 
     /**
      * cookie
      *
      * @var array
      */
-    protected $cookie;
+    protected $cookie = [];
 
     /**
      * cookie配置
      *
      * @var array
      */
-    protected $cookie_config;
+    protected $cookie_config = [];
 
     /**
      * 返回头http类型
@@ -81,7 +81,7 @@ class Response
      *
      * @return Response
      */
-    static function getInstance()
+    static function getInstance(): self
     {
         if (!self::$instance) {
             self::$instance = new Response();
@@ -94,7 +94,7 @@ class Response
      * @param int $status
      * @return $this
      */
-    function setResponseStatus($status = 200)
+    function setResponseStatus(int $status = 200): self
     {
         $this->response_status = $status;
         return $this;
@@ -103,7 +103,7 @@ class Response
     /**
      * @return int
      */
-    function getResponseStatus()
+    function getResponseStatus(): int
     {
         if (!$this->response_status) {
             $this->setResponseStatus();
@@ -115,10 +115,10 @@ class Response
     /**
      * 设置header信息
      *
-     * @param $header
+     * @param mixed $header
      * @return $this
      */
-    function setHeader($header)
+    function setHeader($header): self
     {
         if (is_array($header)) {
             foreach ($header as $key => $value) {
@@ -132,9 +132,11 @@ class Response
     }
 
     /**
-     * 获取要发送到header信息
+     * header
+     *
+     * @return array
      */
-    function getHeader()
+    function getHeader(): array
     {
         return $this->header;
     }
@@ -142,14 +144,14 @@ class Response
     /**
      * 添加cookie
      *
-     * @param mixed $name
+     * @param string $name
      * @param string $value
      * @param int $expire
      * @return $this
      */
-    function setCookie($name, $value = '', $expire = 0)
+    function setCookie(string $name, $value = '', int $expire = 0): self
     {
-        $this->cookie[$name] = array(
+        $this->cookie[$name] = [
             $name,
             $value,
             $expire,
@@ -157,7 +159,7 @@ class Response
             $this->getCookieConfig('domain'),
             $this->getCookieConfig('secure'),
             $this->getCookieConfig('httponly')
-        );
+        ];
 
         return $this;
     }
@@ -167,7 +169,7 @@ class Response
      *
      * @return array
      */
-    function getCookie()
+    function getCookie(): array
     {
         return $this->cookie;
     }
@@ -178,7 +180,7 @@ class Response
      * @param string $name
      * @return $this
      */
-    function deleteCookie($name)
+    function deleteCookie(string $name): self
     {
         $this->setCookie($name, null, -1);
         return $this;
@@ -198,7 +200,7 @@ class Response
      * @param array $config
      * @return $this
      */
-    function cookieConfig(array $config)
+    function cookieConfig(array $config): self
     {
         $this->cookie_config = $config;
         return $this;
@@ -230,7 +232,7 @@ class Response
      * @param string $content_type
      * @return $this
      */
-    function setContentType($content_type = 'html')
+    function setContentType(string $content_type = 'html'): self
     {
         $this->content_type = strtolower($content_type);
         return $this;
@@ -241,7 +243,7 @@ class Response
      *
      * @return mixed
      */
-    function getContentType()
+    function getContentType(): string
     {
         if (!$this->content_type) {
             $this->setContentType();
@@ -254,7 +256,7 @@ class Response
      *
      * @param string $content
      */
-    protected function setContent($content)
+    protected function setContent(string $content): void
     {
         $this->content = $content;
     }
@@ -275,7 +277,7 @@ class Response
      * @param array $users ['user' => 'password']
      * @param array $options
      */
-    function basicAuth(array $users, $options = array())
+    function basicAuth(array $users, array $options = []): void
     {
         $user = &$_SERVER['PHP_AUTH_USER'];
         $password = &$_SERVER['PHP_AUTH_PW'];
@@ -305,7 +307,7 @@ class Response
      * @param array $users ['user' => 'password']
      * @param array $options
      */
-    function digestAuth(array $users, array $options = array())
+    function digestAuth(array $users, array $options = []): void
     {
         $realm = &$options['realm'];
         if (null === $realm) {
@@ -348,7 +350,7 @@ class Response
      * @param int $code
      * @param string $descriptions
      */
-    function sendResponseStatus($code = 0, $descriptions = '')
+    function sendResponseStatus(int $code = 0, string $descriptions = ''): void
     {
         if (0 === $code) {
             $code = $this->getResponseStatus();
@@ -364,7 +366,7 @@ class Response
     /**
      * 发送ContentType
      */
-    function sendContentType()
+    function sendContentType(): void
     {
         $content_type_name = $this->getContentType();
         if (isset(self::$mime_types [$content_type_name])) {
@@ -381,14 +383,10 @@ class Response
     /**
      * 发送header
      */
-    private function sendHeader()
+    private function sendHeader(): void
     {
         $contents = $this->getHeader();
         if (!empty($contents)) {
-            if (!is_array($contents)) {
-                $contents = array($contents);
-            }
-
             foreach ($contents as $content) {
                 header($content);
             }
@@ -398,7 +396,7 @@ class Response
     /**
      * 发送cookie
      */
-    private function sendCookie()
+    private function sendCookie(): void
     {
         if (!empty($this->cookie)) {
             foreach ($this->cookie as $cookie) {
@@ -410,10 +408,10 @@ class Response
     /**
      * 输出内容
      *
-     * @param string $message
+     * @param array|string $message
      * @param string $tpl
      */
-    private function flushContent($message, $tpl = '')
+    private function flushContent($message, string $tpl = ''): void
     {
         if (null !== $tpl && is_file($tpl)) {
             require $tpl;
@@ -427,7 +425,7 @@ class Response
     /**
      * 标识停止输出
      */
-    function setEndFlush()
+    function setEndFlush(): self
     {
         $this->is_end_flush = true;
         return $this;
@@ -438,7 +436,7 @@ class Response
      *
      * @return bool
      */
-    function isEndFlush()
+    function isEndFlush(): bool
     {
         return $this->is_end_flush;
     }
@@ -449,7 +447,7 @@ class Response
      * @param string $url
      * @param int $status
      */
-    function redirect($url, $status = 302)
+    function redirect(string $url, int $status = 302): void
     {
         $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
     }
@@ -457,10 +455,10 @@ class Response
     /**
      * 调用模板输出信息
      *
-     * @param string $content
+     * @param string|array $content
      * @param string $tpl
      */
-    function display($content = '', $tpl = '')
+    function display($content = '', string $tpl = ''): void
     {
         if (!headers_sent() && PHP_SAPI != 'cli') {
             $this->sendResponseStatus();
@@ -479,7 +477,7 @@ class Response
      * @param string $content
      * @param string $tpl
      */
-    function displayOver($content = '', $tpl = '')
+    function displayOver(string $content = '', string $tpl = ''): void
     {
         $this->setEndFlush();
         $this->display($content, $tpl);
@@ -491,10 +489,10 @@ class Response
      * @param string $txt
      * @return array|bool
      */
-    private function httpDigestParse($txt)
+    private function httpDigestParse(string $txt)
     {
-        $data = array();
-        $needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
+        $data = [];
+        $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
         $keys = implode('|', array_keys($needed_parts));
 
         preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
@@ -509,7 +507,7 @@ class Response
     /**
      * @var array $statusDescriptions
      */
-    static public $statusDescriptions = array(
+    static public $statusDescriptions = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
@@ -549,12 +547,12 @@ class Response
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported'
-    );
+    ];
 
     /**
      * @var array $mime_types
      */
-    static public $mime_types = array(
+    static public $mime_types = [
         'ez' => 'application/andrew-inset',
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',
@@ -694,6 +692,6 @@ class Response
         'avi' => 'video/x-msvideo',
         'movie' => 'video/x-sgi-movie',
         'ice' => 'x-conference/x-cooltalk',
-    );
+    ];
 }
 

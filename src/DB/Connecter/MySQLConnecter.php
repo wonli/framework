@@ -39,13 +39,13 @@ class MySQLConnecter extends BaseConnecter
      *
      * @var array
      */
-    private static $options = array(
+    private static $options = [
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'
-    );
+    ];
 
     /**
      * 创建Mysql的PDO连接
@@ -56,7 +56,7 @@ class MySQLConnecter extends BaseConnecter
      * @param array $options
      * @throws DBConnectException
      */
-    private function __construct($dsn, $user, $password, array $options = array())
+    private function __construct(string $dsn, string $user, $password, array $options = [])
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
@@ -75,7 +75,7 @@ class MySQLConnecter extends BaseConnecter
      * @return mixed
      * @throws DBConnectException
      */
-    static function getInstance($dsn, $user, $password, array $option = array())
+    static function getInstance($dsn, $user, $password, array $option = []): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
@@ -91,7 +91,7 @@ class MySQLConnecter extends BaseConnecter
      *
      * @return PDO
      */
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo;
     }
@@ -100,9 +100,9 @@ class MySQLConnecter extends BaseConnecter
      * 获取表的主键名
      *
      * @param string $table
-     * @return bool
+     * @return string
      */
-    public function getPK($table)
+    public function getPK(string $table): string
     {
         $table_info = $this->getMetaData($table, false);
         foreach ($table_info as $ti) {
@@ -111,7 +111,7 @@ class MySQLConnecter extends BaseConnecter
             }
         }
 
-        return false;
+        return '';
     }
 
     /**
@@ -131,29 +131,29 @@ class MySQLConnecter extends BaseConnecter
      * @param bool $fields_map
      * @return mixed
      */
-    function getMetaData($table, $fields_map = true)
+    function getMetaData(string $table, bool $fields_map = true): array
     {
         $data = $this->pdo->query("SHOW FULL FIELDS FROM {$table}");
         try {
             if ($fields_map) {
-                $result = array();
+                $result = [];
                 $data->fetchAll(PDO::FETCH_FUNC,
                     function ($field, $type, $collation, $null, $key, $default, $extra, $privileges, $comment) use (&$result) {
-                        $result[$field] = array(
+                        $result[$field] = [
                             'primary' => $key == 'PRI',
                             'is_index' => $key ? $key : false,
                             'auto_increment' => $extra == 'auto_increment',
                             'default_value' => strval($default),
                             'not_null' => $null == 'NO',
                             'comment' => $comment
-                        );
+                        ];
                     });
                 return $result;
             } else {
                 return $data->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (Exception $e) {
-            return array();
+            return [];
         }
     }
 }

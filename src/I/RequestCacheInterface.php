@@ -19,23 +19,22 @@ interface RequestCacheInterface
      * 写入缓存
      *
      * @param string $value
-     * @return mixed set
      */
-    function set($value);
+    function set(string $value): void;
 
     /**
      * 获取缓存内容
      *
-     * @return mixed get cache
+     * @return mixed
      */
-    function get();
+    function get(): string;
 
     /**
      * 是否有效
      *
      * @return bool
      */
-    function isValid();
+    function isValid(): bool;
 
     /**
      * 缓存配置
@@ -43,7 +42,7 @@ interface RequestCacheInterface
      * @param array $config
      * @return mixed
      */
-    function setConfig(array $config = array());
+    function setConfig(array $config = []);
 
     /**
      * 获取缓存配置

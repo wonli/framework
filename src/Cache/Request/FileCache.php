@@ -8,9 +8,9 @@
 
 namespace Cross\Cache\Request;
 
+use Cross\I\RequestCacheInterface;
 use Cross\Cache\Driver\FileCacheDriver;
 use Cross\Exception\CoreException;
-use Cross\I\RequestCacheInterface;
 
 /**
  * @author wonli <wonli@live.com>
@@ -49,7 +49,7 @@ class FileCache implements RequestCacheInterface
 
     /**
      * FileCache constructor.
-     * 
+     *
      * @param array $config
      * @throws CoreException
      */
@@ -79,7 +79,7 @@ class FileCache implements RequestCacheInterface
      * @param string $value
      * @throws CoreException
      */
-    function set($value)
+    function set(string $value): void
     {
         $this->driver->set($this->cacheKey, $value);
     }
@@ -89,7 +89,7 @@ class FileCache implements RequestCacheInterface
      *
      * @return mixed get cache
      */
-    function get()
+    function get(): string
     {
         return $this->driver->get($this->cacheKey);
     }
@@ -99,7 +99,7 @@ class FileCache implements RequestCacheInterface
      *
      * @return bool
      */
-    function isValid()
+    function isValid(): bool
     {
         $cacheFile = $this->cachePath . $this->cacheKey;
         if (!file_exists($cacheFile)) {

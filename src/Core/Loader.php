@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
@@ -26,22 +27,22 @@ class Loader
      *
      * @var array
      */
-    private static $namespace;
+    private static $namespace = [];
 
     /**
      * 已加载类的文件列表
      *
      * @var array
      */
-    private static $loaded = array();
+    private static $loaded = [];
 
     /**
      * 初始化Loader
      */
     private function __construct()
     {
-        spl_autoload_register(array($this, 'loadClass'));
-        spl_autoload_register(array($this, 'loadPSRClass'));
+        spl_autoload_register([$this, 'loadClass']);
+        spl_autoload_register([$this, 'loadPSRClass']);
     }
 
     /**
@@ -49,7 +50,7 @@ class Loader
      *
      * @return Loader
      */
-    static function init()
+    static function init(): self
     {
         if (!self::$instance) {
             self::$instance = new self();
@@ -78,7 +79,7 @@ class Loader
      * @return mixed
      * @throws CoreException
      */
-    static function read($file, $get_file_content = false)
+    static function read(string $file, bool $get_file_content = false)
     {
         if (!file_exists($file)) {
             throw new CoreException("{$file} 文件不存在");
@@ -128,7 +129,7 @@ class Loader
      *
      * @return array
      */
-    static function getNamespaceMap()
+    static function getNamespaceMap(): array
     {
         return self::$namespace;
     }
@@ -140,7 +141,7 @@ class Loader
      * @param string $base_dir 源文件绝对路径
      * @param bool $prepend
      */
-    static function registerNamespace($prefix, $base_dir, $prepend = false)
+    static function registerNamespace(string $prefix, string $base_dir, bool $prepend = false): void
     {
         $prefix = trim($prefix, '\\') . '\\';
         $base_dir = rtrim($base_dir, DIRECTORY_SEPARATOR) . '/';
@@ -162,7 +163,7 @@ class Loader
      * @return bool|string
      * @throws CoreException
      */
-    private function loadClass($class_name)
+    private function loadClass(string $class_name)
     {
         $prefix = '';
         $pos = strpos($class_name, '\\');
@@ -190,7 +191,7 @@ class Loader
      * @return bool|string
      * @throws CoreException
      */
-    private function loadPSRClass($class)
+    private function loadPSRClass(string $class)
     {
         $prefix = $class;
         while (false !== $pos = strrpos($prefix, '\\')) {
@@ -210,12 +211,12 @@ class Loader
     /**
      * 匹配已注册的命名空间,require文件
      *
-     * @param $prefix
-     * @param $relative_class
+     * @param string $prefix
+     * @param string $relative_class
      * @return bool|string
      * @throws CoreException
      */
-    private function loadMappedFile($prefix, $relative_class)
+    private function loadMappedFile(string $prefix, string $relative_class)
     {
         if (isset(self::$namespace[$prefix]) === false) {
             return false;
@@ -234,13 +235,13 @@ class Loader
     /**
      * require文件
      *
-     * @param $file
+     * @param string $file
      * @param bool $throw_exception
      * @param bool $check_file_exists
      * @return bool
      * @throws CoreException
      */
-    private static function requireFile($file, $throw_exception = false, $check_file_exists = true)
+    private static function requireFile(string $file, bool $throw_exception = false, bool $check_file_exists = true): bool
     {
         if (isset(self::$loaded[$file])) {
             return true;

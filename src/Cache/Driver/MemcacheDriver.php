@@ -103,7 +103,7 @@ class MemcacheDriver
      * @param int|array $flag
      * @return array|string
      */
-    function get($key, &$flag = 0)
+    function get(string $key, &$flag = 0)
     {
         return $this->link->get($key, $flag);
     }

@@ -38,7 +38,7 @@ class SQLiteConnecter extends BaseConnecter
      * @param array $options
      * @throws DBConnectException
      */
-    private function __construct($dsn, array $options)
+    private function __construct(string $dsn, array $options)
     {
         try {
             $this->pdo = new PDO($dsn, null, null, parent::getOptions(self::$options, $options));
@@ -55,7 +55,7 @@ class SQLiteConnecter extends BaseConnecter
      * @return SQLiteConnecter|PDO
      * @throws DBConnectException
      */
-    static function getInstance($dsn, $user = null, $pwd = null, array $options = array())
+    static function getInstance(string $dsn, $user = null, $pwd = null, array $options = []): self
     {
         $key = md5($dsn);
         if (empty(self::$instance[$key])) {
@@ -68,9 +68,9 @@ class SQLiteConnecter extends BaseConnecter
     /**
      * 返回一个PDO连接对象的实例
      *
-     * @return mixed
+     * @return PDO
      */
-    function getPDO()
+    function getPDO(): PDO
     {
         return $this->pdo;
     }
@@ -79,9 +79,9 @@ class SQLiteConnecter extends BaseConnecter
      * 获取表的主键名
      *
      * @param string $table
-     * @return bool|mixed
+     * @return string
      */
-    function getPK($table)
+    function getPK(string $table): string
     {
         $info = $this->getMetaData($table, false);
         if (!empty($info)) {
@@ -92,7 +92,7 @@ class SQLiteConnecter extends BaseConnecter
             }
         }
 
-        return false;
+        return '';
     }
 
     /**
@@ -110,27 +110,27 @@ class SQLiteConnecter extends BaseConnecter
      * @param bool $fields_map
      * @return mixed
      */
-    function getMetaData($table, $fields_map = true)
+    function getMetaData(string $table, bool $fields_map = true): array
     {
         $sql = "PRAGMA table_info('{$table}')";
         try {
             $data = $this->pdo->query($sql);
             if ($fields_map) {
-                $result = array();
+                $result = [];
                 $data->fetchAll(PDO::FETCH_FUNC, function ($cid, $name, $type, $notnull, $dflt_value, $pk) use (&$result) {
-                    $result[$name] = array(
+                    $result[$name] = [
                         'primary' => $pk == 1,
                         'auto_increment' => (bool)(($pk == 1) && ($type == 'INTEGER')), //INTEGER && PRIMARY KEY.
                         'default_value' => strval($dflt_value),
                         'not_null' => $notnull == 1
-                    );
+                    ];
                 });
                 return $result;
             } else {
                 return $data->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (Exception $e) {
-            return array();
+            return [];
         }
     }
 }

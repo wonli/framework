@@ -5,6 +5,7 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use ArrayIterator;
@@ -21,7 +22,7 @@ class ArrayMap extends ArrayIterator
      *
      * @param array $array
      */
-    public function __construct(array $array = array())
+    public function __construct(array $array = [])
     {
         foreach ($array as &$value) {
             if (is_array($value) && isset($value)) {
@@ -35,9 +36,9 @@ class ArrayMap extends ArrayIterator
      * 实例化类
      *
      * @param $array
-     * @return ArrayMap
+     * @return self
      */
-    static public function init($array)
+    static public function init(array $array): self
     {
         return new self($array);
     }
@@ -95,7 +96,7 @@ class ArrayMap extends ArrayIterator
      * @param array $array
      * @return array
      */
-    public function toArray($array = array())
+    public function toArray(array $array = array()): array
     {
         if (empty($array)) {
             $array = $this->getArrayCopy();
@@ -145,9 +146,9 @@ class ArrayMap extends ArrayIterator
     }
 
     /**
-     * @see put()
      * @param $index
      * @param $value
+     * @see put()
      */
     public function set($index, $value)
     {

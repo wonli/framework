@@ -32,5 +32,5 @@ interface ILog
      * @param mixed $data 日志内容
      * @return $this
      */
-    function addToLog($tag, $data = array());
+    function addToLog($tag, $data = []);
 }

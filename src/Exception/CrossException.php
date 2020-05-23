@@ -15,6 +15,7 @@ use ReflectionMethod;
 use ReflectionClass;
 use SplFileObject;
 use Exception;
+use Throwable;
 
 /**
  * @author wonli <wonli@live.com>
@@ -49,9 +50,9 @@ abstract class CrossException extends Exception
      *
      * @param string $message
      * @param null|int $code
-     * @param Exception|null $previous
+     * @param Throwable|null $previous
      */
-    function __construct($message = 'CrossPHP Exception', $code = null, Exception $previous = null)
+    function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
         if (PHP_SAPI === 'cli') {
@@ -63,6 +64,10 @@ abstract class CrossException extends Exception
         $isAjaxRequest = Request::getInstance()->isAjaxRequest();
         if ($isAjaxRequest) {
             $this->responseJSONExceptionMsg = true;
+        }
+
+        if (null !== $code) {
+            $this->httpStatusCode = $code;
         }
     }
 
@@ -77,7 +82,7 @@ abstract class CrossException extends Exception
         $file = $e->getFile();
         $exception_line = $e->getLine();
 
-        $exception_file_source = array();
+        $exception_file_source = [];
         $exception_file_info = new SplFileObject($file);
         foreach ($exception_file_info as $line => $code) {
             $line += 1;
@@ -86,13 +91,13 @@ abstract class CrossException extends Exception
             }
         }
 
-        $result['main'] = array(
+        $result['main'] = [
             'file' => $file,
             'line' => $exception_line,
             'message' => $this->hiddenFileRealPath($e->getMessage()),
             'show_file' => $this->hiddenFileRealPath($file),
             'source' => $exception_file_source,
-        );
+        ];
 
         $trace = $e->getTrace();
         $this->getTraceInfo($trace, $result['trace']);
@@ -108,13 +113,13 @@ abstract class CrossException extends Exception
      *
      * @param Exception $e
      */
-    function cliErrorHandler(Exception $e)
+    function cliErrorHandler(Exception $e): void
     {
-        $trace_table = array();
+        $trace_table = [];
         $trace = $e->getTrace();
         $this->getCliTraceInfo($trace, $trace_table);
 
-        $previous_trace = array();
+        $previous_trace = [];
         if ($e->getPrevious()) {
             $previous_trace = $e->getPrevious()->getTrace();
             $this->getCliTraceInfo($previous_trace, $trace_table);
@@ -136,7 +141,7 @@ abstract class CrossException extends Exception
      *
      * @param Exception $e
      */
-    function errorHandler(Exception $e)
+    function errorHandler(Exception $e): void
     {
         $exceptionMsg = $this->cpExceptionSource($e);
         if ($this->responseJSONExceptionMsg) {
@@ -182,7 +187,7 @@ abstract class CrossException extends Exception
      * @param array $trace
      * @param $content
      */
-    protected function getTraceInfo(array $trace, &$content)
+    protected function getTraceInfo(array $trace, &$content): void
     {
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
@@ -212,7 +217,7 @@ abstract class CrossException extends Exception
      * @param array $trace
      * @param $trace_table
      */
-    protected function getCliTraceInfo(&$trace, &$trace_table)
+    protected function getCliTraceInfo(&$trace, &$trace_table): void
     {
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
@@ -244,10 +249,10 @@ abstract class CrossException extends Exception
     /**
      * 隐藏异常中的真实文件路径
      *
-     * @param $path
+     * @param string $path
      * @return mixed
      */
-    protected function hiddenFileRealPath($path)
+    protected function hiddenFileRealPath(string $path): string
     {
         return str_replace(array(PROJECT_REAL_PATH, CP_PATH, str_replace('/', DIRECTORY_SEPARATOR, $_SERVER['DOCUMENT_ROOT'])),
             array('Project->', 'Cross->', 'Index->'), $path);
@@ -259,7 +264,7 @@ abstract class CrossException extends Exception
      * @param string $code
      * @return mixed
      */
-    private static function highlightCode($code)
+    private static function highlightCode(string $code): string
     {
         $code = rtrim($code);
         if (0 === strcasecmp(substr($code, 0, 5), '<?php ')) {
@@ -275,7 +280,7 @@ abstract class CrossException extends Exception
      *
      * @param array $trace
      */
-    private function alignmentTraceData(array &$trace = array())
+    private function alignmentTraceData(array &$trace = array()): void
     {
         foreach ($trace as &$t) {
             if (isset($t['file'])) {

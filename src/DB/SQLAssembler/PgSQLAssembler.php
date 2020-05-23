@@ -5,7 +5,10 @@
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\DB\SQLAssembler;
+
+use Cross\Exception\CoreException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -24,9 +27,9 @@ class PgSQLAssembler extends SQLAssembler
      * @param array $page 分页参数 默认返回50条记录
      * @param int|string $group_by
      * @return mixed|void
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
      */
-    public function find($table, $fields, $where, $order = null, array &$page = array('p' => 1, 'limit' => 50), $group_by = null)
+    public function find(string $table, string $fields, $where, $order = null, array &$page = ['p' => 1, 'limit' => 50], $group_by = null)
     {
         $params = array();
         $field_str = $this->parseFields($fields);
@@ -53,7 +56,7 @@ class PgSQLAssembler extends SQLAssembler
      * @param bool|int $end
      * @return string
      */
-    public function limit($start, $end = false)
+    public function limit(int $start, $end = false): string
     {
         if ($end) {
             $limit = max(1, (int)$end);

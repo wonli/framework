@@ -50,7 +50,7 @@ class Config
      * @param string $res_file 配置文件绝对路径
      * @throws CoreException
      */
-    private function __construct($res_file)
+    private function __construct(string $res_file)
     {
         $this->res_file = $res_file;
         $this->config_data = Loader::read($res_file);
@@ -65,7 +65,7 @@ class Config
      * @return Config
      * @throws CoreException
      */
-    static function load($file): self
+    static function load(string $file): self
     {
         if (!isset(self::$instance[$file])) {
             self::$instance[$file] = new self($file);
@@ -81,7 +81,7 @@ class Config
      * @param bool $cover 是否覆盖已有值
      * @return $this
      */
-    function combine(array $append_config = array(), $cover = true): self
+    function combine(array $append_config = [], bool $cover = true): self
     {
         if (!empty($append_config)) {
             foreach ($append_config as $key => $value) {
@@ -118,7 +118,7 @@ class Config
      * @return string|array
      * @see CrossArray::get()
      */
-    function get($index, $options = '')
+    function get(string $index, $options = '')
     {
         $key = $this->getIndexCacheKey($index);
         if (is_array($options)) {
@@ -141,15 +141,12 @@ class Config
      *
      * @param string $index
      * @param array|string $values
-     * @return bool
      * @see CrossArray::get()
      */
-    function set($index, $values = '')
+    function set(string $index, $values = ''): void
     {
-        $result = $this->ca->set($index, $values);
+        $this->ca->set($index, $values);
         $this->clearIndexCache($index);
-
-        return $result;
     }
 
     /**
@@ -174,7 +171,7 @@ class Config
      * @param string $index
      * @return string
      */
-    protected function getIndexCacheKey($index)
+    protected function getIndexCacheKey(string $index): string
     {
         return $this->res_file . '.' . $index;
     }
@@ -184,7 +181,7 @@ class Config
      *
      * @param string $index
      */
-    protected function clearIndexCache($index)
+    protected function clearIndexCache(string $index): void
     {
         $key = $this->getIndexCacheKey($index);
         unset(self::$cache[$key]);

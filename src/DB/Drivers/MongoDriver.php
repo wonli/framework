@@ -37,8 +37,8 @@ class MongoDriver
         }
 
         try {
-            $options = empty($params['options']) ? array() : $params['options'];
-            $driverOptions = empty($params['driverOptions']) ? array() : $params['driverOptions'];
+            $options = empty($params['options']) ? [] : $params['options'];
+            $driverOptions = empty($params['driverOptions']) ? [] : $params['driverOptions'];
 
             $this->manager = new Manager($params['dsn'], $options, $driverOptions);
         } catch (Exception $e) {

@@ -25,7 +25,7 @@ class FileCacheDriver implements CacheInterface
      */
     private $cache_path;
 
-    function __construct($cache_path)
+    function __construct(string $cache_path)
     {
         $cache_path = rtrim($cache_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->cache_path = $cache_path;
@@ -37,7 +37,7 @@ class FileCacheDriver implements CacheInterface
      * @param string $key
      * @return mixed
      */
-    function get($key = '')
+    function get(string $key = '')
     {
         $cache_file = $this->cache_path . $key;
         if (!file_exists($cache_file)) {
@@ -55,7 +55,7 @@ class FileCacheDriver implements CacheInterface
      * @return mixed|void
      * @throws CoreException
      */
-    function set($key, $value)
+    function set(string $key, $value)
     {
         $cacheFile = $this->cache_path . $key;
         if (!file_exists($cacheFile)) {
