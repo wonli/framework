@@ -11,7 +11,6 @@ namespace Cross\Core;
 use Cross\I\RequestCacheInterface;
 use Cross\I\RouterInterface;
 
-use Cross\Exception\FrontException;
 use Cross\Exception\CoreException;
 
 use Cross\Cache\Driver\FileCacheDriver;
@@ -105,7 +104,6 @@ class Application
      * @param bool $return_response_content 是否输出执行结果
      * @return array|mixed|string
      * @throws CoreException
-     * @throws FrontException
      */
     public function dispatcher($router, $args = [], bool $return_response_content = false)
     {
@@ -160,15 +158,8 @@ class Application
                 return $runtime_config;
             });
 
-            try {
-                $cr->setStaticPropertyValue('app_delegate', $this->delegate);
-                $controller = $cr->newInstance();
-            } catch (FrontException $e) {
-                throw new FrontException($e->getMessage(), $e->getCode(), $e);
-            } catch (Exception $e) {
-                throw new CoreException($e->getMessage(), 500, $e);
-            }
-
+            $cr->setStaticPropertyValue('app_delegate', $this->delegate);
+            $controller = $cr->newInstance();
             if ($this->delegate->getResponse()->isEndFlush()) {
                 return true;
             }
