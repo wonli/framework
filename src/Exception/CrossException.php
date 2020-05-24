@@ -8,7 +8,7 @@
 
 namespace Cross\Exception;
 
-use Cross\Http\Request;
+use Cross\Interactive\ResponseData;
 use Cross\Http\Response;
 
 use ReflectionMethod;
@@ -54,21 +54,18 @@ abstract class CrossException extends Exception
      */
     function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
     {
-        parent::__construct($message, $code, $previous);
         if (PHP_SAPI === 'cli') {
             set_exception_handler(array($this, 'cliErrorHandler'));
         } else {
             set_exception_handler(array($this, 'errorHandler'));
         }
 
-        $isAjaxRequest = Request::getInstance()->isAjaxRequest();
-        if ($isAjaxRequest) {
+        $contentType = Response::getInstance()->getContentType();
+        if (0 === strcasecmp($contentType, 'JSON')) {
             $this->responseJSONExceptionMsg = true;
         }
 
-        if (null !== $code) {
-            $this->httpStatusCode = $code;
-        }
+        parent::__construct($message, $code, $previous);
     }
 
     /**
@@ -143,12 +140,20 @@ abstract class CrossException extends Exception
      */
     function errorHandler(Exception $e): void
     {
-        $exceptionMsg = $this->cpExceptionSource($e);
+        $Response = Response::getInstance();
         if ($this->responseJSONExceptionMsg) {
-            Response::getInstance()->setResponseStatus($this->httpStatusCode)
-                ->display(json_encode($exceptionMsg));
+            $ResponseData = new ResponseData();
+            $ResponseData->setStatus($e->getCode());
+            $ResponseData->setMessage($e->getMessage());
+            if (!empty($this->extData)) {
+                $ResponseData->setData((array)$this->extData);
+            }
+
+            $Response->setResponseStatus($this->httpStatusCode)
+                ->display(json_encode($ResponseData->getData()));
         } else {
-            Response::getInstance()->setResponseStatus($this->httpStatusCode)
+            $exceptionMsg = $this->cpExceptionSource($e);
+            $Response->setResponseStatus($this->httpStatusCode)
                 ->display($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
         }
     }
