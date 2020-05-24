@@ -8,6 +8,7 @@
 
 namespace Cross\MVC;
 
+use Cross\Interactive\ResponseData;
 use Cross\Exception\CoreException;
 use Cross\Core\FrameBase;
 
@@ -18,6 +19,20 @@ use Cross\Core\FrameBase;
  */
 class Controller extends FrameBase
 {
+    /**
+     * 默认数据
+     *
+     * @var array
+     */
+    protected $data = ['status' => 1, 'message' => ''];
+
+    /**
+     * 状态配置文件
+     *
+     * @var string
+     */
+    protected $statusConfigFile = 'config::status.config.php';
+
     /**
      * 判断是否POST请求
      *
@@ -97,17 +112,79 @@ class Controller extends FrameBase
     }
 
     /**
-     * @param null|mixed $data
-     * @param null|string $method
+     * 视图渲染
+     *
+     * @param mixed $data
+     * @param string $method
      * @param int $http_response_status
      * @throws CoreException
      * @see View::display()
-     *
      */
     protected function display($data = null, string $method = null, int $http_response_status = 200): void
     {
         $this->delegate->getResponse()->setResponseStatus($http_response_status);
         $this->view->display($data, $method);
+    }
+
+    /**
+     * 交互数据对齐
+     *
+     * @param mixed $data
+     * @param bool $combine 是否合并
+     * @return array
+     * @throws CoreException
+     */
+    protected function getResponseData($data, bool $combine = false): array
+    {
+        $responseData = (new ResponseData())->getData();
+        if (is_numeric($data)) {
+            $responseData['status'] = $data;
+        } elseif (is_array($data) && $combine) {
+            $manualMergeData = true;
+            if (isset($data['data'])) {
+                $manualMergeData = false;
+                $responseData['data'] = &$data['data'];
+            }
+
+            foreach ($data as $k => $v) {
+                if (isset($responseData[$k])) {
+                    $responseData[$k] = $v;
+                } elseif ($manualMergeData) {
+                    $responseData['data'][$k] = $v;
+                }
+            }
+        } elseif (is_array($data)) {
+            $responseData = array_merge($responseData, $data);
+        } else {
+            $responseData['message'] = $data;
+        }
+
+        if ($responseData['status'] != 1 && empty($responseData['message'])) {
+            $responseData['message'] = $this->getStatusMessage($responseData['status']);
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * 获取消息状态内容
+     *
+     * @param int $status
+     * @return string
+     * @throws CoreException
+     */
+    protected function getStatusMessage(int $status): string
+    {
+        static $statusConfig = null;
+        if ($statusConfig === null) {
+            $statusConfig = $this->parseGetFile($this->statusConfigFile);
+        }
+
+        if (!isset($statusConfig[$status])) {
+            throw new CoreException('未定义的错误码: ' . $status);
+        }
+
+        return $statusConfig[$status];
     }
 
     /**
