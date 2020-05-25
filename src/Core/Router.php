@@ -11,7 +11,6 @@ namespace Cross\Core;
 use Cross\I\RouterInterface;
 use Cross\Exception\FrontException;
 use Cross\Exception\CoreException;
-use Cross\Http\Request;
 
 /**
  * @author wonli <wonli@live.com>
@@ -194,7 +193,7 @@ class Router implements RouterInterface
             return $this->uriRequest;
         }
 
-        $uriRequest = Request::getInstance()->getPathInfo();
+        $uriRequest = $this->delegate->getRequest()->getPathInfo();
         $this->originUriRequest = $uriRequest;
         if ($uriRequest) {
             $uriRequest = urldecode(ltrim($uriRequest, '/'));

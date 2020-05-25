@@ -275,14 +275,13 @@ class Response
      * basic authentication
      *
      * @param array $users ['user' => 'password']
+     * @param string $user PHP_AUTH_USER
+     * @param string $password PHP_AUTH_PW
      * @param array $options
      */
-    function basicAuth(array $users, array $options = []): void
+    function basicAuth(array $users, string $user, string $password, array $options = []): void
     {
-        $user = &$_SERVER['PHP_AUTH_USER'];
-        $password = &$_SERVER['PHP_AUTH_PW'];
         if (isset($users[$user]) && (0 === strcmp($password, $users[$user]))) {
-            $_SERVER['CP_AUTH_USER'] = $user;
             return;
         }
 
@@ -305,26 +304,24 @@ class Response
      * digest authentication
      *
      * @param array $users ['user' => 'password']
+     * @param string $digest PHP_AUTH_DIGEST
+     * @param string $requestMethod REQUEST_METHOD
      * @param array $options
      */
-    function digestAuth(array $users, array $options = []): void
+    function digestAuth(array $users, string $digest, string $requestMethod, array $options = []): void
     {
         $realm = &$options['realm'];
         if (null === $realm) {
             $realm = 'CP Login Required';
         }
 
-        $digest = &$_SERVER['PHP_AUTH_DIGEST'];
-        if ($digest) {
-            $data = $this->httpDigestParse($digest);
-            if (isset($data['username']) && isset($users[$data['username']])) {
-                $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
-                $A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
-                $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
-                if (0 === strcmp($valid_response, $data['response'])) {
-                    $_SERVER['CP_AUTH_USER'] = $data['username'];
-                    return;
-                }
+        $data = $this->httpDigestParse($digest);
+        if (isset($data['username']) && isset($users[$data['username']])) {
+            $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
+            $A2 = md5($requestMethod . ':' . $data['uri']);
+            $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
+            if (0 === strcmp($valid_response, $data['response'])) {
+                return;
             }
         }
 
@@ -484,7 +481,7 @@ class Response
     }
 
     /**
-     * parse digest authentication string
+     * Parse digest authentication string
      *
      * @param string $txt
      * @return array|bool

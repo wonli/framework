@@ -108,12 +108,6 @@ class CookieAuth implements HttpAuthInterface
      */
     protected function getEncryptKey($cookieName): string
     {
-        if (isset($_SERVER['HTTP_USER_AGENT'])) {
-            $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-        } else {
-            $agent = 'agent';
-        }
-
-        return md5($agent . $this->key . $cookieName);
+        return md5($cookieName . $this->key . $cookieName);
     }
 }

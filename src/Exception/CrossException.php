@@ -259,8 +259,7 @@ abstract class CrossException extends Exception
      */
     protected function hiddenFileRealPath(string $path): string
     {
-        return str_replace(array(PROJECT_REAL_PATH, CP_PATH, str_replace('/', DIRECTORY_SEPARATOR, $_SERVER['DOCUMENT_ROOT'])),
-            array('Project->', 'Cross->', 'Index->'), $path);
+        return str_replace([PROJECT_REAL_PATH, CP_PATH], ['Project->', 'Cross->'], $path);
     }
 
     /**

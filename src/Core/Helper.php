@@ -81,7 +81,7 @@ class Helper
      */
     public static function strLen(string $str, string $enc = 'gb2312'): int
     {
-        return min(array(mb_strlen($str, $enc), mb_strlen($str, 'utf-8')));
+        return min([mb_strlen($str, $enc), mb_strlen($str, 'utf-8')]);
     }
 
     /**
@@ -97,7 +97,7 @@ class Helper
             $str = iconv($charset, 'utf-8', $str);
         }
 
-        $result = array();
+        $result = [];
         for ($i = 0, $str_len = mb_strlen($str, 'utf-8'); $i < $str_len; $i++) {
             $result[] = mb_substr($str, $i, 1, 'utf-8');
         }
@@ -204,7 +204,7 @@ class Helper
      */
     static function random(int $length, int $numeric = 0): string
     {
-        $seed = md5(print_r($_SERVER, 1) . microtime(true));
+        $seed = md5(microtime(true));
         if ($numeric) {
             $seed = str_replace('0', '', base_convert($seed, 16, 10)) . '0123456789';
         } else {
@@ -241,8 +241,8 @@ class Helper
      */
     static function stripSelectedTags(string $str, string $disallowable = '<script><iframe><style><link>'): string
     {
-        $disallowable = trim(str_replace(array('>', '<'), array('', '|'), $disallowable), '|');
-        $str = str_replace(array('&lt;', '&gt;'), array('<', '>'), $str);
+        $disallowable = trim(str_replace(['>', '<'], ['', '|'], $disallowable), '|');
+        $str = str_replace(['&lt;', '&gt;'], ['<', '>'], $str);
         $str = preg_replace("~<({$disallowable})[^>]*>(.*?<\s*\/(\\1)[^>]*>)?~is", '$2', $str);
 
         return $str;
@@ -256,7 +256,7 @@ class Helper
      */
     static function convertTags(string $str): string
     {
-        return str_replace(array('<', '>', "'", '"'), array('&lt;', '&gt;', '&#039;', '&quot;'), $str);
+        return str_replace(['<', '>', "'", '"'], ['&lt;', '&gt;', '&#039;', '&quot;'], $str);
     }
 
     /**
@@ -285,11 +285,11 @@ class Helper
             base64_decode(substr($string, $c_key_length)) :
             sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
-        $result = array();
+        $result = [];
         $box = range(0, 255);
         $string_length = strlen($string);
 
-        $rnd_key = array();
+        $rnd_key = [];
         for ($i = 0; $i <= 255; $i++) {
             $rnd_key[$i] = $crypt_key[$i % $key_length];
         }
@@ -302,7 +302,7 @@ class Helper
             $box[$j] = $tmp;
         }
 
-        $p1 = $p2 = array();
+        $p1 = $p2 = [];
         for ($a = $j = $i = 0; $i < $string_length; $i++) {
             $a = ($a + 1) % 256;
             $j = ($j + $box[$a]) % 256;
@@ -417,7 +417,7 @@ class Helper
      * @return string
      * @throws CoreException
      */
-    static function curlRequest(string $url, array $vars = array(), string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
+    static function curlRequest(string $url, array $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
     {
         $method = strtoupper($method);
         $SSL = substr($url, 0, 8) == "https://" ? true : false;
@@ -438,7 +438,7 @@ class Helper
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-HTTP-Method-Override: {$method}"));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-HTTP-Method-Override: {$method}"]);
 
         if ($SSL && $CA && $cacert) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
@@ -452,7 +452,7 @@ class Helper
         if ($method == 'POST' || $method == 'PUT') {
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); //避免data数据过长
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Expect:']); //避免data数据过长
         }
         $result = curl_exec($ch);
         $errorCode = curl_errno($ch);
@@ -633,9 +633,9 @@ class Helper
         if ($op == 'ENCODE') {
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
             $encrypted = openssl_encrypt($data, $method, $encrypt_key, 0, $iv);
-            $result = str_replace(array('=', '/', '+'), array('', '-', '_'), base64_encode($encrypted . '::' . $iv));
+            $result = str_replace(['=', '/', '+'], ['', '-', '_'], base64_encode($encrypted . '::' . $iv));
         } else {
-            $data = base64_decode(str_replace(array('-', '_'), array('/', '+'), $data));
+            $data = base64_decode(str_replace(['-', '_'], ['/', '+'], $data));
             list($encrypted, $iv) = explode('::', $data);
             $result = openssl_decrypt($encrypted, $method, $encrypt_key, 0, $iv);
         }
@@ -646,23 +646,25 @@ class Helper
     /**
      * 取得用户真实ip
      *
+     * @param Delegate $delegate
      * @return string
      */
-    static function getIp(): string
+    static function getIp(Delegate $delegate): string
     {
-        return Request::getInstance()->getClientIPAddress();
+        return Request::getInstance($delegate)->getClientIPAddress();
     }
 
     /**
      * 返回IP的整数形式
      *
+     * @param Delegate $delegate
      * @param string $ip
      * @return string
      */
-    static function getLongIp(string $ip = '')
+    static function getLongIp(Delegate $delegate, string $ip = '')
     {
         if ($ip == '') {
-            $ip = self::getIp();
+            $ip = self::getIp($delegate);
         }
 
         return sprintf("%u", ip2long($ip));
@@ -685,7 +687,7 @@ class Helper
 
         $t = $start_time - $time;
         if ($t < 63072000) {
-            $f = array(
+            $f = [
                 '31536000' => '年',
                 '2592000' => '个月',
                 '604800' => '星期',
@@ -693,7 +695,7 @@ class Helper
                 '3600' => '小时',
                 '60' => '分钟',
                 '1' => '秒'
-            );
+            ];
 
             foreach ($f as $k => $v) {
                 if (0 != $c = floor($t / (int)$k)) {
@@ -713,7 +715,7 @@ class Helper
      */
     static function convert(int $size): string
     {
-        $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
+        $unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
         $s = floor(log($size, 1024));
         $i = (int)$s;
 

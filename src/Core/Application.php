@@ -115,7 +115,9 @@ class Application
 
         $closureContainer->run('dispatcher');
         if (!empty($annotate_config['basicAuth'])) {
-            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
+            $user = $this->delegate->getRequest()->SERVER('PHP_AUTH_USER');
+            $password = $this->delegate->getRequest()->SERVER('PHP_AUTH_PW');
+            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth'], $user, $password);
         }
 
         $cache = false;

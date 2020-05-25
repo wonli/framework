@@ -8,6 +8,7 @@
 
 namespace Cross\Http;
 
+use Cross\Core\Delegate;
 use Cross\Exception\FrontException;
 
 /**
@@ -23,14 +24,30 @@ class Request
     private static $instance;
 
     /**
+     * @var Delegate
+     */
+    protected $delegate;
+
+    /**
+     * Request constructor.
+     *
+     * @param Delegate $delegate
+     */
+    function __construct(Delegate $delegate)
+    {
+        $this->delegate = $delegate;
+    }
+
+    /**
      * 实例化类
      *
+     * @param Delegate $delegate
      * @return Request
      */
-    public static function getInstance(): self
+    public static function getInstance(Delegate $delegate): self
     {
         if (!self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($delegate);
         }
 
         return self::$instance;

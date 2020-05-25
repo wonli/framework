@@ -98,7 +98,7 @@ class Delegate
         $this->runtime_config = $runtime_config;
 
         $this->loader = Loader::init();
-        $this->config = self::initConfig($app_name, $runtime_config);
+        $this->config = $this->initConfig($app_name, $runtime_config);
 
         $this->registerNamespace();
         $this->action_container = new ClosureContainer();
@@ -215,12 +215,13 @@ class Delegate
             die('This app is only running from CLI');
         }
 
+        global $argc, $argv;
         if (null === $run_argc) {
-            $run_argc = $_SERVER['argc'];
+            $run_argc = &$argc;
         }
 
         if (null === $run_argv) {
-            $run_argv = $_SERVER['argv'];
+            $run_argv = &$argv;
         }
 
         if ($run_argc == 1) {
@@ -311,7 +312,7 @@ class Delegate
      */
     function getRequest(): Request
     {
-        return Request::getInstance();
+        return Request::getInstance($this);
     }
 
     /**
@@ -331,9 +332,9 @@ class Delegate
      * @throws FrontException
      * @throws CoreException
      */
-    private static function initConfig(string $app_name, array $runtime_config): Config
+    private function initConfig(string $app_name, array $runtime_config): Config
     {
-        $request = Request::getInstance();
+        $request = $this->getRequest();
         $host = $request->getHostInfo();
         $index_name = $request->getIndexName();
 
@@ -341,10 +342,10 @@ class Delegate
         $script_path = $request->getScriptFilePath();
 
         //app名称和路径
-        $runtime_config['app'] = array(
+        $runtime_config['app'] = [
             'name' => $app_name,
             'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
-        );
+        ];
 
         $env_config = [
             //url相关设置
