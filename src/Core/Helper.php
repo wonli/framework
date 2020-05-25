@@ -644,29 +644,13 @@ class Helper
     }
 
     /**
-     * 取得用户真实ip
-     *
-     * @param Delegate $delegate
-     * @return string
-     */
-    static function getIp(Delegate $delegate): string
-    {
-        return Request::getInstance($delegate)->getClientIPAddress();
-    }
-
-    /**
      * 返回IP的整数形式
      *
-     * @param Delegate $delegate
      * @param string $ip
      * @return string
      */
-    static function getLongIp(Delegate $delegate, string $ip = '')
+    static function getLongIp(string $ip = '')
     {
-        if ($ip == '') {
-            $ip = self::getIp($delegate);
-        }
-
         return sprintf("%u", ip2long($ip));
     }
 
