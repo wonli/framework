@@ -184,27 +184,38 @@ class Router implements RouterInterface
      *
      * @param string $prefix
      * @param array $url_config
-     * @param bool $clear_ampersand
      * @param bool $convert_html_entities
      * @return string
      */
-    public function getUriRequest(string $prefix = '/', &$url_config = [], bool $clear_ampersand = true, bool $convert_html_entities = true): string
+    public function getUriRequest(string $prefix = '/', &$url_config = [], bool $convert_html_entities = true): string
     {
         $url_config = $this->config->get('url');
         if (!empty($this->uriRequest)) {
             return $this->uriRequest;
         }
 
-        $request = Request::getInstance()->getPathInfo();
-        $this->originUriRequest = $request;
-        if ($request) {
-            $request = urldecode(ltrim($request, '/'));
+        $uriRequest = Request::getInstance()->getPathInfo();
+        $this->originUriRequest = $uriRequest;
+        if ($uriRequest) {
+            $uriRequest = urldecode(ltrim($uriRequest, '/'));
             if ($convert_html_entities) {
-                $request = htmlspecialchars($request, ENT_QUOTES);
+                $uriRequest = htmlspecialchars($uriRequest, ENT_QUOTES);
             }
         }
 
-        return $prefix . $request;
+        $this->uriRequest = $prefix . $uriRequest;
+        return $this->uriRequest;
+    }
+
+    /**
+     * 设置请求字符串
+     *
+     * @param string $uriRequest
+     */
+    public function setUrlRequest(string $uriRequest): void
+    {
+        $this->uriRequest = urldecode(ltrim($uriRequest, '/'));
+        $this->originUriRequest = $uriRequest;
     }
 
     /**

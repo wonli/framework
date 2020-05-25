@@ -67,7 +67,7 @@ class Rest
         $this->delegate = $delegate;
         $this->request = $delegate->getRequest();
         $this->request_type = strtoupper($this->request->getRequestType());
-        $this->request_string = $delegate->getRouter()->getUriRequest('/', $useless, false, false);
+        $this->request_string = $delegate->getRouter()->getUriRequest('/', $useless, false);
     }
 
     /**
