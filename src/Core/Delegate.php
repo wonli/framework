@@ -145,7 +145,6 @@ class Delegate
      * @param bool $return_content 是输出还是直接返回结果
      * @return array|mixed|string
      * @throws CoreException
-     * @throws FrontException
      */
     public function get(string $controller, $args = [], bool $return_content = false)
     {
@@ -168,7 +167,6 @@ class Delegate
      *
      * @param RouterInterface $router
      * @throws CoreException
-     * @throws FrontException
      */
     public function rRun(RouterInterface $router)
     {
@@ -210,7 +208,6 @@ class Delegate
      * @param int|bool $run_argc
      * @param array|bool $run_argv
      * @throws CoreException
-     * @throws FrontException
      */
     public function cliRun(int $run_argc = null, array $run_argv = null)
     {
