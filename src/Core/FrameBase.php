@@ -69,16 +69,21 @@ class FrameBase
      */
     public static $app_delegate;
 
+    /**
+     * FrameBase constructor.
+     */
     public function __construct()
     {
         $this->delegate = self::$app_delegate;
-        $runtime_config = $this->delegate->getClosureContainer()->run('~controller~runtime~');
 
-        $this->view_controller = &$runtime_config['view_controller_namespace'];
-        $this->action_annotate = &$runtime_config['action_annotate'];
-        $this->controller = &$runtime_config['controller'];
-        $this->action = &$runtime_config['action'];
-        $this->params = &$runtime_config['params'];
+        $router = $this->delegate->getRouter();
+        $this->controller = $router->getController();
+        $this->action = $router->getAction();
+        $this->params = $router->getParams();
+
+        $app = $this->delegate->getApplication();
+        $this->action_annotate = $app->getAnnotateConfig();
+        $this->view_controller = $app->getViewControllerNameSpace($this->controller);
     }
 
     /**
