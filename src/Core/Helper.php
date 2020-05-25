@@ -9,7 +9,6 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
-use Cross\Http\Request;
 
 use DOMDocument;
 use Exception;
@@ -647,9 +646,9 @@ class Helper
      * 返回IP的整数形式
      *
      * @param string $ip
-     * @return string
+     * @return int
      */
-    static function getLongIp(string $ip = '')
+    static function getLongIp(string $ip): int
     {
         return sprintf("%u", ip2long($ip));
     }
