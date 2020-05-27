@@ -95,9 +95,10 @@ class Router implements RouterInterface
             $closure = $this->delegate->getClosureContainer();
             if ($closure->has('router')) {
                 $closure->run('router', [$request, $this]);
-            }
-
-            if (empty($this->controller) || empty($this->action)) {
+                if (empty($this->controller) || empty($this->action)) {
+                    $this->parseRouter($request, $url_config);
+                }
+            } else {
                 $this->parseRouter($request, $url_config);
             }
         } else {
