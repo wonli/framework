@@ -66,11 +66,6 @@ class Router implements RouterInterface
     private $defaultRouter = [];
 
     /**
-     * @var bool
-     */
-    private $hasParseUrl = false;
-
-    /**
      * 默认Action名称
      */
     const DEFAULT_ACTION = 'index';
@@ -94,27 +89,24 @@ class Router implements RouterInterface
      */
     public function getRouter(): self
     {
-        if (!$this->hasParseUrl) {
-            $this->hasParseUrl = true;
-            $rs = $this->getUriRequest('', $url_config);
-            if (!empty($rs)) {
-                $request = $this->parseRequestString($rs, $url_config);
-                $closure = $this->delegate->getClosureContainer();
-                if ($closure->has('router')) {
-                    $closure->run('router', [$request, $this]);
-                }
-
-                if (empty($this->controller) || empty($this->action)) {
-                    $this->parseRouter($request, $url_config);
-                }
-            } else {
-                $router = $this->parseDefaultRouter($url_config['*']);
-                $this->setController($router[0]);
-                $this->setAction($router[1]);
-
-                $params = $this->parseParams([], $url_config);
-                $this->setParams($params);
+        $rs = $this->getUriRequest('', $url_config);
+        if (!empty($rs)) {
+            $request = $this->parseRequestString($rs, $url_config);
+            $closure = $this->delegate->getClosureContainer();
+            if ($closure->has('router')) {
+                $closure->run('router', [$request, $this]);
             }
+
+            if (empty($this->controller) || empty($this->action)) {
+                $this->parseRouter($request, $url_config);
+            }
+        } else {
+            $router = $this->parseDefaultRouter($url_config['*']);
+            $this->setController($router[0]);
+            $this->setAction($router[1]);
+
+            $params = $this->parseParams([], $url_config);
+            $this->setParams($params);
         }
 
         return $this;
@@ -210,11 +202,13 @@ class Router implements RouterInterface
      * 设置请求字符串
      *
      * @param string $uriRequest
+     * @return $this
      */
-    public function setUrlRequest(string $uriRequest): void
+    public function setUriRequest(string $uriRequest): self
     {
         $this->uriRequest = urldecode(ltrim($uriRequest, '/'));
         $this->originUriRequest = $uriRequest;
+        return $this;
     }
 
     /**
