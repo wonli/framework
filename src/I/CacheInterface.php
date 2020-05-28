@@ -26,4 +26,10 @@ interface CacheInterface
      * @return mixed set
      */
     function set(string $key, $value);
+
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    function del(string $key);
 }

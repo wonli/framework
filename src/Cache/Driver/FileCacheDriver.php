@@ -70,4 +70,18 @@ class FileCacheDriver implements CacheInterface
 
         file_put_contents($cacheFile, $value, LOCK_EX);
     }
+
+    /**
+     * 删除缓存
+     *
+     * @param string $key
+     * @return mixed|void
+     */
+    function del(string $key)
+    {
+        $cacheFile = $this->cache_path . $key;
+        if (file_exists($cacheFile)) {
+            unlink($cacheFile);
+        }
+    }
 }
