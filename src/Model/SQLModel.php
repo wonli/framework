@@ -8,9 +8,10 @@
 
 namespace Cross\Model;
 
+use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
 use Cross\DB\Drivers\PDOSqlDriver;
-use Cross\MVC\Module;
+use Cross\DB\DBFactory;
 
 use Closure;
 use PDO;
@@ -22,6 +23,12 @@ use PDO;
  */
 class SQLModel
 {
+    /**
+     * 主键名
+     *
+     * @var string
+     */
+    protected $pk;
 
     /**
      * 表名
@@ -55,20 +62,26 @@ class SQLModel
      * 模型信息
      *
      * <pre>
-     * mode 链接配置名称,如: mysql:db
+     * n 连接名
+     * type 连接类型
      * table 表名
-     * primary_key 主键
-     * link_type 类型
-     * link_name 名称
+     * connect 数据库连接配置
      * </pre>
      * @var array
      */
     protected $modelInfo = [
-        'mode' => null,
+        'n' => null,
+        'type' => null,
         'table' => null,
-        'primary_key' => null,
-        'link_type' => null,
-        'link_name' => null
+        'connect' => [
+            'host' => null,
+            'port' => null,
+            'user' => null,
+            'pass' => null,
+            'prefix' => null,
+            'charset' => null,
+            'name' => null,
+        ],
     ];
 
     /**
@@ -104,7 +117,7 @@ class SQLModel
      * @param array|string $where
      * @param string $fields
      * @return mixed
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function get($where = [], string $fields = '*')
     {
@@ -130,7 +143,7 @@ class SQLModel
      * @param array|string $where
      * @param string $fields
      * @return mixed
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function latest($where = [], string $fields = '*')
     {
@@ -147,8 +160,7 @@ class SQLModel
             $query->where($where);
         }
 
-        $pk = empty($this->modelInfo['primary_key']) ? '1' : $this->modelInfo['primary_key'];
-        $query->orderBy("{$pk} DESC")->limit(1);
+        $query->orderBy("{$this->pk} DESC")->limit(1);
 
         return $query->stmt()->fetch(PDO::FETCH_ASSOC);
     }
@@ -156,16 +168,14 @@ class SQLModel
     /**
      * 添加
      *
-     * @throws CoreException
+     * @return bool|int|mixed|string
+     * @throws CoreException|DBConnectException
      */
     function add()
     {
         $insertId = $this->db()->add($this->getTable(false), $this->makeInsertData());
         if (false !== $insertId) {
-            $primaryKey = &$this->modelInfo['primary_key'];
-            if ($primaryKey) {
-                $this->{$primaryKey} = $insertId;
-            }
+            $this->{$this->pk} = $insertId;
         }
 
         return $insertId;
@@ -177,7 +187,7 @@ class SQLModel
      * @param array|string $condition
      * @param array|string $data
      * @return bool
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function update($condition = [], $data = [])
     {
@@ -185,9 +195,13 @@ class SQLModel
             $data = $this->getModifiedData();
         }
 
+        print_r($data);
+
         if (empty($condition)) {
             $condition = $this->getDefaultCondition(true);
         }
+
+        var_dump($condition);
 
         return $this->db()->update($this->getTable(false), $data, $condition);
     }
@@ -196,14 +210,13 @@ class SQLModel
      * 更新或添加（必须要有唯一索引）
      *
      * @return bool
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function updateOrAdd()
     {
         $data = $this->getModifiedData();
         if (empty($data)) {
-            $pk = $this->modelInfo['primary_key'];
-            $dup = "`{$pk}`={$pk}";
+            $dup = "`{$this->pk}`={$this->pk}";
         } else {
             $dup = [];
             foreach ($data as $k => $v) {
@@ -222,7 +235,7 @@ class SQLModel
      *
      * @param array|string $condition
      * @return bool
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function del($condition = [])
     {
@@ -242,7 +255,7 @@ class SQLModel
      * @param string|int $group_by
      * @param int $limit
      * @return mixed
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function getAll($where = [], string $fields = '*', $order = null, $group_by = null, $limit = null)
     {
@@ -262,7 +275,7 @@ class SQLModel
      * @param string|int $order
      * @param string|int $group_by
      * @return mixed
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function find(array &$page = ['p' => 1, 'limit' => 50], $where = [], string $fields = '*', $order = null, $group_by = null)
     {
@@ -278,7 +291,7 @@ class SQLModel
      *
      * @param array $where
      * @return $this
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function property($where = []): self
     {
@@ -294,11 +307,11 @@ class SQLModel
      * 获取数据库链接
      *
      * @return PDOSqlDriver
-     * @throws CoreException
+     * @throws CoreException|DBConnectException
      */
     function db(): PDOSqlDriver
     {
-        return $this->getModuleInstance()->link;
+        return $this->getPDOInstance();
     }
 
     /**
@@ -406,6 +419,7 @@ class SQLModel
     /**
      * 获取数据中的表名
      *
+     * @return string
      * @throws CoreException
      */
     function getOriTableName(): string
@@ -415,7 +429,7 @@ class SQLModel
             $table = &$this->modelInfo['table'];
         }
 
-        return $this->getModuleInstance()->getPrefix($table);
+        return $this->modelInfo['connect']['prefix'] . $table;
     }
 
     /**
@@ -495,7 +509,7 @@ class SQLModel
      * 更新属性值
      *
      * @param array $data
-     * @param Closure|null $callback
+     * @param Closure $callback
      */
     function updateProperty(array $data, Closure $callback = null): void
     {
@@ -668,11 +682,10 @@ class SQLModel
      * @return mixed
      * @throws CoreException
      */
-    protected function getDefaultCondition(bool $strictModel = false): array
+    function getDefaultCondition(bool $strictModel = false): array
     {
-        $pkName = &$this->modelInfo['primary_key'];
-        if (null !== $this->{$pkName}) {
-            $this->index = [$pkName => $this->{$pkName}];
+        if (null !== $this->{$this->pk}) {
+            $this->index = ["`{$this->pk}`" => $this->{$this->pk}];
         } else if (empty($this->index)) {
             $this->asIndex();
         }
@@ -718,16 +731,17 @@ class SQLModel
     }
 
     /**
-     * 链接数据库
+     * 连接数据库
      *
-     * @return Module
+     * @return PDOSqlDriver
      * @throws CoreException
+     * @throws DBConnectException
      */
-    protected function getModuleInstance(): Module
+    protected function getPDOInstance(): PDOSqlDriver
     {
         static $model = null;
         if (null === $model) {
-            $model = new Module($this->modelInfo['mode']);
+            $model = DBFactory::make($this->modelInfo['type'], $this->modelInfo['connect']);
         }
 
         return $model;
