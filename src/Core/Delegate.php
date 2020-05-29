@@ -312,7 +312,7 @@ class Delegate
      */
     function getRequest(): Request
     {
-        return Request::getInstance($this);
+        return Request::getInstance();
     }
 
     /**

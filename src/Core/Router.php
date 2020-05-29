@@ -381,13 +381,13 @@ class Router implements RouterInterface
      * @param array $addition_params
      * @return array
      */
-    private function parseParams(array $params, array $url_config, array &$addition_params = array()): array
+    private function parseParams(array $params, array $url_config, array &$addition_params = []): array
     {
-        $addition_params = $_GET;
+        $addition_params = $this->delegate->getRequest()->getGetData();
         if (empty($params)) {
             $params = $addition_params;
         } elseif (is_array($params) && !empty($addition_params)) {
-            if ($url_config['type'] == 2) {
+            if ($url_config['type'] > 2) {
                 $params = array_merge($params, $addition_params);
             } else {
                 $params += $addition_params;

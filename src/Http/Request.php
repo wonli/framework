@@ -24,30 +24,56 @@ class Request
     private static $instance;
 
     /**
-     * @var Delegate
+     * @var array
      */
-    protected $delegate;
+    protected $getData = [];
+
+    /**
+     * @var array
+     */
+    protected $postData = [];
+
+    /**
+     * @var array
+     */
+    protected $fileData = [];
+
+    /**
+     * @var array
+     */
+    protected $serverData = [];
+
+    /**
+     * @var array
+     */
+    protected $requestData = [];
+
+    /**
+     * @var string
+     */
+    protected $requestMethod;
 
     /**
      * Request constructor.
-     *
-     * @param Delegate $delegate
      */
-    function __construct(Delegate $delegate)
+    function __construct()
     {
-        $this->delegate = $delegate;
+        $this->getData = &$_GET;
+        $this->postData = &$_POST;
+        $this->fileData = &$_FILES;
+        $this->serverData = &$_SERVER;
+        $this->requestData = &$_REQUEST;
     }
 
     /**
      * 实例化类
      *
-     * @param Delegate $delegate
      * @return Request
      */
-    public static function getInstance(Delegate $delegate): self
+    public static function getInstance(): self
     {
         if (!self::$instance) {
-            self::$instance = new self($delegate);
+            self::$instance = new self();
         }
 
         return self::$instance;
@@ -239,8 +265,8 @@ class Request
      */
     function isPutRequest(): bool
     {
-        return ($this->SERVER('REQUEST_METHOD')
-                && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'PUT')) || $this->isPutViaPostRequest();
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'PUT');
     }
 
     /**
@@ -250,7 +276,8 @@ class Request
      */
     function isPostRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'POST');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'POST');
     }
 
     /**
@@ -260,7 +287,8 @@ class Request
      */
     function isGetRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'GET');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'GET');
     }
 
     /**
@@ -270,7 +298,8 @@ class Request
      */
     function isDeleteRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'DELETE');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'DELETE');
     }
 
     /**
@@ -333,24 +362,163 @@ class Request
     }
 
     /**
-     * 取得$_SERVER全局变量的值
+     * HTTP环境变量
      *
-     * @param string $name $_SERVER的名称
+     * @param string $name
      * @return string
      */
     function SERVER($name): string
     {
-        return isset($_SERVER[$name]) ? $_SERVER[$name] : '';
+        return isset($this->serverData[$name]) ? $this->serverData[$name] : '';
     }
 
     /**
-     * 是否是通过POST的PUT请求
+     * 设置环境变量
      *
-     * @return bool
+     * @param array $server
      */
-    protected function isPutViaPostRequest(): bool
+    function setServeData(array $server)
     {
-        return isset($_POST['_method']) && !strcasecmp($_POST['_method'], 'PUT');
+        if (!empty($server)) {
+            array_walk($server, function ($v, $k) {
+                $this->serverData[strtoupper($k)] = $v;
+            });
+        }
+    }
+
+    /**
+     * 获取环境变量
+     *
+     * @return array
+     */
+    function getServeData(): array
+    {
+        return $this->serverData;
+    }
+
+    /**
+     * 设置HTTP请求类型
+     *
+     * @param string $method
+     */
+    function setRequestMethod(string $method): void
+    {
+        $this->requestMethod = strtoupper($method);
+        $this->serverData['REQUEST_METHOD'] = $this->requestMethod;
+    }
+
+    /**
+     * 获取HTTP请求类型
+     *
+     * @return string
+     */
+    function getRequestMethod(): string
+    {
+        if (!$this->requestMethod) {
+            $this->requestMethod = $this->SERVER('REQUEST_METHOD');
+        }
+
+        return $this->requestMethod;
+    }
+
+    /**
+     * 设置URI参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setGetData(array $data, bool $merge = true): void
+    {
+        if ($merge && !empty($this->getData)) {
+            $this->getData = array_merge($this->getData, $data);
+        } else {
+            $this->getData = $data;
+        }
+    }
+
+    /**
+     * 获取URI参数
+     *
+     * @return array
+     */
+    function getGetData(): array
+    {
+        return $this->getData;
+    }
+
+    /**
+     * 设置POST参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setPostData(array $data, bool $merge = true): void
+    {
+        if ($merge && !empty($this->postData)) {
+            $this->postData = array_merge($this->postData, $data);
+        } else {
+            $this->postData = $data;
+        }
+    }
+
+    /**
+     * 获取POST参数
+     *
+     * @return array
+     */
+    function getPostData(): array
+    {
+        return $this->postData;
+    }
+
+    /**
+     * 设置File参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setFileData(array $data, bool $merge = true): void
+    {
+        if ($merge && !empty($this->fileData)) {
+            $this->fileData = array_merge($this->fileData, $data);
+        } else {
+            $this->fileData = $data;
+        }
+    }
+
+    /**
+     * 获取File参数
+     *
+     * @return array
+     */
+    function getFileData(): array
+    {
+        return $this->fileData;
+    }
+
+    /**
+     * 设置Request参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setRequestData(array $data, bool $merge = true): void
+    {
+        if ($merge && !empty($this->requestData)) {
+            $this->requestData = array_merge($this->requestData, $data);
+        } else {
+            $this->requestData = $data;
+        }
+    }
+
+    /**
+     * 获取Request参数
+     *
+     * @return array
+     */
+    function getRequestData(): array
+    {
+        return $this->requestData;
     }
 
     /**
