@@ -205,35 +205,25 @@ class Delegate
      * 控制器中调用$this->params来获取并处理参数
      * </pre>
      *
-     * @param int|bool $run_argc
-     * @param array|bool $run_argv
      * @throws CoreException
      */
-    public function cliRun(int $run_argc = null, array $run_argv = null)
+    public function cliRun()
     {
         if (PHP_SAPI !== 'cli') {
-            die('This app is only running from CLI');
+            die('This is a CLI app');
         }
 
         global $argc, $argv;
-        if (null === $run_argc) {
-            $run_argc = &$argc;
+        if ($argc == 1) {
+            die('Please specify params(controller:action)');
         }
 
-        if (null === $run_argv) {
-            $run_argv = &$argv;
-        }
+        //处理参数和控制别名
+        array_shift($argv);
+        $controller = array_shift($argv);
+        $controller = $this->router->getRouterAlias($controller);
 
-        if ($run_argc == 1) {
-            die('Please specify params: controller:action params');
-        }
-
-        //去掉argv中的第一个参数
-        array_shift($run_argv);
-        $controller = array_shift($run_argv);
-
-        //使用get调用指定的控制器和方法,并传递参数
-        $this->get($controller, $run_argv);
+        $this->get($controller, $argv);
     }
 
     /**

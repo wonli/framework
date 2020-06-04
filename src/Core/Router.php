@@ -276,6 +276,22 @@ class Router implements RouterInterface
     }
 
     /**
+     * 处理路由别名
+     *
+     * @param string $name
+     * @return string
+     */
+    function getRouterAlias(string $name): string
+    {
+        $router_config = $this->config->get('router');
+        if (isset($router_config[$name])) {
+            return $router_config[$name];
+        }
+
+        return $name;
+    }
+
+    /**
      * 设置controller
      *
      * @param $controller
