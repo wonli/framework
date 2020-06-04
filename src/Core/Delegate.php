@@ -215,14 +215,17 @@ class Delegate
 
         global $argc, $argv;
         if ($argc == 1) {
-            die('Please specify params(controller:action)');
+            $controller = $this->config->get('*');
+            if (empty($controller)) {
+                die('Please specify params(controller:action)');
+            }
+        } else {
+            //处理参数和控制别名
+            array_shift($argv);
+            $controller = array_shift($argv);
         }
 
-        //处理参数和控制别名
-        array_shift($argv);
-        $controller = array_shift($argv);
         $controller = $this->router->getRouterAlias($controller);
-
         $this->get($controller, $argv);
     }
 
