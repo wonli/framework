@@ -10,10 +10,10 @@ namespace Cross\DB\SQLAssembler;
 
 /**
  * @author wonli <wonli@live.com>
- * Class PgSQLAssembler
+ * Class OracleAssembler
  * @package Cross\DB\SQLAssembler
  */
-class PgSQLAssembler extends SQLAssembler
+class OracleAssembler extends SQLAssembler
 {
     /**
      * 覆盖默认配置
@@ -23,7 +23,7 @@ class PgSQLAssembler extends SQLAssembler
     protected $field_quote_char = '';
 
     /**
-     * 生成分页SQL片段
+     * 生成分页片段
      *
      * @param int $p
      * @param int $limit
@@ -31,28 +31,27 @@ class PgSQLAssembler extends SQLAssembler
      */
     protected function getLimitSQLSegment(int $p, int $limit): string
     {
+        //offset 起始位置, 12c以上版本支持
         $offset = $limit * ($p - 1);
-        return "LIMIT {$limit} OFFSET {$offset}";
+        return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
     }
 
     /**
-     * PgSQL的limit如果有第二个参数, 那么和mysql的limit行为保持一致, 并且offset()不生效
-     *
-     * @param int $start
-     * @param bool|int $end
+     * @param int $start 从第几页开始取
+     * @param int $end 每次取多少条
      * @return string
      */
-    public function limit(int $start, $end = false): string
+    public function limit(int $start, int $end = null): string
     {
-        if ($end) {
+        if (null !== $end) {
             $limit = max(1, (int)$end);
             $offset = $limit * (max(1, (int)$start) - 1);
 
             $this->offset_is_valid = false;
-            return "LIMIT {$limit} OFFSET {$offset} ";
+            return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
         }
 
         $start = (int)$start;
-        return "LIMIT {$start} ";
+        return "FETCH NEXT {$start} ROWS ONLY ";
     }
 }

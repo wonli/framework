@@ -44,14 +44,14 @@ class PDOSqlDriver implements SqlInterface
      *
      * @var int
      */
-    protected $qid = 0;
+    protected $qid;
 
     /**
      * 以qid为key,存储链式查询生成的sql语句
      *
      * @var array
      */
-    protected $querySQL = array(0);
+    protected $querySQL = [];
 
     /**
      * 联系查询生成的参数缓存
@@ -76,14 +76,25 @@ class PDOSqlDriver implements SqlInterface
     protected $SQLAssembler;
 
     /**
+     * @var array
+     */
+    protected $connectOptions;
+
+    /**
      * 创建数据库连接
      *
      * @param PDOConnecter $connecter
      * @param SQLAssembler $SQLAssembler
+     * @param array $connectOptions 连接配置
      * @throws CoreException
      */
-    public function __construct(PDOConnecter $connecter, SQLAssembler $SQLAssembler)
+    public function __construct(PDOConnecter $connecter, SQLAssembler $SQLAssembler, array $connectOptions)
     {
+        $this->connectOptions = $connectOptions;
+        if (!empty($connectOptions['sequence'])) {
+            $connecter->setSequence($connectOptions['sequence']);
+        }
+
         $this->setConnecter($connecter);
         $this->setSQLAssembler($SQLAssembler);
 
@@ -153,7 +164,7 @@ class PDOSqlDriver implements SqlInterface
      * @throws CoreException
      * @see SQLAssembler::add()
      */
-    public function add(string $table, $data, bool $multi = false, &$insert_data = array(), bool $openTA = false)
+    public function add(string $table, $data, bool $multi = false, &$insert_data = [], bool $openTA = false)
     {
         $this->SQLAssembler->add($table, $data, $multi);
         $this->sql = $this->SQLAssembler->getSQL();
@@ -164,30 +175,11 @@ class PDOSqlDriver implements SqlInterface
             if (!empty($this->params)) {
                 $inc_name = $this->getAutoIncrementName($table);
                 $stmt = $this->prepare($this->sql);
-
                 if ($openTA) {
                     $this->beginTA();
-                    try {
-                        if (!empty($this->params)) {
-                            foreach ($this->params as $p) {
-                                if ($stmt->exec($p, true)) {
-                                    $add_data_info = array_combine($data['fields'], $p);
-                                    if ($inc_name) {
-                                        $add_data_info[$inc_name] = $this->insertId();
-                                    }
+                }
 
-                                    $add_count++;
-                                    $insert_data[] = $add_data_info;
-                                }
-                            }
-                        }
-                    } catch (Exception $e) {
-                        $insert_data = array();
-                        $this->rollBack();
-                        throw new CoreException($e->getMessage());
-                    }
-                    $this->commit();
-                } else {
+                try {
                     if (!empty($this->params)) {
                         foreach ($this->params as $p) {
                             if ($stmt->exec($p, true)) {
@@ -201,6 +193,16 @@ class PDOSqlDriver implements SqlInterface
                             }
                         }
                     }
+                } catch (Exception $e) {
+                    $insert_data = [];
+                    if ($openTA) {
+                        $this->rollBack();
+                    }
+                    throw new CoreException($e->getMessage());
+                }
+
+                if ($openTA) {
+                    $this->commit();
                 }
             }
             return $add_count;
@@ -227,23 +229,24 @@ class PDOSqlDriver implements SqlInterface
      * @return mixed
      * @throws CoreException
      */
-    public function find(string $table, string $fields, $where, $order = null, array &$page = ['p' => 1, 'limit' => 10], $group_by = null)
+    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 10], $order = null, $group_by = null)
     {
         if (!isset($page['result_count'])) {
-            $total = $this->get($table, 'COUNT(*) as total', $where);
-            $page['result_count'] = (int)$total['total'];
+            $total = $this->get($table, 'COUNT(*) as TOTAL', $where);
+            $page['result_count'] = (int)$total['TOTAL'];
         }
 
+        $page['p'] = $page['p'] ?? 1;
         $page['limit'] = max(1, (int)$page['limit']);
         $page['total_page'] = ceil($page['result_count'] / $page['limit']);
 
         if ($page['p'] <= $page['total_page']) {
             $page['p'] = max(1, $page['p']);
-            $this->SQLAssembler->find($table, $fields, $where, $order, $page, $group_by);
+            $this->SQLAssembler->find($table, $fields, $where, $page, $order, $group_by);
             return $this->getPrepareResult(true);
         }
 
-        return array();
+        return [];
     }
 
     /**
@@ -269,104 +272,17 @@ class PDOSqlDriver implements SqlInterface
      *
      * @param string $table
      * @param string|array $where
-     * @param bool $multi 是否批量删除数据
-     * @param bool $openTA 是否开启事务
      * @return bool
      * @throws CoreException
      * @see SQLAssembler::del()
      */
-    public function del(string $table, $where, bool $multi = false, bool $openTA = false)
+    public function del(string $table, $where)
     {
-        $del_count = 0;
-        $this->SQLAssembler->del($table, $where, $multi);
+        $this->SQLAssembler->del($table, $where);
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();
-        if ($multi) {
-            if ($openTA) {
-                $this->beginTA();
-                try {
-                    if (!empty($this->params)) {
-                        $stmt = $this->prepare($this->sql);
-                        foreach ($this->params as $p) {
-                            $del_count += $stmt->exec($p, true);
-                        }
-                    }
-                } catch (Exception $e) {
-                    $this->rollBack();
-                    throw new CoreException($e->getMessage());
-                }
-                $this->commit();
-            } else {
-                if (!empty($this->params)) {
-                    $stmt = $this->prepare($this->sql);
-                    foreach ($this->params as $p) {
-                        $del_count += $stmt->exec($p, true);
-                    }
-                }
-            }
-        } else {
-            $del_count = $this->prepare($this->sql)->exec($this->params, true);
-        }
 
-        return $del_count;
-    }
-
-    /**
-     * 执行一条SQL 语句 并返回结果
-     *
-     * @param string $sql
-     * @param int $fetch_style
-     * @param int $cursor_orientation
-     * @param int $cursor_offset
-     * @return mixed
-     * @throws CoreException
-     */
-    public function fetchOne(
-        string $sql,
-        int $fetch_style = PDO::FETCH_ASSOC,
-        int $cursor_orientation = PDO::FETCH_ORI_NEXT,
-        int $cursor_offset = 0
-    )
-    {
-        try {
-            return $this->pdo->query($sql)->fetch($fetch_style, $cursor_orientation, $cursor_offset);
-        } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
-        }
-    }
-
-    /**
-     * 执行sql 并返回所有结果
-     *
-     * @param string $sql
-     * @param int $fetch_style
-     * @param null $fetch_argument
-     * @param array $ctor_args
-     * <pre>
-     * 当fetch_style为PDO::FETCH_CLASS时, 自定义类的构造函数的参数。
-     * </pre>
-     * @return array
-     * @throws CoreException
-     */
-    public function fetchAll(string $sql, int $fetch_style = PDO::FETCH_ASSOC, $fetch_argument = null, array $ctor_args = []): array
-    {
-        try {
-            $data = $this->pdo->query($sql);
-            if (null !== $fetch_argument) {
-                switch ($fetch_style) {
-                    case PDO::FETCH_CLASS:
-                        return $data->fetchAll($fetch_style, $fetch_argument, $ctor_args);
-
-                    default:
-                        return $data->fetchAll($fetch_style, $fetch_argument);
-                }
-
-            } else {
-                return $data->fetchAll($fetch_style);
-            }
-        } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
-        }
+        return $this->prepare($this->sql)->exec($this->params, true);
     }
 
     /**
@@ -376,11 +292,12 @@ class PDOSqlDriver implements SqlInterface
      * @param array $params
      * @return $this
      */
-    public function rawSql(string $sql, array $params): self
+    public function rawSql(string $sql, ...$params): self
     {
         $this->generateQueryID();
         $this->querySQL[$this->qid] = $sql;
         $this->queryParams[$this->qid] = $params;
+
         return $this;
     }
 
@@ -411,7 +328,7 @@ class PDOSqlDriver implements SqlInterface
     {
         $this->generateQueryID();
         $this->querySQL[$this->qid] = $this->SQLAssembler->select($fields, $modifier);
-        $this->queryParams[$this->qid] = array();
+        $this->queryParams[$this->qid] = [];
         return $this;
     }
 
@@ -425,7 +342,7 @@ class PDOSqlDriver implements SqlInterface
      */
     function insert(string $table, array $data = [], string $modifier = ''): self
     {
-        $params = array();
+        $params = [];
         $this->generateQueryID();
         $this->querySQL[$this->qid] = $this->SQLAssembler->insert($table, $data, $modifier, $params);
         $this->queryParams[$this->qid] = $params;
@@ -564,20 +481,17 @@ class PDOSqlDriver implements SqlInterface
     }
 
     /**
-     * 返回链式查询当前生成的prepare语句
+     * 当前SQL语句及参数
      *
-     * @param bool $only_sql
      * @return mixed
      */
-    function getSQL(bool $only_sql = false): string
+    function getSQL(): array
     {
         $this->sql = &$this->querySQL[$this->qid];
-        if ($only_sql) {
-            return $this->sql;
-        }
-
-        $params = $this->queryParams[$this->qid];
-        return ['sql' => $this->sql, 'params' => $params];
+        return [
+            'sql' => $this->sql,
+            'params' => $this->queryParams[$this->qid]
+        ];
     }
 
     /**
@@ -600,7 +514,7 @@ class PDOSqlDriver implements SqlInterface
      */
     public function stmt(bool $execute = true, array $prepare_params = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): PDOStatement
     {
-        if ($this->qid == 0) {
+        if (!$this->qid) {
             throw new CoreException("链式风格的查询必须以->select()开始");
         }
 
@@ -849,6 +763,11 @@ class PDOSqlDriver implements SqlInterface
      */
     public function insertId()
     {
+        $sequence = $this->getSQLAssembler()->getSequence();
+        if (!empty($sequence)) {
+            $this->getConnecter()->setSequence($sequence);
+        }
+
         return $this->connecter->lastInsertID();
     }
 

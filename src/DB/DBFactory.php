@@ -8,20 +8,27 @@
 
 namespace Cross\DB;
 
-use Cross\DB\SQLAssembler\MySQLAssembler;
-use Cross\DB\SQLAssembler\PgSQLAssembler;
-use Cross\DB\SQLAssembler\SQLiteAssembler;
-use Cross\DB\Connecter\MySQLConnecter;
-use Cross\DB\Connecter\PgSQLConnecter;
-use Cross\DB\Connecter\SQLiteConnecter;
+use Closure;
+
+use Cross\Exception\DBConnectException;
+use Cross\Exception\CoreException;
+
 use Cross\Cache\Driver\MemcacheDriver;
 use Cross\Cache\Driver\RedisDriver;
+
+use Cross\DB\SQLAssembler\MySQLAssembler;
+use Cross\DB\SQLAssembler\SQLiteAssembler;
+use Cross\DB\SQLAssembler\OracleAssembler;
+use Cross\DB\SQLAssembler\PgSQLAssembler;
+
+use Cross\DB\Connecter\MySQLConnecter;
+use Cross\DB\Connecter\OracleConnecter;
+use Cross\DB\Connecter\SQLiteConnecter;
+use Cross\DB\Connecter\PgSQLConnecter;
+
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
-use Cross\Exception\CoreException;
-use Closure;
-use Cross\Exception\DBConnectException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -31,16 +38,16 @@ use Cross\Exception\DBConnectException;
 class DBFactory
 {
     /**
-     * 为module中的link生成对象的实例,在配置文件中支持匿名函数
+     * 生成model实例
      *
-     * @param string $link
+     * @param string $type
      * @param array|Closure $params
      * @param array $config
      * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
      * @throws DBConnectException
      */
-    static function make(string $link, $params, array $config = array()): object
+    static function make(string $type, &$params, array $config = []): object
     {
         //如果params是一个匿名函数, 则调用匿名函数创建数据库连接
         if ($params instanceof Closure) {
@@ -48,23 +55,24 @@ class DBFactory
         }
 
         //配置的数据表前缀
-        $prefix = !empty($params['prefix']) ? $params['prefix'] : '';
-        $options = isset($params['options']) ? $params['options'] : array();
-        switch (strtolower($link)) {
+        $prefix = $params['prefix'] ?? '';
+        $options = $params['options'] ?? [];
+        switch (strtolower($type)) {
             case 'mysql' :
-                return new PDOSqlDriver(
-                    MySQLConnecter::getInstance(self::getDsn($params, 'mysql'), $params['user'], $params['pass'], $options),
-                    new MySQLAssembler($prefix)
-                );
+                $Connector = MySQLConnecter::getInstance(self::getDsn($params, 'mysql'), $params['user'], $params['pass'], $options);
+                return new PDOSqlDriver($Connector, new MySQLAssembler($prefix), $params);
 
             case 'sqlite':
-                return new PDOSqlDriver(SQLiteConnecter::getInstance($params['dsn'], null, null, $options), new SQLiteAssembler($prefix));
+                $Connector = SQLiteConnecter::getInstance($params['dsn'], null, null, $options);
+                return new PDOSqlDriver($Connector, new SQLiteAssembler($prefix), $params);
 
             case 'pgsql':
-                return new PDOSqlDriver(
-                    PgSqlConnecter::getInstance(self::getDsn($params, 'pgsql'), $params['user'], $params['pass'], $options),
-                    new PgSQLAssembler($prefix)
-                );
+                $Connector = PgSqlConnecter::getInstance(self::getDsn($params, 'pgsql'), $params['user'], $params['pass'], $options);
+                return new PDOSqlDriver($Connector, new PgSQLAssembler($prefix), $params);
+
+            case 'oracle':
+                $Connector = OracleConnecter::getInstance(self::getOracleTns($params), $params['user'], $params['pass'], $options);
+                return new PDOSqlDriver($Connector, new OracleAssembler($prefix), $params);
 
             case 'mongo':
                 return new MongoDriver($params);
@@ -92,7 +100,7 @@ class DBFactory
      * @return string
      * @throws CoreException
      */
-    private static function getDsn(array $params, string $type = 'mysql', bool $use_unix_socket = true): string
+    private static function getDsn(array &$params, string $type = 'mysql', bool $use_unix_socket = true): string
     {
         if (!empty($params['dsn'])) {
             return $params['dsn'];
@@ -118,4 +126,31 @@ class DBFactory
         return $dsn;
     }
 
+    /**
+     * 生成tns
+     *
+     * @param array $params
+     * @return string
+     * @throws CoreException
+     */
+    private static function getOracleTns(array &$params)
+    {
+        if (!empty($params['tns'])) {
+            return $params['tns'];
+        }
+
+        $params['port'] = $params['port'] ?? 1521;
+        $params['charset'] = $params['charset'] ?? 'utf8';
+        $params['protocol'] = $params['protocol'] ?? 'tcp';
+        if (!isset($params['host']) || !isset($params['name'])) {
+            throw new CoreException('请指定服务器地址和名称');
+        }
+
+        $tns = "(DESCRIPTION = 
+            (ADDRESS_LIST = (ADDRESS = (PROTOCOL = %s)(HOST = %s)(PORT = %s)))
+            (CONNECT_DATA = (SERVICE_NAME = %s)))";
+
+        $db = sprintf($tns, $params['protocol'], $params['host'], $params['port'], $params['name']);
+        return "oci:dbname={$db};charset=" . $params['charset'];
+    }
 }

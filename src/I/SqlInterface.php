@@ -44,12 +44,12 @@ interface SqlInterface
      * @param string $table 表名
      * @param string $fields 字段名
      * @param string|array $where 条件(建议只使用字符串常量,包含变量时请使用数组)
+     * @param array $page ['p', 'limit'] p,当前页 limit,分页条数
      * @param string|int $order 排序
-     * @param array $page array('p', 'limit'); p表示当前页数, limit表示要取出的条数
      * @param int $group_by
      * @return mixed
      */
-    function find(string $table, string $fields, $where, $order = null, array &$page = ['p' => 1, 'limit' => 10], $group_by = null);
+    function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 10], $order = null, $group_by = null);
 
     /**
      * 添加数据

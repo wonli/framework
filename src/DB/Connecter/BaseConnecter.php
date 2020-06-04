@@ -24,6 +24,11 @@ abstract class BaseConnecter implements PDOConnecter
     protected $pdo;
 
     /**
+     * @var string
+     */
+    protected $sequence;
+
+    /**
      * 合并用户输入的options
      *
      * @param array $default_options
@@ -39,5 +44,15 @@ abstract class BaseConnecter implements PDOConnecter
         }
 
         return $default_options;
+    }
+
+    /**
+     * 设置序号
+     *
+     * @param string $sequence
+     */
+    public function setSequence(string $sequence): void
+    {
+        $this->sequence = $sequence;
     }
 }

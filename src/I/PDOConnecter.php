@@ -47,6 +47,13 @@ interface PDOConnecter
     function getMetaData(string $table_name, bool $fields_map = true): array;
 
     /**
+     * 设置序号（oracle）
+     *
+     * @param string $sequence
+     */
+    function setSequence(string $sequence): void;
+
+    /**
      * 返回一个PDO连接对象的实例
      *
      * @return mixed

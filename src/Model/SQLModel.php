@@ -13,6 +13,7 @@ use Cross\Exception\CoreException;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\DBFactory;
 
+use PDOStatement;
 use Closure;
 use PDO;
 
@@ -195,13 +196,9 @@ class SQLModel
             $data = $this->getModifiedData();
         }
 
-        print_r($data);
-
         if (empty($condition)) {
             $condition = $this->getDefaultCondition(true);
         }
-
-        var_dump($condition);
 
         return $this->db()->update($this->getTable(false), $data, $condition);
     }
@@ -216,7 +213,7 @@ class SQLModel
     {
         $data = $this->getModifiedData();
         if (empty($data)) {
-            $dup = "`{$this->pk}`={$this->pk}";
+            $dup = "{$this->pk}={$this->pk}";
         } else {
             $dup = [];
             foreach ($data as $k => $v) {
@@ -283,7 +280,21 @@ class SQLModel
             $where = $this->getDefaultCondition();
         }
 
-        return $this->db()->find($this->getTable(), $fields, $where, $order, $page, $group_by);
+        return $this->db()->find($this->getTable(), $fields, $where, $page, $order, $group_by);
+    }
+
+    /**
+     * 原生SQL
+     *
+     * @param string $sql
+     * @param mixed ...$params
+     * @return PDOStatement
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function rawSql(string $sql, ...$params)
+    {
+        return $this->db()->rawSql($sql, ...$params)->stmt();
     }
 
     /**
@@ -644,7 +655,7 @@ class SQLModel
 
             $value = $this->{$p};
             if (null !== $value) {
-                $data["`{$p}`"] = $value;
+                $data["{$p}"] = $value;
             }
         }
 
@@ -661,18 +672,44 @@ class SQLModel
         $data = [];
         foreach ($this->fieldsInfo as $p => $c) {
             $value = $this->{$p};
-            if ($c['auto_increment'] || (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP'))) {
-                continue;
+            if ($this->modelInfo['type'] == 'oracle') {
+                //oracle处理自增主键
+                $sequence = &$this->modelInfo['connect']['sequence'];
+                if (null === $value && $c['primary'] && null !== $sequence) {
+                    $value = ['#SEQ#' => $sequence];
+                }
+            } else {
+                if ($c['auto_increment'] || (0 === strcasecmp($c['default_value'], 'CURRENT_TIMESTAMP'))) {
+                    continue;
+                }
             }
 
             if (null === $value) {
                 $value = $c['default_value'];
             }
 
-            $data["`{$p}`"] = $value;
+            $data["{$p}"] = $value;
         }
 
         return $data;
+    }
+
+    /**
+     * 获取默认的sequence（oracle）
+     *
+     * @param bool $onlyName 默认返回表达式
+     * @return string|array
+     */
+    function getDefaultSequence($onlyName = false)
+    {
+        $sequence = &$this->modelInfo['connect']['sequence'];
+        if (!empty($sequence) && $onlyName) {
+            return $sequence;
+        } elseif (!empty($sequence)) {
+            return ['#SEQ#' => $sequence];
+        }
+
+        return '';
     }
 
     /**
@@ -685,7 +722,7 @@ class SQLModel
     function getDefaultCondition(bool $strictModel = false): array
     {
         if (null !== $this->{$this->pk}) {
-            $this->index = ["`{$this->pk}`" => $this->{$this->pk}];
+            $this->index = ["{$this->pk}" => $this->{$this->pk}];
         } else if (empty($this->index)) {
             $this->asIndex();
         }
