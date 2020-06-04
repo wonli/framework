@@ -8,6 +8,7 @@
 
 namespace Cross\DB\Connecter;
 
+use Throwable;
 use Cross\Exception\DBConnectException;
 use Exception;
 use PDO;
@@ -126,10 +127,14 @@ class OracleConnecter extends BaseConnecter
     function lastInsertId()
     {
         if (!empty($this->sequence)) {
-            $sh = $this->pdo->query("SELECT {$this->sequence}.CURRVAL AS LID FROM DUAL");
-            $saveInfo = $sh->fetch(PDO::FETCH_ASSOC);
-            if (!empty($saveInfo)) {
-                return $saveInfo['LID'];
+            try {
+                $sh = $this->pdo->query("SELECT {$this->sequence}.CURRVAL AS LID FROM DUAL");
+                $saveInfo = $sh->fetch(PDO::FETCH_ASSOC);
+                if (!empty($saveInfo)) {
+                    return $saveInfo['LID'];
+                }
+            } catch (Throwable $e) {
+
             }
         }
 
