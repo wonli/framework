@@ -195,7 +195,7 @@ class OracleConnector extends BaseConnector
                 'primary' => $isPk,
                 'is_index' => isset($indexInfo[$d['COLUMN_NAME']]),
                 'auto_increment' => $autoIncrement,
-                'default_value' => $d['DATA_DEFAULT'],
+                'default_value' => trim($d['DATA_DEFAULT']),
                 'not_null' => $d['NULLABLE'] == 'N',
                 'comment' => $d['COMMENTS']
             ];
