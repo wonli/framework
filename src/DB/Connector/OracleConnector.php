@@ -6,7 +6,7 @@
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
 use Throwable;
 use Cross\Exception\DBConnectException;
@@ -15,10 +15,10 @@ use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class OracleConnecter
- * @package Cross\DB\Connecter
+ * Class OracleConnector
+ * @package Cross\DB\Connector
  */
-class OracleConnecter extends BaseConnecter
+class OracleConnector extends BaseConnector
 {
     /**
      * 数据库连接实例
@@ -182,10 +182,19 @@ class OracleConnecter extends BaseConnecter
 
         $result = [];
         array_map(function ($d) use ($indexInfo, &$result, $fields_map) {
+            $autoIncrement = false;
+            $isPk = $indexInfo[$d['COLUMN_NAME']]['pk'] ?? false;
+            if ($isPk) {
+                $dsq = preg_match("~(.*)\.\"(.*)\"\.nextval.*~", $d['DATA_DEFAULT'], $matches);
+                if ($dsq && !empty($matches[2])) {
+                    $autoIncrement = true;
+                }
+            }
+
             $data = [
-                'primary' => $indexInfo[$d['COLUMN_NAME']]['pk'] ?? false,
+                'primary' => $isPk,
                 'is_index' => isset($indexInfo[$d['COLUMN_NAME']]),
-                'auto_increment' => false,
+                'auto_increment' => $autoIncrement,
                 'default_value' => $d['DATA_DEFAULT'],
                 'not_null' => $d['NULLABLE'] == 'N',
                 'comment' => $d['COMMENTS']
