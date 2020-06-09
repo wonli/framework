@@ -21,10 +21,10 @@ use Cross\DB\SQLAssembler\SQLiteAssembler;
 use Cross\DB\SQLAssembler\OracleAssembler;
 use Cross\DB\SQLAssembler\PgSQLAssembler;
 
-use Cross\DB\Connecter\MySQLConnecter;
-use Cross\DB\Connecter\OracleConnecter;
-use Cross\DB\Connecter\SQLiteConnecter;
-use Cross\DB\Connecter\PgSQLConnecter;
+use Cross\DB\Connector\MySQLConnector;
+use Cross\DB\Connector\OracleConnector;
+use Cross\DB\Connector\SQLiteConnector;
+use Cross\DB\Connector\PgSQLConnector;
 
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
@@ -59,19 +59,19 @@ class DBFactory
         $options = $params['options'] ?? [];
         switch (strtolower($type)) {
             case 'mysql' :
-                $Connector = MySQLConnecter::getInstance(self::getDsn($params, 'mysql'), $params['user'], $params['pass'], $options);
+                $Connector = MySQLConnector::getInstance(self::getDsn($params, 'mysql'), $params['user'], $params['pass'], $options);
                 return new PDOSqlDriver($Connector, new MySQLAssembler($prefix), $params);
 
             case 'sqlite':
-                $Connector = SQLiteConnecter::getInstance($params['dsn'], null, null, $options);
+                $Connector = SQLiteConnector::getInstance($params['dsn'], null, null, $options);
                 return new PDOSqlDriver($Connector, new SQLiteAssembler($prefix), $params);
 
             case 'pgsql':
-                $Connector = PgSqlConnecter::getInstance(self::getDsn($params, 'pgsql'), $params['user'], $params['pass'], $options);
+                $Connector = PgSQLConnector::getInstance(self::getDsn($params, 'pgsql'), $params['user'], $params['pass'], $options);
                 return new PDOSqlDriver($Connector, new PgSQLAssembler($prefix), $params);
 
             case 'oracle':
-                $Connector = OracleConnecter::getInstance(self::getOracleTns($params), $params['user'], $params['pass'], $options);
+                $Connector = OracleConnector::getInstance(self::getOracleTns($params), $params['user'], $params['pass'], $options);
                 return new PDOSqlDriver($Connector, new OracleAssembler($prefix), $params);
 
             case 'mongo':

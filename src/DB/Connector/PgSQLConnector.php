@@ -6,7 +6,7 @@
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
 use Cross\Exception\DBConnectException;
 use Exception;
@@ -14,10 +14,10 @@ use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class PgSQLConnecter
- * @package Cross\DB\Connecter
+ * Class PgSQLConnector
+ * @package Cross\DB\Connector
  */
-class PgSQLConnecter extends BaseConnecter
+class PgSQLConnector extends BaseConnector
 {
     /**
      * 数据库连接实例

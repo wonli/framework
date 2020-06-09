@@ -6,7 +6,7 @@
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
 use Cross\Exception\DBConnectException;
 use Exception;
@@ -14,10 +14,10 @@ use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class MySQLConnecter
- * @package Cross\DB\Connecter
+ * Class MySQLConnector
+ * @package Cross\DB\Connector
  */
-class MySQLConnecter extends BaseConnecter
+class MySQLConnector extends BaseConnector
 {
     /**
      * 数据库连接实例

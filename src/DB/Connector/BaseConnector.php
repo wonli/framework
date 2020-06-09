@@ -6,17 +6,17 @@
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
 use Cross\I\PDOConnecter;
 use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class BaseConnecter
- * @package Cross\DB\Connecter
+ * Class BaseConnector
+ * @package Cross\DB\Connector
  */
-abstract class BaseConnecter implements PDOConnecter
+abstract class BaseConnector implements PDOConnecter
 {
     /**
      * @var PDO

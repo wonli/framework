@@ -6,7 +6,7 @@
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
 use Cross\Exception\DBConnectException;
 use Exception;
@@ -14,10 +14,10 @@ use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class SQLiteConnecter
- * @package Cross\DB\Connecter
+ * Class SQLiteConnector
+ * @package Cross\DB\Connector
  */
-class SQLiteConnecter extends BaseConnecter
+class SQLiteConnector extends BaseConnector
 {
     /**
      * @var PDO
@@ -52,14 +52,14 @@ class SQLiteConnecter extends BaseConnecter
      * @param null $user
      * @param null $pwd
      * @param array $options
-     * @return SQLiteConnecter|PDO
+     * @return SQLiteConnector|PDO
      * @throws DBConnectException
      */
     static function getInstance(string $dsn, $user = null, $pwd = null, array $options = []): self
     {
         $key = md5($dsn);
         if (empty(self::$instance[$key])) {
-            self::$instance[$key] = new SqliteConnecter($dsn, $options);
+            self::$instance[$key] = new SQLiteConnector($dsn, $options);
         }
 
         return self::$instance[$key];

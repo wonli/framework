@@ -120,9 +120,9 @@ class SQLModel
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function get($where = [], string $fields = '*')
+    function get($where = null, string $fields = '*')
     {
-        if (empty($where)) {
+        if (null === $where) {
             $where = $this->getDefaultCondition();
         }
 
@@ -146,9 +146,9 @@ class SQLModel
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function latest($where = [], string $fields = '*')
+    function latest($where = null, string $fields = '*')
     {
-        if (empty($where)) {
+        if (null === $where) {
             $where = $this->getDefaultCondition();
         }
 
@@ -254,9 +254,9 @@ class SQLModel
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function getAll($where = [], string $fields = '*', $order = null, $group_by = null, $limit = null)
+    function getAll($where = null, string $fields = '*', $order = null, $group_by = null, $limit = null)
     {
-        if (empty($where)) {
+        if (null === $where) {
             $where = $this->getDefaultCondition();
         }
 
@@ -274,9 +274,9 @@ class SQLModel
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function find(array &$page = ['p' => 1, 'limit' => 50], $where = [], string $fields = '*', $order = null, $group_by = null)
+    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = '*', $order = null, $group_by = null)
     {
-        if (empty($where)) {
+        if (null === $where) {
             $where = $this->getDefaultCondition();
         }
 
@@ -304,7 +304,7 @@ class SQLModel
      * @return $this
      * @throws CoreException|DBConnectException
      */
-    function property($where = []): self
+    function property($where = null): self
     {
         $data = $this->get($where);
         if (!empty($data)) {
@@ -673,9 +673,14 @@ class SQLModel
         foreach ($this->fieldsInfo as $p => $c) {
             $value = $this->{$p};
             if ($this->modelInfo['type'] == 'oracle') {
-                //oracle处理自增主键
+                //12c以上版本可以使用identity column创建唯一自增主键
+                if ($c['auto_increment']) {
+                    continue;
+                }
+
+                //无自增主键时，model会自动生成一个自增序列
                 $sequence = &$this->modelInfo['connect']['sequence'];
-                if (null === $value && $c['primary'] && null !== $sequence) {
+                if (null !== $sequence && $c['primary']) {
                     $value = ['#SEQ#' => $sequence];
                 }
             } else {
