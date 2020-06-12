@@ -427,9 +427,9 @@ class Request
      * @param array $data
      * @param bool $merge
      */
-    function setGetData(array $data, bool $merge = true): void
+    function setGetData(array $data, bool $merge = false): void
     {
-        if ($merge && !empty($this->getData)) {
+        if ($merge && is_array($this->getData)) {
             $this->getData = array_merge($this->getData, $data);
         } else {
             $this->getData = $data;
@@ -452,9 +452,9 @@ class Request
      * @param array $data
      * @param bool $merge
      */
-    function setPostData(array $data, bool $merge = true): void
+    function setPostData(array $data, bool $merge = false): void
     {
-        if ($merge && !empty($this->postData)) {
+        if ($merge && is_array($this->postData)) {
             $this->postData = array_merge($this->postData, $data);
         } else {
             $this->postData = $data;
@@ -477,9 +477,9 @@ class Request
      * @param array $data
      * @param bool $merge
      */
-    function setFileData(array $data, bool $merge = true): void
+    function setFileData(array $data, bool $merge = false): void
     {
-        if ($merge && !empty($this->fileData)) {
+        if ($merge && is_array($this->fileData)) {
             $this->fileData = array_merge($this->fileData, $data);
         } else {
             $this->fileData = $data;
@@ -502,9 +502,9 @@ class Request
      * @param array $data
      * @param bool $merge
      */
-    function setRequestData(array $data, bool $merge = true): void
+    function setRequestData(array $data, bool $merge = false): void
     {
-        if ($merge && !empty($this->requestData)) {
+        if ($merge && is_array($this->requestData)) {
             $this->requestData = array_merge($this->requestData, $data);
         } else {
             $this->requestData = $data;
