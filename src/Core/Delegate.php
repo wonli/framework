@@ -214,15 +214,22 @@ class Delegate
         }
 
         global $argc, $argv;
+        $defaultController = $this->config->get('*');
         if ($argc == 1) {
-            $controller = $this->config->get('*');
-            if (empty($controller)) {
-                die('Please specify params(controller:action)');
+            if (empty($defaultController)) {
+                die('Please specify controller(controller[:action [-p|--params]])');
+            } else {
+                $controller = $defaultController;
             }
         } else {
             //处理参数和控制别名
-            array_shift($argv);
-            $controller = array_shift($argv);
+            $iArgv = $argv;
+            array_shift($iArgv);
+            $iArgv = array_filter($iArgv, function ($a) {
+                return ($a[0] == '-' || false !== strpos($a, '=')) ? false : $a;
+            });
+
+            $controller = array_shift($iArgv) ?? $defaultController;
         }
 
         $controller = $this->router->getRouterAlias($controller);
