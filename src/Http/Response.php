@@ -467,9 +467,7 @@ class Response
         }
 
         $this->makeResponseContent($content, $tpl);
-        if (PHP_SAPI != 'cli') {
-            echo $this->content;
-        }
+        echo $this->content;
     }
 
     /**
