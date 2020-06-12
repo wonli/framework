@@ -209,21 +209,13 @@ class Response
     /**
      * 获取cookie参数默认值
      *
-     * @param null $key
+     * @param string $key
      * @return array|mixed
      */
-    function getCookieConfig($key = null)
+    function getCookieConfig(string $key)
     {
-        $default = array('path' => '/', 'domain' => '', 'secure' => false, 'httponly' => true);
-        if ($key && isset($default[$key])) {
-            if (isset($this->cookie_config[$key])) {
-                return $this->cookie_config[$key];
-            }
-
-            return $default[$key];
-        }
-
-        return null;
+        $default = ['path' => '/', 'domain' => '', 'secure' => false, 'httponly' => true];
+        return $default[$key] ?? null;
     }
 
     /**
@@ -256,7 +248,7 @@ class Response
      *
      * @param string $content
      */
-    protected function setContent(string $content): void
+    function setContent(string $content): void
     {
         $this->content = $content;
     }
@@ -297,7 +289,7 @@ class Response
 
         $this->setResponseStatus(401)
             ->setHeader('WWW-Authenticate: Basic realm="' . $realm . '"')
-            ->displayOver($message);
+            ->end($message);
     }
 
     /**
@@ -338,7 +330,7 @@ class Response
         $this->setResponseStatus(401)
             ->setHeader('WWW-Authenticate: Digest realm="' . $realm .
                 '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
-            ->displayOver($message);
+            ->end($message);
     }
 
     /**
@@ -405,26 +397,32 @@ class Response
     /**
      * 输出内容
      *
-     * @param array|string $message
+     * @param string $message
      * @param string $tpl
      */
-    private function flushContent($message, string $tpl = ''): void
+    private function makeResponseContent($message, string $tpl = ''): void
     {
+        ob_start();
         if (null !== $tpl && is_file($tpl)) {
             require $tpl;
-        } else if (is_array($message)) {
-            print_r($message);
+        } elseif (is_array($message)) {
+            var_export($message);
         } else {
             echo $message;
         }
+
+        $this->content = ob_get_clean();
     }
 
     /**
-     * 标识停止输出
+     * 标识停止Send
+     *
+     * @param bool $status
+     * @return Response
      */
-    function setEndFlush(): self
+    function setEndFlush(bool $status): self
     {
-        $this->is_end_flush = true;
+        $this->is_end_flush = $status;
         return $this;
     }
 
@@ -446,17 +444,21 @@ class Response
      */
     function redirect(string $url, int $status = 302): void
     {
-        $this->setResponseStatus($status)->setHeader("Location: {$url}")->displayOver();
+        $this->setResponseStatus($status)->setHeader("Location: {$url}")->end();
     }
 
     /**
      * 调用模板输出信息
      *
-     * @param string|array $content
+     * @param string $content
      * @param string $tpl
      */
-    function display($content = '', string $tpl = ''): void
+    function send($content = '', string $tpl = ''): void
     {
+        if ($this->isEndFlush()) {
+            return;
+        }
+
         if (!headers_sent() && PHP_SAPI != 'cli') {
             $this->sendResponseStatus();
             $this->sendContentType();
@@ -464,20 +466,22 @@ class Response
             $this->sendHeader();
         }
 
-        $this->content = $content;
-        $this->flushContent($content, $tpl);
+        $this->makeResponseContent($content, $tpl);
+        if (PHP_SAPI != 'cli') {
+            echo $this->content;
+        }
     }
 
     /**
-     * 输出当前内容并结束
+     * 输出内容并添加停止标识
      *
      * @param string $content
      * @param string $tpl
      */
-    function displayOver(string $content = '', string $tpl = ''): void
+    function end(string $content = '', string $tpl = ''): void
     {
-        $this->setEndFlush();
-        $this->display($content, $tpl);
+        $this->send($content, $tpl);
+        $this->setEndFlush(true);
     }
 
     /**
