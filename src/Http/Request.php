@@ -369,7 +369,7 @@ class Request
      */
     function SERVER($name): string
     {
-        return isset($this->serverData[$name]) ? $this->serverData[$name] : '';
+        return $this->serverData[$name] ?? '';
     }
 
     /**
