@@ -130,7 +130,7 @@ abstract class CrossException extends Exception
         $result['trace_table'] = $trace_table;
         $result['previous_trace'] = $previous_trace;
 
-        Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
+        Response::getInstance()->send($result, __DIR__ . '/tpl/cli_error.tpl.php');
     }
 
     /**
@@ -150,11 +150,11 @@ abstract class CrossException extends Exception
             }
 
             $Response->setResponseStatus($this->httpStatusCode)
-                ->display(json_encode($ResponseData->getData(), JSON_UNESCAPED_UNICODE));
+                ->send(json_encode($ResponseData->getData(), JSON_UNESCAPED_UNICODE));
         } else {
             $exceptionMsg = $this->cpExceptionSource($e);
             $Response->setResponseStatus($this->httpStatusCode)
-                ->display($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
+                ->send($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
         }
     }
 

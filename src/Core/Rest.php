@@ -330,7 +330,7 @@ class Rest
 
             $content = call_user_func_array($process_closure, $closure_params);
             if (null != $content) {
-                $this->delegate->getResponse()->display($content);
+                $this->delegate->getResponse()->send($content);
             }
         } catch (Exception $e) {
             throw new CoreException('Reflection ' . $e->getMessage());
