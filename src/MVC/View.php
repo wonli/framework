@@ -117,7 +117,9 @@ class View extends FrameBase
             $method = $this->action ? $this->action : Router::DEFAULT_ACTION;
         }
 
+        ob_start();
         $this->obRenderAction($data, $method);
+        $this->response->setContent(ob_get_clean());
     }
 
     /**
