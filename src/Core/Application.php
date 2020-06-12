@@ -46,13 +46,6 @@ class Application
     private $action_annotate;
 
     /**
-     * 输出缓冲状态
-     *
-     * @var bool
-     */
-    private $ob_cache_status = true;
-
-    /**
      * @var Delegate
      */
     private $delegate;
@@ -114,10 +107,11 @@ class Application
         }
 
         $closureContainer->run('dispatcher');
+
+        $Request = $this->delegate->getRequest();
+        $Response = $this->delegate->getResponse();
         if (!empty($annotate_config['basicAuth'])) {
-            $user = $this->delegate->getRequest()->SERVER('PHP_AUTH_USER');
-            $password = $this->delegate->getRequest()->SERVER('PHP_AUTH_PW');
-            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth'], $user, $password);
+            $Response->basicAuth($annotate_config['basicAuth'], $Request->SERVER('PHP_AUTH_USER'), $Request->SERVER('PHP_AUTH_PW'));
         }
 
         $cache = false;
@@ -126,6 +120,7 @@ class Application
         }
 
         $hasResponse = false;
+        $Response->setEndFlush(false);
         if ($cache && $cache->isValid()) {
             $response_content = $cache->get();
         } else {
@@ -136,32 +131,21 @@ class Application
             }
 
             $controller = $cr->newInstance();
-            if ($this->delegate->getResponse()->isEndFlush()) {
-                return true;
-            }
-
             if (isset($annotate_config['before'])) {
                 $this->callReliesControllerClosure($annotate_config['before'], $controller);
             }
 
-            $response_content = $this->delegate->getResponse()->getContent();
-            if (null !== $response_content && PHP_SAPI !== 'cli') {
-                $hasResponse = true;
-            } else {
+            $hasResponse = $Response->isEndFlush();
+            if (!$hasResponse) {
                 $action = $this->router->getAction();
-                if ($this->ob_cache_status) {
-                    ob_start();
-                    $response_content = $controller->$action();
-                    if (!$response_content) {
-                        $response_content = ob_get_contents();
-                    }
-                    ob_end_clean();
-                } else {
-                    $response_content = $controller->$action();
+                $controllerContext = $controller->$action();
+                if (!empty($controllerContext)) {
+                    $Response->setContent($controllerContext);
                 }
             }
 
-            if ($cache) {
+            $response_content = $Response->getContent();
+            if ($cache && $cache->isValid()) {
                 $cache->set($response_content);
             }
         }
@@ -172,8 +156,8 @@ class Application
 
         if ($return_response_content) {
             return $response_content;
-        } else if (false === $hasResponse) {
-            $this->delegate->getResponse()->display($response_content);
+        } elseif (false === $hasResponse) {
+            $Response->send($response_content);
         }
 
         if (isset($annotate_config['after']) && isset($controller)) {
@@ -198,16 +182,6 @@ class Application
         }
 
         $this->router->setParams($params);
-    }
-
-    /**
-     * 设置控制器结果是否使用输出缓冲
-     *
-     * @param bool $status
-     */
-    public function setObStatus(bool $status): void
-    {
-        $this->ob_cache_status = $status;
     }
 
     /**
