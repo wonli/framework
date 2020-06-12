@@ -128,7 +128,7 @@ class ArrayMap extends ArrayIterator
      */
     public function json()
     {
-        return json_encode($this->toArray());
+        return json_encode($this->toArray(), JSON_UNESCAPED_UNICODE);
     }
 
     /**

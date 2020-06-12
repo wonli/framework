@@ -48,7 +48,7 @@ class CookieAuth implements HttpAuthInterface
         } else {
             $encryptKey = $this->getEncryptKey($name);
             if (is_array($params)) {
-                $params = json_encode($params);
+                $params = json_encode($params, JSON_UNESCAPED_UNICODE);
             }
             $value = Helper::authCode($params, 'ENCODE', $encryptKey);
             if ($expire > 0) {

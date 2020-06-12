@@ -150,7 +150,7 @@ abstract class CrossException extends Exception
             }
 
             $Response->setResponseStatus($this->httpStatusCode)
-                ->display(json_encode($ResponseData->getData()));
+                ->display(json_encode($ResponseData->getData(), JSON_UNESCAPED_UNICODE));
         } else {
             $exceptionMsg = $this->cpExceptionSource($e);
             $Response->setResponseStatus($this->httpStatusCode)

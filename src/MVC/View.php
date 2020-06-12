@@ -471,7 +471,7 @@ class View extends FrameBase
     {
         $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('json');
-        echo json_encode($data);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
     /**

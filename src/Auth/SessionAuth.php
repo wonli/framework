@@ -46,7 +46,7 @@ class SessionAuth implements HttpAuthInterface
     function set(string $key, $value, int $expire = 0):bool
     {
         if (is_array($value)) {
-            $value = json_encode($value);
+            $value = json_encode($value, JSON_UNESCAPED_UNICODE);
         }
 
         $_SESSION[$key] = $value;

@@ -114,7 +114,7 @@ class FrameBase
     {
         $result = ['status' => $status, 'message' => $message];
         if ($json_encode) {
-            $result = json_encode($result);
+            $result = json_encode($result, JSON_UNESCAPED_UNICODE);
         }
 
         return $result;
