@@ -8,12 +8,6 @@
     "PHP Framework"
   ],
   "homepage": "http://www.crossphp.com",
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/wonli/crossphp.git"
-    }
-  ],
   "license": "MIT",
   "authors": [
     {
@@ -23,6 +17,11 @@
       "role": "Developer"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "Cross\\": "/src"
+    }
+  },
   "require": {
     "php": "^7.2.0",
     "ext-json": "*",
@@ -36,10 +35,5 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9"
-  },
-  "autoload": {
-    "psr-4": {
-      "Cross\\": "/src"
-    }
   }
 }
