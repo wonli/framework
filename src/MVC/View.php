@@ -1027,12 +1027,12 @@ class View extends FrameBase
     /**
      * 输出带layer的view
      *
-     * @param array $data
+     * @param mixed $data
      * @param string $method
      * @return string|void
      * @throws CoreException
      */
-    private function obRenderAction(array $data, string $method): void
+    private function obRenderAction($data, string $method): void
     {
         ob_start();
         $this->$method($data);
