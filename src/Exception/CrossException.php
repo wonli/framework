@@ -71,10 +71,10 @@ abstract class CrossException extends Exception
     /**
      * 根据trace信息分析源码,生成异常处理详细数据
      *
-     * @param Exception $e
+     * @param Throwable $e
      * @return array
      */
-    function cpExceptionSource(Exception $e)
+    function cpExceptionSource(Throwable $e)
     {
         $file = $e->getFile();
         $exception_line = $e->getLine();
@@ -108,9 +108,9 @@ abstract class CrossException extends Exception
     /**
      * cli模式下的异常处理
      *
-     * @param Exception $e
+     * @param Throwable $e
      */
-    function cliErrorHandler(Exception $e): void
+    function cliErrorHandler(Throwable $e): void
     {
         $trace_table = [];
         $trace = $e->getTrace();
@@ -136,9 +136,9 @@ abstract class CrossException extends Exception
     /**
      * 异常处理方法
      *
-     * @param Exception $e
+     * @param Throwable $e
      */
-    function errorHandler(Exception $e): void
+    function errorHandler(Throwable $e): void
     {
         $Response = Response::getInstance();
         if ($this->responseJSONExceptionMsg) {
@@ -284,7 +284,7 @@ abstract class CrossException extends Exception
      *
      * @param array $trace
      */
-    private function alignmentTraceData(array &$trace = array()): void
+    private function alignmentTraceData(array &$trace = []): void
     {
         foreach ($trace as &$t) {
             if (isset($t['file'])) {
