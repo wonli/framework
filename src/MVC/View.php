@@ -594,7 +594,7 @@ class View extends FrameBase
      * @return string
      * @throws CoreException
      */
-    function appUrl(string $base_link, string $app_name, $controller = null, $params = null, $encrypt_params = null): string
+    function appUrl(string $base_link, string $app_name, $controller = null, $params = null, bool $encrypt_params = false): string
     {
         $base_link = rtrim($base_link, '/') . '/';
         if ($controller === null && $params === null) {
