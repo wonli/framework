@@ -1,6 +1,6 @@
 {
-  "name": "crossphp/framework",
-  "type": "crossphp",
+  "name": "ideaa/cross",
+  "type": "library",
   "description": "light php framework",
   "keywords": [
     "cross",
