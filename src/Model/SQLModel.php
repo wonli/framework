@@ -407,6 +407,10 @@ class SQLModel
      */
     function getTable(bool $userJoinTable = true): string
     {
+        if (null !== $this->table) {
+            return $this->table;
+        }
+
         $table = $this->getOriTableName();
         if (!$userJoinTable) {
             return $table;
