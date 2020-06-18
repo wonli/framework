@@ -112,7 +112,7 @@ class Memcache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = array())
+    function setConfig(array $config = [])
     {
         $this->config = $config;
     }

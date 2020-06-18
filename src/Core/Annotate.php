@@ -165,7 +165,7 @@ class Annotate
      */
     private function parseAnnotate(array $annotateConfigs): array
     {
-        $result = array();
+        $result = [];
         foreach ($annotateConfigs as $conf => $params) {
             switch ($conf) {
                 case 'params':

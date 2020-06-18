@@ -46,7 +46,7 @@ class ClosureContainer
      * @param array $params
      * @return mixed
      */
-    function run(string $name, array $params = array())
+    function run(string $name, array $params = [])
     {
         if (isset($this->actions[$name])) {
             if (!is_array($params)) {

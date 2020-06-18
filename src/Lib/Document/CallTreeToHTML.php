@@ -83,7 +83,7 @@ class CallTreeToHTML
     function makeNode($node, DOMNode $parentElement = null)
     {
         $content = null;
-        $attr_set = array();
+        $attr_set = [];
 
         //构造根节点
         if (null === $parentElement) {

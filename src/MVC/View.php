@@ -883,7 +883,7 @@ class View extends FrameBase
      */
     protected function makeIndex(array $url_config, bool $have_controller = false): string
     {
-        static $cache = array();
+        static $cache = [];
         if (isset($cache[$have_controller])) {
             return $cache[$have_controller];
         }
@@ -1081,7 +1081,7 @@ class View extends FrameBase
     {
         $content = '';
         foreach ($data as $value => $label_text) {
-            $build_input_tags = array();
+            $build_input_tags = [];
             if (!empty($input_tags)) {
                 $build_input_tags = $input_tags;
             }

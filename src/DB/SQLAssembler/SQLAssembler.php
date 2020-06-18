@@ -529,7 +529,7 @@ class SQLAssembler
                     throw new CoreException('IN or NOT IN need a array parameter');
                 }
 
-                $in_where_condition = array();
+                $in_where_condition = [];
                 foreach ($field_config as $in_field_val) {
                     $params[] = $in_field_val;
                     $in_where_condition [] = '?';
@@ -711,7 +711,7 @@ class SQLAssembler
      */
     private function parseWhereFromHashMap(array $where, array &$params): string
     {
-        $all_condition = array();
+        $all_condition = [];
         foreach ($where as $field => $field_config) {
             $operator = '=';
             $field = trim($field);

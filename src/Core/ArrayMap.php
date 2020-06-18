@@ -96,7 +96,7 @@ class ArrayMap extends ArrayIterator
      * @param array $array
      * @return array
      */
-    public function toArray(array $array = array()): array
+    public function toArray(array $array = []): array
     {
         if (empty($array)) {
             $array = $this->getArrayCopy();
@@ -169,7 +169,7 @@ class ArrayMap extends ArrayIterator
     public function get($index, $key = null)
     {
         if (is_array($index)) {
-            $result = array();
+            $result = [];
             foreach ($index as $i) {
                 if ($this->__isset($i)) {
                     $result[$i] = $this->offsetGet($i);

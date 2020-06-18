@@ -125,7 +125,7 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    static function loadApp(string $app_name, array $runtime_config = array()): self
+    static function loadApp(string $app_name, array $runtime_config = []): self
     {
         if (!isset(self::$instance[$app_name])) {
             self::$instance[$app_name] = new Delegate($app_name, $runtime_config);

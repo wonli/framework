@@ -300,7 +300,7 @@ class FrameBase
         }
 
         $op_type = 2;
-        $ori_result = array();
+        $ori_result = [];
         if (!empty($url_config['params_dot'])) {
             $url_dot = &$url_config['params_dot'];
         } else {

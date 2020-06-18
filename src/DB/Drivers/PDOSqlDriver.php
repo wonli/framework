@@ -360,7 +360,7 @@ class PDOSqlDriver implements SqlInterface
     {
         $this->generateQueryID();
         $this->querySQL[$this->qid] = $this->SQLAssembler->replace($table, $modifier);
-        $this->queryParams[$this->qid] = array();
+        $this->queryParams[$this->qid] = [];
         return $this;
     }
 

@@ -50,7 +50,7 @@ class Rest
     /**
      * @var array
      */
-    protected $custom_router_config = array();
+    protected $custom_router_config = [];
 
     /**
      * @var Rest
@@ -204,7 +204,7 @@ class Rest
     function run(): void
     {
         $match = false;
-        $params = array();
+        $params = [];
         $process_closure = null;
         if (!empty($this->custom_router_config[$this->request_type])) {
             $custom_routers = $this->custom_router_config[$this->request_type];
@@ -312,11 +312,11 @@ class Rest
      * @param array $params
      * @throws CoreException
      */
-    private function response(Closure $process_closure, array $params = array()): void
+    private function response(Closure $process_closure, array $params = []): void
     {
         try {
             $ref = new ReflectionFunction($process_closure);
-            $closure_params = array();
+            $closure_params = [];
             $parameters = $ref->getParameters();
             if (!empty($parameters)) {
                 foreach ($parameters as $p) {

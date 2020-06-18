@@ -146,7 +146,7 @@ class Loader
         $prefix = trim($prefix, '\\') . '\\';
         $base_dir = rtrim($base_dir, DIRECTORY_SEPARATOR) . '/';
         if (isset(self::$namespace[$prefix]) === false) {
-            self::$namespace[$prefix] = array();
+            self::$namespace[$prefix] = [];
         }
 
         if ($prepend) {

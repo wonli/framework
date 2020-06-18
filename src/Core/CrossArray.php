@@ -65,7 +65,7 @@ class CrossArray
         if (isset($this->data[$config])) {
             if ($name) {
                 if (is_array($name)) {
-                    $result = array();
+                    $result = [];
                     foreach ($name as $n) {
                         if (isset($this->data[$config][$n])) {
                             $result[$n] = $this->data[$config][$n];

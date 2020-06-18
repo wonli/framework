@@ -266,7 +266,7 @@ class Application
         }
 
         if (!empty($annotate_params)) {
-            $params_set = array();
+            $params_set = [];
             foreach ($annotate_params as $params_name => $default_value) {
                 if ($op_mode == 1) {
                     $params_value = array_shift($params);

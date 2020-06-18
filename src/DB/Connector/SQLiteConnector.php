@@ -29,7 +29,7 @@ class SQLiteConnector extends BaseConnector
      *
      * @var array
      */
-    private static $options = array();
+    private static $options = [];
 
     /**
      * 创建一个SQLite的PDO连接
