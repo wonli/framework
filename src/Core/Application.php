@@ -32,13 +32,6 @@ use Closure;
 class Application
 {
     /**
-     * 当前app名称
-     *
-     * @var string
-     */
-    private $app_name;
-
-    /**
      * action 注释
      *
      * @var string
@@ -51,27 +44,13 @@ class Application
     private $delegate;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var Router
-     */
-    private $router;
-
-    /**
      * 实例化Application
      *
-     * @param string $app_name
      * @param Delegate $delegate
      */
-    function __construct(string $app_name, Delegate &$delegate)
+    function __construct(Delegate $delegate)
     {
-        $this->app_name = $app_name;
         $this->delegate = $delegate;
-        $this->config = $delegate->getConfig();
-        $this->router = $delegate->getRouter();
     }
 
     /**
@@ -137,7 +116,7 @@ class Application
 
             $hasResponse = $Response->isEndFlush();
             if (!$hasResponse) {
-                $action = $this->router->getAction();
+                $action = $this->delegate->getRouter()->getAction();
                 $controllerContext = $controller->$action();
                 if (!empty($controllerContext)) {
                     $Response->setContent($controllerContext);
@@ -181,7 +160,7 @@ class Application
             call_user_func($closure, $params);
         }
 
-        $this->router->setParams($params);
+        $this->delegate->getRouter()->setParams($params);
     }
 
     /**
@@ -202,7 +181,7 @@ class Application
      */
     function getControllerNamespace(string $controller_name): string
     {
-        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\controllers\\' . $controller_name;
+        return $this->delegate->getAppNamespace() . '\\controllers\\' . $controller_name;
     }
 
     /**
@@ -213,7 +192,7 @@ class Application
      */
     function getViewControllerNameSpace(string $controller_name): string
     {
-        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\views\\' . $controller_name . 'View';
+        return $this->delegate->getAppNamespace() . '\\views\\' . $controller_name . 'View';
     }
 
     /**
@@ -374,7 +353,7 @@ class Application
             throw new CoreException($e->getMessage());
         }
 
-        $this->router->setController($controller);
+        $this->delegate->getRouter()->setController($controller);
         //控制器类注释(不检测父类注释)
         $controller_annotate = [];
         $class_annotate_content = $class_reflection->getDocComment();
@@ -394,7 +373,7 @@ class Application
             }
 
             if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
-                $this->router->setAction($action);
+                $this->delegate->getRouter()->setAction($action);
                 //获取Action的注释配置
                 $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($is_callable->getDocComment()), $controller_annotate);
             } else {
@@ -413,7 +392,7 @@ class Application
      */
     private function initParams($url_params, array $annotate_params = []): void
     {
-        $url_type = $this->config->get('url', 'type');
+        $url_type = $this->delegate->getConfig()->get('url', 'type');
         switch ($url_type) {
             case 1:
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
@@ -472,14 +451,14 @@ class Application
             return false;
         }
 
-        $display_type = $this->config->get('sys', 'display');
+        $display_type = $this->delegate->getConfig()->get('sys', 'display');
         $this->delegate->getResponse()->setContentType($display_type);
 
         $default_cache_config = [
             'type' => 1,
             'expire_time' => 3600,
             'ignore_params' => false,
-            'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
+            'cache_path' => $this->delegate->getConfig()->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
             'key_dot' => DIRECTORY_SEPARATOR
         ];
 
@@ -491,7 +470,7 @@ class Application
         }
 
         $params_cache_key = '';
-        $params = $this->router->getParams();
+        $params = $this->delegate->getRouter()->getParams();
         if (!$cache_config['ignore_params'] && !empty($params)) {
             $params_member = &$params;
             if (!empty($annotate_params)) {
@@ -507,10 +486,10 @@ class Application
         }
 
         $cache_key = [
-            'app_name' => $this->app_name,
-            'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
-            'controller' => lcfirst($this->router->getController()),
-            'action' => $this->router->getAction()
+            'app_name' => $this->delegate->getAppName(),
+            'tpl_dir_name' => $this->delegate->getConfig()->get('sys', 'default_tpl_dir'),
+            'controller' => lcfirst($this->delegate->getRouter()->getController()),
+            'action' => $this->delegate->getRouter()->getAction()
         ];
 
         $cache_config['key'] = implode($cache_config['key_dot'], $cache_key);

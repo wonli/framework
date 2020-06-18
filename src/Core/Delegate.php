@@ -16,17 +16,11 @@ use Cross\Http\Response;
 use Cross\Http\Request;
 use Closure;
 
-//检查环境版本
-version_compare(PHP_VERSION, '7.2.0', '>=') or die('Requires PHP 7.2.0!');
-
 //外部定义的项目路径
 defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
 
 //项目路径
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
-
-//项目APP路径
-define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 
 //框架路径
 define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
@@ -41,7 +35,7 @@ class Delegate
     /**
      * @var string
      */
-    public $app_name;
+    private $app_name;
 
     /**
      * @var Application
@@ -78,6 +72,20 @@ class Delegate
     private $action_container;
 
     /**
+     * app命名空间
+     *
+     * @var string
+     */
+    private $app_namespace;
+
+    /**
+     * app名称是否命名空间
+     *
+     * @var bool
+     */
+    private $is_namespace;
+
+    /**
      * Delegate的实例
      *
      * @var Delegate
@@ -88,22 +96,25 @@ class Delegate
      * 初始化框架
      *
      * @param string $app_name 要加载的app名称
+     * @param bool $is_namespace
      * @param array $runtime_config 运行时指定的配置
      * @throws CoreException
      * @throws FrontException
      */
-    private function __construct(string $app_name, array $runtime_config)
+    private function __construct(string $app_name, bool $is_namespace, array $runtime_config)
     {
-        $this->app_name = $app_name;
+        $this->loader = Loader::init();
+
+        $this->is_namespace = $is_namespace;
         $this->runtime_config = $runtime_config;
 
-        $this->loader = Loader::init();
+        $this->setAppName($app_name);
         $this->config = $this->initConfig($app_name, $runtime_config);
 
         $this->registerNamespace();
         $this->action_container = new ClosureContainer();
         $this->router = new Router($this);
-        $this->app = new Application($app_name, $this);
+        $this->app = new Application($this);
     }
 
     /**
@@ -119,6 +130,20 @@ class Delegate
     /**
      * 实例化框架
      *
+     * @param string $app_namespace app命名空间
+     * @param array $runtime_config 运行时加载的设置
+     * @return static
+     * @throws CoreException
+     * @throws FrontException
+     */
+    static function app(string $app_namespace, array $runtime_config = []): self
+    {
+        return self::initApp($app_namespace, true, $runtime_config);
+    }
+
+    /**
+     * 实例化框架
+     *
      * @param string $app_name app名称
      * @param array $runtime_config 运行时加载的设置
      * @return self
@@ -127,23 +152,16 @@ class Delegate
      */
     static function loadApp(string $app_name, array $runtime_config = []): self
     {
-        if (!isset(self::$instance[$app_name])) {
-            self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
-        }
-
-        return self::$instance[$app_name];
+        return self::initApp($app_name, false, $runtime_config);
     }
 
     /**
      * 直接调用控制器类中的方法
-     * <pre>
-     * 忽略路由别名相关配置和URL参数, @cp_params注释不生效
-     * </pre>
      *
      * @param string $controller "控制器:方法"
-     * @param string|array $args 参数
+     * @param mixed $args 参数
      * @param bool $return_content 是输出还是直接返回结果
-     * @return array|mixed|string
+     * @return mixed
      * @throws CoreException
      */
     public function get(string $controller, $args = [], bool $return_content = false)
@@ -270,6 +288,42 @@ class Delegate
     }
 
     /**
+     * 获取app名称
+     *
+     * @return string
+     */
+    function getAppName(): string
+    {
+        return $this->app_name;
+    }
+
+    /**
+     * 设置app命名空间
+     *
+     * @param string $app_name
+     */
+    function setAppName(string $app_name): void
+    {
+        $this->app_name = $app_name;
+        $namespace = str_replace('/', '\\', $app_name);
+        if (!$this->is_namespace) {
+            $namespace = 'app\\' . $namespace;
+        }
+
+        $this->app_namespace = $namespace;
+    }
+
+    /**
+     * 获取app命名空间
+     *
+     * @return string
+     */
+    function getAppNamespace(): string
+    {
+        return $this->app_namespace;
+    }
+
+    /**
      * Loader
      *
      * @return Loader
@@ -324,6 +378,25 @@ class Delegate
     }
 
     /**
+     * 实例化框架
+     *
+     * @param string $app
+     * @param bool $is_namespace
+     * @param array $runtime_config
+     * @return static
+     * @throws CoreException
+     * @throws FrontException
+     */
+    private static function initApp(string $app, bool $is_namespace, array $runtime_config = []): self
+    {
+        if (!isset(self::$instance[$app])) {
+            self::$instance[$app] = new Delegate($app, $is_namespace, $runtime_config);
+        }
+
+        return self::$instance[$app];
+    }
+
+    /**
      * 初始化App配置
      *
      * @param string $app_name
@@ -341,10 +414,13 @@ class Delegate
         $request_url = $request->getBaseUrl();
         $script_path = $request->getScriptFilePath();
 
+        $app_namespace = $this->getAppNamespace();
+        $app_path = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $app_namespace) . DIRECTORY_SEPARATOR;
+
         //app名称和路径
         $runtime_config['app'] = [
             'name' => $app_name,
-            'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
+            'path' => $app_path
         ];
 
         $env_config = [
@@ -370,7 +446,11 @@ class Delegate
             ]
         ];
 
-        $Config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php');
+        if ('*' === $app_name) {
+            $Config = Config::load(PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.init.php');
+        } else {
+            $Config = Config::load($app_path . 'init.php');
+        }
 
         //默认环境
         $Config->combine($env_config);
