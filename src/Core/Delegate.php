@@ -11,6 +11,7 @@ namespace Cross\Core;
 use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
 use Cross\Runtime\ClosureContainer;
+use Cross\Runtime\RequestMapping;
 use Cross\I\RouterInterface;
 use Cross\Http\Response;
 use Cross\Http\Request;
@@ -375,6 +376,14 @@ class Delegate
     function getResponse(): Response
     {
         return Response::getInstance();
+    }
+
+    /**
+     * @return RequestMapping
+     */
+    function getRequestMapping(): RequestMapping
+    {
+        return RequestMapping::getInstance();
     }
 
     /**
