@@ -627,6 +627,7 @@ class SQLAssembler
      * @param mixed $data
      * @param bool $parseParams
      * @param array $params
+     * @param null $sequenceKey
      * @return string
      */
     protected function insertDataToSQLSegment(array $data, bool $parseParams = true, &$params = [], &$sequenceKey = null): string
