@@ -416,7 +416,7 @@ class Helper
      * @return string
      * @throws CoreException
      */
-    static function curlRequest(string $url, array $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
+    static function curlRequest(string $url, $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
     {
         $method = strtoupper($method);
         $SSL = substr($url, 0, 8) == "https://" ? true : false;
