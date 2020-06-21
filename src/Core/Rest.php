@@ -80,6 +80,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function get(string $customRouter, $handle): void
     {
@@ -91,6 +92,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function post(string $customRouter, $handle): void
     {
@@ -102,6 +104,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function put(string $customRouter, $handle): void
     {
@@ -113,6 +116,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function patch(string $customRouter, $handle): void
     {
@@ -124,6 +128,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function options(string $customRouter, $handle): void
     {
@@ -135,6 +140,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function delete(string $customRouter, $handle): void
     {
@@ -146,6 +152,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function head(string $customRouter, $handle): void
     {
@@ -157,6 +164,7 @@ class Rest
      *
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     function any(string $customRouter, $handle): void
     {
@@ -220,24 +228,25 @@ class Rest
     {
         try {
             $ref = new ReflectionFunction($handle);
-            $closure_params = [];
             $parameters = $ref->getParameters();
+
+            $closureParams = [];
             if (!empty($parameters)) {
                 foreach ($parameters as $p) {
                     if (!isset($params[$p->name]) && !$p->isOptional()) {
-                        throw new CoreException("未指定的参数: {$p->name}");
+                        throw new CoreException("Callback closure need param: {$p->name}");
                     }
 
-                    $closure_params[$p->name] = $params[$p->name] ?? $p->getDefaultValue();
+                    $closureParams[$p->name] = $params[$p->name] ?? $p->getDefaultValue();
                 }
             }
 
-            $content = call_user_func_array($handle, $closure_params);
+            $content = call_user_func_array($handle, $closureParams);
             if (null != $content) {
                 $this->delegate->getResponse()->send($content);
             }
         } catch (Exception $e) {
-            throw new CoreException('Reflection ' . $e->getMessage());
+            throw new CoreException($e->getMessage());
         }
     }
 
@@ -247,6 +256,7 @@ class Rest
      * @param string $requestType
      * @param string $customRouter
      * @param mixed $handle
+     * @throws CoreException
      */
     private function addCustomRouter(string $requestType, string $customRouter, $handle): void
     {
