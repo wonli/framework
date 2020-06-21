@@ -8,6 +8,7 @@
 
 namespace Cross\Runtime;
 
+use Cross\Exception\CoreException;
 use Cross\Http\Request;
 
 /**
@@ -108,6 +109,7 @@ class RequestMapping
      * @param string $router
      * @param string $handler
      * @return bool
+     * @throws CoreException
      */
     static function addRouter($router, $handler = null): bool
     {
@@ -121,6 +123,7 @@ class RequestMapping
      * @param string $router
      * @param mixed $handler
      * @return bool
+     * @throws CoreException
      */
     function addGroupRouter(string $requestType, string $router, $handler = null): bool
     {
@@ -138,13 +141,13 @@ class RequestMapping
     private function matchProcess(array $routers, &$handle, array &$params): bool
     {
         uasort($routers, function ($a, $b) {
-            return $a['params_count'] < $b['params_count'];
+            return $a['score'] < $b['score'];
         });
 
-        foreach ($routers as $router => $router_config) {
+        foreach ($routers as $router => $setting) {
             $params = [];
-            if (true === $this->matchCustomRouter($router, $router_config['params_key'], $params)) {
-                $handle = $router_config['process_closure'];
+            if (true === $this->matchCustomRouter($router, $setting['params'], $params)) {
+                $handle = $setting['handler'];
                 return true;
             }
         }
@@ -209,11 +212,12 @@ class RequestMapping
      * @param string $customRouter
      * @param null $handler
      * @return bool
+     * @throws CoreException
      */
     private function addToMapping(string $groupKey, string $customRouter, $handler = null): bool
     {
         $customRouter = trim($customRouter);
-        $isLowLevelRouter = preg_match_all("#(.*?)(?:(?:\[(.))|)\{:(.*?)\}(?:\]|)#", $customRouter, $matches);
+        $isLowLevelRouter = preg_match_all("#(.*?)(?:(?:\[(.))|)\{:(.*?)\}(?:\]|)|(?:.+)#", $customRouter, $matches);
         if ($isLowLevelRouter) {
             $level = 'current';
             $prefix_string_length = strlen($matches[1][0]);
@@ -221,40 +225,54 @@ class RequestMapping
                 $level = 'global';
             }
 
+            $hasOptional = false;
             $optional = $matches[2];
-            if (!empty($optional[0])) {
+            foreach ($optional as $n => $op) {
+                if (!empty($op)) {
+                    $hasOptional = true;
+                }
+
+                if ($hasOptional && empty($op)) {
+                    throw new CoreException('Request mapping syntax error!');
+                }
+            }
+
+            if ($hasOptional) {
                 $ori = $matches[1][0];
                 $oriLevel = 'high';
                 $oriRouterHandel = $handler;
 
                 //处理可选参数
+                $j = 0;
                 $paramsKey = [];
                 $optionalRouters = $ori;
                 foreach ($matches[3] as $n => $optionalParamsName) {
                     if ($n > 0 && !empty($matches[1][$n])) {
+                        $j++;
                         $optionalRouters .= $matches[1][$n];
                         $this->mapping[$groupKey][$level][$optionalRouters] = [
-                            'process_closure' => $handler,
-                            'params_count' => count($paramsKey),
-                            'params_key' => $paramsKey,
+                            'handler' => $handler,
+                            'score' => count($paramsKey) * 100 + $j,
+                            'params' => $paramsKey,
                         ];
                     }
 
+                    $j++;
                     $paramsKey[] = $matches[3][$n];
                     $optionalRouters .= sprintf('%s{:%s}', $optional[$n], $optionalParamsName);
                     $this->mapping[$groupKey][$level][$optionalRouters] = [
-                        'process_closure' => $handler,
-                        'params_count' => count($paramsKey),
-                        'params_key' => $paramsKey,
+                        'handler' => $handler,
+                        'score' => count($paramsKey) * 100 + $j,
+                        'params' => $paramsKey,
                     ];
                 }
             } else {
                 $ori = $customRouter;
                 $oriLevel = $level;
                 $oriRouterHandel = [
-                    'process_closure' => $handler,
-                    'params_count' => count($matches[3]),
-                    'params_key' => $matches[3],
+                    'handler' => $handler,
+                    'score' => count($matches[3]) * 100,
+                    'params' => $matches[3],
                 ];
             }
 
