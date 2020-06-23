@@ -90,12 +90,27 @@ class Router implements RouterInterface
         }
 
         if ('*' === $this->delegate->getAppName()) {
+            $multipleApp = $this->delegate->getConfig()->get('multipleApp');
+            if (empty($multipleApp)) {
+                throw new CoreException('Not find multipleApp config!');
+            }
+
             if (!empty($request)) {
-                $app_name = array_shift($request);
+                $pathAppName = [];
+                if (!empty($multipleApp['namespacePrefix'])) {
+                    $pathAppName[] = $multipleApp['namespacePrefix'];
+                }
+
+                $level = $multipleApp['pathLevel'] ?? null;
+                while ($level && $level-- > 0) {
+                    $pathAppName[] = array_shift($request);
+                }
+
+                $app_name = implode('\\', $pathAppName);
             } else {
                 $app_name = $this->delegate->getConfig()->get('defaultApp');
                 if (empty($app_name)) {
-                    throw new CoreException('请指定默认app名称');
+                    throw new CoreException('Not find defaultApp config');
                 }
             }
 
