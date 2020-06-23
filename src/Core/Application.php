@@ -342,12 +342,12 @@ class Application
      */
     private function initController(string $controller, $action = null): ReflectionClass
     {
-        $controller_name_space = $this->getControllerNamespace($controller);
+        $controller_namespace = $this->getControllerNamespace($controller);
 
         try {
-            $class_reflection = new ReflectionClass($controller_name_space);
+            $class_reflection = new ReflectionClass($controller_namespace);
             if ($class_reflection->isAbstract()) {
-                throw new CoreException("{$controller_name_space} 不允许访问的控制器");
+                throw new CoreException("{$controller_namespace} 不允许访问的控制器");
             }
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
@@ -363,12 +363,12 @@ class Application
 
         if ($action) {
             try {
-                $is_callable = new ReflectionMethod($controller_name_space, $action);
+                $is_callable = new ReflectionMethod($controller_namespace, $action);
             } catch (Exception $e) {
                 try {
-                    $is_callable = new ReflectionMethod($controller_name_space, '__call');
+                    $is_callable = new ReflectionMethod($controller_namespace, '__call');
                 } catch (Exception $e) {
-                    throw new CoreException("{$controller_name_space}->{$action} 不能解析的请求");
+                    throw new CoreException("{$controller_namespace}->{$action} 不能解析的请求");
                 }
             }
 
@@ -377,7 +377,7 @@ class Application
                 //获取Action的注释配置
                 $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($is_callable->getDocComment()), $controller_annotate);
             } else {
-                throw new CoreException("{$controller_name_space}->{$action} 不允许访问的方法");
+                throw new CoreException("{$controller_namespace}->{$action} 不允许访问的方法");
             }
         }
 
