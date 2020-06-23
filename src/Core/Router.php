@@ -108,7 +108,7 @@ class Router implements RouterInterface
 
                 $app_name = implode('\\', $pathAppName);
             } else {
-                $app_name = $this->delegate->getConfig()->get('defaultApp');
+                $app_name = $multipleApp['default'] ?? '';
                 if (empty($app_name)) {
                     throw new CoreException('Not find defaultApp config');
                 }
