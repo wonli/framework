@@ -177,7 +177,8 @@ class Request
      */
     function getScriptFilePath(): string
     {
-        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == null) {
+        $scriptName = $this->getScriptName();
+        if (empty($scriptName)) {
             throw new FrontException('determine the entry script URL failed!!!');
         }
 
@@ -213,7 +214,7 @@ class Request
      */
     function getPathInfo(): string
     {
-        return $this->SERVER('PATH_INFO');
+        return $this->SERVER('ORIG_PATH_INFO') ?: $this->SERVER('PATH_INFO');
     }
 
     /**
@@ -229,7 +230,7 @@ class Request
      */
     function getScriptName(): string
     {
-        return $this->SERVER('SCRIPT_NAME');
+        return $this->SERVER('ORIG_SCRIPT_NAME') ?: $this->SERVER('SCRIPT_NAME');
     }
 
     /**
