@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -37,9 +37,9 @@ class CallTreeToHTML
         $this->dom = new DOMDocument();
     }
 
-    static function getInstance()
+    static function getInstance(): self
     {
-        return new CallTreeToHTML();
+        return new self();
     }
 
     /**
@@ -48,7 +48,7 @@ class CallTreeToHTML
      * @param $node
      * @return DOMDocument
      */
-    function getDom($node)
+    function getDom($node): DOMDocument
     {
         $this->makeNode($node);
         $this->dom->appendChild($this->element);
@@ -62,7 +62,7 @@ class CallTreeToHTML
      * @param bool $html_decode
      * @return string
      */
-    function getHTML($node, $html_decode = true)
+    function getHTML($node, bool $html_decode = true): string
     {
         $dom = $this->getDom($node);
         $dom->encoding = 'utf-8';
@@ -83,7 +83,7 @@ class CallTreeToHTML
     function makeNode($node, DOMNode $parentElement = null)
     {
         $content = null;
-        $attr_set = array();
+        $attr_set = [];
 
         //构造根节点
         if (null === $parentElement) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -28,6 +28,18 @@ class SQLAssembler
     protected $params;
 
     /**
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * oracle序号名称
+     *
+     * @var string
+     */
+    protected $sequence = '';
+
+    /**
      * 表前缀
      *
      * @var string
@@ -42,11 +54,18 @@ class SQLAssembler
     protected $offset_is_valid = true;
 
     /**
+     * 包裹过字段名的字符
+     *
+     * @var string
+     */
+    protected $field_quote_char = '`';
+
+    /**
      * 初始化时可以指定表前缀
      *
      * @param string $table_prefix
      */
-    function __construct($table_prefix = '')
+    function __construct(string $table_prefix = '')
     {
         $this->table_prefix = $table_prefix;
     }
@@ -55,41 +74,21 @@ class SQLAssembler
      * 插入
      *
      * @param string $table 表名称
-     * @param array $data 要处理的数据关联数组
+     * @param array $data 要处理的数据（关联数组，批量插入会自动转换格式）
      * @param bool $multi 是否批量插入数据
-     * <pre>
-     *  批量插入数据时$data的结构如下:
-     *      $data = array(
-     *          'fields' => array(字段1,字段2,...),
-     *          'values' => array(
-     *                      array(字段1的值, 字段2的值),
-     *                      array(字段1的值, 字段2的值))
-     *      );
-     * </pre>
      */
-    public function add($table, &$data, $multi = false)
+    public function add(string $table, array &$data, bool $multi = false): void
     {
-        $params = array();
+        $params = [];
         if (true === $multi) {
-            $field_str = $value_str = '';
-            if (empty($data['fields']) || empty($data['values'])) {
-                $data = $this->arrayToMultiAddFormat($data);
-            }
-
+            $into_fields = $this->insertDataToSQLSegment($data[0], false, $_notUse, $sequenceKey);
+            $data = $this->arrayToMultiAddFormat($data, $sequenceKey);
             $params = $data['values'];
-            foreach ($data['fields'] as $d) {
-                $field_str .= "`{$d}`,";
-                $value_str .= '?,';
-            }
-
-            $fields = trim($field_str, ',');
-            $values = trim($value_str, ',');
-            $into_fields = "({$fields}) VALUES ({$values})";
         } else {
-            $into_fields = $this->parseData($data, $params, 'insert');
+            $into_fields = $this->insertDataToSQLSegment($data, true, $params);
         }
 
-        $this->setSQL("INSERT INTO {$table} {$into_fields}");
+        $this->setSQL("INSERT INTO {$this->getTable($table)} {$into_fields}");
         $this->setParams($params);
     }
 
@@ -99,26 +98,31 @@ class SQLAssembler
      * @param string $table 表名称, 复杂情况下, 以LEFT JOIN为例: table_a a LEFT JOIN table_b b ON a.id=b.aid
      * @param string $fields 要查询的字段 所有字段的时候为'*'
      * @param string $where 查询条件
-     * @param int|string $order 排序
      * @param array $page 分页参数 默认返回50条记录
+     * @param int|string $order 排序
      * @param int|string $group_by
      * @return mixed|void
      * @throws CoreException
      */
-    public function find($table, $fields, $where, $order = 1, array &$page = array('p' => 1, 'limit' => 50), $group_by = 1)
+    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 50], $order = null, $group_by = null)
     {
-        $params = array();
+        $params = [];
         $field_str = $this->parseFields($fields);
         $where_str = $this->parseWhere($where, $params);
-        $order_str = $this->parseOrder($order);
+
+        $sql = "SELECT {$field_str} FROM {$this->getTable($table)} WHERE {$where_str}";
+        if (null !== $group_by) {
+            $group_str = $this->parseGroup($group_by);
+            $sql .= " GROUP BY {$group_str}";
+        }
+
+        if (null !== $order) {
+            $order_str = $this->parseOrder($order);
+            $sql .= " ORDER BY {$order_str}";
+        }
 
         $p = ($page['p'] - 1) * $page['limit'];
-        if (1 !== $group_by) {
-            $group_str = $this->parseGroup($group_by);
-            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} GROUP BY {$group_str} ORDER BY {$order_str} LIMIT {$p}, {$page['limit']}";
-        } else {
-            $sql = "SELECT {$field_str} FROM {$table} WHERE {$where_str} ORDER BY {$order_str} LIMIT {$p}, {$page['limit']}";
-        }
+        $sql .= ' ' . $this->getLimitSQLSegment($p, $page['limit']);
 
         $this->setSQL($sql);
         $this->setParams($params);
@@ -133,14 +137,14 @@ class SQLAssembler
      * @return mixed|void
      * @throws CoreException
      */
-    public function update($table, $data, $where)
+    public function update(string $table, $data, $where)
     {
-        $params = array();
+        $params = [];
         $fields = $this->parseData($data, $params);
         $where_str = $this->parseWhere($where, $params);
 
         $fields = trim($fields, ',');
-        $this->setSQL("UPDATE {$table} SET {$fields} WHERE {$where_str}");
+        $this->setSQL("UPDATE {$this->getTable($table)} SET {$fields} WHERE {$where_str}");
         $this->setParams($params);
     }
 
@@ -149,39 +153,14 @@ class SQLAssembler
      *
      * @param string $table
      * @param string|array $where
-     * @param bool $multi 是否批量删除数据
-     *      $where = array(
-     *          'fields' => array(字段1,字段2,...),
-     *          'values' => array(
-     *                      array(字段1的值, 字段2的值),
-     *                      array(字段1的值, 字段2的值))
-     *      );
      * @return mixed|void
      * @throws CoreException
      */
-    public function del($table, $where, $multi = false)
+    public function del(string $table, $where)
     {
-        $params = array();
-        if (true === $multi) {
-            if (empty($where ['fields']) || empty($where ['values'])) {
-                throw new CoreException('data format error!');
-            }
-
-            $where_condition = array();
-            foreach ($where ['fields'] as $d) {
-                $where_condition[] = "{$d} = ?";
-            }
-
-            $where_str = implode(' AND ', $where_condition);
-            foreach ($where ['values'] as $p) {
-                $params[] = $p;
-            }
-
-        } else {
-            $where_str = $this->parseWhere($where, $params);
-        }
-
-        $this->setSQL("DELETE FROM {$table} WHERE {$where_str}");
+        $params = [];
+        $where_str = $this->parseWhere($where, $params);
+        $this->setSQL("DELETE FROM {$this->getTable($table)} WHERE {$where_str}");
         $this->setParams($params);
     }
 
@@ -192,7 +171,7 @@ class SQLAssembler
      * @param string $modifier
      * @return string
      */
-    public function select($fields = '*', $modifier = '')
+    public function select(string $fields = '*', string $modifier = ''): string
     {
         return "SELECT {$modifier} {$this->parseFields($fields)} ";
     }
@@ -206,9 +185,9 @@ class SQLAssembler
      * @param array $params
      * @return string
      */
-    public function insert($table, $modifier = '', $data, array &$params = array())
+    public function insert(string $table, $data, string $modifier = '', &$params = []): string
     {
-        return "INSERT {$modifier} INTO {$table} {$this->parseData($data, $params, 'insert')} ";
+        return "INSERT {$modifier} INTO {$this->getTable($table)} {$this->insertDataToSQLSegment($data, true, $params)} ";
     }
 
     /**
@@ -218,18 +197,18 @@ class SQLAssembler
      * @param string $modifier
      * @return string
      */
-    public function replace($table, $modifier = '')
+    public function replace(string $table, string $modifier = ''): string
     {
-        return "REPLACE {$modifier} {$table} ";
+        return "REPLACE {$modifier} {$this->getTable($table)} ";
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      */
-    public function from($table)
+    public function from(string $table): string
     {
-        return "FROM {$table} ";
+        return "FROM {$this->getTable($table)} ";
     }
 
     /**
@@ -238,19 +217,19 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    public function where($where, array &$params)
+    public function where($where, &$params): string
     {
         return "WHERE {$this->parseWhere($where, $params)} ";
     }
 
     /**
-     * @param int $start
-     * @param bool|int $end
+     * @param int $start 从第几页开始
+     * @param int $end 取多少条
      * @return string
      */
-    public function limit($start, $end = false)
+    public function limit(int $start, int $end = null): string
     {
-        if ($end) {
+        if (null !== $end) {
             $end = (int)$end;
             $this->offset_is_valid = false;
             return "LIMIT {$start}, {$end} ";
@@ -264,7 +243,7 @@ class SQLAssembler
      * @param int $offset
      * @return string
      */
-    public function offset($offset)
+    public function offset(int $offset): string
     {
         if ($this->offset_is_valid) {
             return "OFFSET {$offset} ";
@@ -274,56 +253,56 @@ class SQLAssembler
     }
 
     /**
-     * @param $order
+     * @param mixed $order
      * @return string
      */
-    public function orderBy($order)
+    public function orderBy($order): string
     {
         return "ORDER BY {$this->parseOrder($order)} ";
     }
 
     /**
-     * @param $group
+     * @param string $group
      * @return string
      */
-    public function groupBy($group)
+    public function groupBy(string $group): string
     {
         return "GROUP BY {$this->parseGroup($group)} ";
     }
 
     /**
-     * @param $having
+     * @param string $having
      * @return string
      */
-    public function having($having)
+    public function having(string $having): string
     {
         return "HAVING {$having} ";
     }
 
     /**
-     * @param $procedure
+     * @param string $procedure
      * @return string
      */
-    public function procedure($procedure)
+    public function procedure(string $procedure): string
     {
         return "PROCEDURE {$procedure} ";
     }
 
     /**
-     * @param $var_name
+     * @param string $var_name
      * @return string
      */
-    public function into($var_name)
+    public function into(string $var_name): string
     {
         return "INTO {$var_name} ";
     }
 
     /**
-     * @param string $data
+     * @param mixed $data
      * @param array $params
      * @return string
      */
-    public function set($data, array &$params = array())
+    public function set($data, array &$params = []): string
     {
         return "SET {$this->parseData($data, $params)} ";
     }
@@ -332,7 +311,7 @@ class SQLAssembler
      * @param string $on
      * @return string
      */
-    public function on($on)
+    public function on(string $on): string
     {
         return "ON {$on} ";
     }
@@ -343,7 +322,7 @@ class SQLAssembler
      * @param string|array $fields
      * @return string
      */
-    public function parseFields($fields)
+    public function parseFields($fields): string
     {
         if (empty($fields)) {
             $field_str = '*';
@@ -366,7 +345,7 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    public function parseWhere($where, array &$params)
+    public function parseWhere($where, array &$params): string
     {
         if (!empty($where)) {
             if (is_array($where)) {
@@ -380,6 +359,7 @@ class SQLAssembler
                         }
                     }
                 } else {
+                    $this->beforeParseData($where);
                     $where_str = $this->parseWhereFromHashMap($where, $params);
                 }
             } else {
@@ -394,7 +374,7 @@ class SQLAssembler
     /**
      * 解析order
      *
-     * @param string $order
+     * @param mixed $order
      * @return int|string
      */
     public function parseOrder($order)
@@ -415,8 +395,8 @@ class SQLAssembler
     /**
      * 解析group by
      *
-     * @param string $group_by
-     * @return int
+     * @param mixed $group_by
+     * @return int|string
      */
     public function parseGroup($group_by)
     {
@@ -432,7 +412,7 @@ class SQLAssembler
     /**
      * @return string
      */
-    public function getSQL()
+    public function getSQL(): string
     {
         return $this->sql;
     }
@@ -440,7 +420,7 @@ class SQLAssembler
     /**
      * @param $sql
      */
-    protected function setSQL($sql)
+    protected function setSQL(string $sql): void
     {
         $this->sql = $sql;
     }
@@ -458,7 +438,7 @@ class SQLAssembler
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return $this->table_prefix;
     }
@@ -466,9 +446,21 @@ class SQLAssembler
     /**
      * @param $params
      */
-    protected function setParams($params)
+    protected function setParams($params): void
     {
         $this->params = $params;
+    }
+
+    /**
+     * 获取表名
+     *
+     * @param string $table
+     * @return string
+     */
+    protected function getTable(string $table)
+    {
+        $this->table = $table;
+        return $this->table;
     }
 
     /**
@@ -484,9 +476,9 @@ class SQLAssembler
      * @return array
      * @throws CoreException
      */
-    protected function parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, array &$params)
+    protected function parseCondition(string $operator, string $field, $field_config, bool $is_mixed_field, string $condition_connector, string $connector, array &$params): array
     {
-        $condition = array();
+        $condition = [];
         switch ($connector) {
             case 'OR':
                 if (!is_array($field_config)) {
@@ -537,7 +529,7 @@ class SQLAssembler
                     throw new CoreException('IN or NOT IN need a array parameter');
                 }
 
-                $in_where_condition = array();
+                $in_where_condition = [];
                 foreach ($field_config as $in_field_val) {
                     $params[] = $in_field_val;
                     $in_where_condition [] = '?';
@@ -584,12 +576,11 @@ class SQLAssembler
     /**
      * 解析数据
      *
-     * @param $data
+     * @param mixed $data
      * @param array $params
-     * @param string $format
      * @return string
      */
-    private function parseData($data, array &$params, $format = 'normal')
+    protected function parseData($data, array &$params): string
     {
         if (!empty($data)) {
             if (is_array($data)) {
@@ -603,35 +594,23 @@ class SQLAssembler
                         }
                     }
                 } else {
-                    if ('insert' === $format) {
-                        $data_keys = $data_values = array();
-                        foreach ($data as $key => $value) {
-                            $data_keys[] = $key;
-                            $data_values[] = '?';
+                    $segment = '';
+                    $this->beforeParseData($data);
+                    foreach ($data as $key => $value) {
+                        if (is_array($value)) {
+                            if (isset($value[1])) {
+                                $segment .= ", {$key} = {$value[0]}";
+                                $params[] = $value[1];
+                            } else {
+                                $segment .= ", {$key} = {$value[0]}";
+                            }
+                        } else {
+                            $segment .= ", {$key} = ?";
                             $params[] = $value;
                         }
-
-                        $fields = implode(',', $data_keys);
-                        $values = implode(',', $data_values);
-                        $sql_segment = "({$fields}) VALUES ({$values})";
-                    } else {
-                        $segment = '';
-                        foreach ($data as $key => $value) {
-                            if (is_array($value)) {
-                                if (isset($value[1])) {
-                                    $segment .= ", {$key} = {$value[0]}";
-                                    $params[] = $value[1];
-                                } else {
-                                    $segment .= ", {$key} = {$value[0]}";
-                                }
-                            } else {
-                                $segment .= ", {$key} = ?";
-                                $params[] = $value;
-                            }
-                        }
-
-                        $sql_segment = trim($segment, ',');
                     }
+
+                    $sql_segment = trim($segment, ',');
                 }
             } else {
                 $sql_segment = $data;
@@ -643,6 +622,87 @@ class SQLAssembler
     }
 
     /**
+     * 插入数据转换为SQL片段
+     *
+     * @param mixed $data
+     * @param bool $parseParams
+     * @param array $params
+     * @param null $sequenceKey
+     * @return string
+     */
+    protected function insertDataToSQLSegment(array $data, bool $parseParams = true, &$params = [], &$sequenceKey = null): string
+    {
+        $fields = $values = [];
+        foreach ($data as $key => $value) {
+            $addToParseParams = true;
+            if (is_array($value)) {
+                $addToParseParams = false;
+                $type = key($value);
+                if ($type == '#SEQ#') {
+                    //oracle sequence 插入时默认跟 NEXTVAL
+                    $sequenceKey = $key;
+                    $this->setSequence($value[$type]);
+                    $sqlValue = $value[$type] . '.NEXTVAL';
+                } else {
+                    //待扩展支持其他标识
+                    $sqlValue = $value[$type];
+                }
+            } else {
+                $sqlValue = '?';
+            }
+
+            if ($addToParseParams && $parseParams) {
+                $params[] = $value;
+            }
+
+            $fields[] = sprintf('%s%s%s', $this->field_quote_char, $key, $this->field_quote_char);
+            $values[] = $sqlValue;
+        }
+
+        return sprintf('(%s) VALUES (%s)', implode(',', $fields), implode(',', $values));
+    }
+
+    /**
+     * 设置序号
+     *
+     * @param string $sequence
+     */
+    public function setSequence(string $sequence): void
+    {
+        $this->sequence = $sequence;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSequence(): string
+    {
+        return $this->sequence;
+    }
+
+    /**
+     * 生成分页片段
+     *
+     * @param int $p
+     * @param int $limit
+     * @return string
+     */
+    protected function getLimitSQLSegment(int $p, int $limit): string
+    {
+        return "LIMIT {$p}, {$limit}";
+    }
+
+    /**
+     * 解析数据之前执行
+     *
+     * @param array $data
+     */
+    protected function beforeParseData(&$data)
+    {
+
+    }
+
+    /**
      * 解析关联数组
      *
      * @param array $where
@@ -650,9 +710,9 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    private function parseWhereFromHashMap(array $where, array &$params)
+    private function parseWhereFromHashMap(array $where, array &$params): string
     {
-        $all_condition = array();
+        $all_condition = [];
         foreach ($where as $field => $field_config) {
             $operator = '=';
             $field = trim($field);
@@ -685,10 +745,10 @@ class SQLAssembler
     /**
      * 组合where条件
      *
-     * @param $where_condition
+     * @param array $where_condition
      * @return string
      */
-    private function combineWhereCondition($where_condition)
+    private function combineWhereCondition(array $where_condition): string
     {
         $where = '';
         foreach ($where_condition as $condition) {
@@ -715,13 +775,18 @@ class SQLAssembler
      * 将数组格式化成批量添加的格式
      *
      * @param array $data
+     * @param string $ignoreKey 忽略指定键
      * @return array
      */
-    private function arrayToMultiAddFormat(array $data)
+    private function arrayToMultiAddFormat(array $data, string $ignoreKey = null): array
     {
-        $fields = $values = array();
+        $fields = $values = [];
         if (!empty($data)) {
             while ($d = array_shift($data)) {
+                if (!empty($ignoreKey)) {
+                    unset($d[$ignoreKey]);
+                }
+
                 $keys = array_keys($d);
                 if (empty($fields)) {
                     $fields = $keys;
@@ -733,6 +798,6 @@ class SQLAssembler
             }
         }
 
-        return array('fields' => $fields, 'values' => $values);
+        return ['fields' => $fields, 'values' => $values];
     }
 }

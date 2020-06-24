@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -18,12 +18,18 @@ interface CacheInterface
      * @param string $key
      * @return mixed get cache
      */
-    function get($key = '');
+    function get(string $key = '');
 
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      * @return mixed set
      */
-    function set($key, $value);
+    function set(string $key, $value);
+
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    function del(string $key);
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -50,7 +50,7 @@ class Config
      * @param string $res_file 配置文件绝对路径
      * @throws CoreException
      */
-    private function __construct($res_file)
+    private function __construct(string $res_file)
     {
         $this->res_file = $res_file;
         $this->config_data = Loader::read($res_file);
@@ -65,7 +65,7 @@ class Config
      * @return Config
      * @throws CoreException
      */
-    static function load($file)
+    static function load(string $file): self
     {
         if (!isset(self::$instance[$file])) {
             self::$instance[$file] = new self($file);
@@ -78,16 +78,29 @@ class Config
      * 合并附加数组到源数组
      *
      * @param array $append_config
+     * @param bool $cover 是否覆盖已有值
      * @return $this
      */
-    function combine(array $append_config = array())
+    function combine(array $append_config = [], bool $cover = true): self
     {
         if (!empty($append_config)) {
             foreach ($append_config as $key => $value) {
-                if (isset($this->config_data[$key]) && is_array($value)) {
-                    $this->config_data[$key] = array_merge($this->config_data[$key], $value);
+                if ($cover) {
+                    $configValue = &$this->config_data[$key];
+                    if (is_array($value) && is_array($configValue)) {
+                        $this->config_data[$key] = array_merge($configValue, $value);
+                    } else {
+                        $this->config_data[$key] = $value;
+                    }
                 } else {
-                    $this->config_data[$key] = $value;
+                    if (isset($this->config_data[$key])) {
+                        $configValue = &$this->config_data[$key];
+                        if (is_array($value) && is_array($configValue)) {
+                            $this->config_data[$key] = array_merge($value, $configValue);
+                        }
+                    } elseif (!isset($this->config_data[$key])) {
+                        $this->config_data[$key] = $value;
+                    }
                 }
 
                 $this->clearIndexCache($key);
@@ -98,13 +111,14 @@ class Config
     }
 
     /**
-     * @see CrossArray::get()
+     * 获取指定配置
      *
      * @param string $index
      * @param string|array $options
      * @return string|array
+     * @see CrossArray::get()
      */
-    function get($index, $options = '')
+    function get(string $index, $options = '')
     {
         $key = $this->getIndexCacheKey($index);
         if (is_array($options)) {
@@ -123,25 +137,24 @@ class Config
     }
 
     /**
-     * @see CrossArray::get()
+     * 更新指定配置
      *
      * @param string $index
      * @param array|string $values
-     * @return bool
+     * @see CrossArray::get()
      */
-    function set($index, $values = '')
+    function set(string $index, $values = ''): void
     {
-        $result = $this->ca->set($index, $values);
+        $this->ca->set($index, $values);
         $this->clearIndexCache($index);
-
-        return $result;
     }
 
     /**
-     * @see CrossArray::getAll()
+     * 返回全部配置数据
      *
      * @param bool $obj 是否返回对象
      * @return array|object
+     * @see CrossArray::getAll()
      */
     function getAll($obj = false)
     {
@@ -158,7 +171,7 @@ class Config
      * @param string $index
      * @return string
      */
-    protected function getIndexCacheKey($index)
+    protected function getIndexCacheKey(string $index): string
     {
         return $this->res_file . '.' . $index;
     }
@@ -168,7 +181,7 @@ class Config
      *
      * @param string $index
      */
-    protected function clearIndexCache($index)
+    protected function clearIndexCache(string $index): void
     {
         $key = $this->getIndexCacheKey($index);
         unset(self::$cache[$key]);

@@ -1,23 +1,23 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
 
-namespace Cross\DB\Connecter;
+namespace Cross\DB\Connector;
 
-use Cross\Exception\CoreException;
+use Cross\Exception\DBConnectException;
 use Exception;
 use PDO;
 
 /**
  * @author wonli <wonli@live.com>
- * Class MySQLConnecter
- * @package Cross\DB\Connecter
+ * Class MySQLConnector
+ * @package Cross\DB\Connector
  */
-class MySQLConnecter extends BaseConnecter
+class MySQLConnector extends BaseConnector
 {
     /**
      * 数据库连接实例
@@ -39,13 +39,13 @@ class MySQLConnecter extends BaseConnecter
      *
      * @var array
      */
-    private static $options = array(
+    private static $options = [
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
-    );
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'
+    ];
 
     /**
      * 创建Mysql的PDO连接
@@ -54,28 +54,28 @@ class MySQLConnecter extends BaseConnecter
      * @param string $user 数据库用户名
      * @param string $password 数据库密码
      * @param array $options
-     * @throws CoreException
+     * @throws DBConnectException
      */
-    private function __construct($dsn, $user, $password, array $options = array())
+    private function __construct(string $dsn, string $user, $password, array $options = [])
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
         } catch (Exception $e) {
-            throw new CoreException($e->getMessage());
+            throw new DBConnectException($e->getMessage());
         }
     }
 
     /**
-     * @see MysqlModel::__construct
+     * 单例模式连接数据库
      *
      * @param string $dsn
      * @param string $user
      * @param string $password
      * @param array $option
      * @return mixed
-     * @throws CoreException
+     * @throws DBConnectException
      */
-    static function getInstance($dsn, $user, $password, array $option = array())
+    static function getInstance($dsn, $user, $password, array $option = []): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
@@ -91,7 +91,7 @@ class MySQLConnecter extends BaseConnecter
      *
      * @return PDO
      */
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo;
     }
@@ -100,9 +100,9 @@ class MySQLConnecter extends BaseConnecter
      * 获取表的主键名
      *
      * @param string $table
-     * @return bool
+     * @return string
      */
-    public function getPK($table)
+    public function getPK(string $table): string
     {
         $table_info = $this->getMetaData($table, false);
         foreach ($table_info as $ti) {
@@ -111,7 +111,7 @@ class MySQLConnecter extends BaseConnecter
             }
         }
 
-        return false;
+        return '';
     }
 
     /**
@@ -131,26 +131,29 @@ class MySQLConnecter extends BaseConnecter
      * @param bool $fields_map
      * @return mixed
      */
-    function getMetaData($table, $fields_map = true)
+    function getMetaData(string $table, bool $fields_map = true): array
     {
-        $data = $this->pdo->query("DESCRIBE {$table}");
+        $data = $this->pdo->query("SHOW FULL FIELDS FROM {$table}");
         try {
             if ($fields_map) {
-                $result = array();
-                $data->fetchAll(PDO::FETCH_FUNC, function ($field, $type, $null, $key, $default, $extra) use (&$result) {
-                    $result[$field] = array(
-                        'primary' => $key == 'PRI',
-                        'auto_increment' => $extra == 'auto_increment',
-                        'default_value' => strval($default),
-                        'not_null' => $null == 'NO',
-                    );
-                });
+                $result = [];
+                $data->fetchAll(PDO::FETCH_FUNC,
+                    function ($field, $type, $collation, $null, $key, $default, $extra, $privileges, $comment) use (&$result) {
+                        $result[$field] = [
+                            'primary' => $key == 'PRI',
+                            'is_index' => $key ? $key : false,
+                            'auto_increment' => $extra == 'auto_increment',
+                            'default_value' => strval($default),
+                            'not_null' => $null == 'NO',
+                            'comment' => $comment
+                        ];
+                    });
                 return $result;
             } else {
                 return $data->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (Exception $e) {
-            return array();
+            return [];
         }
     }
 }

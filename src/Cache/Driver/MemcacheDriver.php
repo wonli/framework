@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -103,7 +103,7 @@ class MemcacheDriver
      * @param int|array $flag
      * @return array|string
      */
-    function get($key, &$flag = 0)
+    function get(string $key, &$flag = 0)
     {
         return $this->link->get($key, $flag);
     }

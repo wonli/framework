@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -8,9 +8,12 @@
 
 namespace Cross\DB\Drivers;
 
-use Couchbase\PasswordAuthenticator;
 use Cross\Exception\CoreException;
+
+use Couchbase\PasswordAuthenticator;
+use Couchbase\Bucket;
 use CouchbaseCluster;
+
 use Exception;
 
 /**
@@ -21,7 +24,7 @@ use Exception;
 class CouchDriver
 {
     /**
-     * @var \Couchbase\Bucket
+     * @var Bucket
      */
     protected $link;
 
@@ -58,8 +61,8 @@ class CouchDriver
      *
      * @param $method
      * @param $argv
-     * @throws CoreException
      * @return mixed|null
+     * @throws CoreException
      */
     public function __call($method, $argv)
     {

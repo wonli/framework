@@ -1,10 +1,11 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\I;
 
 /**
@@ -22,7 +23,7 @@ interface HttpAuthInterface
      * @param int $expire
      * @return mixed
      */
-    public function set($key, $value, $expire = 0);
+    public function set(string $key, $value, int $expire = 0): bool;
 
     /**
      * 获取
@@ -31,5 +32,5 @@ interface HttpAuthInterface
      * @param bool $deCode
      * @return mixed
      */
-    public function get($key, $deCode = false);
+    public function get(string $key, bool $deCode = false);
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -8,9 +8,9 @@
 
 namespace Cross\Cache\Request;
 
+use Cross\I\RequestCacheInterface;
 use Cross\Cache\Driver\MemcacheDriver;
 use Cross\Exception\CoreException;
-use Cross\I\RequestCacheInterface;
 
 /**
  * @author wonli <wonli@live.com>
@@ -44,7 +44,7 @@ class Memcache implements RequestCacheInterface
     protected $flag = 0;
 
     /**
-     * @var \Memcache
+     * @var MemcacheDriver
      */
     protected $driver;
 
@@ -77,7 +77,7 @@ class Memcache implements RequestCacheInterface
      *
      * @param string $value
      */
-    function set($value)
+    function set(string $value): void
     {
         $this->driver->set($this->cacheKey, $value, $this->flag, $this->expireTime);
     }
@@ -88,7 +88,7 @@ class Memcache implements RequestCacheInterface
      * @param int $flag
      * @return array|string
      */
-    function get(&$flag = 0)
+    function get(&$flag = 0): string
     {
         return $this->driver->get($this->cacheKey, $flag);
     }
@@ -98,7 +98,7 @@ class Memcache implements RequestCacheInterface
      *
      * @return bool
      */
-    function isValid()
+    function isValid(): bool
     {
         if ($this->driver->get($this->cacheKey)) {
             return true;
@@ -112,7 +112,7 @@ class Memcache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = array())
+    function setConfig(array $config = [])
     {
         $this->config = $config;
     }

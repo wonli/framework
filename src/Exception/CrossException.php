@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -8,11 +8,14 @@
 
 namespace Cross\Exception;
 
+use Cross\Interactive\ResponseData;
 use Cross\Http\Response;
+
 use ReflectionMethod;
 use ReflectionClass;
 use SplFileObject;
 use Exception;
+use Throwable;
 
 /**
  * @author wonli <wonli@live.com>
@@ -22,34 +25,61 @@ use Exception;
 abstract class CrossException extends Exception
 {
     /**
+     * HTTP状态码
+     *
+     * @var int
+     */
+    protected $httpStatusCode = 500;
+
+    /**
+     * 是否返回JSON格式的异常信息
+     *
+     * @var bool
+     */
+    protected $responseJSONExceptionMsg = false;
+
+    /**
+     * 扩展数据
+     *
+     * @var array
+     */
+    protected $extData = [];
+
+    /**
      * CrossException constructor.
      *
      * @param string $message
      * @param null|int $code
-     * @param Exception|null $previous
+     * @param Throwable|null $previous
      */
-    function __construct($message = 'CrossPHP Exception', $code = null, Exception $previous = null)
+    function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
     {
-        parent::__construct($message, $code, $previous);
         if (PHP_SAPI === 'cli') {
             set_exception_handler(array($this, 'cliErrorHandler'));
         } else {
             set_exception_handler(array($this, 'errorHandler'));
         }
+
+        $contentType = Response::getInstance()->getContentType();
+        if (0 === strcasecmp($contentType, 'JSON')) {
+            $this->responseJSONExceptionMsg = true;
+        }
+
+        parent::__construct($message, $code, $previous);
     }
 
     /**
      * 根据trace信息分析源码,生成异常处理详细数据
      *
-     * @param Exception $e
+     * @param Throwable $e
      * @return array
      */
-    function cpExceptionSource(Exception $e)
+    function cpExceptionSource(Throwable $e)
     {
         $file = $e->getFile();
         $exception_line = $e->getLine();
 
-        $exception_file_source = array();
+        $exception_file_source = [];
         $exception_file_info = new SplFileObject($file);
         foreach ($exception_file_info as $line => $code) {
             $line += 1;
@@ -58,13 +88,13 @@ abstract class CrossException extends Exception
             }
         }
 
-        $result['main'] = array(
+        $result['main'] = [
             'file' => $file,
             'line' => $exception_line,
             'message' => $this->hiddenFileRealPath($e->getMessage()),
             'show_file' => $this->hiddenFileRealPath($file),
             'source' => $exception_file_source,
-        );
+        ];
 
         $trace = $e->getTrace();
         $this->getTraceInfo($trace, $result['trace']);
@@ -78,15 +108,15 @@ abstract class CrossException extends Exception
     /**
      * cli模式下的异常处理
      *
-     * @param Exception $e
+     * @param Throwable $e
      */
-    function cliErrorHandler(Exception $e)
+    function cliErrorHandler(Throwable $e): void
     {
-        $trace_table = array();
+        $trace_table = [];
         $trace = $e->getTrace();
         $this->getCliTraceInfo($trace, $trace_table);
 
-        $previous_trace = array();
+        $previous_trace = [];
         if ($e->getPrevious()) {
             $previous_trace = $e->getPrevious()->getTrace();
             $this->getCliTraceInfo($previous_trace, $trace_table);
@@ -100,7 +130,60 @@ abstract class CrossException extends Exception
         $result['trace_table'] = $trace_table;
         $result['previous_trace'] = $previous_trace;
 
-        Response::getInstance()->display($result, __DIR__ . '/tpl/cli_error.tpl.php');
+        Response::getInstance()->send($result, __DIR__ . '/tpl/cli_error.tpl.php');
+    }
+
+    /**
+     * 异常处理方法
+     *
+     * @param Throwable $e
+     */
+    function errorHandler(Throwable $e): void
+    {
+        $Response = Response::getInstance();
+        if ($this->responseJSONExceptionMsg) {
+            $ResponseData = new ResponseData();
+            $ResponseData->setStatus($e->getCode());
+            $ResponseData->setMessage($e->getMessage());
+            if (!empty($this->extData)) {
+                $ResponseData->setData((array)$this->extData);
+            }
+
+            $Response->setResponseStatus($this->httpStatusCode)
+                ->send(json_encode($ResponseData->getData(), JSON_UNESCAPED_UNICODE));
+        } else {
+            $exceptionMsg = $this->cpExceptionSource($e);
+            $Response->setResponseStatus($this->httpStatusCode)
+                ->send($exceptionMsg, __DIR__ . '/tpl/front_error.tpl.php');
+        }
+    }
+
+    /**
+     * 设置扩展数据
+     *
+     * @param mixed $data
+     */
+    function addExtData($data)
+    {
+        $this->extData = $data;
+    }
+
+    /**
+     * 获取扩展数据
+     *
+     * @return array
+     */
+    function getExtData()
+    {
+        return $this->extData;
+    }
+
+    /**
+     * @return int
+     */
+    function getHttpStatusCode()
+    {
+        return $this->httpStatusCode;
     }
 
     /**
@@ -109,7 +192,7 @@ abstract class CrossException extends Exception
      * @param array $trace
      * @param $content
      */
-    protected function getTraceInfo(array $trace, &$content)
+    protected function getTraceInfo(array $trace, &$content): void
     {
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
@@ -139,7 +222,7 @@ abstract class CrossException extends Exception
      * @param array $trace
      * @param $trace_table
      */
-    protected function getCliTraceInfo(&$trace, &$trace_table)
+    protected function getCliTraceInfo(&$trace, &$trace_table): void
     {
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
@@ -171,13 +254,12 @@ abstract class CrossException extends Exception
     /**
      * 隐藏异常中的真实文件路径
      *
-     * @param $path
+     * @param string $path
      * @return mixed
      */
-    protected function hiddenFileRealPath($path)
+    protected function hiddenFileRealPath(string $path): string
     {
-        return str_replace(array(PROJECT_REAL_PATH, CP_PATH, str_replace('/', DIRECTORY_SEPARATOR, $_SERVER['DOCUMENT_ROOT'])),
-            array('Project->', 'Cross->', 'Index->'), $path);
+        return str_replace([PROJECT_REAL_PATH, CP_PATH], ['Project->', 'Cross->'], $path);
     }
 
     /**
@@ -186,7 +268,7 @@ abstract class CrossException extends Exception
      * @param string $code
      * @return mixed
      */
-    private static function highlightCode($code)
+    private static function highlightCode(string $code): string
     {
         $code = rtrim($code);
         if (0 === strcasecmp(substr($code, 0, 5), '<?php ')) {
@@ -202,7 +284,7 @@ abstract class CrossException extends Exception
      *
      * @param array $trace
      */
-    private function alignmentTraceData(array &$trace = array())
+    private function alignmentTraceData(array &$trace = []): void
     {
         foreach ($trace as &$t) {
             if (isset($t['file'])) {
@@ -227,12 +309,4 @@ abstract class CrossException extends Exception
             }
         }
     }
-
-    /**
-     * 异常处理抽象方法
-     *
-     * @param Exception $e
-     * @return mixed
-     */
-    abstract protected function errorHandler(Exception $e);
 }

@@ -2,20 +2,27 @@
 define('PROJECT_PATH', __DIR__ . DIRECTORY_SEPARATOR . 'project' . DIRECTORY_SEPARATOR);
 require __DIR__ . "/../boot.php";
 
+use PHPUnit\Framework\TestCase;
+
+use Cross\Exception\FrontException;
+use Cross\Exception\CoreException;
+
+use Cross\DB\SQLAssembler\SQLAssembler;
 use Cross\Core\Delegate;
 use Cross\Core\Loader;
+
 
 /**
  * @author wonli <wonli@live.com>
  * Class MainTest
  */
-class MainTest extends PHPUnit_Framework_TestCase
+class MainTest extends TestCase
 {
     /**
      * 是否能正确加载app
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testLoadApp()
     {
@@ -26,8 +33,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * 读取app配置文件
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testReadAppConfig()
     {
@@ -39,8 +46,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * 设置appConfig
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testSetAppConfig()
     {
@@ -54,8 +61,8 @@ class MainTest extends PHPUnit_Framework_TestCase
      * 测试注释配置
      * 使用get调用时, 注释配置依然生效
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testAnnotate()
     {
@@ -68,8 +75,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * 测试生成连接
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testMakeLink()
     {
@@ -86,20 +93,13 @@ class MainTest extends PHPUnit_Framework_TestCase
 
             switch ($link_type) {
                 case 1:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}1{$dot}2{$dot}3{$ext}", $result, 'url->type=>1 make link error');
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}1{$dot}2{$dot}3{$ext}", $result, 'url->type=>1 make link error');
                     break;
                 case 2:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?p1=1&p2=2&p3=3", $result, 'url->type=>2 make link error');
-                    break;
-                case 3:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}p1{$dot}1{$dot}p2{$dot}2{$dot}p3{$dot}3{$ext}", $result, 'url->type=>3 make link error');
-                    break;
-                case 4:
                     $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}p1{$dot}1{$dot}p2{$dot}2{$dot}p3{$dot}3{$ext}", $result, 'url->type=>4 make link error');
                     break;
-
-                case 5:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}1{$dot}2{$dot}3{$ext}", $result, 'url->type=>5 make link error');
+                default:
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?p1=1&p2=2&p3=3", $result, 'url->type=>2 make link error');
                     break;
             }
         }
@@ -108,8 +108,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * 生成加密连接测试
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testMakeEncryptLink()
     {
@@ -126,21 +126,13 @@ class MainTest extends PHPUnit_Framework_TestCase
 
             switch ($link_type) {
                 case 1:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>1 make link error');
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>1 make link error');
                     break;
                 case 2:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?cd4b145090a061643540a041115560803", $result, 'url->type=>2 make link error');
-                    break;
-                case 3:
-                    $this->assertEquals("/?/Main{$dot}getUrlSecurityParams{$dot}692ad450918061f435418041815561a03{$ext}", $result, 'url->type=>3 make link error');
-                    break;
-
-                case 4:
                     $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}692ad450918061f435418041815561a03{$ext}", $result, 'url->type=>4 make link error');
                     break;
-
-                case 5:
-                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$dot}5c38a0417051803{$ext}", $result, 'url->type=>5 make link error');
+                default:
+                    $this->assertEquals("/index.php/Main{$dot}getUrlSecurityParams{$ext}?cd4b145090a061643540a041115560803", $result, 'url->type=>2 make link error');
                     break;
             }
         }
@@ -149,8 +141,8 @@ class MainTest extends PHPUnit_Framework_TestCase
     /**
      * url加密 参数解密测试
      *
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     function testMakeEncryptLinkAndDecryptParams()
     {
@@ -158,23 +150,23 @@ class MainTest extends PHPUnit_Framework_TestCase
         $ext = '';
         $params = array('p1' => '1', 'p2' => '2', 'p3' => '3');
 
-        for ($link_type = 1; $link_type <= 5; $link_type++) {
+        for ($link_type = 1; $link_type <= 3; $link_type++) {
             $result = $this->getAppResponse('Main:makeEncryptLinkAndDecryptParams', $params + array(
                     'dot' => $dot, 'ext' => $ext, 'link_type' => $link_type
                 ));
 
-            $this->assertEquals(json_encode($params), $result, "url type {$link_type} encrypt link failure!");
+            $this->assertEquals(json_encode($params), json_encode($result), "url type {$link_type} encrypt link failure!");
         }
     }
 
     /**
      * SQL条件语句生成
      *
-     * @throws \Cross\Exception\CoreException
+     * @throws CoreException
      */
     function testSqlCondition()
     {
-        $SQL = new \Cross\DB\SQLAssembler\SQLAssembler();
+        $SQL = new SQLAssembler();
 
         $p1 = array();
         $r1 = $SQL->parseWhere(array('a' => 1, 'b' => 2), $p1);
@@ -241,8 +233,8 @@ class MainTest extends PHPUnit_Framework_TestCase
      * @param $controller
      * @param array $params
      * @return array|mixed|string
-     * @throws \Cross\Exception\CoreException
-     * @throws \Cross\Exception\FrontException
+     * @throws CoreException
+     * @throws FrontException
      */
     protected function getAppResponse($controller, $params = array())
     {

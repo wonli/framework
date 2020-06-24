@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -11,7 +11,6 @@ namespace Cross\Core;
 use Cross\I\RouterInterface;
 use Cross\Exception\FrontException;
 use Cross\Exception\CoreException;
-use Cross\Http\Request;
 
 /**
  * @author wonli <wonli@live.com>
@@ -39,7 +38,7 @@ class Router implements RouterInterface
      *
      * @var array
      */
-    private $params = array();
+    private $params = [];
 
     /**
      * @var string
@@ -52,11 +51,6 @@ class Router implements RouterInterface
     private $originUriRequest;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @var Delegate
      */
     private $delegate;
@@ -64,7 +58,7 @@ class Router implements RouterInterface
     /**
      * @var array
      */
-    private $defaultRouter = array();
+    private $defaultRouter = [];
 
     /**
      * 默认Action名称
@@ -75,10 +69,9 @@ class Router implements RouterInterface
      * Router constructor.
      * @param Delegate $delegate
      */
-    function __construct(Delegate &$delegate)
+    function __construct(Delegate $delegate)
     {
         $this->delegate = $delegate;
-        $this->config = $delegate->getConfig();
     }
 
     /**
@@ -88,17 +81,50 @@ class Router implements RouterInterface
      * @throws CoreException
      * @throws FrontException
      */
-    public function getRouter()
+    public function getRouter(): self
     {
+        $request = [];
         $rs = $this->getUriRequest('', $url_config);
         if (!empty($rs)) {
             $request = $this->parseRequestString($rs, $url_config);
-            $closure = $this->delegate->getClosureContainer();
-            if ($closure->has('router')) {
-                $closure->run('router', array($request, $this));
+        }
+
+        if ('*' === $this->delegate->getAppName()) {
+            $multipleApp = $this->delegate->getConfig()->get('multipleApp');
+            if (empty($multipleApp)) {
+                throw new CoreException('Not find multipleApp config!');
             }
 
-            if (empty($this->controller) || empty($this->action)) {
+            if (!empty($request)) {
+                $pathAppName = [];
+                if (!empty($multipleApp['namespacePrefix'])) {
+                    $pathAppName[] = $multipleApp['namespacePrefix'];
+                }
+
+                $level = $multipleApp['pathLevel'] ?? null;
+                while ($level && $level-- > 0) {
+                    $pathAppName[] = array_shift($request);
+                }
+
+                $app_name = implode('\\', $pathAppName);
+            } else {
+                $app_name = $multipleApp['default'] ?? '';
+                if (empty($app_name)) {
+                    throw new CoreException('Not find defaultApp config');
+                }
+            }
+
+            $this->delegate->setAppName($app_name);
+        }
+
+        if (!empty($request)) {
+            $closure = $this->delegate->getClosureContainer();
+            if ($closure->has('router')) {
+                $closure->run('router', [$request, $this]);
+                if (empty($this->controller) || empty($this->action)) {
+                    $this->parseRouter($request, $url_config);
+                }
+            } else {
                 $this->parseRouter($request, $url_config);
             }
         } else {
@@ -106,7 +132,7 @@ class Router implements RouterInterface
             $this->setController($router[0]);
             $this->setAction($router[1]);
 
-            $params = $this->parseParams(array(), $url_config);
+            $params = $this->parseParams([], $url_config);
             $this->setParams($params);
         }
 
@@ -118,7 +144,7 @@ class Router implements RouterInterface
      *
      * @throws CoreException
      */
-    function useDefaulterRouter()
+    function useDefaulterRouter(): void
     {
         $router = $this->getDefaultRouter();
         $this->setController($router[0]);
@@ -131,10 +157,10 @@ class Router implements RouterInterface
      * @return array
      * @throws CoreException
      */
-    function getDefaultRouter()
+    function getDefaultRouter(): array
     {
         if (empty($this->defaultRouter)) {
-            $url_config = $this->config->get('url');
+            $url_config = $this->delegate->getConfig()->get('url');
             $this->parseDefaultRouter($url_config['*']);
         }
 
@@ -144,9 +170,9 @@ class Router implements RouterInterface
     /**
      * 返回控制器名称
      *
-     * @return mixed
+     * @return string
      */
-    public function getController()
+    public function getController(): string
     {
         return $this->controller;
     }
@@ -154,9 +180,9 @@ class Router implements RouterInterface
     /**
      * 返回action名称
      *
-     * @return mixed
+     * @return string
      */
-    public function getAction()
+    public function getAction(): string
     {
         return $this->action;
     }
@@ -166,7 +192,7 @@ class Router implements RouterInterface
      *
      * @return mixed
      */
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -176,70 +202,40 @@ class Router implements RouterInterface
      *
      * @param string $prefix
      * @param array $url_config
-     * @param bool $clear_ampersand
      * @param bool $convert_html_entities
      * @return string
-     * @throws CoreException
      */
-    public function getUriRequest($prefix = '/', &$url_config = array(), $clear_ampersand = true, $convert_html_entities = true)
+    public function getUriRequest(string $prefix = '/', &$url_config = [], bool $convert_html_entities = true): string
     {
-        $url_config = $this->config->get('url');
+        $url_config = $this->delegate->getConfig()->get('url');
         if (!empty($this->uriRequest)) {
             return $this->uriRequest;
         }
 
-        switch ($url_config['type']) {
-            case 1:
-            case 3:
-                $request = Request::getInstance()->getQueryString();
-                $this->originUriRequest = $request;
-
-                if ($clear_ampersand) {
-                    //rewrite下带问号的请求参数追加到$_GET数组
-                    $request_uri = Request::getInstance()->getRequestURI();
-                    if ($url_config['rewrite'] && $request_uri && false !== strpos($request_uri, '?')) {
-                        $query_string = parse_url($request_uri, PHP_URL_QUERY);
-                        parse_str($query_string, $addition_params);
-                        $_GET += $addition_params;
-
-                        if ($query_string == $request) {
-                            $request = '';
-                        }
-                    }
-
-                    if (false !== ($l = strpos($request, '&'))) {
-                        $request = substr($request, 0, $l);
-                    }
-
-                    if (false === strpos($request, $url_config['dot']) && false !== strpos($request, '=')) {
-                        $request = '';
-                    }
-
-                    if (isset($request[0]) && $request[0] != '&') {
-                        array_shift($_GET);
-                    }
-                }
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-                $request = Request::getInstance()->getPathInfo();
-                $this->originUriRequest = $request;
-                break;
-
-            default:
-                throw new CoreException('Not support URL type!');
-        }
-
-        if ($request) {
-            $request = urldecode(ltrim($request, '/'));
+        $uriRequest = $this->delegate->getRequest()->getPathInfo();
+        $this->originUriRequest = $uriRequest;
+        if ($uriRequest) {
+            $uriRequest = urldecode(ltrim($uriRequest, '/'));
             if ($convert_html_entities) {
-                $request = htmlspecialchars($request, ENT_QUOTES);
+                $uriRequest = htmlspecialchars($uriRequest, ENT_QUOTES);
             }
         }
 
-        return $prefix . $request;
+        $this->uriRequest = $prefix . $uriRequest;
+        return $this->uriRequest;
+    }
+
+    /**
+     * 设置请求字符串
+     *
+     * @param string $uriRequest
+     * @return $this
+     */
+    public function setUriRequest(string $uriRequest): self
+    {
+        $this->uriRequest = urldecode(ltrim($uriRequest, '/'));
+        $this->originUriRequest = $uriRequest;
+        return $this;
     }
 
     /**
@@ -249,8 +245,14 @@ class Router implements RouterInterface
      * @param array $url_config
      * @internal param $router
      */
-    function parseRouter(array $request, array $url_config)
+    function parseRouter(array $request, array $url_config): void
     {
+        $virtual_path = '';
+        $set_virtual_path = &$url_config['virtual_path'];
+        if (!empty($set_virtual_path) && $set_virtual_path == $request[0]) {
+            $virtual_path = array_shift($request);
+        }
+
         $combine_alias_key = '';
         $ori_controller = $controller = array_shift($request);
         if (isset($request[0])) {
@@ -258,7 +260,7 @@ class Router implements RouterInterface
         }
 
         $controller_alias = '';
-        $router_config = $this->config->get('router');
+        $router_config = $this->delegate->getConfig()->get('router');
         if (isset($router_config [$combine_alias_key])) {
             array_shift($request);
             $controller_alias = $router_config [$combine_alias_key];
@@ -283,15 +285,16 @@ class Router implements RouterInterface
             }
         }
 
-        $addition_params = array();
+        $addition_params = [];
         $params = $this->parseParams($request, $url_config, $addition_params);
-        $this->config->set('ori_router', array(
+        $this->delegate->getConfig()->set('ori_router', [
             'request' => $this->originUriRequest,
             'addition_params' => $addition_params,
+            'virtual_path' => $virtual_path,
             'controller' => $ori_controller,
             'action' => $ori_action,
             'params' => $request,
-        ));
+        ]);
 
         $this->setController($controller);
         $this->setAction($action);
@@ -299,11 +302,27 @@ class Router implements RouterInterface
     }
 
     /**
+     * 处理路由别名
+     *
+     * @param string $name
+     * @return string
+     */
+    function getRouterAlias(string $name): string
+    {
+        $router_config = $this->delegate->getConfig()->get('router');
+        if (isset($router_config[$name])) {
+            return $router_config[$name];
+        }
+
+        return $name;
+    }
+
+    /**
      * 设置controller
      *
      * @param $controller
      */
-    function setController($controller)
+    function setController(string $controller): void
     {
         $this->controller = $controller;
     }
@@ -313,7 +332,7 @@ class Router implements RouterInterface
      *
      * @param $action
      */
-    function setAction($action)
+    function setAction(string $action): void
     {
         $this->action = $action;
     }
@@ -323,7 +342,7 @@ class Router implements RouterInterface
      *
      * @param $params
      */
-    function setParams($params)
+    function setParams(array $params): void
     {
         $this->params = $params;
     }
@@ -336,7 +355,7 @@ class Router implements RouterInterface
      * @return array
      * @throws FrontException
      */
-    private static function parseRequestString($query_string, $url_config)
+    private static function parseRequestString(string $query_string, array $url_config): array
     {
         $url_suffix = &$url_config['ext'];
         if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
@@ -352,7 +371,7 @@ class Router implements RouterInterface
             $router_params = explode($url_dot, $query_string);
             $end_params = array_pop($router_params);
         } else {
-            $router_params = array();
+            $router_params = [];
             $end_params = $query_string;
         }
 
@@ -366,7 +385,7 @@ class Router implements RouterInterface
             $router_params[] = $end_params;
         }
 
-        return $router_params;
+        return array_filter($router_params);
     }
 
     /**
@@ -376,7 +395,7 @@ class Router implements RouterInterface
      * @return array
      * @throws CoreException
      */
-    private function parseDefaultRouter($default_router)
+    private function parseDefaultRouter(string $default_router): array
     {
         if (empty($default_router)) {
             throw new CoreException('Undefined default router!');
@@ -390,7 +409,7 @@ class Router implements RouterInterface
                 $action = self::DEFAULT_ACTION;
             }
 
-            $this->defaultRouter = array($controller, $action);
+            $this->defaultRouter = [$controller, $action];
         }
 
         return $this->defaultRouter;
@@ -404,13 +423,13 @@ class Router implements RouterInterface
      * @param array $addition_params
      * @return array
      */
-    private function parseParams(array $params, array $url_config, array &$addition_params = array())
+    private function parseParams(array $params, array $url_config, array &$addition_params = []): array
     {
-        $addition_params = $_GET;
+        $addition_params = $this->delegate->getRequest()->getGetData();
         if (empty($params)) {
             $params = $addition_params;
         } elseif (is_array($params) && !empty($addition_params)) {
-            if ($url_config['type'] == 2) {
+            if ($url_config['type'] > 2) {
                 $params = array_merge($params, $addition_params);
             } else {
                 $params += $addition_params;

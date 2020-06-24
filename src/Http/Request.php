@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -8,6 +8,7 @@
 
 namespace Cross\Http;
 
+use Cross\Core\Delegate;
 use Cross\Exception\FrontException;
 
 /**
@@ -23,11 +24,53 @@ class Request
     private static $instance;
 
     /**
+     * @var array
+     */
+    protected $getData = [];
+
+    /**
+     * @var array
+     */
+    protected $postData = [];
+
+    /**
+     * @var array
+     */
+    protected $fileData = [];
+
+    /**
+     * @var array
+     */
+    protected $serverData = [];
+
+    /**
+     * @var array
+     */
+    protected $requestData = [];
+
+    /**
+     * @var string
+     */
+    protected $requestMethod;
+
+    /**
+     * Request constructor.
+     */
+    function __construct()
+    {
+        $this->getData = &$_GET;
+        $this->postData = &$_POST;
+        $this->fileData = &$_FILES;
+        $this->serverData = &$_SERVER;
+        $this->requestData = &$_REQUEST;
+    }
+
+    /**
      * 实例化类
      *
      * @return Request
      */
-    public static function getInstance()
+    public static function getInstance(): self
     {
         if (!self::$instance) {
             self::$instance = new self();
@@ -39,10 +82,10 @@ class Request
     /**
      * script url
      *
-     * @return mixed
+     * @return string
      * @throws FrontException
      */
-    function getScriptUrl()
+    function getScriptUrl(): string
     {
         if (!$this->scriptUrl) {
             $this->initScriptUrl();
@@ -54,9 +97,9 @@ class Request
     /**
      * 设置基础路径
      *
-     * @param  string $url 设置基础路径
+     * @param string $url 设置基础路径
      */
-    function setBaseUrl($url)
+    function setBaseUrl(string $url): void
     {
         $this->baseUrl = $url;
     }
@@ -64,11 +107,11 @@ class Request
     /**
      * 返回当前URL绝对路径
      *
-     * @param  boolean $absolute 是否返回带HOST的绝对路径
+     * @param boolean $absolute 是否返回带HOST的绝对路径
      * @return string 当前请求的url
      * @throws FrontException
      */
-    function getBaseUrl($absolute = false)
+    function getBaseUrl(bool $absolute = false): string
     {
         if ($this->baseUrl === null) {
             $this->baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
@@ -81,7 +124,7 @@ class Request
      *
      * @return string
      */
-    function getIndexName()
+    function getIndexName(): string
     {
         return basename($this->getScriptName());
     }
@@ -92,7 +135,7 @@ class Request
      * @param bool $without_protocol
      * @return mixed
      */
-    function getHostInfo($without_protocol = false)
+    function getHostInfo(bool $without_protocol = false): string
     {
         if (!$this->hostInfo) {
             $this->initHostInfo($without_protocol);
@@ -107,7 +150,7 @@ class Request
      * @param bool $absolute
      * @return string
      */
-    function getCurrentUrl($absolute = true)
+    function getCurrentUrl(bool $absolute = true): string
     {
         if ($absolute) {
             return $this->getHostInfo() . $this->SERVER('REQUEST_URI');
@@ -121,7 +164,7 @@ class Request
      *
      * @return int 当前服务器端口号
      */
-    function getServerPort()
+    function getServerPort(): int
     {
         return $this->SERVER('SERVER_PORT');
     }
@@ -129,12 +172,13 @@ class Request
     /**
      * 当前scriptFile的路径
      *
-     * @throws FrontException
      * @return string
+     * @throws FrontException
      */
-    function getScriptFilePath()
+    function getScriptFilePath(): string
     {
-        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == null) {
+        $scriptName = $this->getScriptName();
+        if (empty($scriptName)) {
             throw new FrontException('determine the entry script URL failed!!!');
         }
 
@@ -144,7 +188,7 @@ class Request
     /**
      * @return string
      */
-    function getUserHost()
+    function getUserHost(): string
     {
         return $this->SERVER('REMOTE_HOST');
     }
@@ -152,7 +196,7 @@ class Request
     /**
      * @return string
      */
-    function getRequestURI()
+    function getRequestURI(): string
     {
         return $this->SERVER('REQUEST_URI');
     }
@@ -160,7 +204,7 @@ class Request
     /**
      * @return string
      */
-    function getRequestType()
+    function getRequestType(): string
     {
         return $this->SERVER('REQUEST_METHOD');
     }
@@ -168,15 +212,15 @@ class Request
     /**
      * @return string
      */
-    function getPathInfo()
+    function getPathInfo(): string
     {
-        return $this->SERVER('PATH_INFO');
+        return $this->SERVER('ORIG_PATH_INFO') ?: $this->SERVER('PATH_INFO');
     }
 
     /**
      * @return string
      */
-    function getQueryString()
+    function getQueryString(): string
     {
         return $this->SERVER('QUERY_STRING');
     }
@@ -184,9 +228,9 @@ class Request
     /**
      * @return string
      */
-    function getScriptName()
+    function getScriptName(): string
     {
-        return $this->SERVER('SCRIPT_NAME');
+        return $this->SERVER('ORIG_SCRIPT_NAME') ?: $this->SERVER('SCRIPT_NAME');
     }
 
     /**
@@ -194,7 +238,7 @@ class Request
      *
      * @return string
      */
-    function getUrlReferrer()
+    function getUrlReferrer(): string
     {
         return $this->SERVER('HTTP_REFERER');
     }
@@ -202,7 +246,7 @@ class Request
     /**
      * @return string userAgent
      */
-    function getUserAgent()
+    function getUserAgent(): string
     {
         return $this->SERVER('HTTP_USER_AGENT');
     }
@@ -210,7 +254,7 @@ class Request
     /**
      * @return string ACCEPT TYPE
      */
-    function getAcceptTypes()
+    function getAcceptTypes(): string
     {
         return $this->SERVER('HTTP_ACCEPT');
     }
@@ -220,10 +264,10 @@ class Request
      *
      * @return bool
      */
-    function isPutRequest()
+    function isPutRequest(): bool
     {
-        return ($this->SERVER('REQUEST_METHOD')
-                && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'PUT')) || $this->isPutViaPostRequest();
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'PUT');
     }
 
     /**
@@ -231,9 +275,10 @@ class Request
      *
      * @return boolean
      */
-    function isPostRequest()
+    function isPostRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'POST');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'POST');
     }
 
     /**
@@ -241,9 +286,10 @@ class Request
      *
      * @return bool
      */
-    function isGetRequest()
+    function isGetRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'GET');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'GET');
     }
 
     /**
@@ -251,9 +297,10 @@ class Request
      *
      * @return bool
      */
-    function isDeleteRequest()
+    function isDeleteRequest(): bool
     {
-        return $this->SERVER('REQUEST_METHOD') && !strcasecmp($this->SERVER('REQUEST_METHOD'), 'DELETE');
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, 'DELETE');
     }
 
     /**
@@ -261,7 +308,7 @@ class Request
      *
      * @return bool
      */
-    function isAjaxRequest()
+    function isAjaxRequest(): bool
     {
         return 0 === strcasecmp($this->SERVER('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
     }
@@ -271,7 +318,7 @@ class Request
      *
      * @return bool
      */
-    function isFlashRequest()
+    function isFlashRequest(): bool
     {
         return stripos($this->SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false
             || stripos($this->SERVER('HTTP_USER_AGENT'), 'Flash') !== false;
@@ -281,20 +328,20 @@ class Request
      * 获取客户端IP地址
      *
      * @param array $env_keys
-     * @return string userIP
+     * @return string
      */
-    function getClientIPAddress(array $env_keys = array())
+    function getClientIPAddress(array $env_keys = []): string
     {
         static $ip = null;
         if (null === $ip) {
             if (empty($env_keys)) {
-                $env_keys = array(
+                $env_keys = [
                     'HTTP_CLIENT_IP',
                     'HTTP_CF_CONNECTING_IP',
                     'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED',
                     'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED',
                     'REMOTE_ADDR'
-                );
+                ];
             }
 
             $ip = '0.0.0.0';
@@ -316,24 +363,163 @@ class Request
     }
 
     /**
-     * 取得$_SERVER全局变量的值
+     * HTTP环境变量
      *
-     * @param string $name $_SERVER的名称
+     * @param string $name
      * @return string
      */
-    function SERVER($name)
+    function SERVER($name): string
     {
-        return isset($_SERVER[$name]) ? $_SERVER[$name] : '';
+        return $this->serverData[$name] ?? '';
     }
 
     /**
-     * 是否是通过POST的PUT请求
+     * 设置环境变量
      *
-     * @return bool
+     * @param array $server
      */
-    protected function isPutViaPostRequest()
+    function setServeData(array $server)
     {
-        return isset($_POST['_method']) && !strcasecmp($_POST['_method'], 'PUT');
+        if (!empty($server)) {
+            array_walk($server, function ($v, $k) {
+                $this->serverData[strtoupper($k)] = $v;
+            });
+        }
+    }
+
+    /**
+     * 获取环境变量
+     *
+     * @return array
+     */
+    function getServeData(): array
+    {
+        return $this->serverData;
+    }
+
+    /**
+     * 设置HTTP请求类型
+     *
+     * @param string $method
+     */
+    function setRequestMethod(string $method): void
+    {
+        $this->requestMethod = strtoupper($method);
+        $this->serverData['REQUEST_METHOD'] = $this->requestMethod;
+    }
+
+    /**
+     * 获取HTTP请求类型
+     *
+     * @return string
+     */
+    function getRequestMethod(): string
+    {
+        if (!$this->requestMethod) {
+            $this->requestMethod = $this->SERVER('REQUEST_METHOD');
+        }
+
+        return $this->requestMethod;
+    }
+
+    /**
+     * 设置URI参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setGetData(array $data, bool $merge = false): void
+    {
+        if ($merge && is_array($this->getData)) {
+            $this->getData = array_merge($this->getData, $data);
+        } else {
+            $this->getData = $data;
+        }
+    }
+
+    /**
+     * 获取URI参数
+     *
+     * @return array
+     */
+    function getGetData(): array
+    {
+        return $this->getData;
+    }
+
+    /**
+     * 设置POST参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setPostData(array $data, bool $merge = false): void
+    {
+        if ($merge && is_array($this->postData)) {
+            $this->postData = array_merge($this->postData, $data);
+        } else {
+            $this->postData = $data;
+        }
+    }
+
+    /**
+     * 获取POST参数
+     *
+     * @return array
+     */
+    function getPostData(): array
+    {
+        return $this->postData;
+    }
+
+    /**
+     * 设置File参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setFileData(array $data, bool $merge = false): void
+    {
+        if ($merge && is_array($this->fileData)) {
+            $this->fileData = array_merge($this->fileData, $data);
+        } else {
+            $this->fileData = $data;
+        }
+    }
+
+    /**
+     * 获取File参数
+     *
+     * @return array
+     */
+    function getFileData(): array
+    {
+        return $this->fileData;
+    }
+
+    /**
+     * 设置Request参数
+     *
+     * @param array $data
+     * @param bool $merge
+     */
+    function setRequestData(array $data, bool $merge = false): void
+    {
+        if ($merge && is_array($this->requestData)) {
+            $this->requestData = array_merge($this->requestData, $data);
+        } else {
+            $this->requestData = $data;
+        }
+    }
+
+    /**
+     * 获取Request参数
+     *
+     * @return array
+     */
+    function getRequestData(): array
+    {
+        return $this->requestData;
     }
 
     /**
@@ -341,41 +527,46 @@ class Request
      *
      * @throws FrontException
      */
-    private function initScriptUrl()
+    private function initScriptUrl(): void
     {
         if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == null) {
-            throw new FrontException('determine the entry script URL failed!!!');
+            throw new FrontException('Determine the entry script URL failed!!!');
         }
+
         $scriptName = basename($scriptName);
-        if (($_scriptName = $this->SERVER('SCRIPT_NAME')) != null && basename($_scriptName) === $scriptName) {
+        if (($_scriptName = $this->SERVER('SCRIPT_NAME')) != null
+            && basename($_scriptName) === $scriptName
+        ) {
             $this->scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->SERVER('PHP_SELF')) != null && basename($_scriptName) === $scriptName) {
+        } elseif (($_scriptName = $this->SERVER('PHP_SELF')) != null &&
+            basename($_scriptName) === $scriptName
+        ) {
             $this->scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->SERVER('ORIG_SCRIPT_NAME')) != null && basename(
-                $_scriptName
-            ) === $scriptName
+        } elseif (($_scriptName = $this->SERVER('ORIG_SCRIPT_NAME')) != null &&
+            basename($_scriptName) === $scriptName
         ) {
             $this->scriptUrl = $_scriptName;
         } elseif (($pos = strpos($this->SERVER('PHP_SELF'), '/' . $scriptName)) !== false) {
             $this->scriptUrl = substr($this->SERVER('SCRIPT_NAME'), 0, $pos) . '/' . $scriptName;
-        } elseif (($_documentRoot = $this->SERVER('DOCUMENT_ROOT')) != null && ($_scriptName = $this->SERVER(
-                'SCRIPT_FILENAME'
-            )) != null && strpos($_scriptName, $_documentRoot) === 0
+        } elseif (($_documentRoot = $this->SERVER('DOCUMENT_ROOT')) != null &&
+            ($_scriptName = $this->SERVER('SCRIPT_FILENAME')) != null &&
+            strpos($_scriptName, $_documentRoot) === 0
         ) {
             $this->scriptUrl = str_replace('\\', '/', str_replace($_documentRoot, '', $_scriptName));
         } else {
-            throw new FrontException('determine the entry script URL failed!!');
+            throw new FrontException('Determine the entry script URL failed!!');
         }
     }
 
     /**
      * 设置Host信息
      *
-     * @param bool $without_protocol 是否返回协议类型
+     * @param bool $without_protocol 协议类型
      */
-    private function initHostInfo($without_protocol = false)
+    private function initHostInfo(bool $without_protocol = false): void
     {
         if (PHP_SAPI === 'cli') {
+            $this->hostInfo = '';
             return;
         }
 

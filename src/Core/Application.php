@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -10,11 +10,15 @@ namespace Cross\Core;
 
 use Cross\I\RequestCacheInterface;
 use Cross\I\RouterInterface;
+
 use Cross\Exception\CoreException;
+
 use Cross\Cache\Driver\FileCacheDriver;
 use Cross\Cache\Request\Memcache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
+
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionClass;
 use Exception;
@@ -28,34 +32,6 @@ use Closure;
 class Application
 {
     /**
-     * action 名称
-     *
-     * @var string
-     */
-    protected $action;
-
-    /**
-     * 运行时的参数
-     *
-     * @var mixed
-     */
-    protected $params;
-
-    /**
-     * 控制器名称
-     *
-     * @var string
-     */
-    protected $controller;
-
-    /**
-     * 当前app名称
-     *
-     * @var string
-     */
-    private $app_name;
-
-    /**
      * action 注释
      *
      * @var string
@@ -63,33 +39,18 @@ class Application
     private $action_annotate;
 
     /**
-     * 输出缓冲状态
-     *
-     * @var bool
-     */
-    private $ob_cache_status = true;
-
-    /**
      * @var Delegate
      */
     private $delegate;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * 实例化Application
      *
-     * @param string $app_name
      * @param Delegate $delegate
      */
-    function __construct($app_name, Delegate &$delegate)
+    function __construct(Delegate $delegate)
     {
-        $this->app_name = $app_name;
         $this->delegate = $delegate;
-        $this->config = $delegate->getConfig();
     }
 
     /**
@@ -101,7 +62,7 @@ class Application
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function dispatcher($router, $args = array(), $return_response_content = false)
+    public function dispatcher($router, $args = [], bool $return_response_content = false)
     {
         $init_prams = true;
         $router = $this->parseRouter($router, $args, $init_prams);
@@ -110,7 +71,7 @@ class Application
         $closureContainer = $this->delegate->getClosureContainer();
         $annotate_config = $this->getAnnotateConfig();
 
-        $action_params = array();
+        $action_params = [];
         if (isset($annotate_config['params'])) {
             $action_params = &$annotate_config['params'];
         }
@@ -119,15 +80,17 @@ class Application
             $this->initParams($router['params'], $action_params);
         } elseif (is_array($router['params'])) {
             $params = $router['params'] + $action_params;
-            $this->setParams($params);
+            $this->updateRouterParams($params);
         } else {
-            $this->setParams($router['params']);
+            $this->updateRouterParams($router['params']);
         }
 
         $closureContainer->run('dispatcher');
 
+        $Request = $this->delegate->getRequest();
+        $Response = $this->delegate->getResponse();
         if (!empty($annotate_config['basicAuth'])) {
-            $this->delegate->getResponse()->basicAuth($annotate_config['basicAuth']);
+            $Response->basicAuth($annotate_config['basicAuth'], $Request->SERVER('PHP_AUTH_USER'), $Request->SERVER('PHP_AUTH_PW'));
         }
 
         $cache = false;
@@ -135,51 +98,33 @@ class Application
             $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
         }
 
+        $hasResponse = false;
+        $Response->setEndFlush(false);
         if ($cache && $cache->isValid()) {
             $response_content = $cache->get();
         } else {
-            $action = $this->getAction();
-            $controller_name = $this->getController();
-
-            $runtime_config = array(
-                'action_annotate' => $annotate_config,
-                'view_controller_namespace' => $this->getViewControllerNameSpace($controller_name),
-                'controller' => $controller_name,
-                'action' => $action,
-                'params' => $this->getParams(),
-            );
-
-            $closureContainer->add('~controller~runtime~', function () use (&$runtime_config) {
-                return $runtime_config;
-            });
-
             try {
                 $cr->setStaticPropertyValue('app_delegate', $this->delegate);
-                $controller = $cr->newInstance();
             } catch (Exception $e) {
-                throw new CoreException($e->getMessage(), 200, $e);
+                throw new CoreException($e->getMessage());
             }
 
-            if ($this->delegate->getResponse()->isEndFlush()) {
-                return true;
-            }
-
+            $controller = $cr->newInstance();
             if (isset($annotate_config['before'])) {
                 $this->callReliesControllerClosure($annotate_config['before'], $controller);
             }
 
-            if ($this->ob_cache_status) {
-                ob_start();
-                $response_content = $controller->$action();
-                if (!$response_content) {
-                    $response_content = ob_get_contents();
+            $hasResponse = $Response->isEndFlush();
+            if (!$hasResponse) {
+                $action = $this->delegate->getRouter()->getAction();
+                $controllerContext = $controller->$action();
+                if (!empty($controllerContext)) {
+                    $Response->setContent($controllerContext);
                 }
-                ob_end_clean();
-            } else {
-                $response_content = $controller->$action();
             }
 
-            if ($cache) {
+            $response_content = $Response->getContent();
+            if ($cache && $cache->isValid()) {
                 $cache->set($response_content);
             }
         }
@@ -190,8 +135,8 @@ class Application
 
         if ($return_response_content) {
             return $response_content;
-        } else {
-            $this->delegate->getResponse()->display($response_content);
+        } elseif (false === $hasResponse) {
+            $Response->send($response_content);
         }
 
         if (isset($annotate_config['after']) && isset($controller)) {
@@ -202,31 +147,11 @@ class Application
     }
 
     /**
-     * 设置controller
-     *
-     * @param $controller
-     */
-    function setController($controller)
-    {
-        $this->controller = $controller;
-    }
-
-    /**
-     * 设置action
-     *
-     * @param $action
-     */
-    function setAction($action)
-    {
-        $this->action = $action;
-    }
-
-    /**
      * 设置params
      *
      * @param array|string $params
      */
-    function setParams($params)
+    function updateRouterParams($params): void
     {
         $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
         if ($paramsChecker && is_array($params)) {
@@ -235,47 +160,7 @@ class Application
             call_user_func($closure, $params);
         }
 
-        $this->params = $params;
-    }
-
-    /**
-     * 设置控制器结果是否使用输出缓冲
-     *
-     * @param mixed $status
-     */
-    public function setObStatus($status)
-    {
-        $this->ob_cache_status = (bool)$status;
-    }
-
-    /**
-     * 获取控制器名称
-     *
-     * @return mixed
-     */
-    function getController()
-    {
-        return $this->controller;
-    }
-
-    /**
-     * 获取action名称
-     *
-     * @return string
-     */
-    function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * 获取参数
-     *
-     * @return mixed
-     */
-    function getParams()
-    {
-        return $this->params;
+        $this->delegate->getRouter()->setParams($params);
     }
 
     /**
@@ -286,6 +171,28 @@ class Application
     function getAnnotateConfig()
     {
         return $this->action_annotate;
+    }
+
+    /**
+     * 获取控制器的命名空间
+     *
+     * @param string $controller_name
+     * @return string
+     */
+    function getControllerNamespace(string $controller_name): string
+    {
+        return $this->delegate->getAppNamespace() . '\\controllers\\' . $controller_name;
+    }
+
+    /**
+     * 默认的视图控制器命名空间
+     *
+     * @param string $controller_name
+     * @return string
+     */
+    function getViewControllerNameSpace(string $controller_name): string
+    {
+        return $this->delegate->getAppNamespace() . '\\views\\' . $controller_name . 'View';
     }
 
     /**
@@ -300,7 +207,7 @@ class Application
      * @param array $args
      * @return object|bool
      */
-    public function instanceClass($class, $args = array())
+    public function instanceClass(string $class, $args = [])
     {
         try {
             $rc = new ReflectionClass($class);
@@ -311,14 +218,14 @@ class Application
 
             if ($rc->hasMethod('__construct')) {
                 if (!is_array($args)) {
-                    $args = array($args);
+                    $args = [$args];
                 }
 
                 return $rc->newInstanceArgs($args);
             }
 
             return $rc->newInstance();
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             return false;
         }
     }
@@ -331,14 +238,14 @@ class Application
      * @param int $op_mode 处理参数的方式
      * @return array
      */
-    public static function combineParamsAnnotateConfig(array $params = array(), array $annotate_params = array(), $op_mode = 1)
+    public static function combineParamsAnnotateConfig(array $params = [], array $annotate_params = [], int $op_mode = 1): array
     {
         if (empty($params)) {
             return $annotate_params;
         }
 
         if (!empty($annotate_params)) {
-            $params_set = array();
+            $params_set = [];
             foreach ($annotate_params as $params_name => $default_value) {
                 if ($op_mode == 1) {
                     $params_value = array_shift($params);
@@ -369,7 +276,7 @@ class Application
      * @param string $separator
      * @return array
      */
-    public static function stringParamsToAssociativeArray($stringParams, $separator)
+    public static function stringParamsToAssociativeArray(string $stringParams, string $separator): array
     {
         return self::oneDimensionalToAssociativeArray(explode($separator, $stringParams));
     }
@@ -380,9 +287,9 @@ class Application
      * @param array $oneDimensional
      * @return array
      */
-    public static function oneDimensionalToAssociativeArray(array $oneDimensional)
+    public static function oneDimensionalToAssociativeArray(array $oneDimensional): array
     {
-        $result = array();
+        $result = [];
         while ($p = array_shift($oneDimensional)) {
             $result[$p] = array_shift($oneDimensional);
         }
@@ -402,7 +309,7 @@ class Application
      * @param bool $init_params
      * @return array
      */
-    private function parseRouter($router, $params = array(), &$init_params = true)
+    private function parseRouter($router, array $params = [], &$init_params = true): array
     {
         if ($router instanceof RouterInterface) {
             $controller = $router->getController();
@@ -422,29 +329,7 @@ class Application
             }
         }
 
-        return array('controller' => ucfirst($controller), 'action' => $action, 'params' => $params);
-    }
-
-    /**
-     * 获取控制器的命名空间
-     *
-     * @param string $controller_name
-     * @return string
-     */
-    protected function getControllerNamespace($controller_name)
-    {
-        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\controllers\\' . $controller_name;
-    }
-
-    /**
-     * 默认的视图控制器命名空间
-     *
-     * @param string $controller_name
-     * @return string
-     */
-    protected function getViewControllerNameSpace($controller_name)
-    {
-        return 'app\\' . str_replace('/', '\\', $this->app_name) . '\\views\\' . $controller_name . 'View';
+        return ['controller' => ucfirst($controller), 'action' => $action, 'params' => $params];
     }
 
     /**
@@ -455,22 +340,22 @@ class Application
      * @return ReflectionClass
      * @throws CoreException
      */
-    private function initController($controller, $action = null)
+    private function initController(string $controller, $action = null): ReflectionClass
     {
-        $controller_name_space = $this->getControllerNamespace($controller);
+        $controller_namespace = $this->getControllerNamespace($controller);
 
         try {
-            $class_reflection = new ReflectionClass($controller_name_space);
+            $class_reflection = new ReflectionClass($controller_namespace);
             if ($class_reflection->isAbstract()) {
-                throw new CoreException("{$controller_name_space} 不允许访问的控制器");
+                throw new CoreException("{$controller_namespace} 不允许访问的控制器");
             }
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
         }
 
-        $this->setController($controller);
-        //控制器全局注释配置(不检测父类注释配置)
-        $controller_annotate = array();
+        $this->delegate->getRouter()->setController($controller);
+        //控制器类注释(不检测父类注释)
+        $controller_annotate = [];
         $class_annotate_content = $class_reflection->getDocComment();
         if ($class_annotate_content) {
             $controller_annotate = Annotate::getInstance($this->delegate)->parse($class_annotate_content);
@@ -478,21 +363,21 @@ class Application
 
         if ($action) {
             try {
-                $is_callable = new ReflectionMethod($controller_name_space, $action);
+                $is_callable = new ReflectionMethod($controller_namespace, $action);
             } catch (Exception $e) {
                 try {
-                    $is_callable = new ReflectionMethod($controller_name_space, '__call');
+                    $is_callable = new ReflectionMethod($controller_namespace, '__call');
                 } catch (Exception $e) {
-                    throw new CoreException("{$controller_name_space}->{$action} 不能解析的请求");
+                    throw new CoreException("{$controller_namespace}->{$action} 不能解析的请求");
                 }
             }
 
             if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
-                $this->setAction($action);
+                $this->delegate->getRouter()->setAction($action);
                 //获取Action的注释配置
                 $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($is_callable->getDocComment()), $controller_annotate);
             } else {
-                throw new CoreException("{$controller_name_space}->{$action} 不允许访问的方法");
+                throw new CoreException("{$controller_namespace}->{$action} 不允许访问的方法");
             }
         }
 
@@ -505,17 +390,15 @@ class Application
      * @param array|string $url_params
      * @param array $annotate_params
      */
-    private function initParams($url_params, array $annotate_params = array())
+    private function initParams($url_params, array $annotate_params = []): void
     {
-        $url_type = $this->config->get('url', 'type');
+        $url_type = $this->delegate->getConfig()->get('url', 'type');
         switch ($url_type) {
             case 1:
-            case 5:
                 $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
                 break;
 
-            case 3:
-            case 4:
+            case 2:
                 $url_params = self::oneDimensionalToAssociativeArray($url_params);
                 if (!empty($annotate_params)) {
                     $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
@@ -534,7 +417,7 @@ class Application
                 }
         }
 
-        $this->setParams($params);
+        $this->updateRouterParams($params);
     }
 
     /**
@@ -568,16 +451,16 @@ class Application
             return false;
         }
 
-        $display_type = $this->config->get('sys', 'display');
+        $display_type = $this->delegate->getConfig()->get('sys', 'display');
         $this->delegate->getResponse()->setContentType($display_type);
 
-        $default_cache_config = array(
+        $default_cache_config = [
             'type' => 1,
             'expire_time' => 3600,
             'ignore_params' => false,
-            'cache_path' => $this->config->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
+            'cache_path' => $this->delegate->getConfig()->get('path', 'cache') . 'request' . DIRECTORY_SEPARATOR,
             'key_dot' => DIRECTORY_SEPARATOR
-        );
+        ];
 
         $cache_config = &$request_cache_config[1];
         foreach ($default_cache_config as $default_config_key => $default_value) {
@@ -587,7 +470,7 @@ class Application
         }
 
         $params_cache_key = '';
-        $params = $this->getParams();
+        $params = $this->delegate->getRouter()->getParams();
         if (!$cache_config['ignore_params'] && !empty($params)) {
             $params_member = &$params;
             if (!empty($annotate_params)) {
@@ -602,12 +485,12 @@ class Application
             $params_cache_key = md5(json_encode($params_member));
         }
 
-        $cache_key = array(
-            'app_name' => $this->app_name,
-            'tpl_dir_name' => $this->config->get('sys', 'default_tpl_dir'),
-            'controller' => lcfirst($this->getController()),
-            'action' => $this->getAction()
-        );
+        $cache_key = [
+            'app_name' => $this->delegate->getAppName(),
+            'tpl_dir_name' => $this->delegate->getConfig()->get('sys', 'default_tpl_dir'),
+            'controller' => lcfirst($this->delegate->getRouter()->getController()),
+            'action' => $this->delegate->getRouter()->getAction()
+        ];
 
         $cache_config['key'] = implode($cache_config['key_dot'], $cache_key);
         if ($params_cache_key) {
@@ -620,7 +503,7 @@ class Application
             $cache_config['params'] = $params;
             $cache_config['cache_key'] = $cache_key;
             $cache_config['annotate_params'] = $annotate_params;
-            $enable_cache = $closureContainer->run('cpCache', array(&$cache_config));
+            $enable_cache = $closureContainer->run('cpCache', [&$cache_config]);
             unset($cache_config['cache_key_config'], $cache_config['params'], $cache_config['annotate_params']);
         } else {
             $enable_cache = $request_cache_config[0];
@@ -638,7 +521,7 @@ class Application
      *
      * @param array $config
      */
-    private function setResponseConfig(array $config)
+    private function setResponseConfig(array $config): void
     {
         if (isset($config['content_type'])) {
             $this->delegate->getResponse()->setContentType($config['content_type']);
@@ -653,9 +536,9 @@ class Application
      * 调用依赖控制器实例的匿名函数
      *
      * @param Closure $closure
-     * @param $controller
+     * @param object $controller 当前控制器实例
      */
-    private function callReliesControllerClosure(Closure $closure, $controller)
+    private function callReliesControllerClosure(Closure $closure, object $controller): void
     {
         $closure($controller);
     }
@@ -666,7 +549,7 @@ class Application
      * @param array $annotate
      * @param array $controller_annotate
      */
-    private function setAnnotateConfig(array $annotate, array $controller_annotate)
+    private function setAnnotateConfig(array $annotate, array $controller_annotate): void
     {
         if (empty($controller_annotate)) {
             $this->action_annotate = $annotate;

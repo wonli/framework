@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -44,7 +44,7 @@ class RedisCache implements RequestCacheInterface
     protected $compress = false;
 
     /**
-     * @var \Redis
+     * @var RedisDriver
      */
     protected $driver;
 
@@ -76,9 +76,8 @@ class RedisCache implements RequestCacheInterface
      * 设置request请求
      *
      * @param string $value
-     * @return mixed|void
      */
-    function set($value)
+    function set(string $value): void
     {
         if ($this->compress) {
             $value = gzcompress($value);
@@ -92,7 +91,7 @@ class RedisCache implements RequestCacheInterface
      *
      * @return bool|mixed|string
      */
-    function get()
+    function get(): string
     {
         $content = $this->driver->get($this->cacheKey);
         if ($this->compress) {
@@ -107,7 +106,7 @@ class RedisCache implements RequestCacheInterface
      *
      * @return bool
      */
-    function isValid()
+    function isValid(): bool
     {
         return $this->driver->ttl($this->cacheKey) > 0;
     }
@@ -117,7 +116,7 @@ class RedisCache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = array())
+    function setConfig(array $config = [])
     {
         $this->config = $config;
     }

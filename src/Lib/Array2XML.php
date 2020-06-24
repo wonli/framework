@@ -63,7 +63,7 @@ class Array2XML
      * @return DomDocument
      * @throws Exception
      */
-    public static function &createXML($node_name, $arr = array())
+    public static function &createXML($node_name, $arr = [])
     {
         $xml = self::getXMLRoot();
         $xml->appendChild(self::convert($node_name, $arr));
@@ -80,7 +80,7 @@ class Array2XML
      * @throws Exception
      * @return DOMNode
      */
-    private static function &convert($node_name, $arr = array())
+    private static function &convert($node_name, $arr = [])
     {
 
         //print_arr($node_name);

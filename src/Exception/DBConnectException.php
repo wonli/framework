@@ -11,10 +11,10 @@ namespace Cross\Exception;
 
 /**
  * @author wonli <wonli@live.com>
- * Class CoreException
+ * Class DBConnectException
  * @package Cross\Exception
  */
-class CoreException extends CrossException
+class DBConnectException extends CrossException
 {
 
 }

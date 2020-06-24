@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -69,22 +69,27 @@ class FrameBase
      */
     public static $app_delegate;
 
+    /**
+     * FrameBase constructor.
+     */
     public function __construct()
     {
         $this->delegate = self::$app_delegate;
-        $runtime_config = $this->delegate->getClosureContainer()->run('~controller~runtime~');
 
-        $this->view_controller = &$runtime_config['view_controller_namespace'];
-        $this->action_annotate = &$runtime_config['action_annotate'];
-        $this->controller = &$runtime_config['controller'];
-        $this->action = &$runtime_config['action'];
-        $this->params = &$runtime_config['params'];
+        $router = $this->delegate->getRouter();
+        $this->controller = $router->getController();
+        $this->action = $router->getAction();
+        $this->params = $router->getParams();
+
+        $app = $this->delegate->getApplication();
+        $this->action_annotate = $app->getAnnotateConfig();
+        $this->view_controller = $app->getViewControllerNameSpace($this->controller);
     }
 
     /**
      * @return Config
      */
-    function getConfig()
+    function getConfig(): Config
     {
         return $this->delegate->getConfig();
     }
@@ -92,7 +97,7 @@ class FrameBase
     /**
      * @return Delegate
      */
-    function getDelegate()
+    function getDelegate(): Delegate
     {
         return $this->delegate;
     }
@@ -104,15 +109,12 @@ class FrameBase
      * @param string|array $message
      * @param bool $json_encode
      * @return array|string
-     * @throws CoreException
      */
-    function result($status = 1, $message = '', $json_encode = false)
+    function result(int $status = 1, $message = '', bool $json_encode = false)
     {
-        $result = array('status' => $status, 'message' => $message);
+        $result = ['status' => $status, 'message' => $message];
         if ($json_encode) {
-            if (($result = json_encode($result)) === false) {
-                throw new CoreException('json encode fail');
-            }
+            $result = json_encode($result, JSON_UNESCAPED_UNICODE);
         }
 
         return $result;
@@ -125,20 +127,21 @@ class FrameBase
      * @return Config
      * @throws CoreException
      */
-    function loadConfig($config_file)
+    function loadConfig($config_file): Config
     {
         return Config::load($this->config->get('path', 'config') . $config_file);
     }
 
     /**
-     * @see Loader::read()
+     * 获取文件路径
      *
      * @param string $name
      * @param bool $get_file_content
      * @return mixed
      * @throws CoreException
+     * @see Loader::read()
      */
-    function parseGetFile($name, $get_file_content = false)
+    function parseGetFile(string $name, bool $get_file_content = false)
     {
         return Loader::read($this->getFilePath($name), $get_file_content);
     }
@@ -157,7 +160,7 @@ class FrameBase
      * @param string $name
      * @return string
      */
-    function getFilePath($name)
+    function getFilePath(string $name): string
     {
         $prefix_name = 'project';
         if (false !== strpos($name, '::')) {
@@ -195,7 +198,10 @@ class FrameBase
     }
 
     /**
-     * 加密会话 sys=>auth中指定是cookie/session
+     * 加密会话
+     * <pre>
+     * sys.auth 中指定cookie/session
+     * </pre>
      *
      * @param string $key key
      * @param string|array $value 值
@@ -203,9 +209,11 @@ class FrameBase
      * @return bool
      * @throws CoreException
      */
-    protected function setAuth($key, $value, $expire = 86400)
+    protected function setAuth(string $key, $value, int $expire = 86400)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->set($key, $value, $expire);
+        $authKey = $this->getUrlEncryptKey('auth');
+        $authMethod = $this->getConfig()->get('sys', 'auth');
+        return HttpAuth::factory($authMethod, $authKey)->set($key, $value, $expire);
     }
 
     /**
@@ -216,9 +224,11 @@ class FrameBase
      * @return bool|mixed|string
      * @throws CoreException
      */
-    protected function getAuth($key, $deCode = false)
+    protected function getAuth(string $key, bool $deCode = false)
     {
-        return HttpAuth::factory($this->getConfig()->get('sys', 'auth'), $this->getUrlEncryptKey('auth'))->get($key, $deCode);
+        $authKey = $this->getUrlEncryptKey('auth');
+        $authMethod = $this->getConfig()->get('sys', 'auth');
+        return HttpAuth::factory($authMethod, $authKey)->get($key, $deCode);
     }
 
     /**
@@ -228,7 +238,7 @@ class FrameBase
      * @param string $type
      * @return bool|string
      */
-    protected function urlEncrypt($params, $type = 'encode')
+    protected function urlEncrypt(string $params, string $type = 'encode'): string
     {
         return Helper::encodeParams($params, $this->getUrlEncryptKey('uri'), $type);
     }
@@ -239,11 +249,11 @@ class FrameBase
      * @param string $type
      * @return string
      */
-    protected function getUrlEncryptKey($type = 'auth')
+    protected function getUrlEncryptKey(string $type = 'auth'): string
     {
         $encrypt_key = $this->getConfig()->get('encrypt', $type);
         if (empty($encrypt_key)) {
-            $encrypt_key = 'cross';
+            $encrypt_key = 'cross.' . $type;
         }
 
         return $encrypt_key;
@@ -254,31 +264,28 @@ class FrameBase
      *
      * @param bool $use_annotate
      * @param string $params
-     * @return bool|string
+     * @return array|bool|string
      */
-    protected function sParams($use_annotate = true, $params = null)
+    protected function sParams(bool $use_annotate = true, $params = null)
     {
         $config = $this->getConfig();
         $addition_params = $config->get('ori_router', 'addition_params');
         if (empty($addition_params)) {
-            $addition_params = array();
+            $addition_params = [];
         }
 
         $url_config = $config->get('url');
         if (null === $params) {
             $ori_params = $config->get('ori_router', 'params');
-            switch ($url_config['type']) {
-                case 2:
-                    $params = current(array_keys($ori_params));
-                    array_shift($addition_params);
-                    break;
-
-                default:
-                    if (is_array($ori_params)) {
-                        $params = array_shift($ori_params);
-                    } else {
-                        $params = $ori_params;
-                    }
+            if ($url_config['type'] > 2) {
+                $params = current(array_keys($addition_params));
+                array_shift($addition_params);
+            } else {
+                if (is_array($ori_params)) {
+                    $params = array_shift($ori_params);
+                } else {
+                    $params = $ori_params;
+                }
             }
         }
 
@@ -293,7 +300,7 @@ class FrameBase
         }
 
         $op_type = 2;
-        $ori_result = array();
+        $ori_result = [];
         if (!empty($url_config['params_dot'])) {
             $url_dot = &$url_config['params_dot'];
         } else {
@@ -302,17 +309,15 @@ class FrameBase
 
         switch ($url_config['type']) {
             case 1:
-            case 5:
                 $op_type = 1;
                 $ori_result = explode($url_dot, $decode_params_str);
                 break;
             case 2:
-                parse_str($decode_params_str, $ori_result);
-                break;
-            case 3:
-            case 4:
                 $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_dot);
                 break;
+
+            default:
+                parse_str($decode_params_str, $ori_result);
         }
 
         if (!empty($this->action_annotate['params']) && $use_annotate) {

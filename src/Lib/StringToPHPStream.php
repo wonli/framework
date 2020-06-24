@@ -58,15 +58,25 @@ class StringToPHPStream
     }
 
     /**
-     * @param $count
+     * @param int $count
      * @return string
      */
-    public function stream_read($count)
+    public function stream_read(int $count): string
     {
         $content = self::$content[$this->key];
         $ret = substr($content, $this->pos, $count);
         $this->pos += strlen($ret);
         return $ret;
+    }
+
+    /**
+     * @param int $option
+     * @param int $arg1
+     * @param int $arg2
+     */
+    public function stream_set_option(int $option, int $arg1, int $arg2)
+    {
+
     }
 
     /**

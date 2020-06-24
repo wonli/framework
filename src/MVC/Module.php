@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -8,16 +8,21 @@
 
 namespace Cross\MVC;
 
-use Cross\Cache\Driver\RedisDriver;
+use Cross\Core\FrameBase;
+use Cross\Core\Config;
+
+use Cross\Http\Response;
+use Cross\Http\Request;
+
+use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
+
+use Cross\Cache\Driver\RedisDriver;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
 use Cross\DB\DBFactory;
-use Cross\Core\FrameBase;
-use Cross\Core\Config;
-use Cross\Http\Response;
-use Cross\Http\Request;
+
 
 /**
  * @author wonli <wonli@live.com>
@@ -65,7 +70,7 @@ class Module extends FrameBase
      * @param string $params 指定要连接的数据库和配置项的key, 如mysql['db']这里的params应该为mysql:db
      * @throws CoreException
      */
-    function __construct($params = '')
+    function __construct(string $params = '')
     {
         parent::__construct();
 
@@ -82,10 +87,11 @@ class Module extends FrameBase
      * @param array $config
      * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
+     * @throws DBConnectException
      */
-    function getModel($params = '', &$config = array())
+    function getModel(string $params = '', &$config = []): object
     {
-        static $cache = array();
+        static $cache = [];
         if (!isset($cache[$params])) {
             $config = $this->parseModelParams($params);
             $model = DBFactory::make($config['model_type'], $config['model_config'], array($this->getConfig()));
@@ -103,7 +109,7 @@ class Module extends FrameBase
      *
      * @return string
      */
-    function getLinkName()
+    function getLinkName(): string
     {
         return $this->linkName;
     }
@@ -113,7 +119,7 @@ class Module extends FrameBase
      *
      * @return string
      */
-    function getLinkType()
+    function getLinkType(): string
     {
         return $this->linkType;
     }
@@ -123,7 +129,7 @@ class Module extends FrameBase
      *
      * @return array
      */
-    function getLinkConfig()
+    function getLinkConfig(): array
     {
         return $this->linkConfig;
     }
@@ -134,7 +140,7 @@ class Module extends FrameBase
      * @param string $table
      * @return string
      */
-    function getPrefix($table = '')
+    function getPrefix(string $table = ''): string
     {
         return $this->link->getPrefix() . $table;
     }
@@ -145,7 +151,7 @@ class Module extends FrameBase
      * @return Config
      * @throws CoreException
      */
-    protected function databaseConfig()
+    protected function databaseConfig(): Config
     {
         static $database_config = null;
         if (null === $database_config) {
@@ -158,9 +164,9 @@ class Module extends FrameBase
     /**
      * 设置配置文件名
      *
-     * @param $link_config_file
+     * @param string $link_config_file
      */
-    protected function setDatabaseConfigFile($link_config_file)
+    protected function setDatabaseConfigFile(string $link_config_file): void
     {
         $this->db_config_file = $link_config_file;
     }
@@ -172,7 +178,7 @@ class Module extends FrameBase
      * @return array
      * @throws CoreException
      */
-    protected function parseModelParams($params = '')
+    protected function parseModelParams(string $params = ''): array
     {
         $db_config_params = '';
         if ($params) {
@@ -222,10 +228,11 @@ class Module extends FrameBase
      *
      * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
      * @throws CoreException
+     * @throws DBConnectException
      */
-    private function getLink()
+    private function getLink(): object
     {
-        return DBFactory::make($this->linkType, $this->linkConfig, array($this->getConfig()));
+        return DBFactory::make($this->linkType, $this->linkConfig, [$this->getConfig()]);
     }
 
     /**
@@ -233,7 +240,7 @@ class Module extends FrameBase
      *
      * @return mixed
      */
-    private function getModuleConfigFile()
+    private function getModuleConfigFile(): string
     {
         if (!$this->db_config_file) {
             $db_config_file = $this->getConfig()->get('sys', 'db_config');
@@ -253,6 +260,7 @@ class Module extends FrameBase
      * @param string $property
      * @return RedisDriver|Config|CouchDriver|MongoDriver|PDOSqlDriver|Request|Response|View|mixed|null
      * @throws CoreException
+     * @throws DBConnectException
      */
     function __get($property)
     {

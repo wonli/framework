@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -20,16 +20,14 @@ use DOMDocument;
 class CallTree
 {
 
-    private $node = array();
+    private $node = [];
 
-    private function __construct()
+    /**
+     * @return static
+     */
+    public static function getInstance(): self
     {
-
-    }
-
-    public static function getInstance()
-    {
-        return new CallTree();
+        return new static();
     }
 
     /**
@@ -38,16 +36,16 @@ class CallTree
      * @param string $node_name
      * @param mixed $node_arguments
      */
-    function saveNode($node_name, $node_arguments)
+    function saveNode(string $node_name, $node_arguments): void
     {
-        $this->node = array($node_name => $node_arguments);
+        $this->node = [$node_name => $node_arguments];
     }
 
     /**
      * 输出HTML标签
      * @param bool $html_decode
      */
-    function html($html_decode = true)
+    function html(bool $html_decode = true): void
     {
         echo $this->nodeToHTML($html_decode);
     }
@@ -57,7 +55,7 @@ class CallTree
      *
      * @return DOMDocument
      */
-    function dom()
+    function dom(): DOMDocument
     {
         return CallTreeToHTML::getInstance()->getDom($this->getNode());
     }
@@ -67,17 +65,17 @@ class CallTree
      *
      * @return array
      */
-    function getNode()
+    function getNode(): array
     {
         return $this->node;
     }
 
     /**
+     * @return string
      * @see nodeToHTML
      *
-     * @return string
      */
-    function __toString()
+    function __toString(): string
     {
         return $this->nodeToHTML();
     }
@@ -88,7 +86,7 @@ class CallTree
      * @param bool $html_decode
      * @return string
      */
-    private function nodeToHTML($html_decode = true)
+    private function nodeToHTML(bool $html_decode = true): string
     {
         return CallTreeToHTML::getInstance()->getHTML($this->getNode(), $html_decode);
     }

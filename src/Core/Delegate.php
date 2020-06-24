@@ -1,31 +1,27 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
 use Cross\Runtime\ClosureContainer;
+use Cross\Runtime\RequestMapping;
 use Cross\I\RouterInterface;
 use Cross\Http\Response;
 use Cross\Http\Request;
 use Closure;
 
-//检查环境版本
-version_compare(PHP_VERSION, '5.3.6', '>=') or die('requires PHP 5.3.6!');
-
 //外部定义的项目路径
-defined('PROJECT_PATH') or die('undefined PROJECT_PATH');
+defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
 
 //项目路径
 define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
-
-//项目APP路径
-define('APP_PATH_DIR', PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR);
 
 //框架路径
 define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
@@ -40,7 +36,7 @@ class Delegate
     /**
      * @var string
      */
-    public $app_name;
+    private $app_name;
 
     /**
      * @var Application
@@ -77,6 +73,20 @@ class Delegate
     private $action_container;
 
     /**
+     * app命名空间
+     *
+     * @var string
+     */
+    private $app_namespace;
+
+    /**
+     * app名称是否命名空间
+     *
+     * @var bool
+     */
+    private $is_namespace;
+
+    /**
      * Delegate的实例
      *
      * @var Delegate
@@ -87,22 +97,25 @@ class Delegate
      * 初始化框架
      *
      * @param string $app_name 要加载的app名称
+     * @param bool $is_namespace
      * @param array $runtime_config 运行时指定的配置
      * @throws CoreException
      * @throws FrontException
      */
-    private function __construct($app_name, array $runtime_config)
+    private function __construct(string $app_name, bool $is_namespace, array $runtime_config)
     {
-        $this->app_name = $app_name;
+        $this->loader = Loader::init();
+
+        $this->is_namespace = $is_namespace;
         $this->runtime_config = $runtime_config;
 
-        $this->loader = Loader::init();
-        $this->config = self::initConfig($app_name, $runtime_config);
+        $this->setAppName($app_name);
+        $this->config = $this->initConfig($app_name, $runtime_config);
 
         $this->registerNamespace();
         $this->action_container = new ClosureContainer();
         $this->router = new Router($this);
-        $this->app = new Application($app_name, $this);
+        $this->app = new Application($this);
     }
 
     /**
@@ -110,9 +123,23 @@ class Delegate
      *
      * @return string
      */
-    static function getVersion()
+    static function getVersion(): string
     {
-        return '1.6.2';
+        return '2.0.1';
+    }
+
+    /**
+     * 实例化框架
+     *
+     * @param string $app_namespace app命名空间
+     * @param array $runtime_config 运行时加载的设置
+     * @return static
+     * @throws CoreException
+     * @throws FrontException
+     */
+    static function app(string $app_namespace, array $runtime_config = []): self
+    {
+        return self::initApp($app_namespace, true, $runtime_config);
     }
 
     /**
@@ -124,28 +151,21 @@ class Delegate
      * @throws CoreException
      * @throws FrontException
      */
-    static function loadApp($app_name, array $runtime_config = array())
+    static function loadApp(string $app_name, array $runtime_config = []): self
     {
-        if (!isset(self::$instance[$app_name])) {
-            self::$instance[$app_name] = new Delegate($app_name, $runtime_config);
-        }
-
-        return self::$instance[$app_name];
+        return self::initApp($app_name, false, $runtime_config);
     }
 
     /**
      * 直接调用控制器类中的方法
-     * <pre>
-     * 忽略路由别名相关配置和URL参数, @cp_params注释不生效
-     * </pre>
      *
      * @param string $controller "控制器:方法"
-     * @param string|array $args 参数
+     * @param mixed $args 参数
      * @param bool $return_content 是输出还是直接返回结果
-     * @return array|mixed|string
+     * @return mixed
      * @throws CoreException
      */
-    public function get($controller, $args = array(), $return_content = false)
+    public function get(string $controller, $args = [], bool $return_content = false)
     {
         return $this->app->dispatcher($controller, $args, $return_content);
     }
@@ -183,9 +203,8 @@ class Delegate
      * </pre>
      *
      * @return Rest
-     * @throws CoreException
      */
-    public function rest()
+    public function rest(): Rest
     {
         return Rest::getInstance($this);
     }
@@ -205,34 +224,35 @@ class Delegate
      * 控制器中调用$this->params来获取并处理参数
      * </pre>
      *
-     * @param int|bool $run_argc
-     * @param array|bool $run_argv
      * @throws CoreException
      */
-    public function cliRun($run_argc = false, $run_argv = false)
+    public function cliRun()
     {
         if (PHP_SAPI !== 'cli') {
-            die('This app is only running from CLI');
+            die('This is a CLI app');
         }
 
-        if (false === $run_argc) {
-            $run_argc = $_SERVER['argc'];
+        global $argc, $argv;
+        $defaultController = $this->config->get('*');
+        if ($argc == 1) {
+            if (empty($defaultController)) {
+                die('Please specify controller(controller[:action [-p|--params]])');
+            } else {
+                $controller = $defaultController;
+            }
+        } else {
+            //处理参数和控制别名
+            $iArgv = $argv;
+            array_shift($iArgv);
+            $iArgv = array_filter($iArgv, function ($a) {
+                return ($a[0] == '-' || false !== strpos($a, '=')) ? false : $a;
+            });
+
+            $controller = array_shift($iArgv) ?? $defaultController;
         }
 
-        if (false === $run_argv) {
-            $run_argv = $_SERVER['argv'];
-        }
-
-        if ($run_argc == 1) {
-            die('Please specify params: controller:action params');
-        }
-
-        //去掉argv中的第一个参数
-        array_shift($run_argv);
-        $controller = array_shift($run_argv);
-
-        //使用get调用指定的控制器和方法,并传递参数
-        $this->get($controller, $run_argv);
+        $controller = $this->router->getRouterAlias($controller);
+        $this->get($controller, $argv);
     }
 
     /**
@@ -242,7 +262,7 @@ class Delegate
      * @param Closure $f
      * @return $this
      */
-    function on($name, Closure $f)
+    function on(string $name, Closure $f): self
     {
         $this->action_container->add($name, $f);
         return $this;
@@ -253,7 +273,7 @@ class Delegate
      *
      * @return Application
      */
-    function getApplication()
+    function getApplication(): Application
     {
         return $this->app;
     }
@@ -263,9 +283,45 @@ class Delegate
      *
      * @return Config
      */
-    function getConfig()
+    function getConfig(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * 获取app名称
+     *
+     * @return string
+     */
+    function getAppName(): string
+    {
+        return $this->app_name;
+    }
+
+    /**
+     * 设置app命名空间
+     *
+     * @param string $app_name
+     */
+    function setAppName(string $app_name): void
+    {
+        $this->app_name = $app_name;
+        $namespace = str_replace('/', '\\', $app_name);
+        if (!$this->is_namespace) {
+            $namespace = 'app\\' . $namespace;
+        }
+
+        $this->app_namespace = $namespace;
+    }
+
+    /**
+     * 获取app命名空间
+     *
+     * @return string
+     */
+    function getAppNamespace(): string
+    {
+        return $this->app_namespace;
     }
 
     /**
@@ -273,7 +329,7 @@ class Delegate
      *
      * @return Loader
      */
-    function getLoader()
+    function getLoader(): Loader
     {
         return $this->loader;
     }
@@ -283,7 +339,7 @@ class Delegate
      *
      * @return array
      */
-    function getRuntimeConfig()
+    function getRuntimeConfig(): array
     {
         return $this->runtime_config;
     }
@@ -291,7 +347,7 @@ class Delegate
     /**
      * @return Router
      */
-    function getRouter()
+    function getRouter(): Router
     {
         return $this->router;
     }
@@ -301,7 +357,7 @@ class Delegate
      *
      * @return ClosureContainer
      */
-    function getClosureContainer()
+    function getClosureContainer(): ClosureContainer
     {
         return $this->action_container;
     }
@@ -309,7 +365,7 @@ class Delegate
     /**
      * @return Request
      */
-    function getRequest()
+    function getRequest(): Request
     {
         return Request::getInstance();
     }
@@ -317,9 +373,36 @@ class Delegate
     /**
      * @return Response
      */
-    function getResponse()
+    function getResponse(): Response
     {
         return Response::getInstance();
+    }
+
+    /**
+     * @return RequestMapping
+     */
+    function getRequestMapping(): RequestMapping
+    {
+        return RequestMapping::getInstance();
+    }
+
+    /**
+     * 实例化框架
+     *
+     * @param string $app
+     * @param bool $is_namespace
+     * @param array $runtime_config
+     * @return static
+     * @throws CoreException
+     * @throws FrontException
+     */
+    private static function initApp(string $app, bool $is_namespace, array $runtime_config = []): self
+    {
+        if (!isset(self::$instance[$app])) {
+            self::$instance[$app] = new Delegate($app, $is_namespace, $runtime_config);
+        }
+
+        return self::$instance[$app];
     }
 
     /**
@@ -331,53 +414,69 @@ class Delegate
      * @throws FrontException
      * @throws CoreException
      */
-    private static function initConfig($app_name, array $runtime_config)
+    private function initConfig(string $app_name, array $runtime_config): Config
     {
-        $request = Request::getInstance();
+        $request = $this->getRequest();
         $host = $request->getHostInfo();
         $index_name = $request->getIndexName();
 
         $request_url = $request->getBaseUrl();
         $script_path = $request->getScriptFilePath();
 
-        //app名称和路径
-        $runtime_config['app'] = array(
-            'name' => $app_name,
-            'path' => APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR
-        );
+        $app_namespace = $this->getAppNamespace();
+        $app_path = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $app_namespace) . DIRECTORY_SEPARATOR;
 
-        $env_config = array(
+        //app名称和路径
+        $runtime_config['app'] = [
+            'name' => $app_name,
+            'path' => $app_path
+        ];
+
+        $env_config = [
             //url相关设置
-            'url' => array(
+            'url' => [
                 'host' => $host,
                 'index' => $index_name,
                 'request' => $request_url,
                 'full_request' => $host . $request_url
-            ),
+            ],
 
             //配置和缓存的绝对路径
-            'path' => array(
+            'path' => [
                 'cache' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR,
                 'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR,
                 'script' => $script_path . DIRECTORY_SEPARATOR,
-            ),
+            ],
 
             //静态文件url和绝对路径
-            'static' => array(
+            'static' => [
                 'url' => $host . $request_url . '/static/',
                 'path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
-            )
-        );
+            ]
+        ];
 
-        foreach ($env_config as $key => $value) {
-            if (isset($runtime_config[$key]) && is_array($runtime_config[$key])) {
-                $runtime_config[$key] = array_merge($value, $runtime_config[$key]);
-            } elseif (!isset($runtime_config[$key])) {
-                $runtime_config[$key] = $value;
+        if ('*' === $app_name) {
+            $Config = Config::load(PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.init.php');
+        } else {
+            $Config = Config::load($app_path . 'init.php');
+        }
+
+        //默认环境
+        $Config->combine($env_config);
+
+        //运行时配置
+        $Config->combine($runtime_config);
+
+        //app共享配置
+        $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
+        if (file_exists($app_config_file)) {
+            $app_config = Loader::read($app_config_file);
+            if (!empty($app_config)) {
+                $Config->combine($app_config, false);
             }
         }
 
-        return Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php')->combine($runtime_config);
+        return $Config;
     }
 
     /**
@@ -385,7 +484,7 @@ class Delegate
      *
      * @throws CoreException
      */
-    private function registerNamespace()
+    private function registerNamespace(): void
     {
         $namespaceConfig = $this->config->get('namespace');
         if (!empty($namespaceConfig)) {

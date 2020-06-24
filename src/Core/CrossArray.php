@@ -1,10 +1,11 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
  */
+
 namespace Cross\Core;
 
 /**
@@ -39,7 +40,7 @@ class CrossArray
      * @param string $cache_key
      * @return CrossArray
      */
-    static function init(array &$data, $cache_key = null)
+    static function init(array &$data, string $cache_key = null): self
     {
         if (null === $cache_key) {
             $cache_key = md5(json_encode($data));
@@ -59,12 +60,12 @@ class CrossArray
      * @param string|array $name
      * @return bool|string|array
      */
-    function get($config, $name = '')
+    function get(string $config, $name = '')
     {
         if (isset($this->data[$config])) {
             if ($name) {
                 if (is_array($name)) {
-                    $result = array();
+                    $result = [];
                     foreach ($name as $n) {
                         if (isset($this->data[$config][$n])) {
                             $result[$n] = $this->data[$config][$n];
@@ -88,9 +89,8 @@ class CrossArray
      *
      * @param string $index
      * @param string|array $values
-     * @return bool
      */
-    function set($index, $values = '')
+    function set(string $index, $values = ''): void
     {
         if (is_array($values)) {
             if (isset($this->data[$index])) {
@@ -101,8 +101,6 @@ class CrossArray
         } else {
             $this->data[$index] = $values;
         }
-
-        return true;
     }
 
     /**
@@ -111,7 +109,7 @@ class CrossArray
      * @param bool $obj 是否返回对象
      * @return array|object
      */
-    function getAll($obj = false)
+    function getAll(bool $obj = false)
     {
         if ($obj) {
             return self::arrayToObject($this->data);

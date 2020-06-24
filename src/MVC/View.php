@@ -1,6 +1,6 @@
 <?php
 /**
- * Cross - a micro PHP 5 framework
+ * Cross - a micro PHP framework
  *
  * @link        http://www.crossphp.com
  * @license     MIT License
@@ -55,7 +55,7 @@ class View extends FrameBase
     /**
      * @var array
      */
-    private $wrap_stack = array();
+    private $wrap_stack = [];
 
     /**
      * 模板数据
@@ -77,14 +77,14 @@ class View extends FrameBase
      *
      * @var array
      */
-    protected $set = array(
+    protected $set = [
         'title' => '',
         'keywords' => '',
         'description' => '',
 
         'layer' => 'default',
         'load_layer' => true,
-    );
+    ];
 
     /**
      * 模版扩展文件名
@@ -98,43 +98,40 @@ class View extends FrameBase
      *
      * @var array
      */
-    protected static $url_config_cache = array();
+    protected static $url_config_cache = [];
 
     /**
      * 渲染模板
      *
      * @param null $data
-     * @param null $method
+     * @param string $method
      * @throws CoreException
      */
-    function display($data = null, $method = null)
+    function display($data = null, string $method = null): void
     {
-        $this->data = $data;
+        $this->data = &$data;
+        $contentType = $this->config->get('sys', 'content_type');
+        $this->response->setContentType($contentType ? $contentType : 'html');
+
         if ($method === null) {
-            $display_type = $this->config->get('sys', 'display');
-            if ($display_type && strcasecmp($display_type, 'html') !== 0) {
-                $this->set['load_layer'] = false;
-                $method = trim($display_type);
-            } else if ($this->action) {
-                $method = $this->action;
-            } else {
-                $method = Router::DEFAULT_ACTION;
-            }
+            $method = $this->action ? $this->action : Router::DEFAULT_ACTION;
         }
 
+        ob_start();
         $this->obRenderAction($data, $method);
+        $this->response->setContent(ob_get_clean());
     }
 
     /**
      * 生成url
      *
-     * @param null|string $controller
+     * @param string $controller
      * @param null|string|array $params
      * @param bool $encrypt_params
      * @return string
      * @throws CoreException
      */
-    function url($controller = null, $params = null, $encrypt_params = false)
+    function url(string $controller = null, $params = null, bool $encrypt_params = false): string
     {
         static $link_base = null;
         if ($link_base === null) {
@@ -150,13 +147,15 @@ class View extends FrameBase
     }
 
     /**
-     * @see View::url() 生成加密连接
-     * @param null|string $controller
+     * 生成参数加密的超链接
+     *
+     * @param string $controller
      * @param null|string|array $params
      * @return string
      * @throws CoreException
+     * @see View::url()
      */
-    function sUrl($controller = null, $params = null)
+    function sUrl(string $controller = null, $params = null): string
     {
         return $this->url($controller, $params, true);
     }
@@ -169,7 +168,7 @@ class View extends FrameBase
      * @param array $element_tags
      * @return mixed|string
      */
-    function a($content, $href = '', array $element_tags = array())
+    function a(string $content, string $href = '', array $element_tags = [])
     {
         $element_tags['href'] = $href;
         $element_tags['@content'] = $content;
@@ -183,10 +182,10 @@ class View extends FrameBase
      * @param array $element_tags
      * @return mixed|string
      */
-    function img($src, array $element_tags = array())
+    function img(string $src, array $element_tags = [])
     {
         $element_tags['src'] = $src;
-        $element_tags += array('border' => 0, 'alt' => 'image');
+        $element_tags += ['border' => 0, 'alt' => 'image'];
         return $this->wrapTag('img', $element_tags);
     }
 
@@ -197,7 +196,7 @@ class View extends FrameBase
      * @param array $element_tags
      * @return mixed|string
      */
-    function input($type, array $element_tags = array())
+    function input(string $type, array $element_tags = [])
     {
         $element_tags['type'] = $type;
         return $this->wrapTag('input', $element_tags);
@@ -206,35 +205,35 @@ class View extends FrameBase
     /**
      * 单选
      *
-     * @see View::buildRadioOrCheckbox
      * @param array $data
      * @param string $default_value
      * @param array $radio_tags
      * @param array $label_tags
      * @return string
+     * @see View::buildRadioOrCheckbox
      */
-    function radio(array $data, $default_value = '', array $radio_tags = array(), array $label_tags = array())
+    function radio(array $data, $default_value = '', array $radio_tags = [], array $label_tags = [])
     {
-        $default_value = array($default_value => true);
+        $default_value = [$default_value => true];
         return $this->buildRadioOrCheckbox('radio', $data, $default_value, $radio_tags, $label_tags);
     }
 
     /**
      * 多选
      *
-     * @see View::buildRadioOrCheckbox
      * @param array $data
      * @param string|array $default_value
      * @param array $checkbox_tags
      * @param array $label_tags
      * @return string
+     * @see View::buildRadioOrCheckbox
      */
-    function checkbox(array $data, $default_value = '', array $checkbox_tags = array(), array $label_tags = array())
+    function checkbox(array $data, $default_value = '', array $checkbox_tags = [], array $label_tags = [])
     {
         if (is_array($default_value)) {
             $default_value = array_flip($default_value);
         } else {
-            $default_value = array($default_value => true);
+            $default_value = [$default_value => true];
         }
 
         return $this->buildRadioOrCheckbox('checkbox', $data, $default_value, $checkbox_tags, $label_tags);
@@ -249,17 +248,17 @@ class View extends FrameBase
      * @param array $user_option_params
      * @return mixed
      */
-    function select(array $options_data, $default_value = null, array $select_params = array(), array $user_option_params = array())
+    function select(array $options_data, $default_value = null, array $select_params = [], array $user_option_params = [])
     {
         $content = '';
         if (is_array($default_value)) {
             $default_value = array_flip($default_value);
         } else {
-            $default_value = array($default_value => true);
+            $default_value = [$default_value => true];
         }
 
         foreach ($options_data as $value => $option) {
-            $option_params = array();
+            $option_params = [];
             if (!empty($user_option_params)) {
                 $option_params = $user_option_params;
             }
@@ -306,7 +305,7 @@ class View extends FrameBase
      * @param bool $encode 是否转码
      * @return mixed
      */
-    function html($content, $encode = true)
+    function html(string $content, bool $encode = true)
     {
         return $this->wrapContent($content, $encode);
     }
@@ -314,11 +313,11 @@ class View extends FrameBase
     /**
      * 输出任意HTML标签
      *
-     * @param $element
+     * @param string $element
      * @param array $element_tags
      * @return string
      */
-    static function htmlTag($element, $element_tags = array())
+    static function htmlTag(string $element, array $element_tags = [])
     {
         return HTML::$element($element_tags);
     }
@@ -331,10 +330,10 @@ class View extends FrameBase
      * @param bool $content_rear 自身内容是否放在被包裹内容之后
      * @return $this
      */
-    function wrap($element, $element_tags = array(), $content_rear = false)
+    function wrap(string $element, $element_tags = [], bool $content_rear = false): self
     {
         if (!is_array($element_tags)) {
-            $element_tags = array('@content' => $element_tags);
+            $element_tags = ['@content' => $element_tags];
         }
 
         array_unshift($this->wrap_stack, array($element, $element_tags, $content_rear));
@@ -349,7 +348,7 @@ class View extends FrameBase
      * @param string $element
      * @return string
      */
-    function block($content, array $element_tags = array(), $element = 'div')
+    function block(string $content, array $element_tags = [], string $element = 'div')
     {
         $element_tags['@content'] = $content;
         return $this->wrapTag($element, $element_tags);
@@ -364,7 +363,7 @@ class View extends FrameBase
      * @param string $element
      * @return string
      */
-    function section($tpl_name, array $tpl_data = array(), array $element_tags = array(), $element = 'div')
+    function section(string $tpl_name, array $tpl_data = [], array $element_tags = [], string $element = 'div')
     {
         return $this->block($this->obRenderTpl($tpl_name, $tpl_data), $element_tags, $element);
     }
@@ -380,12 +379,12 @@ class View extends FrameBase
      * @param array $tpl_data 模板数据
      * @return string
      */
-    function buildForm($tpl_name, array $form_tags = array(), array $tpl_data = array())
+    function buildForm(string $tpl_name, array $form_tags = [], array $tpl_data = [])
     {
-        $content = $this->delegate->getClosureContainer()->run('buildForm', array($this));
+        $content = $this->delegate->getClosureContainer()->run('buildForm', [$this]);
         $content .= $this->obRenderTpl($tpl_name, $tpl_data);
 
-        $form_tags += array('action' => '', 'method' => 'post');
+        $form_tags += ['action' => '', 'method' => 'post'];
         $form_tags['@content'] = $content;
 
         return $this->wrapTag('form', $form_tags);
@@ -395,9 +394,9 @@ class View extends FrameBase
      * 加载指定名称的模板文件
      *
      * @param string $tpl_name
-     * @param array|mixed $data
+     * @param array $data
      */
-    function renderTpl($tpl_name, $data = array())
+    function renderTpl(string $tpl_name, array $data = []): void
     {
         include $this->tpl($tpl_name);
     }
@@ -408,7 +407,7 @@ class View extends FrameBase
      * @param string $file 文件绝对路径
      * @param array $data
      */
-    function renderFile($file, $data = array())
+    function renderFile(string $file, array $data = []): void
     {
         include $file;
     }
@@ -421,7 +420,7 @@ class View extends FrameBase
      * @param bool $encode
      * @return string
      */
-    function obRenderTpl($tpl_name, array $data = array(), $encode = false)
+    function obRenderTpl(string $tpl_name, array $data = [], bool $encode = false)
     {
         ob_start();
         $this->renderTpl($tpl_name, $data);
@@ -436,7 +435,7 @@ class View extends FrameBase
      * @param bool $encode
      * @return string
      */
-    function obRenderFile($file, $data = array(), $encode = false)
+    function obRenderFile(string $file, array $data = [], bool $encode = false)
     {
         ob_start();
         $this->renderFile($file, $data);
@@ -446,12 +445,12 @@ class View extends FrameBase
     /**
      * 模板的绝对路径
      *
-     * @param $tpl_name
+     * @param string $tpl_name
      * @param bool $get_content 是否读取模板内容
      * @param bool $auto_append_suffix 是否自动添加模版后缀
      * @return string
      */
-    function tpl($tpl_name, $get_content = false, $auto_append_suffix = true)
+    function tpl(string $tpl_name, bool $get_content = false, bool $auto_append_suffix = true): string
     {
         $file_path = $this->getTplPath() . $tpl_name;
         if ($auto_append_suffix) {
@@ -468,23 +467,23 @@ class View extends FrameBase
     /**
      * 输出JSON
      *
-     * @param $data
+     * @param array $data
      */
-    function JSON($data)
+    function JSON(array $data): void
     {
         $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('json');
-        echo json_encode($data);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
     /**
      * 输出XML
      *
-     * @param $data
+     * @param array $data
      * @param string $root_name
      * @throws Exception
      */
-    function XML($data, $root_name = 'root')
+    function XML(array $data, string $root_name = 'root'): void
     {
         $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('xml');
@@ -509,15 +508,13 @@ class View extends FrameBase
     }
 
     /**
-     * @see e
-     * <pre>
      * 判断数组中的值是否为empty,否则返回默认值
-     * </pre>
      *
      * @param array $data
      * @param string|int $key
      * @param string $default_value
      * @return string
+     * @see e
      */
     function ee(array $data, $key, $default_value = '')
     {
@@ -531,11 +528,11 @@ class View extends FrameBase
     /**
      * 设置layer附加参数
      *
-     * @param $name
+     * @param mixed $name
      * @param null $value
      * @return $this
      */
-    final public function set($name, $value = null)
+    final public function set($name, $value = null): self
     {
         if (is_array($name)) {
             $this->set = array_merge($this->set, $name);
@@ -549,11 +546,11 @@ class View extends FrameBase
     /**
      * 生成资源文件路径
      *
-     * @param $res_url
+     * @param string $res_url
      * @param bool $use_static_url
      * @return string
      */
-    function res($res_url, $use_static_url = true)
+    function res(string $res_url, bool $use_static_url = true): string
     {
         static $res_base_url = null;
         if (!isset($res_base_url[$use_static_url])) {
@@ -576,7 +573,7 @@ class View extends FrameBase
      * @param string $res_dir
      * @return string
      */
-    function relRes($res_url, $res_dir = 'static')
+    function relRes(string $res_url, string $res_dir = 'static'): string
     {
         static $res_base_url = null;
         if (null === $res_base_url) {
@@ -584,30 +581,6 @@ class View extends FrameBase
         }
 
         return $res_base_url . $res_url;
-    }
-
-    /**
-     * @see View::url()
-     * @param null|string $controller 控制器:方法
-     * @param null|string|array $params
-     * @return string
-     * @throws CoreException
-     */
-    function link($controller = null, $params = null)
-    {
-        return $this->url($controller, $params);
-    }
-
-    /**
-     * @see View::sUrl()
-     * @param null|string $controller
-     * @param null|string|array $params
-     * @return string
-     * @throws CoreException
-     */
-    function slink($controller = null, $params = null)
-    {
-        return $this->url($controller, $params, true);
     }
 
     /**
@@ -621,7 +594,7 @@ class View extends FrameBase
      * @return string
      * @throws CoreException
      */
-    function appUrl($base_link, $app_name, $controller = null, $params = null, $encrypt_params = null)
+    function appUrl(string $base_link, string $app_name, $controller = null, $params = null, bool $encrypt_params = false): string
     {
         $base_link = rtrim($base_link, '/') . '/';
         if ($controller === null && $params === null) {
@@ -635,7 +608,7 @@ class View extends FrameBase
     /**
      * 清除link中使用到的缓存(config->url配置在运行过程中发生变动时先清除缓存)
      */
-    function cleanLinkCache()
+    function cleanLinkCache(): void
     {
         unset(self::$url_config_cache[$this->getAppName()]);
     }
@@ -643,9 +616,9 @@ class View extends FrameBase
     /**
      * 设置模板dir
      *
-     * @param $dir_name
+     * @param string $dir_name
      */
-    function setTplDir($dir_name)
+    function setTplDir(string $dir_name): void
     {
         $this->tpl_dir = $dir_name;
     }
@@ -655,7 +628,7 @@ class View extends FrameBase
      *
      * @return string
      */
-    function getLinkBase()
+    function getLinkBase(): string
     {
         if (null === $this->link_base) {
             $this->setLinkBase($this->config->get('url', 'full_request'));
@@ -667,9 +640,9 @@ class View extends FrameBase
     /**
      * 获取当前app名称
      *
-     * @return array|string
+     * @return string
      */
-    function getAppName()
+    function getAppName(): string
     {
         static $app_name = null;
         if ($app_name === null) {
@@ -682,9 +655,9 @@ class View extends FrameBase
     /**
      * 设置生成的连接基础路径
      *
-     * @param $link_base
+     * @param string $link_base
      */
-    function setLinkBase($link_base)
+    function setLinkBase(string $link_base): void
     {
         $this->link_base = rtrim($link_base, '/') . '/';
     }
@@ -694,7 +667,7 @@ class View extends FrameBase
      *
      * @return string 要加载的模板路径
      */
-    function getTplPath()
+    function getTplPath(): string
     {
         static $tpl_path;
         $app_name = $this->getAppName();
@@ -708,9 +681,9 @@ class View extends FrameBase
     /**
      * 设置模板路径
      *
-     * @param $tpl_base_path
+     * @param string $tpl_base_path
      */
-    function setTplBasePath($tpl_base_path)
+    function setTplBasePath(string $tpl_base_path): void
     {
         $this->tpl_base_path = rtrim($tpl_base_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
@@ -720,7 +693,7 @@ class View extends FrameBase
      *
      * @return string
      */
-    function getTplBasePath()
+    function getTplBasePath(): string
     {
         if (!$this->tpl_base_path) {
             $this->setTplBasePath($this->config->get('app', 'path') . 'templates' . DIRECTORY_SEPARATOR);
@@ -734,7 +707,7 @@ class View extends FrameBase
      *
      * @return string
      */
-    function getTplDir()
+    function getTplDir(): string
     {
         if (!$this->tpl_dir) {
             $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
@@ -750,11 +723,11 @@ class View extends FrameBase
     /**
      * 运行时分组添加css/js
      *
-     * @param $res_url
+     * @param string $res_url
      * @param string $location
      * @param bool $convert
      */
-    function addRes($res_url, $location = 'header', $convert = true)
+    function addRes(string $res_url, string $location = 'header', bool $convert = true): void
     {
         $this->res_list[$location][] = array(
             'url' => $res_url,
@@ -768,7 +741,7 @@ class View extends FrameBase
      * @param string $location
      * @return string
      */
-    function loadRes($location = 'header')
+    function loadRes(string $location = 'header'): string
     {
         $result = '';
         if (empty($this->res_list) || empty($this->res_list[$location])) {
@@ -799,11 +772,11 @@ class View extends FrameBase
      * @param bool $check_app_name
      * @param null|string $controller
      * @param null|array $params
-     * @param null|bool $encrypt_params
+     * @param bool $encrypt_params
      * @return string
      * @throws CoreException
      */
-    protected function makeUri($app_name, $check_app_name, $controller = null, $params = null, $encrypt_params = null)
+    protected function makeUri(string $app_name, bool $check_app_name, $controller = null, $params = null, bool $encrypt_params = false): string
     {
         $uri = '';
         $enable_controller_cache = false;
@@ -815,7 +788,8 @@ class View extends FrameBase
             }
 
             if ($check_app_name && $app_name != $this_app_name) {
-                $config = Config::load(APP_PATH_DIR . $app_name . DIRECTORY_SEPARATOR . 'init.php');
+                $app_path = PROJECT_REAL_PATH . str_replace('/', DIRECTORY_SEPARATOR, $app_name);
+                $config = Config::load($app_path . DIRECTORY_SEPARATOR . 'init.php');
             } else {
                 $config = $this->config;
             }
@@ -843,20 +817,14 @@ class View extends FrameBase
         }
 
         if (!empty($url_config['ext'])) {
-            switch ($url_config['type']) {
-                case 2:
-                    if ($has_controller_string) {
-                        $uri .= $url_controller . $url_config['ext'];
-                    }
+            if ($url_config['type'] > 2) {
+                if ($has_controller_string) {
+                    $uri .= $url_controller . $url_config['ext'];
+                }
 
-                    $uri .= $url_params;
-                    break;
-                case 1:
-                case 3:
-                case 4:
-                case 5:
-                    $uri .= $url_controller . $url_params . $url_config['ext'];
-                    break;
+                $uri .= $url_params;
+            } else {
+                $uri .= $url_controller . $url_params . $url_config['ext'];
             }
         } else {
             $uri .= $url_controller . $url_params;
@@ -873,9 +841,8 @@ class View extends FrameBase
      * @param string $controller
      * @param array $url_config
      * @return string
-     * @throws CoreException
      */
-    protected function makeControllerUri($app_name, $use_cache, $controller, array $url_config)
+    protected function makeControllerUri(string $app_name, bool $use_cache, string $controller, array $url_config): string
     {
         static $path_cache;
         if (isset($path_cache[$app_name][$controller]) && $use_cache) {
@@ -914,11 +881,10 @@ class View extends FrameBase
      * @param array $url_config
      * @param bool $have_controller
      * @return string
-     * @throws CoreException
      */
-    protected function makeIndex(array $url_config, $have_controller = false)
+    protected function makeIndex(array $url_config, bool $have_controller = false): string
     {
-        static $cache = array();
+        static $cache = [];
         if (isset($cache[$have_controller])) {
             return $cache[$have_controller];
         }
@@ -926,27 +892,8 @@ class View extends FrameBase
         $index = $url_config['index'];
         $is_default_index = (0 === strcasecmp($index, 'index.php'));
 
-        switch ($url_config['type']) {
-            case 1:
-            case 3:
-                $index_dot = '?';
-                $addition_dot = '/';
-                if ($is_default_index) {
-                    $index = '';
-                }
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-                $index_dot = '/';
-                $addition_dot = '';
-                break;
-
-            default:
-                throw new CoreException('Type does not support!');
-        }
-
+        $index_dot = '/';
+        $addition_dot = '';
         if ($url_config['rewrite']) {
             $index = $index_dot = $addition_dot = '';
         }
@@ -983,7 +930,7 @@ class View extends FrameBase
      * @param bool $add_prefix_dot 当控制器字符串为空时,参数不添加前缀
      * @return string
      */
-    protected function makeParams(array $params, array $url_config, $encrypt_params = false, $add_prefix_dot = true)
+    protected function makeParams(array $params, array $url_config, bool $encrypt_params = false, bool $add_prefix_dot = true): string
     {
         $url_dot = &$url_config['dot'];
         $params_dot = &$url_config['params_dot'];
@@ -997,22 +944,20 @@ class View extends FrameBase
         if ($params) {
             switch ($url_config['type']) {
                 case 1:
-                case 5:
                     $url_params = implode($dot, $params);
                     break;
 
                 case 2:
-                    $url_dot = '?';
-                    $add_prefix_dot = true;
-                    $url_params = http_build_query($params);
-                    break;
-
-                case 3:
-                case 4:
                     foreach ($params as $p_key => $p_val) {
                         $url_params .= $p_key . $dot . $p_val . $dot;
                     }
                     $url_params = rtrim($url_params, $dot);
+                    break;
+
+                default:
+                    $url_dot = '?';
+                    $add_prefix_dot = true;
+                    $url_params = http_build_query($params);
                     break;
             }
 
@@ -1031,11 +976,11 @@ class View extends FrameBase
     /**
      * 输出js/css连接
      *
-     * @param $res_link
+     * @param string $res_link
      * @param bool $make_link
      * @return null|string
      */
-    protected function outputResLink($res_link, $make_link = true)
+    protected function outputResLink(string $res_link, bool $make_link = true): string
     {
         $t = Helper::getExt($res_link);
         switch (strtolower($t)) {
@@ -1059,7 +1004,7 @@ class View extends FrameBase
             return sprintf("{$tpl}\n", $res_link);
         }
 
-        return null;
+        return '';
     }
 
     /**
@@ -1069,7 +1014,7 @@ class View extends FrameBase
      * @param string $layer_ext
      * @throws CoreException
      */
-    protected function loadLayer($content, $layer_ext = '.layer.php')
+    protected function loadLayer(string $content, string $layer_ext = '.layer.php'): void
     {
         $layer_file = $this->getTplPath() . $this->set['layer'] . $layer_ext;
         if (!is_file($layer_file)) {
@@ -1083,12 +1028,12 @@ class View extends FrameBase
     /**
      * 输出带layer的view
      *
-     * @param array $data
+     * @param mixed $data
      * @param string $method
      * @return string|void
      * @throws CoreException
      */
-    private function obRenderAction($data, $method)
+    private function obRenderAction($data, string $method): void
     {
         ob_start();
         $this->$method($data);
@@ -1108,11 +1053,11 @@ class View extends FrameBase
      * @param array $router
      * @return array
      */
-    private function parseControllerAlias($app_name, array $router)
+    private function parseControllerAlias(string $app_name, array $router): array
     {
         static $router_alias_cache;
         if (!isset($router_alias_cache[$app_name])) {
-            $router_alias_cache[$app_name] = array();
+            $router_alias_cache[$app_name] = [];
             if (!empty($router)) {
                 foreach ($router as $controller_alias => $alias_config) {
                     $router_alias_cache[$app_name][$alias_config] = $controller_alias;
@@ -1133,11 +1078,11 @@ class View extends FrameBase
      * @param array $label_tags label附加参数
      * @return string
      */
-    private function buildRadioOrCheckbox($type, array $data, array $default_value = array(), array $input_tags = array(), array $label_tags = array())
+    private function buildRadioOrCheckbox(string $type, array $data, array $default_value = [], array $input_tags = [], array $label_tags = [])
     {
         $content = '';
         foreach ($data as $value => $label_text) {
-            $build_input_tags = array();
+            $build_input_tags = [];
             if (!empty($input_tags)) {
                 $build_input_tags = $input_tags;
             }
@@ -1198,7 +1143,7 @@ class View extends FrameBase
      * @param bool $encode 是否转码
      * @return mixed
      */
-    private function wrapContent($content, $encode = true)
+    private function wrapContent(string $content, bool $encode = true)
     {
         if (!empty($this->wrap_stack)) {
             $stack_top = &$this->wrap_stack[0];
@@ -1224,7 +1169,7 @@ class View extends FrameBase
      * @param array $element_tags
      * @return mixed|string
      */
-    private function wrapTag($element, $element_tags = array())
+    private function wrapTag(string $element, array $element_tags = [])
     {
         if (!empty($this->wrap_stack)) {
             $this->wrap($element, $element_tags);
