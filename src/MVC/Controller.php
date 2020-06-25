@@ -34,6 +34,15 @@ class Controller extends FrameBase
     protected $statusConfigFile = 'config::status.config.php';
 
     /**
+     * Controller constructor.
+     */
+    function __construct()
+    {
+        parent::__construct();
+        $this->data = ResponseData::builder()->getData();
+    }
+
+    /**
      * 判断是否POST请求
      *
      * @return bool
