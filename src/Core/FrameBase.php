@@ -8,6 +8,7 @@
 
 namespace Cross\Core;
 
+use Cross\Interactive\ResponseData;
 use Cross\Exception\CoreException;
 use Cross\Http\Response;
 use Cross\Http\Request;
@@ -103,21 +104,18 @@ class FrameBase
     }
 
     /**
-     * 返回一个数组或JSON字符串
+     * 返回一个ResponseData对象
      *
      * @param int $status
-     * @param string|array $message
-     * @param bool $json_encode
-     * @return array|string
+     * @param array $data
+     * @return ResponseData
      */
-    function result(int $status = 1, $message = '', bool $json_encode = false)
+    function responseData(int $status = 1, array $data = []): ResponseData
     {
-        $result = ['status' => $status, 'message' => $message];
-        if ($json_encode) {
-            $result = json_encode($result, JSON_UNESCAPED_UNICODE);
-        }
-
-        return $result;
+        $rd = ResponseData::builder();
+        $rd->setStatus($status);
+        $rd->setData($data);
+        return $rd;
     }
 
     /**
