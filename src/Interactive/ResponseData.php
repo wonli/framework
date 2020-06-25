@@ -103,6 +103,16 @@ class ResponseData
     }
 
     /**
+     * 获取数据内容
+     *
+     * @return array
+     */
+    public function getDataContent(): array
+    {
+        return $this->data;
+    }
+
+    /**
      * 更新状态和消息属性
      *
      * @param array $data
