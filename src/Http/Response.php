@@ -62,7 +62,7 @@ class Response
      *
      * @var string
      */
-    protected $content;
+    protected $content = '';
 
     /**
      * Response instance
