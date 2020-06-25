@@ -39,18 +39,18 @@ abstract class CrossException extends Exception
     protected $responseJSONExceptionMsg = false;
 
     /**
-     * 扩展数据
+     * 响应数据
      *
-     * @var array
+     * @var ResponseData
      */
-    protected $extData = [];
+    protected $ResponseData;
 
     /**
      * CrossException constructor.
      *
      * @param string $message
-     * @param null|int $code
-     * @param Throwable|null $previous
+     * @param int $code
+     * @param Throwable $previous
      */
     function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
     {
@@ -74,7 +74,7 @@ abstract class CrossException extends Exception
      * @param Throwable $e
      * @return array
      */
-    function cpExceptionSource(Throwable $e)
+    function cpExceptionSource(Throwable $e): array
     {
         $file = $e->getFile();
         $exception_line = $e->getLine();
@@ -142,11 +142,12 @@ abstract class CrossException extends Exception
     {
         $Response = Response::getInstance();
         if ($this->responseJSONExceptionMsg) {
-            $ResponseData = new ResponseData();
-            $ResponseData->setStatus($e->getCode());
-            $ResponseData->setMessage($e->getMessage());
-            if (!empty($this->extData)) {
-                $ResponseData->setData((array)$this->extData);
+            if (null !== $this->ResponseData) {
+                $ResponseData = $this->ResponseData;
+            } else {
+                $ResponseData = ResponseData::builder();
+                $ResponseData->setStatus($e->getCode());
+                $ResponseData->setMessage($e->getMessage());
             }
 
             $Response->setResponseStatus($this->httpStatusCode)
@@ -163,25 +164,25 @@ abstract class CrossException extends Exception
      *
      * @param mixed $data
      */
-    function addExtData($data)
+    function addResponseData(ResponseData $data): void
     {
-        $this->extData = $data;
+        $this->ResponseData = $data;
     }
 
     /**
      * 获取扩展数据
      *
-     * @return array
+     * @return ResponseData
      */
-    function getExtData()
+    function getResponseData(): ResponseData
     {
-        return $this->extData;
+        return $this->ResponseData;
     }
 
     /**
      * @return int
      */
-    function getHttpStatusCode()
+    function getHttpStatusCode(): int
     {
         return $this->httpStatusCode;
     }

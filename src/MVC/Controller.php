@@ -24,7 +24,7 @@ class Controller extends FrameBase
      *
      * @var array
      */
-    protected $data = ['status' => 1, 'message' => ''];
+    protected $data = [];
 
     /**
      * 状态配置文件
@@ -32,6 +32,15 @@ class Controller extends FrameBase
      * @var string
      */
     protected $statusConfigFile = 'config::status.config.php';
+
+    /**
+     * Controller constructor.
+     */
+    function __construct()
+    {
+        parent::__construct();
+        $this->data = ResponseData::builder()->getData();
+    }
 
     /**
      * 判断是否POST请求
@@ -130,37 +139,26 @@ class Controller extends FrameBase
      * 交互数据对齐
      *
      * @param mixed $data
-     * @param bool $combine 是否合并
-     * @return array
+     * @return ResponseData
      * @throws CoreException
      */
-    protected function getResponseData($data, bool $combine = false): array
+    protected function getResponseData($data): ResponseData
     {
-        $responseData = (new ResponseData())->getData();
+        $responseData = ResponseData::builder();
         if (is_numeric($data)) {
-            $responseData['status'] = $data;
-        } elseif (is_array($data) && $combine) {
-            $manualMergeData = true;
-            if (isset($data['data'])) {
-                $manualMergeData = false;
-                $responseData['data'] = &$data['data'];
-            }
-
-            foreach ($data as $k => $v) {
-                if (isset($responseData[$k])) {
-                    $responseData[$k] = $v;
-                } elseif ($manualMergeData) {
-                    $responseData['data'][$k] = $v;
-                }
-            }
+            $responseData->setStatus($data);
         } elseif (is_array($data)) {
-            $responseData = array_merge($responseData, $data);
-        } else {
-            $responseData['message'] = $data;
+            $responseData->updateInfoProperty($data);
+            if (!empty($data)) {
+                $responseData->setData($data);
+            }
+        } elseif (null !== $data) {
+            $responseData->setMessage($data);
         }
 
-        if ($responseData['status'] != 1 && empty($responseData['message'])) {
-            $responseData['message'] = $this->getStatusMessage($responseData['status']);
+        $status = $responseData->getStatus();
+        if ($status != 1 && empty($responseData->getMessage())) {
+            $responseData->setMessage($this->getStatusMessage($status));
         }
 
         return $responseData;
@@ -181,7 +179,7 @@ class Controller extends FrameBase
         }
 
         if (!isset($statusConfig[$status])) {
-            throw new CoreException('未定义的错误码: ' . $status);
+            throw new CoreException("未知错误（{$status}）");
         }
 
         return $statusConfig[$status];
@@ -226,7 +224,7 @@ class Controller extends FrameBase
      * 重设视图action名称
      *
      * @param string $action_name
-     * @return $this
+     * @return self
      */
     function setAction(string $action_name): self
     {

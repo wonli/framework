@@ -62,7 +62,7 @@ class Response
      *
      * @var string
      */
-    protected $content;
+    protected $content = '';
 
     /**
      * Response instance
@@ -79,7 +79,7 @@ class Response
     /**
      * 单例模式
      *
-     * @return Response
+     * @return static
      */
     static function getInstance(): self
     {
@@ -92,7 +92,7 @@ class Response
 
     /**
      * @param int $status
-     * @return $this
+     * @return self
      */
     function setResponseStatus(int $status = 200): self
     {
@@ -116,7 +116,7 @@ class Response
      * 设置header信息
      *
      * @param mixed $header
-     * @return $this
+     * @return self
      */
     function setHeader($header): self
     {
@@ -147,7 +147,7 @@ class Response
      * @param string $name
      * @param string $value
      * @param int $expire
-     * @return $this
+     * @return self
      */
     function setCookie(string $name, $value = '', int $expire = 0): self
     {
@@ -178,7 +178,7 @@ class Response
      * 删除cookie
      *
      * @param string $name
-     * @return $this
+     * @return self
      */
     function deleteCookie(string $name): self
     {
@@ -198,7 +198,7 @@ class Response
      * </pre>
      *
      * @param array $config
-     * @return $this
+     * @return self
      */
     function cookieConfig(array $config): self
     {
@@ -210,7 +210,7 @@ class Response
      * 获取cookie参数默认值
      *
      * @param string $key
-     * @return array|mixed
+     * @return mixed
      */
     function getCookieConfig(string $key)
     {
@@ -222,7 +222,7 @@ class Response
      * 设置返回头类型
      *
      * @param string $content_type
-     * @return $this
+     * @return self
      */
     function setContentType(string $content_type = 'html'): self
     {
@@ -233,13 +233,14 @@ class Response
     /**
      * 返回ContentType
      *
-     * @return mixed
+     * @return string
      */
     function getContentType(): string
     {
         if (!$this->content_type) {
             $this->setContentType();
         }
+
         return $this->content_type;
     }
 
@@ -258,7 +259,7 @@ class Response
      *
      * @return string
      */
-    function getContent()
+    function getContent(): string
     {
         return $this->content;
     }
