@@ -86,16 +86,17 @@ class ResponseData
     /**
      * 返回数据
      *
+     * @param bool $getContent 是否获取数据内容
      * @return array
      */
-    public function getData(): array
+    public function getData(bool $getContent = true): array
     {
         $data = [
             $this->statusName => $this->status,
             $this->messageName => $this->message
         ];
 
-        if (!empty($this->data)) {
+        if ($getContent && !empty($this->data)) {
             $data[$this->dataName] = $this->data;
         }
 
