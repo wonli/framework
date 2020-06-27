@@ -58,7 +58,7 @@ class SQLAssembler
      *
      * @var string
      */
-    protected $field_quote_char = '`';
+    protected $field_quote_char = '';
 
     /**
      * 初始化时可以指定表前缀
