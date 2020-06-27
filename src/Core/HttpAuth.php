@@ -41,7 +41,7 @@ class HttpAuth
      * @return CookieAuth|SessionAuth|HttpAuthInterface|object
      * @throws CoreException
      */
-    public static function factory(string $type = 'COOKIE', string $auth_key = ''): object
+    public static function factory($type = 'cookie', string $auth_key = ''): object
     {
         if (!self::$obj) {
             if (is_string($type)) {
