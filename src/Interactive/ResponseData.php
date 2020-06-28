@@ -135,10 +135,11 @@ class ResponseData
      * 数据内容
      *
      * @param array $data
+     * @param bool $merge 默认不合并数据
      */
-    public function setData(array $data): void
+    public function setData(array $data, $merge = false): void
     {
-        if (!empty($this->data)) {
+        if ($merge && !empty($this->data)) {
             $this->data = array_merge($this->data, $data);
         } else {
             $this->data = $data;
