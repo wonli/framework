@@ -180,6 +180,16 @@ abstract class CrossException extends Exception
     }
 
     /**
+     * 设置HTTP状态码
+     *
+     * @param int $code
+     */
+    function setHttpStatusCode(int $code): void
+    {
+        $this->httpStatusCode = $code;
+    }
+
+    /**
      * @return int
      */
     function getHttpStatusCode(): int
