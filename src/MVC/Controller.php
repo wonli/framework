@@ -87,7 +87,7 @@ class Controller extends FrameBase
      */
     protected function returnReferer(): void
     {
-        $this->redirect($this->request->getUrlReferrer());
+        $this->redirect($this->delegate->getRequest()->getUrlReferrer());
     }
 
     /**

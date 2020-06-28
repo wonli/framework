@@ -90,7 +90,7 @@ class FrameBase
     /**
      * @return Config
      */
-    function getConfig(): Config
+    final function getConfig(): Config
     {
         return $this->delegate->getConfig();
     }
@@ -98,7 +98,7 @@ class FrameBase
     /**
      * @return Delegate
      */
-    function getDelegate(): Delegate
+    final function getDelegate(): Delegate
     {
         return $this->delegate;
     }

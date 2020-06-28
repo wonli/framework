@@ -111,7 +111,7 @@ class View extends FrameBase
     {
         $this->data = &$data;
         $contentType = $this->config->get('sys', 'content_type');
-        $this->response->setContentType($contentType ? $contentType : 'html');
+        $this->delegate->getResponse()->setContentType($contentType ? $contentType : 'html');
 
         if ($method === null) {
             $method = $this->action ? $this->action : Router::DEFAULT_ACTION;
@@ -119,7 +119,7 @@ class View extends FrameBase
 
         ob_start();
         $this->obRenderAction($data, $method);
-        $this->response->setContent(ob_get_clean());
+        $this->delegate->getResponse()->setContent(ob_get_clean());
     }
 
     /**
@@ -555,9 +555,9 @@ class View extends FrameBase
         static $res_base_url = null;
         if (!isset($res_base_url[$use_static_url])) {
             if ($use_static_url) {
-                $base_url = $this->config->get('static', 'url');
+                $base_url = $this->getConfig()->get('static', 'url');
             } else {
-                $base_url = $this->config->get('url', 'full_request');
+                $base_url = $this->getConfig()->get('url', 'full_request');
             }
 
             $res_base_url[$use_static_url] = rtrim($base_url, '/') . '/';
@@ -577,7 +577,7 @@ class View extends FrameBase
     {
         static $res_base_url = null;
         if (null === $res_base_url) {
-            $res_base_url = rtrim($this->config->get('url', 'request'), '/') . '/' . $res_dir . '/';
+            $res_base_url = rtrim($this->getConfig()->get('url', 'request'), '/') . '/' . $res_dir . '/';
         }
 
         return $res_base_url . $res_url;
@@ -631,7 +631,7 @@ class View extends FrameBase
     function getLinkBase(): string
     {
         if (null === $this->link_base) {
-            $this->setLinkBase($this->config->get('url', 'full_request'));
+            $this->setLinkBase($this->getConfig()->get('url', 'full_request'));
         }
 
         return $this->link_base;
@@ -646,7 +646,7 @@ class View extends FrameBase
     {
         static $app_name = null;
         if ($app_name === null) {
-            $app_name = $this->config->get('app', 'name');
+            $app_name = $this->getConfig()->get('app', 'name');
         }
 
         return $app_name;
@@ -696,7 +696,7 @@ class View extends FrameBase
     function getTplBasePath(): string
     {
         if (!$this->tpl_base_path) {
-            $this->setTplBasePath($this->config->get('app', 'path') . 'templates' . DIRECTORY_SEPARATOR);
+            $this->setTplBasePath($this->getConfig()->get('app', 'path') . 'templates' . DIRECTORY_SEPARATOR);
         }
 
         return $this->tpl_base_path;
@@ -710,7 +710,7 @@ class View extends FrameBase
     function getTplDir(): string
     {
         if (!$this->tpl_dir) {
-            $default_tpl_dir = $this->config->get('sys', 'default_tpl_dir');
+            $default_tpl_dir = $this->getConfig()->get('sys', 'default_tpl_dir');
             if (!$default_tpl_dir) {
                 $default_tpl_dir = 'default';
             }
