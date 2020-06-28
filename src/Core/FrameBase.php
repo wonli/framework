@@ -127,7 +127,7 @@ class FrameBase
      */
     function loadConfig($config_file): Config
     {
-        return Config::load($this->config->get('path', 'config') . $config_file);
+        return Config::load($this->delegate->getConfig()->get('path', 'config') . $config_file);
     }
 
     /**
@@ -174,16 +174,16 @@ class FrameBase
         if (!isset($cache[$prefix_name])) {
             switch ($prefix_name) {
                 case 'app':
-                    $prefix_path = $this->config->get('app', 'path');
+                    $prefix_path = $this->delegate->getConfig()->get('app', 'path');
                     break;
 
                 case 'cache':
                 case 'config':
-                    $prefix_path = $this->config->get('path', $prefix_name);
+                    $prefix_path = $this->delegate->getConfig()->get('path', $prefix_name);
                     break;
 
                 case 'static':
-                    $prefix_path = $this->config->get('static', 'path');
+                    $prefix_path = $this->delegate->getConfig()->get('static', 'path');
                     break;
 
                 default:
