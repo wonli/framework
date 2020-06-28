@@ -144,16 +144,34 @@ class Controller extends FrameBase
      */
     protected function getResponseData($data): ResponseData
     {
-        $responseData = ResponseData::builder();
-        if (is_numeric($data)) {
-            $responseData->setStatus($data);
-        } elseif (is_array($data)) {
-            $responseData->updateInfoProperty($data);
-            if (!empty($data)) {
-                $responseData->setData($data);
+        if ($data instanceof ResponseData) {
+            $responseData = $data;
+        } else {
+            $responseData = ResponseData::builder();
+            if (is_numeric($data)) {
+                $responseData->setStatus($data);
+            } elseif (is_array($data)) {
+                $responseData->updateInfoProperty($data);
+                if (!empty($data)) {
+                    $responseData->setData($data);
+                }
+            } elseif (is_object($data)) {
+                if (false === ($jsonData = json_encode($data))) {
+                    throw new CoreException('Unsupported data types!');
+                }
+
+                $data = json_decode($jsonData, true);
+                if (!is_array($data)) {
+                    throw new CoreException('Unsupported data types!');
+                }
+
+                $responseData->updateInfoProperty($data);
+                if (!empty($data)) {
+                    $responseData->setData($data);
+                }
+            } elseif (null !== $data && is_scalar($data)) {
+                $responseData->setMessage((string)$data);
             }
-        } elseif (null !== $data) {
-            $responseData->setMessage($data);
         }
 
         $status = $responseData->getStatus();
