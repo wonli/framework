@@ -8,6 +8,7 @@
 
 namespace Cross\MVC;
 
+use Cross\Exception\FrontException;
 use Cross\Interactive\ResponseData;
 use Cross\Exception\CoreException;
 use Cross\Core\FrameBase;
@@ -118,6 +119,29 @@ class Controller extends FrameBase
         } else {
             $this->delegate->getResponse()->redirect($url, $http_response_status);
         }
+    }
+
+    /**
+     * 发送一个错误状态
+     *
+     * @param int $status
+     * @param string $message
+     * @param int $httpStatus
+     * @throws CoreException|FrontException
+     */
+    protected function end(int $status, string $message = null, int $httpStatus = 200)
+    {
+        if ($status == 1) {
+            throw new CoreException('Incorrect status value!');
+        }
+
+        if (null === $message) {
+            $message = $this->getStatusMessage($status);
+        }
+
+        $frontException = new FrontException($message, $status);
+        $frontException->setHttpStatusCode($httpStatus);
+        throw $frontException;
     }
 
     /**
