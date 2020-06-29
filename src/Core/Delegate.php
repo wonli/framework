@@ -333,7 +333,7 @@ class Delegate
     }
 
     /**
-     * 是否多app模式允许
+     * 是否多app模式
      *
      * @return bool
      */
