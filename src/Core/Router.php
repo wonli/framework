@@ -89,7 +89,7 @@ class Router implements RouterInterface
             $request = $this->parseRequestString($rs, $url_config);
         }
 
-        if ('*' === $this->delegate->getAppName()) {
+        if ($this->delegate->onMultiAppMode()) {
             $multipleApp = $this->delegate->getConfig()->get('multipleApp');
             if (empty($multipleApp)) {
                 throw new CoreException('Not find multipleApp config!');

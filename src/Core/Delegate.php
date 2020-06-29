@@ -66,6 +66,13 @@ class Delegate
     private $runtime_config;
 
     /**
+     * 是否多app模式
+     *
+     * @var bool
+     */
+    private $multi_app_mode;
+
+    /**
      * 运行时匿名函数容器
      *
      * @var ClosureContainer
@@ -108,6 +115,7 @@ class Delegate
 
         $this->is_namespace = $is_namespace;
         $this->runtime_config = $runtime_config;
+        $this->multi_app_mode = ($app_name == '*');
 
         $this->setAppName($app_name);
         $this->config = $this->initConfig($app_name, $runtime_config);
@@ -325,6 +333,16 @@ class Delegate
     }
 
     /**
+     * 是否多app模式允许
+     *
+     * @return bool
+     */
+    function onMultiAppMode(): bool
+    {
+        return $this->multi_app_mode;
+    }
+
+    /**
      * Loader
      *
      * @return Loader
@@ -455,7 +473,7 @@ class Delegate
             ]
         ];
 
-        if ('*' === $app_name) {
+        if ($this->multi_app_mode) {
             $Config = Config::load(PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.init.php');
         } else {
             $Config = Config::load($app_path . 'init.php');
