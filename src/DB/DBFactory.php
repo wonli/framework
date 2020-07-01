@@ -26,6 +26,7 @@ use Cross\DB\Connector\OracleConnector;
 use Cross\DB\Connector\SQLiteConnector;
 use Cross\DB\Connector\PgSQLConnector;
 
+use Cross\DB\Drivers\PDOOracleDriver;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
@@ -72,7 +73,7 @@ class DBFactory
 
             case 'oracle':
                 $Connector = OracleConnector::getInstance(self::getOracleTns($params), $params['user'], $params['pass'], $options);
-                return new PDOSqlDriver($Connector, new OracleAssembler($prefix), $params);
+                return new PDOOracleDriver($Connector, new OracleAssembler($prefix), $params);
 
             case 'mongo':
                 return new MongoDriver($params);
