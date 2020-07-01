@@ -298,6 +298,20 @@ class SQLModel
     }
 
     /**
+     * prepare
+     *
+     * @param string $sql
+     * @param array $prepareParams
+     * @return PDOStatement
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function rawPrepare(string $sql, $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY])
+    {
+        return $this->db()->rawSql($sql)->stmt(false, $prepareParams);
+    }
+
+    /**
      * 查询数据, 并更新本类属性
      *
      * @param array $where
