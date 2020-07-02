@@ -121,9 +121,7 @@ class SQLAssembler
             $sql .= " ORDER BY {$order_str}";
         }
 
-        $p = ($page['p'] - 1) * $page['limit'];
-        $sql .= ' ' . $this->getLimitSQLSegment($p, $page['limit']);
-
+        $sql .= ' ' . $this->getLimitSQLSegment($page['p'], $page['limit']);
         $this->setSQL($sql);
         $this->setParams($params);
     }
@@ -689,7 +687,8 @@ class SQLAssembler
      */
     protected function getLimitSQLSegment(int $p, int $limit): string
     {
-        return "LIMIT {$p}, {$limit}";
+        $offset = ($p - 1) * $limit;
+        return "LIMIT {$offset}, {$limit}";
     }
 
     /**
