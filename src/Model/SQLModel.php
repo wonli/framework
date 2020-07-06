@@ -8,6 +8,7 @@
 
 namespace Cross\Model;
 
+use Cross\Core\Loader;
 use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
 use Cross\DB\Drivers\PDOSqlDriver;
@@ -66,7 +67,8 @@ class SQLModel
      * n 连接名
      * type 连接类型
      * table 表名
-     * connect 数据库连接配置
+     * config 数据库配置文件
+     * sequence Oracle自增序列
      * </pre>
      * @var array
      */
@@ -74,15 +76,8 @@ class SQLModel
         'n' => null,
         'type' => null,
         'table' => null,
-        'connect' => [
-            'host' => null,
-            'port' => null,
-            'user' => null,
-            'pass' => null,
-            'prefix' => null,
-            'charset' => null,
-            'name' => null,
-        ],
+        'sequence' => null,
+        'config' => null,
     ];
 
     /**
@@ -111,6 +106,13 @@ class SQLModel
      * @var array
      */
     protected $fieldsInfo = [];
+
+    /**
+     * 数据库配置
+     *
+     * @var array
+     */
+    protected $dbConfig = [];
 
     /**
      * 获取单条数据
@@ -458,7 +460,7 @@ class SQLModel
             $table = &$this->modelInfo['table'];
         }
 
-        return $this->modelInfo['connect']['prefix'] . $table;
+        return ($this->dbConfig['prefix'] ?? '') . $table;
     }
 
     /**
@@ -697,7 +699,7 @@ class SQLModel
                 }
 
                 //无自增主键时，model会自动生成一个自增序列
-                $sequence = &$this->modelInfo['connect']['sequence'];
+                $sequence = &$this->modelInfo['sequence'];
                 if (null !== $sequence && $c['primary']) {
                     $value = ['#SEQ#' => $sequence];
                 }
@@ -725,7 +727,7 @@ class SQLModel
      */
     function getDefaultSequence($onlyName = false)
     {
-        $sequence = &$this->modelInfo['connect']['sequence'];
+        $sequence = &$this->modelInfo['sequence'];
         if (!empty($sequence) && $onlyName) {
             return $sequence;
         } elseif (!empty($sequence)) {
@@ -801,7 +803,18 @@ class SQLModel
     {
         static $model = null;
         if (null === $model) {
-            $model = DBFactory::make($this->modelInfo['type'], $this->modelInfo['connect']);
+            if (empty($this->modelInfo['config']) || !file_exists($this->modelInfo['config'])) {
+                throw new CoreException('读取数据库配置文件错误');
+            }
+
+            $config = Loader::read($this->modelInfo['config']);
+            if (empty($config)) {
+                throw new CoreException('获取数据库配置信息失败');
+            }
+
+            $type = &$this->modelInfo['type'];
+            $this->dbConfig = $config[$type][$this->modelInfo['n']] ?? [];
+            $model = DBFactory::make($type, $this->dbConfig);
         }
 
         return $model;
