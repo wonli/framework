@@ -314,6 +314,20 @@ class SQLModel
     }
 
     /**
+     * 原生条件
+     *
+     * @param string $condition
+     * @param mixed ...$params
+     * @return PDOStatement
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function rawWhere(string $condition, ...$params)
+    {
+        return $this->db()->select('*')->from($this->getTable())->where([$condition, $params])->stmt();
+    }
+
+    /**
      * 查询数据, 并更新本类属性
      *
      * @param array $where
