@@ -177,8 +177,7 @@ class Request
      */
     function getScriptFilePath(): string
     {
-        $scriptName = $this->getScriptName();
-        if (empty($scriptName)) {
+        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == '') {
             throw new FrontException('determine the entry script URL failed!!!');
         }
 
