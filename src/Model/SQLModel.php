@@ -115,6 +115,30 @@ class SQLModel
     protected $dbConfig = [];
 
     /**
+     * SQLModel constructor.
+     *
+     * @throws CoreException
+     */
+    function __construct()
+    {
+        if (empty($this->modelInfo['config']) || !file_exists($this->modelInfo['config'])) {
+            throw new CoreException('读取数据库配置文件错误');
+        }
+
+        $config = Loader::read($this->modelInfo['config']);
+        if (empty($config)) {
+            throw new CoreException('获取数据库配置信息失败');
+        }
+
+        $type = &$this->modelInfo['type'];
+        if (empty($type)) {
+            throw new CoreException('获取Model类似失败');
+        }
+
+        $this->dbConfig = $config[$type][$this->modelInfo['n']] ?? [];
+    }
+
+    /**
      * 获取单条数据
      *
      * @param array|string $where
@@ -817,18 +841,7 @@ class SQLModel
     {
         static $model = null;
         if (null === $model) {
-            if (empty($this->modelInfo['config']) || !file_exists($this->modelInfo['config'])) {
-                throw new CoreException('读取数据库配置文件错误');
-            }
-
-            $config = Loader::read($this->modelInfo['config']);
-            if (empty($config)) {
-                throw new CoreException('获取数据库配置信息失败');
-            }
-
-            $type = &$this->modelInfo['type'];
-            $this->dbConfig = $config[$type][$this->modelInfo['n']] ?? [];
-            $model = DBFactory::make($type, $this->dbConfig);
+            $model = DBFactory::make($this->modelInfo['type'], $this->dbConfig);
         }
 
         return $model;
