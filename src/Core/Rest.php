@@ -280,6 +280,6 @@ class Rest
      */
     private function addCustomRouter(string $requestType, string $customRouter, $handle): void
     {
-        $this->delegate->getRequestMapping()->addGroupRouter($requestType, $customRouter, $handle);
+        $this->delegate->getRequestMapping()->addRequestRouter($requestType, $customRouter, $handle);
     }
 }
