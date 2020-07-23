@@ -69,7 +69,7 @@ class ResponseData
      */
     private function __construct()
     {
-
+        $this->data = [];
     }
 
     /**
