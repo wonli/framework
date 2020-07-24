@@ -42,7 +42,7 @@ class RedisDriver
      * </pre>
      *
      * @param $option
-     * @throws \cross\exception\CoreException
+     * @throws CoreException
      */
     function __construct(array $option)
     {
