@@ -55,7 +55,7 @@ class HttpAuth
                         if ($object->implementsInterface('Cross\I\HttpAuthInterface')) {
                             self::$obj = $object->newInstance();
                         } else {
-                            throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
+                            throw new CoreException('The auth class must implement the HttpAuthInterface interface.');
                         }
                     } catch (Exception $e) {
                         throw new CoreException('Reflection ' . $e->getMessage());
@@ -65,10 +65,10 @@ class HttpAuth
                 if ($type instanceof HttpAuthInterface) {
                     self::$obj = $type;
                 } else {
-                    throw new CoreException('会话管理类必须实现HttpAuthInterface接口');
+                    throw new CoreException('The auth class must implement the HttpAuthInterface interface.');
                 }
             } else {
-                throw new CoreException('无法识别的会话管理类');
+                throw new CoreException('Unrecognized auth classes!');
             }
         }
         return self::$obj;

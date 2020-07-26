@@ -9,6 +9,7 @@
 namespace Cross\Core;
 
 use Cross\Exception\CoreException;
+use Cross\Exception\FrontException;
 use Cross\Http\Request;
 
 use ReflectionFunction;
@@ -35,12 +36,19 @@ class Rest
     /**
      * @var string
      */
-    protected $request_type;
+    protected $requestType;
 
     /**
      * @var string
      */
-    protected $request_string;
+    protected $requestString;
+
+    /**
+     * 匹配失败时是否兼容MVC模式
+     *
+     * @var bool
+     */
+    protected $compatibleModel = false;
 
     /**
      * @var Rest
@@ -56,8 +64,8 @@ class Rest
     {
         $this->delegate = $delegate;
         $this->request = $delegate->getRequest();
-        $this->request_type = strtoupper($this->request->getRequestType());
-        $this->request_string = $delegate->getRouter()->getUriRequest('/', $useless, false);
+        $this->requestType = strtoupper($this->request->getRequestType());
+        $this->requestString = $delegate->getRouter()->getUriRequest('/', $useless, false);
     }
 
     /**
@@ -168,7 +176,7 @@ class Rest
      */
     function any(string $customRouter, $handle): void
     {
-        $this->addCustomRouter($this->request_type, $customRouter, $handle);
+        $this->addCustomRouter($this->requestType, $customRouter, $handle);
     }
 
     /**
@@ -185,6 +193,16 @@ class Rest
     }
 
     /**
+     * 匹配失败后是否兼容MVC模式
+     *
+     * @param bool $compatible
+     */
+    function compatibleModel(bool $compatible = true): void
+    {
+        $this->compatibleModel = $compatible;
+    }
+
+    /**
      * 参数正则验证规则
      *
      * @param array $rules
@@ -197,16 +215,18 @@ class Rest
     /**
      * 处理请求
      *
-     * @throws CoreException
+     * @throws CoreException|FrontException
      */
     function run(): void
     {
         $params = [];
-        $match = $this->delegate->getRequestMapping()->match($this->request_string, $handle, $params);
+        $match = $this->delegate->getRequestMapping()->match($this->requestString, $handle, $params);
         if ($match && $handle instanceof Closure) {
             $this->response($handle, $params);
         } elseif ($match && is_string($handle)) {
             $this->delegate->get($handle, $params);
+        } elseif ($this->compatibleModel) {
+            $this->delegate->run();
         } else {
             $closure_container = $this->delegate->getClosureContainer();
             if ($closure_container->has('mismatching')) {
@@ -260,6 +280,6 @@ class Rest
      */
     private function addCustomRouter(string $requestType, string $customRouter, $handle): void
     {
-        $this->delegate->getRequestMapping()->addGroupRouter($requestType, $customRouter, $handle);
+        $this->delegate->getRequestMapping()->addRequestRouter($requestType, $customRouter, $handle);
     }
 }

@@ -67,7 +67,11 @@ class RequestMapping
     {
         $match = false;
         $this->matchString = $request;
-        $routers = $this->mapping[Request::getInstance()->getRequestType()];
+        $routers = $this->mapping[Request::getInstance()->getRequestType()] ?? [];
+        if (empty($routers)) {
+            return $match;
+        }
+
         if (!empty($routers['high']) && isset($routers['high'][$request])) {
             $match = true;
             $handle = $routers['high'][$request];
@@ -117,7 +121,7 @@ class RequestMapping
     }
 
     /**
-     * 添加分组路由
+     * 添加HTTP路由
      *
      * @param string $requestType
      * @param string $router
@@ -125,7 +129,7 @@ class RequestMapping
      * @return bool
      * @throws CoreException
      */
-    function addGroupRouter(string $requestType, string $router, $handler = null): bool
+    function addRequestRouter(string $requestType, string $router, $handler = null): bool
     {
         return $this->addToMapping($requestType, $router, $handler);
     }
