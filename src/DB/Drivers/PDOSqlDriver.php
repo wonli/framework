@@ -389,10 +389,10 @@ class PDOSqlDriver implements SqlInterface
 
     /**
      * @param int $start
-     * @param bool $end
+     * @param int $end
      * @return PDOSqlDriver
      */
-    function limit(int $start, $end = false): self
+    function limit(int $start, int $end = null): self
     {
         $this->querySQL[$this->qid] .= $this->SQLAssembler->limit($start, $end);
         return $this;
