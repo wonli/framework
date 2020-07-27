@@ -8,7 +8,6 @@
 
 namespace Cross\Http;
 
-use Cross\Core\Delegate;
 use Cross\Exception\FrontException;
 
 /**
