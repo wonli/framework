@@ -562,6 +562,20 @@ class SQLAssembler
                 $condition[" {$condition_connector} "][] = "{$field} {$operator} {$sql_segment}";
                 break;
 
+            case '#RAW#':
+                if (is_array($field_config)) {
+                    $sql_segment = array_shift($field_config);
+                    if (!empty($field_config)) {
+                        foreach ($field_config as $f) {
+                            $params[] = $f;
+                        }
+                    }
+                } else {
+                    $sql_segment = $field_config;
+                }
+                $condition[" {$condition_connector} "][] = " ({$sql_segment}) ";
+                break;
+
             default:
                 $operator = $connector;
                 $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
