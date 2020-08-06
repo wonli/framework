@@ -8,7 +8,7 @@
 
 namespace Cross\DB\Connector;
 
-use Cross\I\PDOConnecter;
+use Cross\I\PDOConnector;
 use PDO;
 
 /**
@@ -16,7 +16,7 @@ use PDO;
  * Class BaseConnector
  * @package Cross\DB\Connector
  */
-abstract class BaseConnector implements PDOConnecter
+abstract class BaseConnector implements PDOConnector
 {
     /**
      * @var PDO

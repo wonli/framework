@@ -10,8 +10,8 @@ namespace Cross\DB\Drivers;
 
 use Cross\DB\SQLAssembler\SQLAssembler;
 use Cross\Exception\CoreException;
-use PDO;
 use Throwable;
+use PDO;
 
 /**
  * @author wonli <wonli@live.com>
@@ -39,7 +39,7 @@ class PDOOracleDriver extends PDOSqlDriver
         }
 
         $apk = null;
-        $meta = $this->getConnecter()->getMetaData($table);
+        $meta = $this->getConnector()->getMetaData($table);
         if (!empty($meta)) {
             foreach ($meta as $m => $conf) {
                 if ($conf['primary'] && $conf['auto_increment']) {
@@ -73,7 +73,7 @@ class PDOOracleDriver extends PDOSqlDriver
             try {
                 foreach ($data as $d) {
                     $count++;
-                    $d[$apk] = $this->saveRowData($rawSql, $d);;
+                    $d[$apk] = $this->saveRowData($rawSql, $d);
                     $insert_data[] = $d;
                 }
             } catch (Throwable $e) {

@@ -13,10 +13,10 @@ use PDO;
 /**
  * PDO连接类的统一接口
  *
- * Interface PDOConnecter
+ * Interface PDOConnector
  * @package Cross\I
  */
-interface PDOConnecter
+interface PDOConnector
 {
     /**
      * 获取一个单例实例

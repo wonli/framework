@@ -8,9 +8,11 @@
 
 namespace Cross\DB\Drivers;
 
+use Closure;
+use Throwable;
 use Cross\DB\SQLAssembler\SQLAssembler;
 use Cross\Exception\CoreException;
-use Cross\I\PDOConnecter;
+use Cross\I\PDOConnector;
 use Cross\I\SqlInterface;
 use PDOException;
 use PDOStatement;
@@ -66,9 +68,9 @@ class PDOSqlDriver implements SqlInterface
     protected $params;
 
     /**
-     * @var PDOConnecter
+     * @var PDOConnector
      */
-    protected $connecter;
+    protected $connector;
 
     /**
      * @var SQLAssembler
@@ -83,22 +85,22 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 创建数据库连接
      *
-     * @param PDOConnecter $connecter
+     * @param PDOConnector $connector
      * @param SQLAssembler $SQLAssembler
      * @param array $connectOptions 连接配置
      * @throws CoreException
      */
-    public function __construct(PDOConnecter $connecter, SQLAssembler $SQLAssembler, array $connectOptions)
+    public function __construct(PDOConnector $connector, SQLAssembler $SQLAssembler, array $connectOptions)
     {
         $this->connectOptions = $connectOptions;
         if (!empty($connectOptions['sequence'])) {
-            $connecter->setSequence($connectOptions['sequence']);
+            $connector->setSequence($connectOptions['sequence']);
         }
 
-        $this->setConnecter($connecter);
+        $this->setConnector($connector);
         $this->setSQLAssembler($SQLAssembler);
 
-        $this->pdo = $this->connecter->getPDO();
+        $this->pdo = $this->connector->getPDO();
         if (!$this->pdo instanceof PDO) {
             throw new CoreException("init pdo failed!");
         }
@@ -481,6 +483,31 @@ class PDOSqlDriver implements SqlInterface
     }
 
     /**
+     * 事务
+     *
+     * @param Closure $handle
+     * @param null $result
+     * @return bool
+     */
+    function transaction(Closure $handle, &$result = null): bool
+    {
+        try {
+            $this->beginTA();
+            $result = $handle($this);
+            if (false === $result) {
+                throw new CoreException('User transaction return false!');
+            }
+
+            $this->commit();
+            return true;
+        } catch (Throwable $e) {
+            echo $e->getMessage();
+            $this->rollBack();
+            return false;
+        }
+    }
+
+    /**
      * 当前SQL语句及参数
      *
      * @return mixed
@@ -632,7 +659,7 @@ class PDOSqlDriver implements SqlInterface
      */
     public function getMetaData(string $table, bool $fields_map = true)
     {
-        return $this->connecter->getMetaData($table, $fields_map);
+        return $this->connector->getMetaData($table, $fields_map);
     }
 
     /**
@@ -643,25 +670,25 @@ class PDOSqlDriver implements SqlInterface
      */
     public function getAutoIncrementName(string $table_name): string
     {
-        return $this->connecter->getPK($table_name);
+        return $this->connector->getPK($table_name);
     }
 
     /**
-     * @return PDOConnecter
+     * @return PDOConnector
      */
-    public function getConnecter(): PDOConnecter
+    public function getConnector(): PDOConnector
     {
-        return $this->connecter;
+        return $this->connector;
     }
 
     /**
-     * 设置PDOConnecter对象
+     * 设置PDOConnector对象
      *
-     * @param PDOConnecter $connecter
+     * @param PDOConnector $connector
      */
-    public function setConnecter(PDOConnecter $connecter): void
+    public function setConnector(PDOConnector $connector): void
     {
-        $this->connecter = $connecter;
+        $this->connector = $connector;
     }
 
     /**
@@ -765,10 +792,10 @@ class PDOSqlDriver implements SqlInterface
     {
         $sequence = $this->getSQLAssembler()->getSequence();
         if (!empty($sequence)) {
-            $this->getConnecter()->setSequence($sequence);
+            $this->getConnector()->setSequence($sequence);
         }
 
-        return $this->connecter->lastInsertID();
+        return $this->connector->lastInsertID();
     }
 
     /**

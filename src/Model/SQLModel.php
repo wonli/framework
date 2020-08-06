@@ -369,6 +369,20 @@ class SQLModel
     }
 
     /**
+     * 事务
+     *
+     * @param Closure $handle
+     * @param mixed $result
+     * @return bool
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function transaction(Closure $handle, &$result = null): bool
+    {
+        return $this->db()->transaction($handle, $result);
+    }
+
+    /**
      * 获取数据库链接
      *
      * @return PDOSqlDriver
