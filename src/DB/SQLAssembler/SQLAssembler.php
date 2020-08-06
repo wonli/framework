@@ -81,7 +81,7 @@ class SQLAssembler
     {
         $params = [];
         if (true === $multi) {
-            $into_fields = $this->insertDataToSQLSegment($data[0], false, $_notUse, $sequenceKey);
+            $into_fields = $this->insertDataToSQLSegment(current($data), false, $_notUse, $sequenceKey);
             $data = $this->arrayToMultiAddFormat($data, $sequenceKey);
             $params = $data['values'];
         } else {

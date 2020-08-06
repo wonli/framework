@@ -295,7 +295,7 @@ class PDOSqlDriver implements SqlInterface
     public function rawSql(string $sql, ...$params): self
     {
         $this->generateQueryID();
-        $this->querySQL[$this->qid] = $sql;
+        $this->querySQL[$this->qid] = trim(trim($sql, ';'));
         $this->queryParams[$this->qid] = $params;
 
         return $this;

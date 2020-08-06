@@ -56,7 +56,7 @@ class PDOOracleDriver extends PDOSqlDriver
 
         $fields = [];
         $sqlValues = [];
-        $tableData = $multi ? $data[0] : $data;
+        $tableData = $multi ? current($data) : $data;
         foreach ($tableData as $key => $name) {
             $fields[] = $key;
             $sqlValues[] = ":{$key}";
@@ -105,7 +105,7 @@ class PDOOracleDriver extends PDOSqlDriver
     protected function saveRowData(string $rawSql, array $dataRow): int
     {
         $lastInsertId = 0;
-        $stmt = $this->pdo->prepare($rawSql);
+        $stmt = $this->pdo->prepare(trim(trim($rawSql, ';')));
 
         foreach ($dataRow as $k => &$v) {
             if (is_numeric($v)) {
