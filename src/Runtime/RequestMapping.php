@@ -73,11 +73,19 @@ class RequestMapping
         }
 
         if (!empty($routers['high']) && isset($routers['high'][$request])) {
-            $match = true;
             $handle = $routers['high'][$request];
-        } elseif (!empty($routers['current'])) {
+            if (is_array($handle)) {
+                $handle = $handle['handler'];
+            }
+
+            $match = true;
+        }
+
+        if (!$match && !empty($routers['current'])) {
             $match = $this->matchProcess($routers['current'], $handle, $params);
-        } elseif (!empty($routers['global'])) {
+        }
+
+        if (!$match && !empty($routers['global'])) {
             $match = $this->matchProcess($routers['global'], $handle, $params);
         }
 
@@ -144,6 +152,12 @@ class RequestMapping
      */
     private function matchProcess(array $routers, &$handle, array &$params): bool
     {
+        foreach ($routers as $r => &$rr) {
+            if ($r[1] == $this->matchString[1]) {
+                $rr['score'] += 10000;
+            }
+        }
+
         uasort($routers, function ($a, $b) {
             return $a['score'] < $b['score'];
         });
@@ -176,7 +190,7 @@ class RequestMapping
             if ($defined_params_pos) {
                 $compare_ret = substr_compare($customRouterParamsToken, $matchString, 0, $defined_params_pos);
             } else {
-                $compare_ret = strcmp($customRouterParamsToken, $matchString);
+                $compare_ret = strcasecmp($customRouterParamsToken, $matchString);
             }
 
             if ($compare_ret !== 0) {
@@ -225,7 +239,9 @@ class RequestMapping
         if ($isLowLevelRouter) {
             $level = 'current';
             $prefix_string_length = strlen($matches[1][0]);
-            if ($prefix_string_length == 1) {
+            if ($prefix_string_length == 0) {
+                $level = 'high';
+            } elseif ($prefix_string_length == 1) {
                 $level = 'global';
             }
 
