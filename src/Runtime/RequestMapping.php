@@ -153,7 +153,7 @@ class RequestMapping
     private function matchProcess(array $routers, &$handle, array &$params): bool
     {
         foreach ($routers as $r => &$rr) {
-            if ($r[1] == $this->matchString[1]) {
+            if (isset($r[1]) && isset($this->matchString[1]) && 0 === strcasecmp($r[1], $this->matchString[1])) {
                 $rr['score'] += 10000;
             }
         }
@@ -292,7 +292,7 @@ class RequestMapping
                 $oriRouterHandel = [
                     'handler' => $handler,
                     'score' => count($matches[3]) * 100,
-                    'params' => $matches[3],
+                    'params' => array_filter($matches[3]),
                 ];
             }
 
