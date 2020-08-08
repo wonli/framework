@@ -13,6 +13,7 @@ use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\DBFactory;
+use Cross\I\IModelInfo;
 
 use PDOStatement;
 use Closure;
@@ -76,8 +77,7 @@ class SQLModel
         'n' => null,
         'type' => null,
         'table' => null,
-        'sequence' => null,
-        'config' => null,
+        'sequence' => null
     ];
 
     /**
@@ -117,15 +117,22 @@ class SQLModel
     /**
      * SQLModel constructor.
      *
+     * @param IModelInfo $modeInfo
      * @throws CoreException
      */
-    function __construct()
+    function __construct(IModelInfo $modeInfo)
     {
-        if (empty($this->modelInfo['config']) || !file_exists($this->modelInfo['config'])) {
+        $this->pk = $modeInfo->getPK();
+        $this->modelInfo = $modeInfo->getModelInfo();
+        $this->fieldsInfo = $modeInfo->getFieldInfo();
+        $this->splitConfig = $modeInfo->getSplitConfig();
+
+        $configFile = $modeInfo->getConfigFile();
+        if (!file_exists($configFile)) {
             throw new CoreException('读取数据库配置文件错误');
         }
 
-        $config = Loader::read($this->modelInfo['config']);
+        $config = Loader::read($configFile);
         if (empty($config)) {
             throw new CoreException('获取数据库配置信息失败');
         }
