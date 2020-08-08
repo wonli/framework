@@ -145,7 +145,8 @@ class MySQLConnector extends BaseConnector
                             'auto_increment' => $extra == 'auto_increment',
                             'default_value' => strval($default),
                             'not_null' => $null == 'NO',
-                            'comment' => $comment
+                            'comment' => $comment,
+                            'type' => $type
                         ];
                     });
                 return $result;
