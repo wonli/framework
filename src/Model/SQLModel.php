@@ -68,7 +68,6 @@ class SQLModel
      * n 连接名
      * type 连接类型
      * table 表名
-     * config 数据库配置文件
      * sequence Oracle自增序列
      * </pre>
      * @var array
@@ -79,6 +78,13 @@ class SQLModel
         'table' => null,
         'sequence' => null
     ];
+
+    /**
+     * 模型类
+     *
+     * @var IModelInfo
+     */
+    protected $modelClass;
 
     /**
      * 分表配置
@@ -117,17 +123,17 @@ class SQLModel
     /**
      * SQLModel constructor.
      *
-     * @param IModelInfo $modeInfo
+     * @param IModelInfo $modeClass
      * @throws CoreException
      */
-    function __construct(IModelInfo $modeInfo)
+    function __construct(IModelInfo $modeClass)
     {
-        $this->pk = $modeInfo->getPK();
-        $this->modelInfo = $modeInfo->getModelInfo();
-        $this->fieldsInfo = $modeInfo->getFieldInfo();
-        $this->splitConfig = $modeInfo->getSplitConfig();
+        $this->pk = $modeClass->getPK();
+        $this->modelInfo = $modeClass->getModelInfo();
+        $this->fieldsInfo = $modeClass->getFieldInfo();
+        $this->splitConfig = $modeClass->getSplitConfig();
 
-        $configFile = $modeInfo->getConfigFile();
+        $configFile = $modeClass->getConfigFile();
         if (!file_exists($configFile)) {
             throw new CoreException('读取数据库配置文件错误');
         }
@@ -143,6 +149,7 @@ class SQLModel
         }
 
         $this->dbConfig = $config[$type][$this->modelInfo['n']] ?? [];
+        $this->modelClass = $modeClass;
     }
 
     /**
@@ -230,7 +237,7 @@ class SQLModel
         }
 
         if (empty($condition)) {
-            $condition = $this->getDefaultCondition(true);
+            $condition = $this->getDefaultCondition(true, false);
         }
 
         return $this->db()->update($this->getTable(false), $data, $condition);
@@ -270,7 +277,7 @@ class SQLModel
     function del($condition = [])
     {
         if (empty($condition)) {
-            $condition = $this->getDefaultCondition(true);
+            $condition = $this->getDefaultCondition(true, false);
         }
 
         return $this->db()->del($this->getTable(false), $condition);
@@ -432,12 +439,15 @@ class SQLModel
     /**
      * 将已赋值字段设为索引
      *
+     * @param bool $autoAlias
      * @return $this
      */
-    function asIndex(): self
+    function asIndex(bool $autoAlias = true): self
     {
         foreach ($this->fieldsInfo as $property => $value) {
-            if (null !== $this->{$property}) {
+            if ($autoAlias && null !== $this->{$property} && !empty($this->joinTables)) {
+                $this->index["a.{$property}"] = $this->{$property};
+            } elseif (null !== $this->{$property}) {
                 $this->index[$property] = $this->{$property};
             }
         }
@@ -537,6 +547,16 @@ class SQLModel
         } else {
             return false;
         }
+    }
+
+    /**
+     * 获取模型类
+     *
+     * @return IModelInfo
+     */
+    function getModelClass(): IModelInfo
+    {
+        return $this->modelClass;
     }
 
     /**
@@ -800,15 +820,18 @@ class SQLModel
      * 获取默认条件
      *
      * @param bool $strictModel 严格模式下索引不能为空
+     * @param bool $autoAlias
      * @return mixed
      * @throws CoreException
      */
-    function getDefaultCondition(bool $strictModel = false): array
+    function getDefaultCondition(bool $strictModel = false, bool $autoAlias = true): array
     {
-        if (null !== $this->{$this->pk}) {
+        if ($autoAlias && null !== $this->{$this->pk} && !empty($this->joinTables)) {
+            $this->index = ["a.{$this->pk}" => $this->{$this->pk}];
+        } elseif (null !== $this->{$this->pk}) {
             $this->index = ["{$this->pk}" => $this->{$this->pk}];
-        } else if (empty($this->index)) {
-            $this->asIndex();
+        } elseif (empty($this->index)) {
+            $this->asIndex($autoAlias);
         }
 
         if ($strictModel && empty($this->index)) {
