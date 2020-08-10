@@ -23,12 +23,12 @@ class CookieAuth implements HttpAuthInterface
      *
      * @var string
      */
-    private $key = '!wl<@>c(r#%o*s&s';
+    private $authKey = '!wl<@>c(r#%o*s&s';
 
-    function __construct(string $key = '')
+    function __construct(string $authKey = '')
     {
-        if ($key) {
-            $this->key = $key;
+        if ($authKey) {
+            $this->authKey = $authKey;
         }
     }
 
@@ -108,6 +108,6 @@ class CookieAuth implements HttpAuthInterface
      */
     protected function getEncryptKey($cookieName): string
     {
-        return md5($cookieName . $this->key . $cookieName);
+        return md5($cookieName . $this->authKey);
     }
 }

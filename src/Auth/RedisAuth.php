@@ -8,14 +8,16 @@
 
 namespace Cross\Auth;
 
+use cross\exception\CoreException;
 use Cross\I\HttpAuthInterface;
+use Cross\Model\RedisModel;
 
 /**
  * @author wonli <wonli@live.com>
- * Class SessionAuth
+ * Class RedisAuth
  * @package Cross\Auth
  */
-class SessionAuth implements HttpAuthInterface
+class RedisAuth implements HttpAuthInterface
 {
     /**
      * 加解密默认key
@@ -24,11 +26,20 @@ class SessionAuth implements HttpAuthInterface
      */
     protected $authKey;
 
+    /**
+     * auth key前缀
+     *
+     * @var string
+     */
+    protected $authKeyPrefix = '';
+
     function __construct(string $authKey = '')
     {
         if (!isset($_SESSION)) {
             session_start();
         }
+
+        $this->authKeyPrefix = '_@CPA@_' . session_id();
     }
 
     /**
@@ -38,14 +49,16 @@ class SessionAuth implements HttpAuthInterface
      * @param string|array $value
      * @param int $expire
      * @return bool|mixed
+     * @throws CoreException
      */
     function set(string $key, $value, int $expire = 0): bool
     {
+        $key = $this->authKeyPrefix . '@' . $key;
         if (is_array($value)) {
             $value = json_encode($value, JSON_UNESCAPED_UNICODE);
         }
 
-        $_SESSION[$key] = $value;
+        RedisModel::use('auth')->set($key, $value, $expire);
         return true;
     }
 
@@ -55,18 +68,20 @@ class SessionAuth implements HttpAuthInterface
      * @param string $key
      * @param bool $deCode
      * @return bool|mixed
+     * @throws CoreException
      */
     function get(string $key, bool $deCode = false)
     {
+        $key = $this->authKeyPrefix . '@' . $key;
         if (false !== strpos($key, ':') && $deCode) {
             list($key, $arrKey) = explode(':', $key);
         }
 
-        if (!isset($_SESSION[$key])) {
+        $result = RedisModel::use('auth')->get($key);
+        if (!$result) {
             return false;
         }
 
-        $result = $_SESSION[$key];
         if ($deCode) {
             $result = json_decode($result, true);
             if (isset($arrKey) && isset($result[$arrKey])) {
