@@ -93,8 +93,15 @@ class Annotate
         $values = &$content[2];
         array_walk($content[1], function ($k, $index) use ($values, &$configs) {
             $v = &$values[$index];
-            if (isset($configs[$k])) {
-                $configs[$k] .= "\n" . $v;
+            if (null !== $v) {
+                $v = trim($v);
+            }
+
+            if (isset($configs[$k]) && !is_array($configs[$k])) {
+                $configs[$k] = [$configs[$k]];
+                $configs[$k][] = $v;
+            } elseif (isset($configs[$k])) {
+                $configs[$k][] = $v;
             } else {
                 $configs[$k] = $v;
             }
@@ -184,7 +191,6 @@ class Annotate
                     break;
 
                 default:
-                    $params = trim($params);
                     $closureContainer = $this->delegate->getClosureContainer();
                     $hasClosure = $closureContainer->has('parseAnnotate');
                     if ($hasClosure) {
