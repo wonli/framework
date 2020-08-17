@@ -137,6 +137,29 @@ class Config
     }
 
     /**
+     * 路径查找
+     *
+     * @param string $path
+     * @return mixed
+     */
+    function query(string $path)
+    {
+        $val = null;
+        $data = $this->config_data;
+        $keys = explode('.', $path);
+        while ($i = array_shift($keys)) {
+            if (!isset($data[$i])) {
+                $val = null;
+                break;
+            }
+
+            $data = $val = $data[$i];
+        }
+
+        return $val;
+    }
+
+    /**
      * 更新指定配置
      *
      * @param string $index
@@ -147,6 +170,27 @@ class Config
     {
         $this->ca->set($index, $values);
         $this->clearIndexCache($index);
+    }
+
+    /**
+     * 路径更新
+     *
+     * @param string $path
+     * @param $value
+     */
+    function update(string $path, $value)
+    {
+        $data = &$this->config_data;
+        $keys = explode('.', $path);
+        while ($i = array_shift($keys)) {
+            if (!isset($data[$i]) || !is_array($data[$i])) {
+                $data[$i] = [];
+            }
+
+            $data = &$data[$i];
+        }
+
+        $data = $value;
     }
 
     /**
