@@ -101,6 +101,16 @@ class Delegate
     private static $instance;
 
     /**
+     * 环境变量
+     *
+     * <pre>
+     * 以入口第一个加载的app的配置为准
+     * </pre>
+     * @var Config
+     */
+    private static $env;
+
+    /**
      * 初始化框架
      *
      * @param string $app_name 要加载的app名称
@@ -119,6 +129,9 @@ class Delegate
 
         $this->setAppName($app_name);
         $this->config = $this->initConfig($app_name, $runtime_config);
+        if (null === self::$env) {
+            self::$env = $this->config;
+        }
 
         $this->registerNamespace();
         $this->action_container = new ClosureContainer();
@@ -294,6 +307,24 @@ class Delegate
     function getConfig(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * 运行时环境变量
+     *
+     * @param string $key
+     * @param mixed $newVal
+     * @return array|string
+     */
+    static function env(string $key, $newVal = null)
+    {
+        if (null !== $newVal) {
+            self::$env->update($key, $newVal);
+        } else {
+            $newVal = self::$env->query($key);
+        }
+
+        return $newVal;
     }
 
     /**
