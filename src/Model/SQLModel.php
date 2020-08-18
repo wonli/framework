@@ -207,6 +207,25 @@ class SQLModel
     }
 
     /**
+     * 判断记录是否存在
+     *
+     * @param array|string $where
+     * @return mixed
+     * @throws CoreException|DBConnectException
+     */
+    function has($where = null): bool
+    {
+        if (null === $where) {
+            $where = $this->getDefaultCondition();
+        }
+
+        $data = $this->db()->select('COUNT(1) COUNT')->from($this->getTable())->where($where)
+            ->stmt()->fetch(PDO::FETCH_ASSOC);
+
+        return ($data['COUNT'] ?? 0) > 0;
+    }
+
+    /**
      * 添加
      *
      * @return bool|int|mixed|string
@@ -332,7 +351,7 @@ class SQLModel
      * @throws CoreException
      * @throws DBConnectException
      */
-    function rawSql(string $sql, ...$params)
+    function rawSql(string $sql, ...$params): PDOStatement
     {
         return $this->db()->rawSql($sql, ...$params)->stmt();
     }
@@ -346,7 +365,7 @@ class SQLModel
      * @throws CoreException
      * @throws DBConnectException
      */
-    function rawPrepare(string $sql, $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY])
+    function rawPrepare(string $sql, $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): PDOStatement
     {
         return $this->db()->rawSql($sql)->stmt(false, $prepareParams);
     }
@@ -356,13 +375,13 @@ class SQLModel
      *
      * @param string $condition
      * @param mixed ...$params
-     * @return PDOStatement
+     * @return PDOSqlDriver
      * @throws CoreException
      * @throws DBConnectException
      */
-    function rawWhere(string $condition, ...$params)
+    function rawWhere(string $condition, ...$params): PDOSqlDriver
     {
-        return $this->db()->select('*')->from($this->getTable())->where([$condition, $params])->stmt();
+        return $this->db()->select('*')->from($this->getTable())->where([$condition, $params]);
     }
 
     /**
