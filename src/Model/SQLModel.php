@@ -215,6 +215,19 @@ class SQLModel
      */
     function has($where = null): bool
     {
+        return $this->count($where) > 0;
+    }
+
+    /**
+     * 获取记录条数
+     *
+     * @param array|string $where
+     * @return mixed
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function count($where = null): int
+    {
         if (null === $where) {
             $where = $this->getDefaultCondition();
         }
@@ -222,7 +235,7 @@ class SQLModel
         $data = $this->db()->select('COUNT(1) COUNT')->from($this->getTable())->where($where)
             ->stmt()->fetch(PDO::FETCH_ASSOC);
 
-        return ($data['COUNT'] ?? 0) > 0;
+        return (int)$data['COUNT'];
     }
 
     /**
