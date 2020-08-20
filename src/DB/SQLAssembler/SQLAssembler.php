@@ -370,6 +370,63 @@ class SQLAssembler
     }
 
     /**
+     * 解析数据
+     *
+     * @param mixed $data
+     * @param array $params
+     * @return string
+     */
+    function parseData($data, array &$params): string
+    {
+        if (!empty($data)) {
+            if (is_array($data)) {
+                if (isset($data[1])) {
+                    $sql_segment = $data[0];
+                    if (!is_array($data[1])) {
+                        $params[] = $data[1];
+                    } else {
+                        foreach ($data[1] as $d) {
+                            $params[] = $d;
+                        }
+                    }
+                } else {
+                    $segment = '';
+                    $this->beforeParseData($data);
+                    foreach ($data as $key => $value) {
+                        if (is_array($value)) {
+                            $type = $value[0];
+                            switch ($type) {
+                                case '#SQL#':
+                                    $segment .= ", {$key} = $value[1]";
+                                    break;
+                                case '#RAW#':
+                                    $segment .= ", $value[1]";
+                                    break;
+                                default:
+                                    if (isset($value[1])) {
+                                        $segment .= ", {$key} = {$value[0]}";
+                                        $params[] = $value[1];
+                                    } else {
+                                        $segment .= ", {$key} = {$value[0]}";
+                                    }
+                            }
+                        } else {
+                            $segment .= ", {$key} = ?";
+                            $params[] = $value;
+                        }
+                    }
+                    $sql_segment = trim($segment, ',');
+                }
+            } else {
+                $sql_segment = $data;
+            }
+        } else {
+            $sql_segment = '';
+        }
+        return $sql_segment;
+    }
+
+    /**
      * 解析order
      *
      * @param mixed $order
@@ -583,54 +640,6 @@ class SQLAssembler
         }
 
         return $condition;
-    }
-
-    /**
-     * 解析数据
-     *
-     * @param mixed $data
-     * @param array $params
-     * @return string
-     */
-    protected function parseData($data, array &$params): string
-    {
-        if (!empty($data)) {
-            if (is_array($data)) {
-                if (isset($data[1])) {
-                    $sql_segment = $data[0];
-                    if (!is_array($data[1])) {
-                        $params[] = $data[1];
-                    } else {
-                        foreach ($data[1] as $d) {
-                            $params[] = $d;
-                        }
-                    }
-                } else {
-                    $segment = '';
-                    $this->beforeParseData($data);
-                    foreach ($data as $key => $value) {
-                        if (is_array($value)) {
-                            if (isset($value[1])) {
-                                $segment .= ", {$key} = {$value[0]}";
-                                $params[] = $value[1];
-                            } else {
-                                $segment .= ", {$key} = {$value[0]}";
-                            }
-                        } else {
-                            $segment .= ", {$key} = ?";
-                            $params[] = $value;
-                        }
-                    }
-
-                    $sql_segment = trim($segment, ',');
-                }
-            } else {
-                $sql_segment = $data;
-            }
-        } else {
-            $sql_segment = '';
-        }
-        return $sql_segment;
     }
 
     /**
