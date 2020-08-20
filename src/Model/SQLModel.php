@@ -276,27 +276,25 @@ class SQLModel
     }
 
     /**
-     * 更新或添加（必须要有唯一索引）
+     * 更新或添加
      *
+     * @param null $condition
      * @return bool
-     * @throws CoreException|DBConnectException
+     * @throws CoreException
+     * @throws DBConnectException
      */
-    function updateOrAdd()
+    function updateOrAdd($condition = null)
     {
-        $data = $this->getModifiedData();
-        if (empty($data)) {
-            $dup = "{$this->pk}={$this->pk}";
-        } else {
-            $dup = [];
-            foreach ($data as $k => $v) {
-                $dup[] = sprintf("{$k}='%s'", $v);
-            }
-
-            $dup = implode(',', $dup);
+        if (null === $condition) {
+            $condition = $this->getDefaultCondition(true);
         }
 
-        return $this->db()->insert($this->getTable(false), $data)
-            ->on("DUPLICATE KEY UPDATE {$dup}")->stmtExecute();
+        $has = $this->has($condition);
+        if ($has) {
+            return $this->update($condition);
+        } else {
+            return $this->add();
+        }
     }
 
     /**
