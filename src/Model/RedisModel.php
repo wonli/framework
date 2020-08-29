@@ -53,7 +53,7 @@ use Redis;
  * @method static lPop($key)
  * @method static rPop($key)
  * @method static blPop($keys, $timeout)
- * @method static brPop(array $keys, $timeout)
+ * @method static brPop($keys, $timeout)
  * @method static lLen($key)
  * @method static lSize($key)
  * @method static lIndex($key, $index)
@@ -251,10 +251,16 @@ class RedisModel extends RedisDriver
      */
     static function use(string $sessionOptionName): Redis
     {
-        $client = new RedisDriver(self::getConfigOptions($sessionOptionName));
-        $client->selectCurrentDatabase();
-        self::$redisConn = $client->link;
-        return self::$redisConn;
+        static $currentSession = null;
+        if (null === $currentSession || $sessionOptionName != $currentSession) {
+            $client = new RedisDriver(static::getConfigOptions($sessionOptionName));
+            $client->selectCurrentDatabase();
+
+            $currentSession = $sessionOptionName;
+            static::$redisConn = $client->link;
+        }
+
+        return static::$redisConn;
     }
 
     /**
@@ -265,13 +271,13 @@ class RedisModel extends RedisDriver
      */
     static public function __callStatic($method, $argv)
     {
-        self::use(self::$defaultOptionName);
+        static::use(static::$defaultOptionName);
 
         $result = null;
-        if (method_exists(self::$redisConn, $method)) {
+        if (method_exists(static::$redisConn, $method)) {
             $result = ($argv == null)
-                ? self::$redisConn->$method()
-                : call_user_func_array([self::$redisConn, $method], $argv);
+                ? static::$redisConn->$method()
+                : call_user_func_array([static::$redisConn, $method], $argv);
         }
 
         return $result;
@@ -288,7 +294,7 @@ class RedisModel extends RedisDriver
     {
         static $redisConfig = null;
         if (null === $redisConfig) {
-            $configFile = Loader::read(self::getConfigFilePath(self::$configFile));
+            $configFile = Loader::read(static::getConfigFilePath(static::$configFile));
             $redisConfig = $configFile['redis'] ?? [];
             if (empty($redisConfig)) {
                 throw new CoreException('请先配置redis');
@@ -327,6 +333,6 @@ class RedisModel extends RedisDriver
      */
     static protected function setConfigFile(string $file)
     {
-        self::$configFile = $file;
+        static::$configFile = $file;
     }
 }

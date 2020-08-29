@@ -50,33 +50,41 @@ class RedisDriver
             throw new CoreException('Not support redis extension !');
         }
 
-        if (!isset($option['host'])) {
-            $option['host'] = '127.0.0.1';
-        }
+        $option['host'] = $option['host'] ?? '127.0.0.1';
+        $option['port'] = $option['port'] ?? 6379;
+        $option['timeout'] = $option['timeout'] ?? 3;
 
-        if (!isset($option['port'])) {
-            $option['port'] = 6379;
-        }
-
-        if (!isset($option['timeout'])) {
-            $option['timeout'] = 3;
+        //是否使用长链接
+        if (PHP_SAPI == 'cli') {
+            ini_set('default_socket_timeout', -1);
+            $persistent = true;
+        } else {
+            $persistent = $option['persistent'] ?? false;
         }
 
         if (strcasecmp(PHP_OS, 'linux') == 0 && !empty($option['unix_socket'])) {
             $id = $option['unix_socket'];
-            $use_unix_socket = true;
+            $useUnixSocket = true;
         } else {
             $id = "{$option['host']}:{$option['port']}:{$option['timeout']}";
-            $use_unix_socket = false;
+            $useUnixSocket = false;
         }
 
         static $connects;
         if (!isset($connects[$id])) {
             $redis = new Redis();
-            if ($use_unix_socket) {
-                $redis->connect($option['unix_socket']);
+            if ($persistent) {
+                if ($useUnixSocket) {
+                    $redis->pconnect($option['unix_socket']);
+                } else {
+                    $redis->pconnect($option['host'], $option['port'], 0);
+                }
             } else {
-                $redis->connect($option['host'], $option['port'], $option['timeout']);
+                if ($useUnixSocket) {
+                    $redis->connect($option['unix_socket']);
+                } else {
+                    $redis->connect($option['host'], $option['port'], $option['timeout']);
+                }
             }
 
             if (!empty($option['pass'])) {
