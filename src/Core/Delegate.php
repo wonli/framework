@@ -256,6 +256,7 @@ class Delegate
         global $argc, $argv;
         $defaultController = $this->config->get('*');
         if ($argc == 1) {
+            $args = [];
             if (empty($defaultController)) {
                 die('Please specify controller(controller[:action [-p|--params]])');
             } else {
@@ -263,17 +264,17 @@ class Delegate
             }
         } else {
             //处理参数和控制别名
-            $iArgv = $argv;
-            array_shift($iArgv);
-            $iArgv = array_filter($iArgv, function ($a) {
-                return ($a[0] == '-' || false !== strpos($a, '=')) ? false : $a;
-            });
-
-            $controller = array_shift($iArgv) ?? $defaultController;
+            $args = $argv;
+            array_shift($args);
+            if ($args[0][0] == '-' || false !== strpos($args[0], '=')) {
+                $controller = $defaultController;
+            } else {
+                $controller = array_shift($args);
+            }
         }
 
         $controller = $this->router->getRouterAlias($controller);
-        $this->get($controller, $argv);
+        $this->get($controller, $args);
     }
 
     /**
