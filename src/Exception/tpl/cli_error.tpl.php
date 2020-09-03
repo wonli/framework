@@ -113,7 +113,7 @@ ASC_LOGO;
                 $name_offset = floor($line_width / 2 - $name_width / 2) + 1;
 
                 $i = 0;
-                while ($i++ < $line_width) {
+                while ($line_width > 0 && $i++ < $line_width) {
                     if ($i == $name_offset) {
                         echo ucfirst($type_name);
                         $i += $name_width - 1;
@@ -138,11 +138,11 @@ ASC_LOGO;
         {
             echo '|';
             foreach ($txtTableInfo as $type => $line_width) {
-                $content_length = strlen($data[$type]);
+                $content_length = !empty($data[$type]) ? strlen($data[$type]) : 1;
                 $i = 0;
-                while ($i++ < $line_width) {
+                while ($line_width > 0 && $i++ < $line_width) {
                     if ($i == 2) {
-                        echo $data[$type];
+                        echo $data[$type] ?? ' ';
                         $i += $content_length - 1;
                     } else {
                         echo ' ';
