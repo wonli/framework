@@ -114,6 +114,13 @@ class SQLModel
     protected $fieldsInfo = [];
 
     /**
+     * 查询字段
+     *
+     * @var string
+     */
+    protected $queryFields = '*';
+
+    /**
      * 数据库配置
      *
      * @var array
@@ -155,15 +162,19 @@ class SQLModel
     /**
      * 获取单条数据
      *
-     * @param array|string $where
-     * @param string $fields
+     * @param mixed $where
+     * @param string|null $fields
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function get($where = null, string $fields = '*')
+    function get($where = null, string $fields = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
+        }
+
+        if (null === $fields) {
+            $fields = $this->queryFields;
         }
 
         $query = $data = $this->db()->select($fields)->from($this->getTable());
@@ -181,15 +192,19 @@ class SQLModel
     /**
      * 最新
      *
-     * @param array|string $where
-     * @param string $fields
+     * @param mixed $where
+     * @param string|null $fields
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function latest($where = null, string $fields = '*')
+    function latest($where = null, string $fields = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
+        }
+
+        if (null === $fields) {
+            $fields = $this->queryFields;
         }
 
         $query = $this->db()->select($fields)->from($this->getTable());
@@ -209,7 +224,7 @@ class SQLModel
     /**
      * 判断记录是否存在
      *
-     * @param array|string $where
+     * @param mixed $where
      * @return mixed
      * @throws CoreException|DBConnectException
      */
@@ -221,10 +236,9 @@ class SQLModel
     /**
      * 获取记录条数
      *
-     * @param array|string $where
+     * @param mixed $where
      * @return mixed
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function count($where = null): int
     {
@@ -241,7 +255,7 @@ class SQLModel
     /**
      * 添加
      *
-     * @return bool|int|mixed|string
+     * @return mixed
      * @throws CoreException|DBConnectException
      */
     function add()
@@ -278,10 +292,9 @@ class SQLModel
     /**
      * 更新或添加
      *
-     * @param null $condition
+     * @param mixed $condition
      * @return bool
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function updateOrAdd($condition = null)
     {
@@ -316,18 +329,22 @@ class SQLModel
     /**
      * 获取数据
      *
-     * @param array|string $where
-     * @param string $fields
-     * @param string|int $order
-     * @param string|int $group_by
-     * @param int $limit
+     * @param mixed $where
+     * @param string|null $fields
+     * @param mixed $order
+     * @param mixed $group_by
+     * @param int|null $limit
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function getAll($where = null, string $fields = '*', $order = null, $group_by = null, $limit = null)
+    function getAll($where = null, string $fields = null, $order = null, $group_by = null, $limit = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
+        }
+
+        if (null === $fields) {
+            $fields = $this->queryFields;
         }
 
         return $this->db()->getAll($this->getTable(), $fields, $where, $order, $group_by, $limit);
@@ -337,17 +354,21 @@ class SQLModel
      * 按分页获取数据
      *
      * @param array $page
-     * @param array|string $where
-     * @param string $fields
-     * @param string|int $order
-     * @param string|int $group_by
+     * @param mixed $where
+     * @param string|null $fields
+     * @param mixed $order
+     * @param mixed $group_by
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = '*', $order = null, $group_by = null)
+    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = null, $order = null, $group_by = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
+        }
+
+        if (null === $fields) {
+            $fields = $this->queryFields;
         }
 
         return $this->db()->find($this->getTable(), $fields, $where, $page, $order, $group_by);
@@ -359,8 +380,7 @@ class SQLModel
      * @param string $sql
      * @param mixed ...$params
      * @return PDOStatement
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function rawSql(string $sql, ...$params): PDOStatement
     {
@@ -373,8 +393,7 @@ class SQLModel
      * @param string $sql
      * @param array $prepareParams
      * @return PDOStatement
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function rawPrepare(string $sql, $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): PDOStatement
     {
@@ -387,18 +406,17 @@ class SQLModel
      * @param string $condition
      * @param mixed ...$params
      * @return PDOSqlDriver
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function rawWhere(string $condition, ...$params): PDOSqlDriver
     {
-        return $this->db()->select('*')->from($this->getTable())->where([$condition, $params]);
+        return $this->db()->select($this->queryFields)->from($this->getTable())->where([$condition, $params]);
     }
 
     /**
      * 查询数据, 并更新本类属性
      *
-     * @param array $where
+     * @param mixed $where
      * @return $this
      * @throws CoreException|DBConnectException
      */
@@ -418,8 +436,7 @@ class SQLModel
      * @param Closure $handle
      * @param mixed $result
      * @return bool
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     function transaction(Closure $handle, &$result = null): bool
     {
@@ -464,6 +481,16 @@ class SQLModel
         ];
 
         return $this;
+    }
+
+    /**
+     * 设置查询字段, 多用于连表查询
+     *
+     * @param string $fields
+     */
+    function fields(string $fields): void
+    {
+        $this->queryFields = $fields;
     }
 
     /**
@@ -531,7 +558,7 @@ class SQLModel
             return $table;
         }
 
-        if ($userJoinTable && !empty($this->joinTables)) {
+        if (!empty($this->joinTables)) {
             $i = 98;
             $joinTables[] = "{$table} a";
             array_map(function ($d) use (&$joinTables, &$i) {
@@ -565,7 +592,7 @@ class SQLModel
     /**
      * 获取模型信息
      *
-     * @param string $key
+     * @param string|null $key
      * @return mixed
      */
     function getModelInfo($key = null)
@@ -631,7 +658,7 @@ class SQLModel
     /**
      * 获取字段属性
      *
-     * @param string $property
+     * @param string|null $property
      * @return bool|mixed
      */
     function getPropertyInfo($property = null)
@@ -649,7 +676,7 @@ class SQLModel
      * 更新属性值
      *
      * @param array $data
-     * @param Closure $callback
+     * @param Closure|null $callback
      */
     function updateProperty(array $data, Closure $callback = null): void
     {
@@ -908,8 +935,7 @@ class SQLModel
      * 连接数据库
      *
      * @return PDOSqlDriver
-     * @throws CoreException
-     * @throws DBConnectException
+     * @throws CoreException|DBConnectException
      */
     protected function getPDOInstance(): PDOSqlDriver
     {
