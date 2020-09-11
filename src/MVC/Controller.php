@@ -8,7 +8,8 @@
 
 namespace Cross\MVC;
 
-use Cross\Exception\FrontException;
+
+use Cross\Exception\LogicStatusException;
 use Cross\Interactive\ResponseData;
 use Cross\Exception\CoreException;
 use Cross\Core\FrameBase;
@@ -92,10 +93,10 @@ class Controller extends FrameBase
     }
 
     /**
-     * 先生成连接再redirect
+     * 重定向到指定的控制器
      *
      * @param string|null $controller controller:action
-     * @param string|array $params
+     * @param string|array|null $params
      * @param bool $sec
      * @throws CoreException
      */
@@ -106,6 +107,8 @@ class Controller extends FrameBase
     }
 
     /**
+     * 重定向
+     *
      * @param string $url
      * @param int $http_response_status
      * @see Response::redirect
@@ -125,30 +128,23 @@ class Controller extends FrameBase
      * 发送一个错误状态
      *
      * @param int $status
-     * @param string $message
-     * @param int $httpStatus
-     * @throws CoreException|FrontException
+     * @param mixed $message
+     * @throws CoreException|LogicStatusException
      */
-    protected function end(int $status, string $message = null, int $httpStatus = 200)
+    protected function end(int $status, string $message = null)
     {
         if ($status == 1) {
             throw new CoreException('Incorrect status value!');
         }
 
-        if (null === $message) {
-            $message = $this->getStatusMessage($status);
-        }
-
-        $frontException = new FrontException($message, $status);
-        $frontException->setHttpStatusCode($httpStatus);
-        throw $frontException;
+        throw new LogicStatusException($status, $message);
     }
 
     /**
      * 视图渲染
      *
      * @param mixed $data
-     * @param string $method
+     * @param string|null $method
      * @param int $http_response_status
      * @throws CoreException
      * @see View::display()
@@ -230,7 +226,7 @@ class Controller extends FrameBase
     /**
      * 发送一个包含文件名的下载头
      *
-     * @param string $file_name
+     * @param string|null $file_name
      * @param array $add_header
      * @param bool $only_add_header
      */
