@@ -523,10 +523,10 @@ class Helper
     /**
      * 验证是否是一个正确的手机号
      *
-     * @param int $mobile
+     * @param string $mobile
      * @return bool
      */
-    static function isMobile(int $mobile): bool
+    static function isMobile($mobile): bool
     {
         if (preg_match("/^1[3456789]\\d{9}$/", $mobile)) {
             return true;
