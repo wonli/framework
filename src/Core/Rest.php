@@ -10,6 +10,7 @@ namespace Cross\Core;
 
 use Cross\Exception\CoreException;
 use Cross\Exception\FrontException;
+use Cross\Interactive\DataFilter;
 use Cross\Http\Request;
 
 use ReflectionFunction;
@@ -257,7 +258,7 @@ class Rest
                         throw new CoreException("Callback closure need param: {$p->name}");
                     }
 
-                    $closureParams[$p->name] = $params[$p->name] ?? $p->getDefaultValue();
+                    $closureParams[$p->name] = new DataFilter($params[$p->name] ?? $p->getDefaultValue());
                 }
             }
 
