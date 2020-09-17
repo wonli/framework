@@ -140,12 +140,7 @@ class SQLModel
         $this->fieldsInfo = $modeClass->getFieldInfo();
         $this->splitConfig = $modeClass->getSplitConfig();
 
-        $configFile = $modeClass->getConfigFile();
-        if (!file_exists($configFile)) {
-            throw new CoreException('读取数据库配置文件错误');
-        }
-
-        $config = Config::load($configFile)->getAll();
+        $config = Config::load($modeClass->getConfigFile())->getAll();
         if (empty($config)) {
             throw new CoreException('获取数据库配置信息失败');
         }
