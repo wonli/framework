@@ -8,7 +8,7 @@
 
 namespace Cross\Model;
 
-use Cross\Core\Loader;
+use Cross\Core\Config;
 use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
 use Cross\DB\Drivers\PDOSqlDriver;
@@ -145,7 +145,7 @@ class SQLModel
             throw new CoreException('读取数据库配置文件错误');
         }
 
-        $config = Loader::read($configFile);
+        $config = Config::load($configFile)->getAll();
         if (empty($config)) {
             throw new CoreException('获取数据库配置信息失败');
         }

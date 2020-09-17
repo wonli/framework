@@ -20,12 +20,12 @@ class Config
     /**
      * @var string
      */
-    private $res_file;
+    private $file;
 
     /**
      * @var array
      */
-    private $config_data;
+    private $configData;
 
     /**
      * @var self
@@ -47,15 +47,20 @@ class Config
     /**
      * 读取配置
      *
-     * @param string $res_file 配置文件绝对路径
+     * @param string $file 配置文件绝对路径
      * @throws CoreException
      */
-    private function __construct(string $res_file)
+    private function __construct(string $file)
     {
-        $this->res_file = $res_file;
-        $this->config_data = Loader::read($res_file);
+        $this->file = $file;
+        $this->configData = Loader::read($file);
 
-        $this->ca = CrossArray::init($this->config_data, $this->res_file);
+        $localFile = dirname($file) . DIRECTORY_SEPARATOR . '.' . basename($file);
+        if (file_exists($localFile)) {
+            $this->configData = array_merge($this->configData, Loader::read($localFile));
+        }
+
+        $this->ca = CrossArray::init($this->configData, $this->file);
     }
 
     /**
@@ -86,20 +91,20 @@ class Config
         if (!empty($append_config)) {
             foreach ($append_config as $key => $value) {
                 if ($cover) {
-                    $configValue = &$this->config_data[$key];
+                    $configValue = &$this->configData[$key];
                     if (is_array($value) && is_array($configValue)) {
-                        $this->config_data[$key] = array_merge($configValue, $value);
+                        $this->configData[$key] = array_merge($configValue, $value);
                     } else {
-                        $this->config_data[$key] = $value;
+                        $this->configData[$key] = $value;
                     }
                 } else {
-                    if (isset($this->config_data[$key])) {
-                        $configValue = &$this->config_data[$key];
+                    if (isset($this->configData[$key])) {
+                        $configValue = &$this->configData[$key];
                         if (is_array($value) && is_array($configValue)) {
-                            $this->config_data[$key] = array_merge($value, $configValue);
+                            $this->configData[$key] = array_merge($value, $configValue);
                         }
-                    } elseif (!isset($this->config_data[$key])) {
-                        $this->config_data[$key] = $value;
+                    } elseif (!isset($this->configData[$key])) {
+                        $this->configData[$key] = $value;
                     }
                 }
 
@@ -145,7 +150,7 @@ class Config
     function query(string $path)
     {
         $val = null;
-        $data = $this->config_data;
+        $data = $this->configData;
         $keys = explode('.', $path);
         while ($i = array_shift($keys)) {
             if (!isset($data[$i])) {
@@ -180,7 +185,7 @@ class Config
      */
     function update(string $path, $value)
     {
-        $data = &$this->config_data;
+        $data = &$this->configData;
         $keys = explode('.', $path);
         while ($i = array_shift($keys)) {
             if (!isset($data[$i]) || !is_array($data[$i])) {
@@ -203,10 +208,10 @@ class Config
     function getAll($obj = false)
     {
         if ($obj) {
-            return CrossArray::arrayToObject($this->config_data);
+            return CrossArray::arrayToObject($this->configData);
         }
 
-        return $this->config_data;
+        return $this->configData;
     }
 
     /**
@@ -217,7 +222,7 @@ class Config
      */
     protected function getIndexCacheKey(string $index): string
     {
-        return $this->res_file . '.' . $index;
+        return $this->file . '.' . $index;
     }
 
     /**
