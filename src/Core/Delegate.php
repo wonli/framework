@@ -520,7 +520,7 @@ class Delegate
         //app共享配置
         $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
         if (file_exists($app_config_file)) {
-            $app_config = Loader::read($app_config_file);
+            $app_config = Config::load($app_config_file)->getAll();
             if (!empty($app_config)) {
                 $Config->combine($app_config, false);
             }
