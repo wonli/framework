@@ -205,6 +205,26 @@ class DataFilter
     }
 
     /**
+     * 是否是一个绝对路径
+     *
+     * @return string|void
+     * @throws LogicStatusException
+     */
+    function url()
+    {
+        $ctx = $this->val();
+        $defines = ['http://' => 7, 'https://' => 8, '//' => 2];
+        foreach ($defines as $prefix => $pos) {
+            $compare = substr_compare($ctx, $prefix, 0, $pos, true);
+            if (0 === $compare) {
+                return strtolower($ctx);
+            }
+        }
+
+        $this->throwMsg('参数必须是绝对地址');
+    }
+
+    /**
      * 中文
      *
      * @return mixed
