@@ -200,6 +200,7 @@ class Helper
      * @param int $length
      * @param int $numeric
      * @return string
+     * @throws Exception
      */
     static function random(int $length, int $numeric = 0): string
     {
@@ -213,7 +214,7 @@ class Helper
         $hash = '';
         $max = strlen($seed) - 1;
         for ($i = 0; $i < $length; $i++) {
-            $hash .= $seed[mt_rand(0, $max)];
+            $hash .= $seed[random_int(0, $max)];
         }
 
         return $hash;
@@ -487,13 +488,14 @@ class Helper
      *
      * @param array $array
      * @return int|bool
+     * @throws Exception
      */
     static function arrayRandomRate(array $array)
     {
         asort($array);
         $max = array_sum($array);
         foreach ($array as $a_key => $a_value) {
-            $rand = mt_rand(0, $max);
+            $rand = random_int(0, $max);
 
             if ($rand <= $a_value) {
                 return $a_key;

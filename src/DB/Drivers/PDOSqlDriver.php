@@ -126,9 +126,9 @@ class PDOSqlDriver implements SqlInterface
      * @param string $table
      * @param string $fields
      * @param string|array $where
-     * @param int|string $order
-     * @param int|string $group_by
-     * @param int|string $limit 0 表示无限制
+     * @param mixed $order
+     * @param mixed $group_by
+     * @param mixed $limit 0 表示无限制
      * @return mixed
      * @throws CoreException
      */
@@ -225,9 +225,9 @@ class PDOSqlDriver implements SqlInterface
      * @param string $table
      * @param string $fields
      * @param string|array $where
-     * @param string|int $order
      * @param array $page
-     * @param int $group_by
+     * @param null $order
+     * @param null $group_by
      * @return mixed
      * @throws CoreException
      */
@@ -391,7 +391,7 @@ class PDOSqlDriver implements SqlInterface
 
     /**
      * @param int $start
-     * @param int $end
+     * @param int|null $end
      * @return PDOSqlDriver
      */
     function limit(int $start, int $end = null): self
@@ -820,7 +820,12 @@ class PDOSqlDriver implements SqlInterface
     private function generateQueryID(): void
     {
         do {
-            $qid = mt_rand(1, 99999);
+            try {
+                $qid = random_int(1, 99999);
+            } catch (Exception $e) {
+                $qid = microtime(true);
+            }
+
             if (!isset($this->querySQL[$qid])) {
                 $this->qid = $qid;
                 break;
