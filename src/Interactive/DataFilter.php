@@ -447,6 +447,17 @@ class DataFilter
     }
 
     /**
+     * @param int $filter
+     * @param null $options
+     * @return mixed
+     * @see filter_var
+     */
+    function filter($filter = FILTER_DEFAULT, $options = null)
+    {
+        return filter_var($this->ctx, $filter, $options);
+    }
+
+    /**
      * 通过所有验证方法
      *
      * @param array $handler 方法名:参数1,参数2
