@@ -418,11 +418,13 @@ class DataFilter
     /**
      * 转义后的原始参数
      *
+     * @param bool $stripTags
      * @return string
      */
-    function val()
+    function val($stripTags = true)
     {
-        return htmlentities(strip_tags($this->ctx), ENT_COMPAT, 'utf-8');
+        $ctx = $stripTags ? strip_tags($this->ctx) : $this->ctx;
+        return htmlentities($ctx, ENT_COMPAT, 'utf-8');
     }
 
     /**
