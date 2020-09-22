@@ -17,14 +17,6 @@ use Cross\Http\Response;
 use Cross\Http\Request;
 use Closure;
 
-//外部定义的项目路径
-defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
-
-//项目路径
-define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
-
-//框架路径
-define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
 /**
  * @author wonli <wonli@live.com>
@@ -36,7 +28,7 @@ class Delegate
     /**
      * @var string
      */
-    private $app_name;
+    private $appName;
 
     /**
      * @var Application
@@ -63,35 +55,35 @@ class Delegate
      *
      * @var array
      */
-    private $runtime_config;
+    private $runtimeConfig;
 
     /**
      * 是否多app模式
      *
      * @var bool
      */
-    private $multi_app_mode;
+    private $multiAppMode;
 
     /**
      * 运行时匿名函数容器
      *
      * @var ClosureContainer
      */
-    private $action_container;
+    private $actionContainer;
 
     /**
      * app命名空间
      *
      * @var string
      */
-    private $app_namespace;
+    private $appNamespace;
 
     /**
      * app名称是否命名空间
      *
      * @var bool
      */
-    private $is_namespace;
+    private $useNamespace;
 
     /**
      * Delegate的实例
@@ -113,28 +105,29 @@ class Delegate
     /**
      * 初始化框架
      *
-     * @param string $app_name 要加载的app名称
-     * @param bool $is_namespace
-     * @param array $runtime_config 运行时指定的配置
+     * @param string $appName 要加载的app名称
+     * @param bool $useNamespace
+     * @param array $runtimeConfig 运行时指定的配置
      * @throws CoreException
      * @throws FrontException
      */
-    private function __construct(string $app_name, bool $is_namespace, array $runtime_config)
+    private function __construct(string $appName, bool $useNamespace, array $runtimeConfig)
     {
+        $this->initConstant();
         $this->loader = Loader::init();
 
-        $this->is_namespace = $is_namespace;
-        $this->runtime_config = $runtime_config;
-        $this->multi_app_mode = ($app_name == '*');
+        $this->useNamespace = $useNamespace;
+        $this->runtimeConfig = $runtimeConfig;
+        $this->multiAppMode = ($appName == '*');
 
-        $this->setAppName($app_name);
-        $this->config = $this->initConfig($app_name, $runtime_config);
+        $this->setAppName($appName);
+        $this->config = $this->initConfig($appName, $runtimeConfig);
         if (null === self::$env) {
             self::$env = $this->config;
         }
 
         $this->registerNamespace();
-        $this->action_container = new ClosureContainer();
+        $this->actionContainer = new ClosureContainer();
         $this->router = new Router($this);
         $this->app = new Application($this);
     }
@@ -152,29 +145,29 @@ class Delegate
     /**
      * 实例化框架
      *
-     * @param string $app_namespace app命名空间
-     * @param array $runtime_config 运行时加载的设置
+     * @param string $appNamespace app命名空间
+     * @param array $runtimeConfig 运行时加载的设置
      * @return static
      * @throws CoreException
      * @throws FrontException
      */
-    static function app(string $app_namespace, array $runtime_config = []): self
+    static function app(string $appNamespace, array $runtimeConfig = []): self
     {
-        return self::initApp($app_namespace, true, $runtime_config);
+        return self::initApp($appNamespace, true, $runtimeConfig);
     }
 
     /**
      * 实例化框架
      *
-     * @param string $app_name app名称
-     * @param array $runtime_config 运行时加载的设置
+     * @param string $appName app名称
+     * @param array $runtimeConfig 运行时加载的设置
      * @return self
      * @throws CoreException
      * @throws FrontException
      */
-    static function loadApp(string $app_name, array $runtime_config = []): self
+    static function loadApp(string $appName, array $runtimeConfig = []): self
     {
-        return self::initApp($app_name, false, $runtime_config);
+        return self::initApp($appName, false, $runtimeConfig);
     }
 
     /**
@@ -286,7 +279,7 @@ class Delegate
      */
     function on(string $name, Closure $f): self
     {
-        $this->action_container->add($name, $f);
+        $this->actionContainer->add($name, $f);
         return $this;
     }
 
@@ -335,23 +328,23 @@ class Delegate
      */
     function getAppName(): string
     {
-        return $this->app_name;
+        return $this->appName;
     }
 
     /**
      * 设置app命名空间
      *
-     * @param string $app_name
+     * @param string $appName
      */
-    function setAppName(string $app_name): void
+    function setAppName(string $appName): void
     {
-        $this->app_name = $app_name;
-        $namespace = str_replace('/', '\\', $app_name);
-        if (!$this->is_namespace) {
+        $this->appName = $appName;
+        $namespace = str_replace('/', '\\', $appName);
+        if (!$this->useNamespace) {
             $namespace = 'app\\' . $namespace;
         }
 
-        $this->app_namespace = $namespace;
+        $this->appNamespace = $namespace;
     }
 
     /**
@@ -361,7 +354,7 @@ class Delegate
      */
     function getAppNamespace(): string
     {
-        return $this->app_namespace;
+        return $this->appNamespace;
     }
 
     /**
@@ -371,7 +364,7 @@ class Delegate
      */
     function onMultiAppMode(): bool
     {
-        return $this->multi_app_mode;
+        return $this->multiAppMode;
     }
 
     /**
@@ -391,7 +384,7 @@ class Delegate
      */
     function getRuntimeConfig(): array
     {
-        return $this->runtime_config;
+        return $this->runtimeConfig;
     }
 
     /**
@@ -409,7 +402,7 @@ class Delegate
      */
     function getClosureContainer(): ClosureContainer
     {
-        return $this->action_container;
+        return $this->actionContainer;
     }
 
     /**
@@ -440,16 +433,16 @@ class Delegate
      * 实例化框架
      *
      * @param string $app
-     * @param bool $is_namespace
-     * @param array $runtime_config
+     * @param bool $useNamespace
+     * @param array $runtimeConfig
      * @return static
      * @throws CoreException
      * @throws FrontException
      */
-    private static function initApp(string $app, bool $is_namespace, array $runtime_config = []): self
+    private static function initApp(string $app, bool $useNamespace, array $runtimeConfig = []): self
     {
         if (!isset(self::$instance[$app])) {
-            self::$instance[$app] = new Delegate($app, $is_namespace, $runtime_config);
+            self::$instance[$app] = new Delegate($app, $useNamespace, $runtimeConfig);
         }
 
         return self::$instance[$app];
@@ -458,75 +451,87 @@ class Delegate
     /**
      * 初始化App配置
      *
-     * @param string $app_name
-     * @param array $runtime_config
+     * @param string $appName
+     * @param array $runtimeConfig
      * @return Config
      * @throws FrontException
      * @throws CoreException
      */
-    private function initConfig(string $app_name, array $runtime_config): Config
+    private function initConfig(string $appName, array $runtimeConfig): Config
     {
         $request = $this->getRequest();
+
         $host = $request->getHostInfo();
-        $index_name = $request->getIndexName();
+        $indexName = $request->getIndexName();
+        $requestUrl = $request->getBaseUrl();
+        $scriptPath = $request->getScriptFilePath();
 
-        $request_url = $request->getBaseUrl();
-        $script_path = $request->getScriptFilePath();
-
-        $app_namespace = $this->getAppNamespace();
-        $app_path = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $app_namespace) . DIRECTORY_SEPARATOR;
+        $appNamespace = $this->getAppNamespace();
+        $appPath = PROJECT_REAL_PATH . str_replace('\\', DIRECTORY_SEPARATOR, $appNamespace) . DIRECTORY_SEPARATOR;
 
         //app名称和路径
-        $runtime_config['app'] = [
-            'name' => $app_name,
-            'path' => $app_path
+        $runtimeConfig['app'] = [
+            'name' => $appName,
+            'path' => $appPath
         ];
 
         $env_config = [
             //url相关设置
             'url' => [
                 'host' => $host,
-                'index' => $index_name,
-                'request' => $request_url,
-                'full_request' => $host . $request_url
+                'index' => $indexName,
+                'request' => $requestUrl,
+                'full_request' => $host . $requestUrl
             ],
 
             //配置和缓存的绝对路径
             'path' => [
                 'cache' => PROJECT_REAL_PATH . 'cache' . DIRECTORY_SEPARATOR,
                 'config' => PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR,
-                'script' => $script_path . DIRECTORY_SEPARATOR,
+                'script' => $scriptPath . DIRECTORY_SEPARATOR,
             ],
 
             //静态文件url和绝对路径
             'static' => [
-                'url' => $host . $request_url . '/static/',
-                'path' => $script_path . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
+                'url' => $host . $requestUrl . '/static/',
+                'path' => $scriptPath . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR
             ]
         ];
 
-        if ($this->multi_app_mode) {
+        if ($this->multiAppMode) {
             $Config = Config::load(PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.init.php');
         } else {
-            $Config = Config::load($app_path . 'init.php');
+            $Config = Config::load($appPath . 'init.php');
         }
 
         //默认环境
         $Config->combine($env_config);
 
         //运行时配置
-        $Config->combine($runtime_config);
+        $Config->combine($runtimeConfig);
 
         //app共享配置
-        $app_config_file = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
-        if (file_exists($app_config_file)) {
-            $app_config = Config::load($app_config_file)->getAll();
+        $appConfigFile = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
+        if (file_exists($appConfigFile)) {
+            $app_config = Config::load($appConfigFile)->getAll();
             if (!empty($app_config)) {
                 $Config->combine($app_config, false);
             }
         }
 
         return $Config;
+    }
+
+    /**
+     * 设置运行所需常量
+     */
+    private function initConstant()
+    {
+        defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
+
+        //项目及框架根目录
+        defined('PROJECT_REAL_PATH') or define('PROJECT_REAL_PATH', rtrim(PROJECT_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
+        defined('CP_PATH') or define('CP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
     }
 
     /**
