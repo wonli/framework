@@ -62,7 +62,7 @@ class Module extends FrameBase
      *
      * @var string
      */
-    protected $db_config_file;
+    protected $dbConfigFile;
 
     /**
      * 解析要连接model的参数
@@ -153,22 +153,22 @@ class Module extends FrameBase
      */
     protected function databaseConfig(): Config
     {
-        static $database_config = null;
-        if (null === $database_config) {
-            $database_config = parent::loadConfig($this->getModuleConfigFile());
+        static $databaseConfig = null;
+        if (null === $databaseConfig) {
+            $databaseConfig = parent::loadConfig($this->getModuleConfigFile());
         }
 
-        return $database_config;
+        return $databaseConfig;
     }
 
     /**
      * 设置配置文件名
      *
-     * @param string $link_config_file
+     * @param string $linkConfigFile
      */
-    protected function setDatabaseConfigFile(string $link_config_file): void
+    protected function setDatabaseConfigFile(string $linkConfigFile): void
     {
-        $this->db_config_file = $link_config_file;
+        $this->dbConfigFile = $linkConfigFile;
     }
 
     /**
@@ -180,47 +180,47 @@ class Module extends FrameBase
      */
     protected function parseModelParams(string $params = ''): array
     {
-        $db_config_params = '';
+        $dbConfigParams = '';
         if ($params) {
-            $db_config_params = $params;
+            $dbConfigParams = $params;
         } else {
-            static $default_db_config = '';
-            if ($default_db_config === '') {
-                $default_db_config = $this->getConfig()->get('sys', 'default_db');
+            static $defaultDbConfig = '';
+            if ($defaultDbConfig === '') {
+                $defaultDbConfig = $this->getConfig()->get('sys', 'default_db');
             }
 
-            if ($default_db_config) {
-                $db_config_params = $default_db_config;
+            if ($defaultDbConfig) {
+                $dbConfigParams = $defaultDbConfig;
             }
         }
 
-        if ($db_config_params) {
-            if (strpos($db_config_params, ':') === false) {
-                throw new CoreException("数据库参数配置格式不正确: {$db_config_params}");
+        if ($dbConfigParams) {
+            if (strpos($dbConfigParams, ':') === false) {
+                throw new CoreException("数据库参数配置格式不正确: {$dbConfigParams}");
             }
 
-            list($model_type, $model_name) = explode(':', $db_config_params);
+            list($modelType, $modelName) = explode(':', $dbConfigParams);
         } else {
-            $model_name = 'db';
-            $model_type = 'mysql';
+            $modelName = 'db';
+            $modelType = 'mysql';
         }
 
         static $cache;
-        if (!isset($cache[$model_type][$model_name])) {
+        if (!isset($cache[$modelType][$modelName])) {
             $databaseConfig = $this->databaseConfig();
-            $model_config = $databaseConfig->get($model_type, $model_name);
-            if (empty($model_config)) {
-                throw new CoreException("未配置的Model: {$model_type}:{$model_name}");
+            $modelConfig = $databaseConfig->get($modelType, $modelName);
+            if (empty($modelConfig)) {
+                throw new CoreException("未配置的Model: {$modelType}:{$modelName}");
             }
 
-            $cache[$model_type][$model_name] = array(
-                'model_name' => $model_name,
-                'model_type' => $model_type,
-                'model_config' => $model_config,
-            );
+            $cache[$modelType][$modelName] = [
+                'model_name' => $modelName,
+                'model_type' => $modelType,
+                'model_config' => $modelConfig,
+            ];
         }
 
-        return $cache[$model_type][$model_name];
+        return $cache[$modelType][$modelName];
     }
 
     /**
@@ -242,16 +242,16 @@ class Module extends FrameBase
      */
     private function getModuleConfigFile(): string
     {
-        if (!$this->db_config_file) {
-            $db_config_file = $this->getConfig()->get('sys', 'db_config');
-            if (!$db_config_file) {
-                $db_config_file = 'db.config.php';
+        if (!$this->dbConfigFile) {
+            $dbConfigFile = $this->getConfig()->get('sys', 'db_config');
+            if (!$dbConfigFile) {
+                $dbConfigFile = 'db.config.php';
             }
 
-            $this->setDatabaseConfigFile($db_config_file);
+            $this->setDatabaseConfigFile($dbConfigFile);
         }
 
-        return $this->db_config_file;
+        return $this->dbConfigFile;
     }
 
     /**
