@@ -29,33 +29,33 @@ class View extends FrameBase
      *
      * @var string
      */
-    private $tpl_dir;
+    private $tplDir;
 
     /**
      * 资源配置
      *
      * @var array
      */
-    private $res_list;
+    private $resList;
 
     /**
      * 默认模板路径
      *
      * @var string
      */
-    private $tpl_base_path;
+    private $tplBasePath;
 
     /**
      * 默认url
      *
      * @var string
      */
-    private $link_base = null;
+    private $linkBase = null;
 
     /**
      * @var array
      */
-    private $wrap_stack = [];
+    private $wrapStack = [];
 
     /**
      * 模板数据
@@ -91,30 +91,30 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $tpl_file_suffix = '.tpl.php';
+    protected $tplFileSuffix = '.tpl.php';
 
     /**
      * url配置缓存
      *
      * @var array
      */
-    protected static $url_config_cache = [];
+    protected static $urlConfigCache = [];
 
     /**
      * 渲染模板
      *
      * @param null $data
-     * @param string $method
+     * @param string|null $method
      * @throws CoreException
      */
     function display($data = null, string $method = null): void
     {
         $this->data = &$data;
         $contentType = $this->config->get('sys', 'content_type');
-        $this->delegate->getResponse()->setContentType($contentType ? $contentType : 'html');
+        $this->delegate->getResponse()->setContentType($contentType ?: 'html');
 
         if ($method === null) {
-            $method = $this->action ? $this->action : Router::DEFAULT_ACTION;
+            $method = $this->action ?: Router::DEFAULT_ACTION;
         }
 
         ob_start();
@@ -125,31 +125,31 @@ class View extends FrameBase
     /**
      * 生成url
      *
-     * @param string $controller
+     * @param string|null $controller
      * @param null|string|array $params
-     * @param bool $encrypt_params
+     * @param bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    function url(string $controller = null, $params = null, bool $encrypt_params = false): string
+    function url(string $controller = null, $params = null, bool $encryptParams = false): string
     {
-        static $link_base = null;
-        if ($link_base === null) {
-            $link_base = $this->getLinkBase();
+        static $linkBase = null;
+        if ($linkBase === null) {
+            $linkBase = $this->getLinkBase();
         }
 
         if ($controller === null && $params === null) {
-            return $link_base;
+            return $linkBase;
         } else {
-            $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encrypt_params);
-            return $link_base . $uri;
+            $uri = $this->makeUri($this->getAppName(), false, $controller, $params, $encryptParams);
+            return $linkBase . $uri;
         }
     }
 
     /**
      * 生成参数加密的超链接
      *
-     * @param string $controller
+     * @param string|null $controller
      * @param null|string|array $params
      * @return string
      * @throws CoreException
@@ -165,133 +165,133 @@ class View extends FrameBase
      *
      * @param string $content
      * @param string $href
-     * @param array $element_tags
+     * @param array $elementTags
      * @return mixed|string
      */
-    function a(string $content, string $href = '', array $element_tags = [])
+    function a(string $content, string $href = '', array $elementTags = [])
     {
-        $element_tags['href'] = $href;
-        $element_tags['@content'] = $content;
-        return $this->wrapTag('a', $element_tags);
+        $elementTags['href'] = $href;
+        $elementTags['@content'] = $content;
+        return $this->wrapTag('a', $elementTags);
     }
 
     /**
      * 输出img标签
      *
      * @param string $src
-     * @param array $element_tags
+     * @param array $elementTags
      * @return mixed|string
      */
-    function img(string $src, array $element_tags = [])
+    function img(string $src, array $elementTags = [])
     {
-        $element_tags['src'] = $src;
-        $element_tags += ['border' => 0, 'alt' => 'image'];
-        return $this->wrapTag('img', $element_tags);
+        $elementTags['src'] = $src;
+        $elementTags += ['border' => 0, 'alt' => 'image'];
+        return $this->wrapTag('img', $elementTags);
     }
 
     /**
      * input标签
      *
      * @param string $type
-     * @param array $element_tags
+     * @param array $elementTags
      * @return mixed|string
      */
-    function input(string $type, array $element_tags = [])
+    function input(string $type, array $elementTags = [])
     {
-        $element_tags['type'] = $type;
-        return $this->wrapTag('input', $element_tags);
+        $elementTags['type'] = $type;
+        return $this->wrapTag('input', $elementTags);
     }
 
     /**
      * 单选
      *
      * @param array $data
-     * @param string $default_value
-     * @param array $radio_tags
-     * @param array $label_tags
+     * @param string $defaultValue
+     * @param array $radioTags
+     * @param array $labelTags
      * @return string
      * @see View::buildRadioOrCheckbox
      */
-    function radio(array $data, $default_value = '', array $radio_tags = [], array $label_tags = [])
+    function radio(array $data, $defaultValue = '', array $radioTags = [], array $labelTags = [])
     {
-        $default_value = [$default_value => true];
-        return $this->buildRadioOrCheckbox('radio', $data, $default_value, $radio_tags, $label_tags);
+        $defaultValue = [$defaultValue => true];
+        return $this->buildRadioOrCheckbox('radio', $data, $defaultValue, $radioTags, $labelTags);
     }
 
     /**
      * 多选
      *
      * @param array $data
-     * @param string|array $default_value
-     * @param array $checkbox_tags
-     * @param array $label_tags
+     * @param string|array $defaultValue
+     * @param array $checkboxTags
+     * @param array $labelTags
      * @return string
      * @see View::buildRadioOrCheckbox
      */
-    function checkbox(array $data, $default_value = '', array $checkbox_tags = [], array $label_tags = [])
+    function checkbox(array $data, $defaultValue = '', array $checkboxTags = [], array $labelTags = [])
     {
-        if (is_array($default_value)) {
-            $default_value = array_flip($default_value);
+        if (is_array($defaultValue)) {
+            $defaultValue = array_flip($defaultValue);
         } else {
-            $default_value = [$default_value => true];
+            $defaultValue = [$defaultValue => true];
         }
 
-        return $this->buildRadioOrCheckbox('checkbox', $data, $default_value, $checkbox_tags, $label_tags);
+        return $this->buildRadioOrCheckbox('checkbox', $data, $defaultValue, $checkboxTags, $labelTags);
     }
 
     /**
      * 输出select
      *
-     * @param array $options_data 二维数组时, 生成optgroup
-     * @param int|string|array $default_value
-     * @param array $select_params
-     * @param array $user_option_params
+     * @param array $optionsData 二维数组时, 生成optgroup
+     * @param mixed $defaultValue
+     * @param array $selectParams
+     * @param array $userOptionParams
      * @return mixed
      */
-    function select(array $options_data, $default_value = null, array $select_params = [], array $user_option_params = [])
+    function select(array $optionsData, $defaultValue = null, array $selectParams = [], array $userOptionParams = [])
     {
         $content = '';
-        if (is_array($default_value)) {
-            $default_value = array_flip($default_value);
+        if (is_array($defaultValue)) {
+            $defaultValue = array_flip($defaultValue);
         } else {
-            $default_value = [$default_value => true];
+            $defaultValue = [$defaultValue => true];
         }
 
-        foreach ($options_data as $value => $option) {
-            $option_params = [];
-            if (!empty($user_option_params)) {
-                $option_params = $user_option_params;
+        foreach ($optionsData as $value => $option) {
+            $optionParams = [];
+            if (!empty($userOptionParams)) {
+                $optionParams = $userOptionParams;
             }
 
             if (is_array($option)) {
-                $opt_content = '';
-                foreach ($option as $opt_value => $opt_option) {
-                    unset($option_params['selected']);
-                    $option_params['value'] = $opt_value;
-                    $option_params['@content'] = $opt_option;
-                    if (isset($default_value[$opt_value])) {
-                        $option_params['selected'] = true;
+                $optContent = '';
+                foreach ($option as $optValue => $optOption) {
+                    unset($optionParams['selected']);
+                    $optionParams['value'] = $optValue;
+                    $optionParams['@content'] = $optOption;
+                    if (isset($defaultValue[$optValue])) {
+                        $optionParams['selected'] = true;
                     }
 
-                    $opt_content .= self::htmlTag('option', $option_params);
+                    $optContent .= self::htmlTag('option', $optionParams);
                 }
 
-                $opt_params['label'] = $value;
-                $opt_params['@content'] = $opt_content;
-                $content .= self::htmlTag('optgroup', $opt_params);
+                $optParams['label'] = $value;
+                $optParams['@content'] = $optContent;
+                $content .= self::htmlTag('optgroup', $optParams);
             } else {
-                $option_params['value'] = $value;
-                $option_params['@content'] = $option;
-                if (isset($default_value[$value])) {
-                    $option_params['selected'] = true;
+                $optionParams['value'] = $value;
+                $optionParams['@content'] = $option;
+                if (isset($defaultValue[$value])) {
+                    $optionParams['selected'] = true;
                 }
 
-                $content .= self::htmlTag('option', $option_params);
+                $content .= self::htmlTag('option', $optionParams);
             }
         }
 
-        $select_params['@content'] = $content;
-        return $this->wrapContent(self::htmlTag('select', $select_params), false);
+        $selectParams['@content'] = $content;
+        return $this->wrapContent(self::htmlTag('select', $selectParams), false);
     }
 
     /**
@@ -314,29 +314,29 @@ class View extends FrameBase
      * 输出任意HTML标签
      *
      * @param string $element
-     * @param array $element_tags
+     * @param array $elementTags
      * @return string
      */
-    static function htmlTag(string $element, array $element_tags = [])
+    static function htmlTag(string $element, array $elementTags = [])
     {
-        return HTML::$element($element_tags);
+        return HTML::$element($elementTags);
     }
 
     /**
      * HTML标签入栈
      *
      * @param string $element
-     * @param string|array $element_tags
-     * @param bool $content_rear 自身内容是否放在被包裹内容之后
+     * @param string|array $elementTags
+     * @param bool $contentRear 自身内容是否放在被包裹内容之后
      * @return $this
      */
-    function wrap(string $element, $element_tags = [], bool $content_rear = false): self
+    function wrap(string $element, $elementTags = [], bool $contentRear = false): self
     {
-        if (!is_array($element_tags)) {
-            $element_tags = ['@content' => $element_tags];
+        if (!is_array($elementTags)) {
+            $elementTags = ['@content' => $elementTags];
         }
 
-        array_unshift($this->wrap_stack, array($element, $element_tags, $content_rear));
+        array_unshift($this->wrapStack, array($element, $elementTags, $contentRear));
         return $this;
     }
 
@@ -344,28 +344,28 @@ class View extends FrameBase
      * 带wrap的块级元素
      *
      * @param string $content 内容
-     * @param array $element_tags
+     * @param array $elementTags
      * @param string $element
      * @return string
      */
-    function block(string $content, array $element_tags = [], string $element = 'div')
+    function block(string $content, array $elementTags = [], string $element = 'div')
     {
-        $element_tags['@content'] = $content;
-        return $this->wrapTag($element, $element_tags);
+        $elementTags['@content'] = $content;
+        return $this->wrapTag($element, $elementTags);
     }
 
     /**
      * 处理带模板的block元素
      *
-     * @param string $tpl_name 模板名称
-     * @param array $tpl_data 模板中的数据
-     * @param array $element_tags
+     * @param string $tplName 模板名称
+     * @param array $tplData 模板中的数据
+     * @param array $elementTags
      * @param string $element
      * @return string
      */
-    function section(string $tpl_name, array $tpl_data = [], array $element_tags = [], string $element = 'div')
+    function section(string $tplName, array $tplData = [], array $elementTags = [], string $element = 'div')
     {
-        return $this->block($this->obRenderTpl($tpl_name, $tpl_data), $element_tags, $element);
+        return $this->block($this->obRenderTpl($tplName, $tplData), $elementTags, $element);
     }
 
     /**
@@ -374,31 +374,31 @@ class View extends FrameBase
      * 使用$this->on('buildForm', ....), 来干预所有生成的表单内容
      * </pre>
      *
-     * @param string $tpl_name 包含表单的模板文件路径
-     * @param array $form_tags 生成表单tag的参数
-     * @param array $tpl_data 模板数据
+     * @param string $tplName 包含表单的模板文件路径
+     * @param array $formTags 生成表单tag的参数
+     * @param array $tplData 模板数据
      * @return string
      */
-    function buildForm(string $tpl_name, array $form_tags = [], array $tpl_data = [])
+    function buildForm(string $tplName, array $formTags = [], array $tplData = [])
     {
         $content = $this->delegate->getClosureContainer()->run('buildForm', [$this]);
-        $content .= $this->obRenderTpl($tpl_name, $tpl_data);
+        $content .= $this->obRenderTpl($tplName, $tplData);
 
-        $form_tags += ['action' => '', 'method' => 'post'];
-        $form_tags['@content'] = $content;
+        $formTags += ['action' => '', 'method' => 'post'];
+        $formTags['@content'] = $content;
 
-        return $this->wrapTag('form', $form_tags);
+        return $this->wrapTag('form', $formTags);
     }
 
     /**
      * 加载指定名称的模板文件
      *
-     * @param string $tpl_name
+     * @param string $tplName
      * @param array $data
      */
-    function renderTpl(string $tpl_name, array $data = []): void
+    function renderTpl(string $tplName, array $data = []): void
     {
-        include $this->tpl($tpl_name);
+        include $this->tpl($tplName);
     }
 
     /**
@@ -415,15 +415,15 @@ class View extends FrameBase
     /**
      * 带缓存的renderTpl
      *
-     * @param string $tpl_name
+     * @param string $tplName
      * @param array $data
      * @param bool $encode
      * @return string
      */
-    function obRenderTpl(string $tpl_name, array $data = [], bool $encode = false)
+    function obRenderTpl(string $tplName, array $data = [], bool $encode = false)
     {
         ob_start();
-        $this->renderTpl($tpl_name, $data);
+        $this->renderTpl($tplName, $data);
         return $this->wrapContent(ob_get_clean(), $encode);
     }
 
@@ -445,23 +445,23 @@ class View extends FrameBase
     /**
      * 模板的绝对路径
      *
-     * @param string $tpl_name
-     * @param bool $get_content 是否读取模板内容
-     * @param bool $auto_append_suffix 是否自动添加模版后缀
+     * @param string $tplName
+     * @param bool $getContent 是否读取模板内容
+     * @param bool $autoAppendSuffix 是否自动添加模版后缀
      * @return string
      */
-    function tpl(string $tpl_name, bool $get_content = false, bool $auto_append_suffix = true): string
+    function tpl(string $tplName, bool $getContent = false, bool $autoAppendSuffix = true): string
     {
-        $file_path = $this->getTplPath() . $tpl_name;
-        if ($auto_append_suffix) {
-            $file_path .= $this->tpl_file_suffix;
+        $filePath = $this->getTplPath() . $tplName;
+        if ($autoAppendSuffix) {
+            $filePath .= $this->tplFileSuffix;
         }
 
-        if (true === $get_content) {
-            return file_get_contents($file_path, true);
+        if (true === $getContent) {
+            return file_get_contents($filePath, true);
         }
 
-        return $file_path;
+        return $filePath;
     }
 
     /**
@@ -480,14 +480,14 @@ class View extends FrameBase
      * 输出XML
      *
      * @param array $data
-     * @param string $root_name
+     * @param string $rootName
      * @throws Exception
      */
-    function XML(array $data, string $root_name = 'root'): void
+    function XML(array $data, string $rootName = 'root'): void
     {
         $this->set['load_layer'] = false;
         $this->delegate->getResponse()->setContentType('xml');
-        echo Array2XML::createXML($root_name, $data)->saveXML();
+        echo Array2XML::createXML($rootName, $data)->saveXML();
     }
 
     /**
@@ -495,16 +495,16 @@ class View extends FrameBase
      *
      * @param array $data
      * @param string|int $key
-     * @param string $default_value
+     * @param string $defaultValue
      * @return string
      */
-    function e(array $data, $key, $default_value = '')
+    function e(array $data, $key, $defaultValue = '')
     {
         if (isset($data[$key])) {
             return $data[$key];
         }
 
-        return $default_value;
+        return $defaultValue;
     }
 
     /**
@@ -512,17 +512,17 @@ class View extends FrameBase
      *
      * @param array $data
      * @param string|int $key
-     * @param string $default_value
+     * @param string $defaultValue
      * @return string
      * @see e
      */
-    function ee(array $data, $key, $default_value = '')
+    function ee(array $data, $key, $defaultValue = '')
     {
         if (!empty($data[$key])) {
             return $data[$key];
         }
 
-        return $default_value;
+        return $defaultValue;
     }
 
     /**
@@ -546,62 +546,62 @@ class View extends FrameBase
     /**
      * 生成资源文件路径
      *
-     * @param string $res_url
-     * @param bool $use_static_url
+     * @param string $resUrl
+     * @param bool $useStaticUrl
      * @return string
      */
-    function res(string $res_url, bool $use_static_url = true): string
+    function res(string $resUrl, bool $useStaticUrl = true): string
     {
-        static $res_base_url = null;
-        if (!isset($res_base_url[$use_static_url])) {
-            if ($use_static_url) {
-                $base_url = $this->getConfig()->get('static', 'url');
+        static $resBaseUrl = null;
+        if (!isset($resBaseUrl[$useStaticUrl])) {
+            if ($useStaticUrl) {
+                $baseUrl = $this->getConfig()->get('static', 'url');
             } else {
-                $base_url = $this->getConfig()->get('url', 'full_request');
+                $baseUrl = $this->getConfig()->get('url', 'full_request');
             }
 
-            $res_base_url[$use_static_url] = rtrim($base_url, '/') . '/';
+            $resBaseUrl[$useStaticUrl] = rtrim($baseUrl, '/') . '/';
         }
 
-        return $res_base_url[$use_static_url] . $res_url;
+        return $resBaseUrl[$useStaticUrl] . $resUrl;
     }
 
     /**
      * 输出资源相对路径
      *
-     * @param string $res_url
-     * @param string $res_dir
+     * @param string $resUrl 资源路径
+     * @param string $resDir 资源文件夹名称
      * @return string
      */
-    function relRes(string $res_url, string $res_dir = 'static'): string
+    function relRes(string $resUrl, string $resDir = 'static'): string
     {
-        static $res_base_url = null;
-        if (null === $res_base_url) {
-            $res_base_url = rtrim($this->getConfig()->get('url', 'request'), '/') . '/' . $res_dir . '/';
+        static $resBaseUrl = null;
+        if (null === $resBaseUrl) {
+            $resBaseUrl = rtrim($this->getConfig()->get('url', 'request'), '/') . '/' . $resDir . '/';
         }
 
-        return $res_base_url . $res_url;
+        return $resBaseUrl . $resUrl;
     }
 
     /**
      * 生成指定app,指定控制器的url
      *
-     * @param string $base_link
-     * @param string $app_name
+     * @param string $baseLink
+     * @param string $appName
      * @param null|string $controller
      * @param null|string|array $params
-     * @param null|bool $encrypt_params
+     * @param null|bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    function appUrl(string $base_link, string $app_name, $controller = null, $params = null, bool $encrypt_params = false): string
+    function appUrl(string $baseLink, string $appName, $controller = null, $params = null, bool $encryptParams = false): string
     {
-        $base_link = rtrim($base_link, '/') . '/';
+        $baseLink = rtrim($baseLink, '/') . '/';
         if ($controller === null && $params === null) {
-            return $base_link;
+            return $baseLink;
         } else {
-            $uri = $this->makeUri($app_name, true, $controller, $params, $encrypt_params);
-            return $base_link . $uri;
+            $uri = $this->makeUri($appName, true, $controller, $params, $encryptParams);
+            return $baseLink . $uri;
         }
     }
 
@@ -610,17 +610,17 @@ class View extends FrameBase
      */
     function cleanLinkCache(): void
     {
-        unset(self::$url_config_cache[$this->getAppName()]);
+        unset(self::$urlConfigCache[$this->getAppName()]);
     }
 
     /**
      * 设置模板dir
      *
-     * @param string $dir_name
+     * @param string $dirName
      */
-    function setTplDir(string $dir_name): void
+    function setTplDir(string $dirName): void
     {
-        $this->tpl_dir = $dir_name;
+        $this->tplDir = $dirName;
     }
 
     /**
@@ -630,11 +630,11 @@ class View extends FrameBase
      */
     function getLinkBase(): string
     {
-        if (null === $this->link_base) {
+        if (null === $this->linkBase) {
             $this->setLinkBase($this->getConfig()->get('url', 'full_request'));
         }
 
-        return $this->link_base;
+        return $this->linkBase;
     }
 
     /**
@@ -644,22 +644,22 @@ class View extends FrameBase
      */
     function getAppName(): string
     {
-        static $app_name = null;
-        if ($app_name === null) {
-            $app_name = $this->getConfig()->get('app', 'name');
+        static $appName = null;
+        if ($appName === null) {
+            $appName = $this->getConfig()->get('app', 'name');
         }
 
-        return $app_name;
+        return $appName;
     }
 
     /**
      * 设置生成的连接基础路径
      *
-     * @param string $link_base
+     * @param string $linkBase
      */
-    function setLinkBase(string $link_base): void
+    function setLinkBase(string $linkBase): void
     {
-        $this->link_base = rtrim($link_base, '/') . '/';
+        $this->linkBase = rtrim($linkBase, '/') . '/';
     }
 
     /**
@@ -669,23 +669,23 @@ class View extends FrameBase
      */
     function getTplPath(): string
     {
-        static $tpl_path;
-        $app_name = $this->getAppName();
-        if (!isset($tpl_path[$app_name])) {
-            $tpl_path[$app_name] = $this->getTplBasePath() . $this->getTplDir() . DIRECTORY_SEPARATOR;
+        static $tplPath;
+        $appName = $this->getAppName();
+        if (!isset($tplPath[$appName])) {
+            $tplPath[$appName] = $this->getTplBasePath() . $this->getTplDir() . DIRECTORY_SEPARATOR;
         }
 
-        return $tpl_path[$app_name];
+        return $tplPath[$appName];
     }
 
     /**
      * 设置模板路径
      *
-     * @param string $tpl_base_path
+     * @param string $tplBasePath
      */
-    function setTplBasePath(string $tpl_base_path): void
+    function setTplBasePath(string $tplBasePath): void
     {
-        $this->tpl_base_path = rtrim($tpl_base_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->tplBasePath = rtrim($tplBasePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -695,11 +695,11 @@ class View extends FrameBase
      */
     function getTplBasePath(): string
     {
-        if (!$this->tpl_base_path) {
+        if (!$this->tplBasePath) {
             $this->setTplBasePath($this->getConfig()->get('app', 'path') . 'templates' . DIRECTORY_SEPARATOR);
         }
 
-        return $this->tpl_base_path;
+        return $this->tplBasePath;
     }
 
     /**
@@ -709,30 +709,30 @@ class View extends FrameBase
      */
     function getTplDir(): string
     {
-        if (!$this->tpl_dir) {
-            $default_tpl_dir = $this->getConfig()->get('sys', 'default_tpl_dir');
-            if (!$default_tpl_dir) {
-                $default_tpl_dir = 'default';
+        if (!$this->tplDir) {
+            $defaultTplDir = $this->getConfig()->get('sys', 'default_tpl_dir');
+            if (!$defaultTplDir) {
+                $defaultTplDir = 'default';
             }
-            $this->setTplDir($default_tpl_dir);
+            $this->setTplDir($defaultTplDir);
         }
 
-        return $this->tpl_dir;
+        return $this->tplDir;
     }
 
     /**
      * 运行时分组添加css/js
      *
-     * @param string $res_url
+     * @param string $resUrl
      * @param string $location
      * @param bool $convert
      */
-    function addRes(string $res_url, string $location = 'header', bool $convert = true): void
+    function addRes(string $resUrl, string $location = 'header', bool $convert = true): void
     {
-        $this->res_list[$location][] = array(
-            'url' => $res_url,
+        $this->resList[$location][] = [
+            'url' => $resUrl,
             'convert' => $convert
-        );
+        ];
     }
 
     /**
@@ -744,21 +744,21 @@ class View extends FrameBase
     function loadRes(string $location = 'header'): string
     {
         $result = '';
-        if (empty($this->res_list) || empty($this->res_list[$location])) {
+        if (empty($this->resList) || empty($this->resList[$location])) {
             return $result;
         }
 
-        if (isset($this->res_list[$location]) && !empty($this->res_list[$location])) {
-            $data = $this->res_list[$location];
+        if (isset($this->resList[$location]) && !empty($this->resList[$location])) {
+            $data = $this->resList[$location];
         }
 
         if (!empty($data)) {
             if (is_array($data)) {
                 foreach ($data as $r) {
-                    $result .= $this->outputResLink($r['url'], $r['convert']);
+                    $result .= $this->outputResLink($r['url'], $r['convert']) . "\n";
                 }
             } else {
-                $result .= $this->outputResLink($data);
+                $result .= $this->outputResLink($data) . "\n";
             }
         }
 
@@ -768,66 +768,66 @@ class View extends FrameBase
     /**
      * 生成连接
      *
-     * @param string $app_name
-     * @param bool $check_app_name
+     * @param string $appName
+     * @param bool $checkAppName
      * @param null|string $controller
      * @param null|array $params
-     * @param bool $encrypt_params
+     * @param bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    protected function makeUri(string $app_name, bool $check_app_name, $controller = null, $params = null, bool $encrypt_params = false): string
+    protected function makeUri(string $appName, bool $checkAppName, $controller = null, $params = null, bool $encryptParams = false): string
     {
         $uri = '';
-        $enable_controller_cache = false;
+        $enableControllerCache = false;
         //在运行过程中,如果url的配置有变化,需要调用cleanLinkCache()来刷新缓存
-        if (!isset(self::$url_config_cache[$app_name])) {
-            $this_app_name = $app_name;
-            if ($check_app_name) {
-                $this_app_name = $this->getAppName();
+        if (!isset(self::$urlConfigCache[$appName])) {
+            $thisAppName = $appName;
+            if ($checkAppName) {
+                $thisAppName = $this->getAppName();
             }
 
-            if ($check_app_name && $app_name != $this_app_name) {
-                $app_path = PROJECT_REAL_PATH . str_replace('/', DIRECTORY_SEPARATOR, $app_name);
-                $config = Config::load($app_path . DIRECTORY_SEPARATOR . 'init.php');
+            if ($checkAppName && $appName != $thisAppName) {
+                $appPath = PROJECT_REAL_PATH . str_replace('/', DIRECTORY_SEPARATOR, $appName);
+                $config = Config::load($appPath . DIRECTORY_SEPARATOR . 'init.php');
             } else {
                 $config = $this->config;
             }
 
-            $url_router_config = array(
+            $urlRouterConfig = array(
                 'url' => $config->get('url'),
                 'router' => $config->get('router')
             );
-            self::$url_config_cache[$app_name] = $url_router_config;
+            self::$urlConfigCache[$appName] = $urlRouterConfig;
         } else {
-            $enable_controller_cache = true;
-            $url_router_config = self::$url_config_cache[$app_name];
+            $enableControllerCache = true;
+            $urlRouterConfig = self::$urlConfigCache[$appName];
         }
 
-        $url_params = '';
-        $has_controller_string = true;
-        $url_controller = $this->makeControllerUri($app_name, $enable_controller_cache, $controller, $url_router_config);
-        if ($url_controller === '') {
-            $has_controller_string = false;
+        $urlParams = '';
+        $hasControllerString = true;
+        $urlController = $this->makeControllerUri($appName, $enableControllerCache, $controller, $urlRouterConfig);
+        if ($urlController === '') {
+            $hasControllerString = false;
         }
 
-        $url_config = &$url_router_config['url'];
+        $urlConfig = &$urlRouterConfig['url'];
         if (!empty($params)) {
-            $url_params = $this->makeParams($params, $url_config, $encrypt_params, $has_controller_string);
+            $urlParams = $this->makeParams($params, $urlConfig, $encryptParams, $hasControllerString);
         }
 
-        if (!empty($url_config['ext'])) {
-            if ($url_config['type'] > 2) {
-                if ($has_controller_string) {
-                    $uri .= $url_controller . $url_config['ext'];
+        if (!empty($urlConfig['ext'])) {
+            if ($urlConfig['type'] > 2) {
+                if ($hasControllerString) {
+                    $uri .= $urlController . $urlConfig['ext'];
                 }
 
-                $uri .= $url_params;
+                $uri .= $urlParams;
             } else {
-                $uri .= $url_controller . $url_params . $url_config['ext'];
+                $uri .= $urlController . $urlParams . $urlConfig['ext'];
             }
         } else {
-            $uri .= $url_controller . $url_params;
+            $uri .= $urlController . $urlParams;
         }
 
         return $uri;
@@ -836,88 +836,88 @@ class View extends FrameBase
     /**
      * 生成控制器连接
      *
-     * @param string $app_name
-     * @param bool $use_cache 是否使用缓存
+     * @param string $appName
+     * @param bool $useCache 是否使用缓存
      * @param string $controller
-     * @param array $url_config
+     * @param array $urlConfig
      * @return string
      */
-    protected function makeControllerUri(string $app_name, bool $use_cache, string $controller, array $url_config): string
+    protected function makeControllerUri(string $appName, bool $useCache, string $controller, array $urlConfig): string
     {
-        static $path_cache;
-        if (isset($path_cache[$app_name][$controller]) && $use_cache) {
-            return $path_cache[$app_name][$controller];
+        static $pathCache;
+        if (isset($pathCache[$appName][$controller]) && $useCache) {
+            return $pathCache[$appName][$controller];
         }
 
-        $app_alias_config = $this->parseControllerAlias($app_name, $url_config['router']);
-        if (isset($app_alias_config[$controller])) {
-            $real_controller = $app_alias_config[$controller];
+        $appAliasConfig = $this->parseControllerAlias($appName, $urlConfig['router']);
+        if (isset($appAliasConfig[$controller])) {
+            $realController = $appAliasConfig[$controller];
         } else {
-            $real_controller = $controller;
+            $realController = $controller;
         }
 
-        $action_name = null;
-        if (false !== strpos($real_controller, ':')) {
-            list($controller_name, $action_name) = explode(':', $real_controller);
+        $actionName = null;
+        if (false !== strpos($realController, ':')) {
+            list($controllerName, $actionName) = explode(':', $realController);
         } else {
-            $controller_name = $real_controller;
+            $controllerName = $realController;
         }
 
-        $url = &$url_config['url'];
+        $url = &$urlConfig['url'];
         $index = $this->makeIndex($url, true);
-        $controller_path = $index . $controller_name;
+        $controllerPath = $index . $controllerName;
 
-        if (null !== $action_name) {
-            $controller_path .= $url['dot'] . $action_name;
+        if (null !== $actionName) {
+            $controllerPath .= $url['dot'] . $actionName;
         }
 
-        $path_cache[$app_name][$controller] = $controller_path;
-        return $controller_path;
+        $pathCache[$appName][$controller] = $controllerPath;
+        return $controllerPath;
     }
 
     /**
      * 生成URL中的索引部分
      *
-     * @param array $url_config
-     * @param bool $have_controller
+     * @param array $urlConfig
+     * @param bool $haveController
      * @return string
      */
-    protected function makeIndex(array $url_config, bool $have_controller = false): string
+    protected function makeIndex(array $urlConfig, bool $haveController = false): string
     {
         static $cache = [];
-        if (isset($cache[$have_controller])) {
-            return $cache[$have_controller];
+        if (isset($cache[$haveController])) {
+            return $cache[$haveController];
         }
 
-        $index = $url_config['index'];
-        $is_default_index = (0 === strcasecmp($index, 'index.php'));
+        $index = $urlConfig['index'];
+        $isDefaultIndex = (0 === strcasecmp($index, 'index.php'));
 
-        $index_dot = '/';
-        $addition_dot = '';
-        if ($url_config['rewrite']) {
-            $index = $index_dot = $addition_dot = '';
+        $indexDot = '/';
+        $additionDot = '';
+        if ($urlConfig['rewrite']) {
+            $index = $indexDot = $additionDot = '';
         }
 
-        $virtual_path = &$url_config['virtual_path'];
-        if ($have_controller) {
-            $index .= $index_dot . $addition_dot;
-            if ($virtual_path) {
-                $index .= $virtual_path . $url_config['dot'];
+        $virtualPath = &$urlConfig['virtual_path'];
+        if ($haveController) {
+            $index .= $indexDot . $additionDot;
+            if ($virtualPath) {
+                $index .= $virtualPath . $urlConfig['dot'];
             }
         } else {
-            if ($is_default_index) {
+            if ($isDefaultIndex) {
                 $index = '';
             }
 
-            if ($virtual_path) {
-                $index .= $index_dot . $addition_dot . $virtual_path;
-                if ($url_config['ext']) {
-                    $index .= $url_config['ext'];
+            if ($virtualPath) {
+                $index .= $indexDot . $additionDot . $virtualPath;
+                if ($urlConfig['ext']) {
+                    $index .= $urlConfig['ext'];
                 }
             }
         }
 
-        $cache[$have_controller] = $index;
+        $cache[$haveController] = $index;
         return $index;
     }
 
@@ -925,83 +925,72 @@ class View extends FrameBase
      * 生成uri参数字符串
      *
      * @param array $params 当url_type的值不为2时, 值必须是标量(bool型需要在外部转换为int型)
-     * @param array $url_config
-     * @param bool $encrypt_params
-     * @param bool $add_prefix_dot 当控制器字符串为空时,参数不添加前缀
+     * @param array $urlConfig
+     * @param bool $encryptParams
+     * @param bool $addPrefixDot 当控制器字符串为空时,参数不添加前缀
      * @return string
      */
-    protected function makeParams(array $params, array $url_config, bool $encrypt_params = false, bool $add_prefix_dot = true): string
+    protected function makeParams(array $params, array $urlConfig, bool $encryptParams = false, bool $addPrefixDot = true): string
     {
-        $url_dot = &$url_config['dot'];
-        $params_dot = &$url_config['params_dot'];
-        if ($params_dot) {
-            $dot = $params_dot;
+        $urlDot = &$urlConfig['dot'];
+        $paramsDot = &$urlConfig['params_dot'];
+        if ($paramsDot) {
+            $dot = $paramsDot;
         } else {
-            $dot = $url_dot;
+            $dot = $urlDot;
         }
 
-        $url_params = '';
+        $urlParams = '';
         if ($params) {
-            switch ($url_config['type']) {
+            switch ($urlConfig['type']) {
                 case 1:
-                    $url_params = implode($dot, $params);
+                    $urlParams = implode($dot, $params);
                     break;
 
                 case 2:
-                    foreach ($params as $p_key => $p_val) {
-                        $url_params .= $p_key . $dot . $p_val . $dot;
+                    foreach ($params as $pKey => $pVal) {
+                        $urlParams .= $pKey . $dot . $pVal . $dot;
                     }
-                    $url_params = rtrim($url_params, $dot);
+                    $urlParams = rtrim($urlParams, $dot);
                     break;
 
                 default:
-                    $url_dot = '?';
-                    $add_prefix_dot = true;
-                    $url_params = http_build_query($params);
+                    $urlDot = '?';
+                    $addPrefixDot = true;
+                    $urlParams = http_build_query($params);
                     break;
             }
 
-            if (true === $encrypt_params) {
-                $url_params = $this->urlEncrypt($url_params);
+            if (true === $encryptParams) {
+                $urlParams = $this->urlEncrypt($urlParams);
             }
         }
 
-        if ($add_prefix_dot) {
-            return $url_dot . $url_params;
+        if ($addPrefixDot) {
+            return $urlDot . $urlParams;
         }
 
-        return $url_params;
+        return $urlParams;
     }
 
     /**
      * 输出js/css连接
      *
-     * @param string $res_link
-     * @param bool $make_link
+     * @param string $resLink
+     * @param bool $makeLink
      * @return null|string
      */
-    protected function outputResLink(string $res_link, bool $make_link = true): string
+    protected function outputResLink(string $resLink, bool $makeLink = true): string
     {
-        $t = Helper::getExt($res_link);
-        switch (strtolower($t)) {
-            case 'js' :
-                $tpl = '<script type="text/javascript" src="%s"></script>';
-                break;
-
-            case 'css' :
-                $tpl = '<link rel="stylesheet" type="text/css" href="%s"/>';
-                break;
-
-            default :
-                $tpl = null;
+        $resType = strtolower(Helper::getExt($resLink));
+        if ($makeLink) {
+            $resLink = $this->res($resLink);
         }
 
-        if (null !== $tpl) {
-            if ($make_link) {
-                $res_link = $this->res($res_link);
-            }
-
-            return sprintf("{$tpl}\n", $res_link);
+        if ($resType == 'js') {
+            return self::htmlTag('script', ['type' => 'text/javascript', 'src' => $resLink]);
+        } elseif ($resType == 'css') {
+            return self::htmlTag('link', ['rel' => 'stylesheet', 'href' => $resLink]);
         }
 
         return '';
@@ -1011,18 +1000,18 @@ class View extends FrameBase
      * 加载布局
      *
      * @param string $content
-     * @param string $layer_ext
+     * @param string $layerExt
      * @throws CoreException
      */
-    protected function loadLayer(string $content, string $layer_ext = '.layer.php'): void
+    protected function loadLayer(string $content, string $layerExt = '.layer.php'): void
     {
-        $layer_file = $this->getTplPath() . $this->set['layer'] . $layer_ext;
-        if (!is_file($layer_file)) {
-            throw new CoreException($layer_file . ' layer Not found!');
+        $layerFile = $this->getTplPath() . $this->set['layer'] . $layerExt;
+        if (!is_file($layerFile)) {
+            throw new CoreException($layerFile . ' layer Not found!');
         }
 
         extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
-        include $layer_file;
+        include $layerFile;
     }
 
     /**
@@ -1049,23 +1038,23 @@ class View extends FrameBase
     /**
      * 解析路由别名配置
      *
-     * @param string $app_name
+     * @param string $appName
      * @param array $router
      * @return array
      */
-    private function parseControllerAlias(string $app_name, array $router): array
+    private function parseControllerAlias(string $appName, array $router): array
     {
-        static $router_alias_cache;
-        if (!isset($router_alias_cache[$app_name])) {
-            $router_alias_cache[$app_name] = [];
+        static $routerAliasCache;
+        if (!isset($routerAliasCache[$appName])) {
+            $routerAliasCache[$appName] = [];
             if (!empty($router)) {
-                foreach ($router as $controller_alias => $alias_config) {
-                    $router_alias_cache[$app_name][$alias_config] = $controller_alias;
+                foreach ($router as $controllerAlias => $aliasConfig) {
+                    $routerAliasCache[$appName][$aliasConfig] = $controllerAlias;
                 }
             }
         }
 
-        return $router_alias_cache[$app_name];
+        return $routerAliasCache[$appName];
     }
 
     /**
@@ -1073,28 +1062,28 @@ class View extends FrameBase
      *
      * @param string $type 指定类型
      * @param array $data 数据 值和label的关联数组
-     * @param array $default_value 默认值
-     * @param array $input_tags input附加参数
-     * @param array $label_tags label附加参数
+     * @param array $defaultValue 默认值
+     * @param array $inputTags input附加参数
+     * @param array $labelTags label附加参数
      * @return string
      */
-    private function buildRadioOrCheckbox(string $type, array $data, array $default_value = [], array $input_tags = [], array $label_tags = [])
+    private function buildRadioOrCheckbox(string $type, array $data, array $defaultValue = [], array $inputTags = [], array $labelTags = [])
     {
         $content = '';
-        foreach ($data as $value => $label_text) {
-            $build_input_tags = [];
-            if (!empty($input_tags)) {
-                $build_input_tags = $input_tags;
+        foreach ($data as $value => $labelText) {
+            $buildInputTags = [];
+            if (!empty($inputTags)) {
+                $buildInputTags = $inputTags;
             }
 
-            $build_input_tags['type'] = $type;
-            $build_input_tags['value'] = $value;
-            if (isset($default_value[$value])) {
-                $build_input_tags['checked'] = true;
+            $buildInputTags['type'] = $type;
+            $buildInputTags['value'] = $value;
+            if (isset($defaultValue[$value])) {
+                $buildInputTags['checked'] = true;
             }
 
-            $label_tags['@content'] = self::htmlTag('input', $build_input_tags) . $label_text;
-            $content .= self::htmlTag('label', $label_tags);
+            $labelTags['@content'] = self::htmlTag('input', $buildInputTags) . $labelText;
+            $content .= self::htmlTag('label', $labelTags);
         }
 
         return $this->wrapContent($content, false);
@@ -1103,37 +1092,37 @@ class View extends FrameBase
     /**
      * 处理wrap
      *
-     * @param array $wrap_tags
+     * @param array $wrapTags
      * @return mixed
      */
-    private function buildWrapTags(array &$wrap_tags)
+    private function buildWrapTags(array &$wrapTags)
     {
         $i = 0;
-        $wrap_content = '';
-        $stack_size = count($wrap_tags) - 1;
-        while ($wrap_config = array_shift($wrap_tags)) {
-            list($wrap_element, $wrap_element_tags, $after) = $wrap_config;
-            if ($wrap_content === '') {
-                $wrap_content = HTML::$wrap_element($wrap_element_tags);
+        $content = '';
+        $stackSize = count($wrapTags) - 1;
+        while ($wrapConfig = array_shift($wrapTags)) {
+            list($element, $tags, $after) = $wrapConfig;
+            if ($content === '') {
+                $content = HTML::$element($tags);
             } else {
-                if (isset($wrap_element_tags['@content']) && $after) {
-                    $wrap_element_tags['@content'] = $wrap_content . $wrap_element_tags['@content'];
-                } else if (isset($wrap_element_tags['@content'])) {
-                    $wrap_element_tags['@content'] .= $wrap_content;
+                if (isset($tags['@content']) && $after) {
+                    $tags['@content'] = $content . $tags['@content'];
+                } else if (isset($tags['@content'])) {
+                    $tags['@content'] .= $content;
                 } else {
-                    $wrap_element_tags['@content'] = $wrap_content;
+                    $tags['@content'] = $content;
                 }
 
-                if ($i == $stack_size) {
-                    return self::htmlTag($wrap_element, $wrap_element_tags);
+                if ($i == $stackSize) {
+                    return self::htmlTag($element, $tags);
                 } else {
-                    $wrap_content = HTML::$wrap_element($wrap_element_tags);
+                    $content = HTML::$element($tags);
                 }
             }
             $i++;
         }
 
-        return $wrap_content;
+        return $content;
     }
 
     /**
@@ -1145,16 +1134,16 @@ class View extends FrameBase
      */
     private function wrapContent(string $content, bool $encode = true)
     {
-        if (!empty($this->wrap_stack)) {
-            $stack_top = &$this->wrap_stack[0];
-            if (isset($stack_top[1]['@content']) && $stack_top[2]) {
-                $content .= $stack_top[1]['@content'];
-            } else if (isset($stack_top[1]['@content'])) {
-                $content = $stack_top[1]['@content'] . $content;
+        if (!empty($this->wrapStack)) {
+            $stackTop = &$this->wrapStack[0];
+            if (isset($stackTop[1]['@content']) && $stackTop[2]) {
+                $content .= $stackTop[1]['@content'];
+            } else if (isset($stackTop[1]['@content'])) {
+                $content = $stackTop[1]['@content'] . $content;
             }
 
-            $stack_top[1]['@content'] = $content;
-            return $this->buildWrapTags($this->wrap_stack);
+            $stackTop[1]['@content'] = $content;
+            return $this->buildWrapTags($this->wrapStack);
         } else if ($encode) {
             return htmlentities($content, ENT_IGNORE);
         } else {
@@ -1166,16 +1155,16 @@ class View extends FrameBase
      * 节点入栈并生成HTML
      *
      * @param string $element
-     * @param array $element_tags
+     * @param array $elementTags
      * @return mixed|string
      */
-    private function wrapTag(string $element, array $element_tags = [])
+    private function wrapTag(string $element, array $elementTags = [])
     {
-        if (!empty($this->wrap_stack)) {
-            $this->wrap($element, $element_tags);
-            return $this->buildWrapTags($this->wrap_stack);
+        if (!empty($this->wrapStack)) {
+            $this->wrap($element, $elementTags);
+            return $this->buildWrapTags($this->wrapStack);
         }
 
-        return self::htmlTag($element, $element_tags);
+        return self::htmlTag($element, $elementTags);
     }
 }
