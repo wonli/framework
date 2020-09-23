@@ -8,6 +8,8 @@
 
 namespace Cross\Http;
 
+use Cross\Core\Delegate;
+
 /**
  * @author wonli <wonli@live.com>
  * Class Response
@@ -34,28 +36,28 @@ class Response
      *
      * @var array
      */
-    protected $cookie_config = [];
+    protected $cookieConfig = [];
 
     /**
      * 返回头http类型
      *
      * @var string
      */
-    protected $content_type;
+    protected $contentType;
 
     /**
      * http 状态代码
      *
      * @var int
      */
-    protected $response_status;
+    protected $responseStatus;
 
     /**
      * 停止发送标识
      *
      * @var bool
      */
-    protected $is_end_flush = false;
+    protected $endFlush = false;
 
     /**
      * 输出内容
@@ -96,7 +98,7 @@ class Response
      */
     function setResponseStatus(int $status = 200): self
     {
-        $this->response_status = $status;
+        $this->responseStatus = $status;
         return $this;
     }
 
@@ -105,11 +107,11 @@ class Response
      */
     function getResponseStatus(): int
     {
-        if (!$this->response_status) {
+        if (!$this->responseStatus) {
             $this->setResponseStatus();
         }
 
-        return $this->response_status;
+        return $this->responseStatus;
     }
 
     /**
@@ -152,13 +154,30 @@ class Response
     function setCookie(string $name, $value = '', int $expire = 0): self
     {
         $this->cookie[$name] = [
-            $name,
-            $value,
-            $expire,
+            $name, $value, $expire,
             $this->getCookieConfig('path'),
             $this->getCookieConfig('domain'),
-            $this->getCookieConfig('secure'),
-            $this->getCookieConfig('httponly')
+            Request::getInstance()->isSecure(),
+            true
+        ];
+
+        return $this;
+    }
+
+    /**
+     * 发送一个原生cookie
+     *
+     * @param string $name
+     * @param string $value
+     * @param int $expire
+     * @param string $path
+     * @param string $domain
+     * @return $this
+     */
+    function setRawCookie(string $name, $value = '', int $expire = 0, $path = '', $domain = '')
+    {
+        $this->cookie[$name] = [
+            $name, $value, $expire, $path, $domain, Request::getInstance()->isSecure(), true
         ];
 
         return $this;
@@ -202,7 +221,7 @@ class Response
      */
     function cookieConfig(array $config): self
     {
-        $this->cookie_config = $config;
+        $this->cookieConfig = $config;
         return $this;
     }
 
@@ -214,19 +233,26 @@ class Response
      */
     function getCookieConfig(string $key)
     {
-        $default = ['path' => '/', 'domain' => '', 'secure' => false, 'httponly' => true];
-        return $default[$key] ?? null;
+        static $cookieConfig = null;
+        if (null === $cookieConfig) {
+            $cookieConfig = ['path' => Delegate::env('cookie.path') ?? '/', 'domain' => Delegate::env('cookie.domain') ?? ''];
+            if (!empty($this->cookieConfig)) {
+                $cookieConfig = array_merge($cookieConfig, $this->cookieConfig);
+            }
+        }
+
+        return $cookieConfig[$key] ?? null;
     }
 
     /**
      * 设置返回头类型
      *
-     * @param string $content_type
+     * @param string $contentType
      * @return self
      */
-    function setContentType(string $content_type = 'html'): self
+    function setContentType(string $contentType = 'html'): self
     {
-        $this->content_type = strtolower($content_type);
+        $this->contentType = strtolower($contentType);
         return $this;
     }
 
@@ -237,11 +263,11 @@ class Response
      */
     function getContentType(): string
     {
-        if (!$this->content_type) {
+        if (!$this->contentType) {
             $this->setContentType();
         }
 
-        return $this->content_type;
+        return $this->contentType;
     }
 
     /**
@@ -358,16 +384,16 @@ class Response
      */
     function sendContentType(): void
     {
-        $content_type_name = $this->getContentType();
-        if (isset(self::$mime_types [$content_type_name])) {
-            $content_type = self::$mime_types [$content_type_name];
-        } elseif ($content_type_name) {
-            $content_type = $content_type_name;
+        $contentTypeName = $this->getContentType();
+        if (isset(self::$mimeTypes [$contentTypeName])) {
+            $contentType = self::$mimeTypes [$contentTypeName];
+        } elseif ($contentTypeName) {
+            $contentType = $contentTypeName;
         } else {
-            $content_type = self::$mime_types ['html'];
+            $contentType = self::$mimeTypes ['html'];
         }
 
-        header("Content-Type: {$content_type}; charset=utf-8");
+        header("Content-Type: {$contentType}; charset=utf-8");
     }
 
     /**
@@ -390,7 +416,7 @@ class Response
     {
         if (!empty($this->cookie)) {
             foreach ($this->cookie as $cookie) {
-                call_user_func_array('setcookie', $cookie);
+                $ret = call_user_func_array('setcookie', $cookie);
             }
         }
     }
@@ -423,7 +449,7 @@ class Response
      */
     function setEndFlush(bool $status): self
     {
-        $this->is_end_flush = $status;
+        $this->endFlush = $status;
         return $this;
     }
 
@@ -434,7 +460,7 @@ class Response
      */
     function isEndFlush(): bool
     {
-        return $this->is_end_flush;
+        return $this->endFlush;
     }
 
     /**
@@ -492,16 +518,16 @@ class Response
     private function httpDigestParse(string $txt)
     {
         $data = [];
-        $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
-        $keys = implode('|', array_keys($needed_parts));
+        $neededParts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
+        $keys = implode('|', array_keys($neededParts));
 
         preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
         foreach ($matches as $m) {
             $data[$m[1]] = $m[3] ? $m[3] : $m[4];
-            unset($needed_parts[$m[1]]);
+            unset($neededParts[$m[1]]);
         }
 
-        return $needed_parts ? false : $data;
+        return $neededParts ? false : $data;
     }
 
     /**
@@ -550,9 +576,9 @@ class Response
     ];
 
     /**
-     * @var array $mime_types
+     * @var array $mimeTypes
      */
-    static public $mime_types = [
+    static public $mimeTypes = [
         'ez' => 'application/andrew-inset',
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',
