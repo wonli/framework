@@ -308,6 +308,23 @@ class Request
     }
 
     /**
+     * 判断是否使用https
+     *
+     * @return bool
+     */
+    function isSecure(): bool
+    {
+        $isSecure = false;
+        if ('on' == $this->SERVER('HTTPS') || 443 == $this->SERVER('SERVER_PORT')) {
+            $isSecure = true;
+        } elseif ('https' == $this->SERVER('HTTP_X_FORWARDED_PROTO') || 'on' == $this->SERVER('HTTP_X_FORWARDED_SSL')) {
+            $isSecure = true;
+        }
+
+        return $isSecure;
+    }
+
+    /**
      * 获取客户端IP地址
      *
      * @param array $env_keys
