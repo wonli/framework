@@ -17,35 +17,20 @@ use Cross\Exception\FrontException;
  */
 class Request
 {
-    private $baseUrl;
-    private $hostInfo;
-    private $scriptUrl;
-    private static $instance;
+    protected $baseUrl;
+    protected $hostInfo;
+    protected $scriptUrl;
 
-    /**
-     * @var array
-     */
     protected $getData = [];
-
-    /**
-     * @var array
-     */
     protected $postData = [];
-
-    /**
-     * @var array
-     */
     protected $fileData = [];
-
-    /**
-     * @var array
-     */
     protected $serverData = [];
+    protected $requestData = [];
 
     /**
-     * @var array
+     * @var self
      */
-    protected $requestData = [];
+    protected static $instance;
 
     /**
      * @var string
@@ -366,7 +351,7 @@ class Request
      * @param string $name
      * @return string
      */
-    function SERVER($name): string
+    function SERVER(string $name): string
     {
         return $this->serverData[$name] ?? '';
     }
@@ -569,7 +554,7 @@ class Request
         }
 
         $protocol = 'http';
-        if (strcasecmp($this->SERVER('HTTPS'), 'on') === 0) {
+        if ($this->isSecure()) {
             $protocol = 'https';
         }
 

@@ -9,6 +9,8 @@
 namespace Cross\Auth;
 
 use Cross\I\HttpAuthInterface;
+use Cross\Core\Delegate;
+use Cross\Http\Request;
 use Cross\Core\Helper;
 
 /**
@@ -56,12 +58,8 @@ class CookieAuth implements HttpAuthInterface
             }
         }
 
-        $cookie_domain = null;
-        if (defined('COOKIE_DOMAIN')) {
-            $cookie_domain = COOKIE_DOMAIN;
-        }
-
-        return setcookie($name, $value, $expire, '/', $cookie_domain, null, true);
+        $cookieDomain = Delegate::env('cookie.domain') ?? '';
+        return setcookie($name, $value, $expire, '/', $cookieDomain, Request::getInstance()->isSecure(), true);
     }
 
     /**
@@ -106,7 +104,7 @@ class CookieAuth implements HttpAuthInterface
      * @param string $cookieName
      * @return string
      */
-    protected function getEncryptKey($cookieName): string
+    protected function getEncryptKey(string $cookieName): string
     {
         return md5($cookieName . $this->authKey);
     }
