@@ -17,16 +17,9 @@ use Cross\I\HttpAuthInterface;
  */
 class SessionAuth implements HttpAuthInterface
 {
-    /**
-     * 加解密默认key
-     *
-     * @var string
-     */
-    protected $authKey;
-
-    function __construct(string $authKey = '')
+    function __construct()
     {
-        if (!isset($_SESSION)) {
+        if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
     }

@@ -20,22 +20,18 @@ use Cross\Model\RedisModel;
 class RedisAuth implements HttpAuthInterface
 {
     /**
-     * 加解密默认key
-     *
-     * @var string
-     */
-    protected $authKey;
-
-    /**
      * auth key前缀
      *
      * @var string
      */
-    protected $authKeyPrefix = '';
+    protected $authKeyPrefix;
 
-    function __construct(string $authKey = '')
+    /**
+     * RedisAuth constructor.
+     */
+    function __construct()
     {
-        if (!isset($_SESSION)) {
+        if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
 
