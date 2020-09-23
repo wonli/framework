@@ -147,8 +147,8 @@ class RedisDriver
         $db = &$this->option['db'];
         $current = $this->id . ':' . $db;
         if ($selected !== $current) {
-            $select_ret = $this->link->select($db);
-            if ($select_ret) {
+            $selectRet = $this->link->select($db);
+            if ($selectRet) {
                 $selected = $current;
             } else {
                 throw new CoreException("Redis select DB($current) failed!");

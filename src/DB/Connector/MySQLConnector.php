@@ -71,16 +71,16 @@ class MySQLConnector extends BaseConnector
      * @param string $dsn
      * @param string $user
      * @param string $password
-     * @param array $option
+     * @param array $options
      * @return mixed
      * @throws DBConnectException
      */
-    static function getInstance($dsn, $user, $password, array $option = []): self
+    static function getInstance(string $dsn, string $user, string $password, array $options): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
         if (!isset(self::$instance[$key])) {
-            self::$instance [$key] = new self($dsn, $user, $password, $option);
+            self::$instance [$key] = new self($dsn, $user, $password, $options);
         }
 
         return self::$instance [$key];
@@ -104,8 +104,8 @@ class MySQLConnector extends BaseConnector
      */
     public function getPK(string $table): string
     {
-        $table_info = $this->getMetaData($table, false);
-        foreach ($table_info as $ti) {
+        $tableInfo = $this->getMetaData($table, false);
+        foreach ($tableInfo as $ti) {
             if ($ti['Extra'] == 'auto_increment') {
                 return $ti['Field'];
             }
@@ -128,14 +128,14 @@ class MySQLConnector extends BaseConnector
      * 获取表的字段信息
      *
      * @param string $table
-     * @param bool $fields_map
+     * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fields_map = true): array
+    function getMetaData(string $table, bool $fieldsMap = true): array
     {
         $data = $this->pdo->query("SHOW FULL FIELDS FROM {$table}");
         try {
-            if ($fields_map) {
+            if ($fieldsMap) {
                 $result = [];
                 $data->fetchAll(PDO::FETCH_FUNC,
                     function ($field, $type, $collation, $null, $key, $default, $extra, $privileges, $comment) use (&$result) {

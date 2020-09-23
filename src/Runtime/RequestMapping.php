@@ -118,8 +118,8 @@ class RequestMapping
     /**
      * 添加路由（按当前请求类型分组，等同于Any）
      *
-     * @param string $router
-     * @param string $handler
+     * @param mixed $router
+     * @param mixed $handler
      * @return bool
      * @throws CoreException
      */
@@ -186,26 +186,26 @@ class RequestMapping
         $matchString = $this->matchString;
         $customRouterParamsToken = preg_replace("#\{:(.*?)\}#", '{PARAMS}', $customRouter);
         while (strlen($customRouterParamsToken) > 0) {
-            $defined_params_pos = strpos($customRouterParamsToken, '{PARAMS}');
-            if ($defined_params_pos) {
-                $compare_ret = substr_compare($customRouterParamsToken, $matchString, 0, $defined_params_pos);
+            $definedParamsPos = strpos($customRouterParamsToken, '{PARAMS}');
+            if ($definedParamsPos) {
+                $compareRet = substr_compare($customRouterParamsToken, $matchString, 0, $definedParamsPos);
             } else {
-                $compare_ret = strcasecmp($customRouterParamsToken, $matchString);
+                $compareRet = strcasecmp($customRouterParamsToken, $matchString);
             }
 
-            if ($compare_ret !== 0) {
+            if ($compareRet !== 0) {
                 return false;
             }
 
             //分段解析
-            $customRouterParamsToken = substr($customRouterParamsToken, $defined_params_pos + 8);
-            $matchString = substr($matchString, $defined_params_pos);
+            $customRouterParamsToken = substr($customRouterParamsToken, $definedParamsPos + 8);
+            $matchString = substr($matchString, $definedParamsPos);
 
             if ($customRouterParamsToken) {
                 //下一个标识符的位置
-                $next_defined_dot_pos = strpos($matchString, $customRouterParamsToken[0]);
-                $paramValue = substr($matchString, 0, $next_defined_dot_pos);
-                $matchString = substr($matchString, $next_defined_dot_pos);
+                $nextDefinedDotPos = strpos($matchString, $customRouterParamsToken[0]);
+                $paramValue = substr($matchString, 0, $nextDefinedDotPos);
+                $matchString = substr($matchString, $nextDefinedDotPos);
             } else {
                 $paramValue = $matchString;
             }
@@ -238,10 +238,10 @@ class RequestMapping
         $isLowLevelRouter = preg_match_all("#(.*?)(?:(?:\[(.))|)\{:(.*?)\}(?:\]|)|(?:.+)#", $customRouter, $matches);
         if ($isLowLevelRouter) {
             $level = 'current';
-            $prefix_string_length = strlen($matches[1][0]);
-            if ($prefix_string_length == 0) {
+            $prefixStringLength = strlen($matches[1][0]);
+            if ($prefixStringLength == 0) {
                 $level = 'high';
-            } elseif ($prefix_string_length == 1) {
+            } elseif ($prefixStringLength == 1) {
                 $level = 'global';
             }
 

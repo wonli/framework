@@ -29,14 +29,14 @@ class MemcacheDriver
      *
      * @var array
      */
-    protected $defaultOptions = array(
+    protected $defaultOptions = [
         'persistent' => true,
         'weight' => 1,
         'timeout' => 1,
         'retry_interval' => 15,
         'status' => true,
         'failure_callback' => null
-    );
+    ];
 
     /**
      * MemcacheDriver constructor.

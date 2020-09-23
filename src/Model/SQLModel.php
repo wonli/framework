@@ -327,12 +327,12 @@ class SQLModel
      * @param mixed $where
      * @param string|null $fields
      * @param mixed $order
-     * @param mixed $group_by
+     * @param mixed $groupBy
      * @param int|null $limit
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function getAll($where = null, string $fields = null, $order = null, $group_by = null, $limit = null)
+    function getAll($where = null, string $fields = null, $order = null, $groupBy = null, $limit = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
@@ -342,7 +342,7 @@ class SQLModel
             $fields = $this->queryFields;
         }
 
-        return $this->db()->getAll($this->getTable(), $fields, $where, $order, $group_by, $limit);
+        return $this->db()->getAll($this->getTable(), $fields, $where, $order, $groupBy, $limit);
     }
 
     /**
@@ -352,11 +352,11 @@ class SQLModel
      * @param mixed $where
      * @param string|null $fields
      * @param mixed $order
-     * @param mixed $group_by
+     * @param mixed $groupBy
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = null, $order = null, $group_by = null)
+    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = null, $order = null, $groupBy = null)
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
@@ -366,7 +366,7 @@ class SQLModel
             $fields = $this->queryFields;
         }
 
-        return $this->db()->find($this->getTable(), $fields, $where, $page, $order, $group_by);
+        return $this->db()->find($this->getTable(), $fields, $where, $page, $order, $groupBy);
     }
 
     /**

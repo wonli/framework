@@ -109,7 +109,7 @@ class Main extends Controller
     function makeEncryptLinkAndDecryptParams()
     {
         $params = $this->params;
-        $link_type = $this->params['link_type'];
+        $linkType = $this->params['link_type'];
         $dot = $this->params['dot'];
         $ext = $this->params['ext'];
 
@@ -118,7 +118,7 @@ class Main extends Controller
             'rewrite' => false,
             'ext' => $ext,
             'dot' => $dot,
-            'type' => $link_type
+            'type' => $linkType
         ));
 
         $controller = 'Main';
@@ -131,16 +131,16 @@ class Main extends Controller
             'p3' => $params['p3']
         ));
 
-        $custom_router_params[] = $controller;
-        $custom_router_params[] = $action;
+        $customRouterParams[] = $controller;
+        $customRouterParams[] = $action;
 
-        if ($link_type > 2) {
-            list(, $params_string) = explode('?', $url);
+        if ($linkType > 2) {
+            list(, $paramsString) = explode('?', $url);
         } else {
-            $url_array = explode($dot, $url);
-            $params_string = end($url_array);
+            $urlArray = explode($dot, $url);
+            $paramsString = end($urlArray);
         }
 
-        return $this->sParams(true, $params_string);
+        return $this->sParams(true, $paramsString);
     }
 }

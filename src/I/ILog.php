@@ -23,7 +23,7 @@ interface ILog
      * @param mixed $log
      * @return mixed
      */
-    function write($e, $log = '');
+    function write(string $e, $log = '');
 
     /**
      * 添加到日志
@@ -32,5 +32,5 @@ interface ILog
      * @param mixed $data 日志内容
      * @return $this
      */
-    function addToLog($tag, $data = []);
+    function addToLog(string $tag, $data = []);
 }

@@ -110,17 +110,17 @@ class Controller extends FrameBase
      * 重定向
      *
      * @param string $url
-     * @param int $http_response_status
+     * @param int $httpResponseStatus
      * @see Response::redirect
      *
      */
-    protected function redirect(string $url, int $http_response_status = 302): void
+    protected function redirect(string $url, int $httpResponseStatus = 302): void
     {
         $has = $this->delegate->getClosureContainer()->has('redirect', $closure);
         if ($has) {
-            $closure($url, $http_response_status);
+            $closure($url, $httpResponseStatus);
         } else {
-            $this->delegate->getResponse()->redirect($url, $http_response_status);
+            $this->delegate->getResponse()->redirect($url, $httpResponseStatus);
         }
     }
 
@@ -145,13 +145,13 @@ class Controller extends FrameBase
      *
      * @param mixed $data
      * @param string|null $method
-     * @param int $http_response_status
+     * @param int $httpResponseStatus
      * @throws CoreException
      * @see View::display()
      */
-    protected function display($data = null, string $method = null, int $http_response_status = 200): void
+    protected function display($data = null, string $method = null, int $httpResponseStatus = 200): void
     {
-        $this->delegate->getResponse()->setResponseStatus($http_response_status);
+        $this->delegate->getResponse()->setResponseStatus($httpResponseStatus);
         $this->view->display($data, $method);
     }
 
@@ -226,47 +226,47 @@ class Controller extends FrameBase
     /**
      * 发送一个包含文件名的下载头
      *
-     * @param string|null $file_name
-     * @param array $add_header
-     * @param bool $only_add_header
+     * @param string|null $fileName
+     * @param array $addHeader
+     * @param bool $onlyAddHeader
      */
-    protected function sendDownloadHeader(string $file_name = null, array $add_header = [], bool $only_add_header = false): void
+    protected function sendDownloadHeader(string $fileName = null, array $addHeader = [], bool $onlyAddHeader = false): void
     {
-        if (null === $file_name) {
-            $file_name = $this->controller . '_' . $this->action;
+        if (null === $fileName) {
+            $fileName = $this->controller . '_' . $this->action;
         }
 
-        $download_header = [
+        $downloadHeader = [
             "Pragma: public",
             "Expires: 0",
             "Cache-Control: must-revalidate, post-check=0, pre-check=0",
             "Content-Type: application/force-download",
             "Content-Type: application/octet-stream",
             "Content-Type: application/download",
-            "Content-Disposition:attachment;filename={$file_name}",
+            "Content-Disposition:attachment;filename={$fileName}",
             "Content-Transfer-Encoding:binary"
         ];
 
-        if (!empty($add_header)) {
-            if (true === $only_add_header) {
-                $download_header = $add_header;
+        if (!empty($addHeader)) {
+            if (true === $onlyAddHeader) {
+                $downloadHeader = $addHeader;
             } else {
-                $download_header = array_merge($download_header, $add_header);
+                $downloadHeader = array_merge($downloadHeader, $addHeader);
             }
         }
 
-        $this->delegate->getResponse()->setHeader($download_header);
+        $this->delegate->getResponse()->setHeader($downloadHeader);
     }
 
     /**
      * 重设视图action名称
      *
-     * @param string $action_name
+     * @param string $actionName
      * @return self
      */
-    function setAction(string $action_name): self
+    function setAction(string $actionName): self
     {
-        $this->view->action = $action_name;
+        $this->view->action = $actionName;
         return $this;
     }
 }

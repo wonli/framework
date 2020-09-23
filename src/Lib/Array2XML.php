@@ -25,7 +25,7 @@
  * Version: 0.8 (02 May 2012)
  *          - Removed htmlspecialchars() before adding to text node or attributes.
  * Usage:
- *       $xml = Array2XML::createXML('root_node_name', $php_array);
+ *       $xml = Array2XML::createXML('root_node_name', $phpArray);
  *       echo $xml->saveXML();
  */
 
@@ -46,27 +46,27 @@ class Array2XML
      *
      * @param $version
      * @param $encoding
-     * @param $format_output
+     * @param $formatOutput
      */
-    public static function init($version = '1.0', $encoding = 'UTF-8', $format_output = true)
+    public static function init($version = '1.0', $encoding = 'UTF-8', $formatOutput = true)
     {
         self::$xml = new DomDocument($version, $encoding);
-        self::$xml->formatOutput = $format_output;
+        self::$xml->formatOutput = $formatOutput;
         self::$encoding = $encoding;
     }
 
     /**
      * Convert an Array to XML
      *
-     * @param string $node_name - name of the root node to be converted
+     * @param mixed $nodeName - name of the root node to be converted
      * @param array $arr - array to be converterd
      * @return DomDocument
      * @throws Exception
      */
-    public static function &createXML($node_name, $arr = [])
+    public static function &createXML($nodeName, $arr = [])
     {
         $xml = self::getXMLRoot();
-        $xml->appendChild(self::convert($node_name, $arr));
+        $xml->appendChild(self::convert($nodeName, $arr));
 
         self::$xml = null; // clear the xml node in the class for 2nd time use.
         return $xml;
@@ -75,24 +75,24 @@ class Array2XML
     /**
      * Convert an Array to XML
      *
-     * @param string $node_name - name of the root node to be converted
+     * @param mixed $nodeName - name of the root node to be converted
      * @param array $arr - aray to be converterd
      * @throws Exception
      * @return DOMNode
      */
-    private static function &convert($node_name, $arr = [])
+    private static function &convert($nodeName, $arr = [])
     {
 
-        //print_arr($node_name);
+        //print_arr($nodeName);
         $xml = self::getXMLRoot();
-        $node = $xml->createElement($node_name);
+        $node = $xml->createElement($nodeName);
 
         if (is_array($arr)) {
             // get the attributes first.;
             if (isset($arr['@attributes'])) {
                 foreach ($arr['@attributes'] as $key => $value) {
                     if (!self::isValidTagName($key)) {
-                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: ' . $key . ' in node: ' . $node_name);
+                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: ' . $key . ' in node: ' . $nodeName);
                     }
                     $node->setAttribute($key, self::bool2str($value));
                 }
@@ -120,7 +120,7 @@ class Array2XML
             // recurse to get the node for that key
             foreach ($arr as $key => $value) {
                 if (!self::isValidTagName($key)) {
-                    throw new Exception('[Array2XML] Illegal character in tag name. tag: ' . $key . ' in node: ' . $node_name);
+                    throw new Exception('[Array2XML] Illegal character in tag name. tag: ' . $key . ' in node: ' . $nodeName);
                 }
                 if (is_array($value) && is_numeric(key($value))) {
                     // MORE THAN ONE NODE OF ITS KIND;

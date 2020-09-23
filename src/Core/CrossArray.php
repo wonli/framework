@@ -37,20 +37,20 @@ class CrossArray
 
     /**
      * @param array $data
-     * @param string $cache_key
+     * @param string|null $cacheKey
      * @return CrossArray
      */
-    static function init(array &$data, string $cache_key = null): self
+    static function init(array &$data, string $cacheKey = null): self
     {
-        if (null === $cache_key) {
-            $cache_key = md5(json_encode($data));
+        if (null === $cacheKey) {
+            $cacheKey = md5(json_encode($data));
         }
 
-        if (!isset(self::$instance[$cache_key])) {
-            self::$instance[$cache_key] = new self($data);
+        if (!isset(self::$instance[$cacheKey])) {
+            self::$instance[$cacheKey] = new self($data);
         }
 
-        return self::$instance[$cache_key];
+        return self::$instance[$cacheKey];
     }
 
     /**

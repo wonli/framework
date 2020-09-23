@@ -84,9 +84,9 @@ class Router implements RouterInterface
     public function getRouter(): self
     {
         $request = [];
-        $rs = $this->getUriRequest('', $url_config);
+        $rs = $this->getUriRequest('', $urlConfig);
         if (!empty($rs)) {
-            $request = $this->parseRequestString($rs, $url_config);
+            $request = $this->parseRequestString($rs, $urlConfig);
         }
 
         if ($this->delegate->onMultiAppMode()) {
@@ -106,15 +106,15 @@ class Router implements RouterInterface
                     $pathAppName[] = array_shift($request);
                 }
 
-                $app_name = implode('\\', $pathAppName);
+                $appName = implode('\\', $pathAppName);
             } else {
-                $app_name = $multipleApp['default'] ?? '';
-                if (empty($app_name)) {
+                $appName = $multipleApp['default'] ?? '';
+                if (empty($appName)) {
                     throw new CoreException('Not find defaultApp config');
                 }
             }
 
-            $this->delegate->setAppName($app_name);
+            $this->delegate->setAppName($appName);
         }
 
         if (!empty($request)) {
@@ -122,17 +122,17 @@ class Router implements RouterInterface
             if ($closure->has('router')) {
                 $closure->run('router', [$request, $this]);
                 if (empty($this->controller) || empty($this->action)) {
-                    $this->parseRouter($request, $url_config);
+                    $this->parseRouter($request, $urlConfig);
                 }
             } else {
-                $this->parseRouter($request, $url_config);
+                $this->parseRouter($request, $urlConfig);
             }
         } else {
-            $router = $this->parseDefaultRouter($url_config['*']);
+            $router = $this->parseDefaultRouter($urlConfig['*']);
             $this->setController($router[0]);
             $this->setAction($router[1]);
 
-            $params = $this->parseParams([], $url_config);
+            $params = $this->parseParams([], $urlConfig);
             $this->setParams($params);
         }
 
@@ -160,8 +160,8 @@ class Router implements RouterInterface
     function getDefaultRouter(): array
     {
         if (empty($this->defaultRouter)) {
-            $url_config = $this->delegate->getConfig()->get('url');
-            $this->parseDefaultRouter($url_config['*']);
+            $urlConfig = $this->delegate->getConfig()->get('url');
+            $this->parseDefaultRouter($urlConfig['*']);
         }
 
         return $this->defaultRouter;
@@ -201,13 +201,13 @@ class Router implements RouterInterface
      * 按类型解析请求字符串
      *
      * @param string $prefix
-     * @param array $url_config
-     * @param bool $convert_html_entities
+     * @param array $urlConfig
+     * @param bool $convertHtmlEntities
      * @return string
      */
-    public function getUriRequest(string $prefix = '/', &$url_config = [], bool $convert_html_entities = true): string
+    public function getUriRequest(string $prefix = '/', &$urlConfig = [], bool $convertHtmlEntities = true): string
     {
-        $url_config = $this->delegate->getConfig()->get('url');
+        $urlConfig = $this->delegate->getConfig()->get('url');
         if (!empty($this->uriRequest)) {
             return $this->uriRequest;
         }
@@ -216,7 +216,7 @@ class Router implements RouterInterface
         $this->originUriRequest = $uriRequest;
         if ($uriRequest) {
             $uriRequest = urldecode(ltrim($uriRequest, '/'));
-            if ($convert_html_entities) {
+            if ($convertHtmlEntities) {
                 $uriRequest = htmlspecialchars($uriRequest, ENT_QUOTES);
             }
         }
@@ -242,57 +242,57 @@ class Router implements RouterInterface
      * 解析router别名配置
      *
      * @param array $request
-     * @param array $url_config
+     * @param array $urlConfig
      * @internal param $router
      */
-    function parseRouter(array $request, array $url_config): void
+    function parseRouter(array $request, array $urlConfig): void
     {
-        $virtual_path = '';
-        $set_virtual_path = &$url_config['virtual_path'];
-        if (!empty($set_virtual_path) && $set_virtual_path == $request[0]) {
-            $virtual_path = array_shift($request);
+        $virtualPath = '';
+        $setVirtualPath = &$urlConfig['virtual_path'];
+        if (!empty($setVirtualPath) && $setVirtualPath == $request[0]) {
+            $virtualPath = array_shift($request);
         }
 
-        $combine_alias_key = '';
-        $ori_controller = $controller = array_shift($request);
+        $combineAliasKey = '';
+        $oriController = $controller = array_shift($request);
         if (isset($request[0])) {
-            $combine_alias_key = $controller . ':' . $request[0];
+            $combineAliasKey = $controller . ':' . $request[0];
         }
 
-        $controller_alias = '';
-        $router_config = $this->delegate->getConfig()->get('router');
-        if (isset($router_config [$combine_alias_key])) {
+        $controllerAlias = '';
+        $routerConfig = $this->delegate->getConfig()->get('router');
+        if (isset($routerConfig [$combineAliasKey])) {
             array_shift($request);
-            $controller_alias = $router_config [$combine_alias_key];
-        } elseif (isset($router_config [$controller])) {
-            $controller_alias = $router_config [$controller];
+            $controllerAlias = $routerConfig [$combineAliasKey];
+        } elseif (isset($routerConfig [$controller])) {
+            $controllerAlias = $routerConfig [$controller];
         }
 
-        if (!empty($controller_alias)) {
-            if (false !== strpos($controller_alias, ':')) {
-                list($controller, $action) = explode(':', $controller_alias);
+        if (!empty($controllerAlias)) {
+            if (false !== strpos($controllerAlias, ':')) {
+                list($controller, $action) = explode(':', $controllerAlias);
             } else {
-                $controller = $controller_alias;
+                $controller = $controllerAlias;
             }
         }
 
-        $ori_action = '';
+        $oriAction = '';
         if (!isset($action)) {
             if (isset($request[0]) && !empty($request[0])) {
-                $ori_action = $action = array_shift($request);
+                $oriAction = $action = array_shift($request);
             } else {
                 $action = self::DEFAULT_ACTION;
             }
         }
 
-        $addition_params = [];
-        $params = $this->parseParams($request, $url_config, $addition_params);
+        $additionParams = [];
+        $params = $this->parseParams($request, $urlConfig, $additionParams);
         $this->delegate->getConfig()->set('ori_router', [
             'request' => $this->originUriRequest,
-            'addition_params' => $addition_params,
-            'virtual_path' => $virtual_path,
-            'controller' => $ori_controller,
-            'action' => $ori_action,
+            'addition_params' => $additionParams,
+            'virtual_path' => $virtualPath,
+            'controller' => $oriController,
+            'action' => $oriAction,
             'params' => $request,
         ]);
 
@@ -309,9 +309,9 @@ class Router implements RouterInterface
      */
     function getRouterAlias(string $name): string
     {
-        $router_config = $this->delegate->getConfig()->get('router');
-        if (isset($router_config[$name])) {
-            return $router_config[$name];
+        $routerConfig = $this->delegate->getConfig()->get('router');
+        if (isset($routerConfig[$name])) {
+            return $routerConfig[$name];
         }
 
         return $name;
@@ -350,62 +350,62 @@ class Router implements RouterInterface
     /**
      * 将字符串参数解析成数组
      *
-     * @param string $query_string
-     * @param array $url_config
+     * @param string $queryString
+     * @param array $urlConfig
      * @return array
      * @throws FrontException
      */
-    private static function parseRequestString(string $query_string, array $url_config): array
+    private static function parseRequestString(string $queryString, array $urlConfig): array
     {
-        $url_suffix = &$url_config['ext'];
-        if (isset($url_suffix[0]) && ($url_suffix_length = strlen(trim($url_suffix))) > 0) {
-            if (0 === strcasecmp($url_suffix, substr($query_string, -$url_suffix_length))) {
-                $query_string = substr($query_string, 0, -$url_suffix_length);
+        $urlSuffix = &$urlConfig['ext'];
+        if (isset($urlSuffix[0]) && ($urlSuffixLength = strlen(trim($urlSuffix))) > 0) {
+            if (0 === strcasecmp($urlSuffix, substr($queryString, -$urlSuffixLength))) {
+                $queryString = substr($queryString, 0, -$urlSuffixLength);
             } else {
                 throw new FrontException('Page not found !');
             }
         }
 
-        $url_dot = &$url_config['dot'];
-        if ($url_dot && false !== strpos($query_string, $url_dot)) {
-            $router_params = explode($url_dot, $query_string);
-            $end_params = array_pop($router_params);
+        $urlDot = &$urlConfig['dot'];
+        if ($urlDot && false !== strpos($queryString, $urlDot)) {
+            $routerParams = explode($urlDot, $queryString);
+            $endParams = array_pop($routerParams);
         } else {
-            $router_params = [];
-            $end_params = $query_string;
+            $routerParams = [];
+            $endParams = $queryString;
         }
 
-        $params_dot = &$url_config['params_dot'];
-        if ($params_dot && $params_dot != $url_dot && false !== strpos($end_params, $params_dot)) {
-            $params_data = explode($params_dot, $end_params);
-            foreach ($params_data as $p) {
-                $router_params[] = $p;
+        $paramsDot = &$urlConfig['params_dot'];
+        if ($paramsDot && $paramsDot != $urlDot && false !== strpos($endParams, $paramsDot)) {
+            $paramsData = explode($paramsDot, $endParams);
+            foreach ($paramsData as $p) {
+                $routerParams[] = $p;
             }
         } else {
-            $router_params[] = $end_params;
+            $routerParams[] = $endParams;
         }
 
-        return array_filter($router_params);
+        return array_filter($routerParams);
     }
 
     /**
      * 解析默认控制器和方法
      *
-     * @param string $default_router
+     * @param string $defaultRouter
      * @return array
      * @throws CoreException
      */
-    private function parseDefaultRouter(string $default_router): array
+    private function parseDefaultRouter(string $defaultRouter): array
     {
-        if (empty($default_router)) {
+        if (empty($defaultRouter)) {
             throw new CoreException('Undefined default router!');
         }
 
         if (empty($this->defaultRouter)) {
-            if (false !== strpos($default_router, ':')) {
-                list($controller, $action) = explode(':', $default_router);
+            if (false !== strpos($defaultRouter, ':')) {
+                list($controller, $action) = explode(':', $defaultRouter);
             } else {
-                $controller = $default_router;
+                $controller = $defaultRouter;
                 $action = self::DEFAULT_ACTION;
             }
 
@@ -419,20 +419,20 @@ class Router implements RouterInterface
      * 解析参数并处理附加参数
      *
      * @param array $params
-     * @param array $url_config
-     * @param array $addition_params
+     * @param array $urlConfig
+     * @param array $additionParams
      * @return array
      */
-    private function parseParams(array $params, array $url_config, array &$addition_params = []): array
+    private function parseParams(array $params, array $urlConfig, array &$additionParams = []): array
     {
-        $addition_params = $this->delegate->getRequest()->getGetData();
+        $additionParams = $this->delegate->getRequest()->getGetData();
         if (empty($params)) {
-            $params = $addition_params;
-        } elseif (is_array($params) && !empty($addition_params)) {
-            if ($url_config['type'] > 2) {
-                $params = array_merge($params, $addition_params);
+            $params = $additionParams;
+        } elseif (is_array($params) && !empty($additionParams)) {
+            if ($urlConfig['type'] > 2) {
+                $params = array_merge($params, $additionParams);
             } else {
-                $params += $addition_params;
+                $params += $additionParams;
             }
         }
 

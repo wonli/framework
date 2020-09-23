@@ -42,7 +42,7 @@ class PgSQLConnector extends BaseConnector
      * @param array $options
      * @throws DBConnectException
      */
-    private function __construct(string $dsn, string $user, $password, array $options = [])
+    private function __construct(string $dsn, string $user, string $password, array $options = [])
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));
@@ -55,17 +55,17 @@ class PgSQLConnector extends BaseConnector
      * @param string $dsn
      * @param string $user
      * @param string $password
-     * @param array $option
+     * @param array $options
      * @return mixed
      * @throws DBConnectException
      * @see MysqlModel::__construct
      */
-    static function getInstance(string $dsn, string $user, $password, array $option = []): self
+    static function getInstance(string $dsn, string $user, string $password, array $options): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
         if (!isset(self::$instance[$key])) {
-            self::$instance [$key] = new self($dsn, $user, $password, $option);
+            self::$instance [$key] = new self($dsn, $user, $password, $options);
         }
 
         return self::$instance [$key];
@@ -84,13 +84,13 @@ class PgSQLConnector extends BaseConnector
     /**
      * 获取表的主键名
      *
-     * @param string $table_name
+     * @param string $tableName
      * @return string
      */
-    public function getPK(string $table_name): string
+    public function getPK(string $tableName): string
     {
-        $table_info = $this->getMetaData($table_name, false);
-        foreach ($table_info as $info) {
+        $tableInfo = $this->getMetaData($tableName, false);
+        foreach ($tableInfo as $info) {
             if ($info['contype'] == 'p') {
                 return $info['column_name'];
             }
@@ -118,10 +118,10 @@ class PgSQLConnector extends BaseConnector
      * 获取表的字段信息
      *
      * @param string $table
-     * @param bool $fields_map
+     * @param bool $fieldsMap
      * @return array
      */
-    function getMetaData(string $table, bool $fields_map = true): array
+    function getMetaData(string $table, bool $fieldsMap = true): array
     {
         $sql = "select a.column_name, a.is_nullable, a.column_default, p.contype from (
                     select i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
@@ -131,15 +131,15 @@ class PgSQLConnector extends BaseConnector
 
         try {
             $data = $this->pdo->query($sql);
-            if ($fields_map) {
+            if ($fieldsMap) {
                 $result = [];
-                $data->fetchAll(PDO::FETCH_FUNC, function ($column_name, $is_null, $column_default, $con_type) use (&$result) {
-                    $auto_increment = preg_match("/nextval\((.*)\)/", $column_default);
-                    $result[$column_name] = [
-                        'primary' => $con_type == 'p',
-                        'auto_increment' => $auto_increment,
-                        'default_value' => $auto_increment ? '' : strval($column_default),
-                        'not_null' => $is_null == 'NO',
+                $data->fetchAll(PDO::FETCH_FUNC, function ($columnName, $isNull, $columnDefault, $conType) use (&$result) {
+                    $autoIncrement = preg_match("/nextval\((.*)\)/", $columnDefault);
+                    $result[$columnName] = [
+                        'primary' => $conType == 'p',
+                        'auto_increment' => $autoIncrement,
+                        'default_value' => $autoIncrement ? '' : strval($columnDefault),
+                        'not_null' => $isNull == 'NO',
                     ];
                 });
                 return $result;

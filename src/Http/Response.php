@@ -326,8 +326,8 @@ class Response
         if (isset($data['username']) && isset($users[$data['username']])) {
             $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
             $A2 = md5($requestMethod . ':' . $data['uri']);
-            $valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
-            if (0 === strcmp($valid_response, $data['response'])) {
+            $validResponse = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
+            if (0 === strcmp($validResponse, $data['response'])) {
                 return;
             }
         }

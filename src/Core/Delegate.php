@@ -175,13 +175,13 @@ class Delegate
      *
      * @param string $controller "控制器:方法"
      * @param mixed $args 参数
-     * @param bool $return_content 是输出还是直接返回结果
+     * @param bool $returnContent 是输出还是直接返回结果
      * @return mixed
      * @throws CoreException
      */
-    public function get(string $controller, $args = [], bool $return_content = false)
+    public function get(string $controller, $args = [], bool $returnContent = false)
     {
-        return $this->app->dispatcher($controller, $args, $return_content);
+        return $this->app->dispatcher($controller, $args, $returnContent);
     }
 
     /**
@@ -475,7 +475,7 @@ class Delegate
             'path' => $appPath
         ];
 
-        $env_config = [
+        $envConfig = [
             //url相关设置
             'url' => [
                 'host' => $host,
@@ -505,7 +505,7 @@ class Delegate
         }
 
         //默认环境
-        $Config->combine($env_config);
+        $Config->combine($envConfig);
 
         //运行时配置
         $Config->combine($runtimeConfig);
@@ -513,9 +513,9 @@ class Delegate
         //app共享配置
         $appConfigFile = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.config.php';
         if (file_exists($appConfigFile)) {
-            $app_config = Config::load($appConfigFile)->getAll();
-            if (!empty($app_config)) {
-                $Config->combine($app_config, false);
+            $appConfig = Config::load($appConfigFile)->getAll();
+            if (!empty($appConfig)) {
+                $Config->combine($appConfig, false);
             }
         }
 

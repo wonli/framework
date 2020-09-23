@@ -27,24 +27,24 @@ interface PDOConnector
      * @param array $options
      * @return mixed
      */
-    static function getInstance(string $dsn, string $user, $password, array $options);
+    static function getInstance(string $dsn, string $user, string $password, array $options);
 
     /**
      * 获取表的主键名
      *
-     * @param string $table_name
+     * @param string $tableName
      * @return string
      */
-    function getPK(string $table_name): string;
+    function getPK(string $tableName): string;
 
     /**
      * 获取表的字段信息
      *
-     * @param string $table_name
-     * @param bool $fields_map
+     * @param string $tableName
+     * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table_name, bool $fields_map = true): array;
+    function getMetaData(string $tableName, bool $fieldsMap = true): array;
 
     /**
      * 设置序号（oracle）

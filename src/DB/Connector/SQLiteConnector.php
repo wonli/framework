@@ -49,13 +49,13 @@ class SQLiteConnector extends BaseConnector
 
     /**
      * @param string $dsn
-     * @param null $user
-     * @param null $pwd
+     * @param string $user
+     * @param string $password
      * @param array $options
      * @return SQLiteConnector|PDO
      * @throws DBConnectException
      */
-    static function getInstance(string $dsn, $user = null, $pwd = null, array $options = []): self
+    static function getInstance(string $dsn, string $user, string $password, array $options): self
     {
         $key = md5($dsn);
         if (empty(self::$instance[$key])) {
@@ -107,21 +107,21 @@ class SQLiteConnector extends BaseConnector
      * 获取表的字段信息
      *
      * @param string $table
-     * @param bool $fields_map
+     * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fields_map = true): array
+    function getMetaData(string $table, bool $fieldsMap = true): array
     {
         $sql = "PRAGMA table_info('{$table}')";
         try {
             $data = $this->pdo->query($sql);
-            if ($fields_map) {
+            if ($fieldsMap) {
                 $result = [];
-                $data->fetchAll(PDO::FETCH_FUNC, function ($cid, $name, $type, $notnull, $dflt_value, $pk) use (&$result) {
+                $data->fetchAll(PDO::FETCH_FUNC, function ($cid, $name, $type, $notnull, $dfltValue, $pk) use (&$result) {
                     $result[$name] = [
                         'primary' => $pk == 1,
                         'auto_increment' => (bool)(($pk == 1) && ($type == 'INTEGER')), //INTEGER && PRIMARY KEY.
-                        'default_value' => strval($dflt_value),
+                        'default_value' => strval($dfltValue),
                         'not_null' => $notnull == 1
                     ];
                 });

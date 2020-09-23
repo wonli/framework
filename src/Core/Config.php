@@ -82,14 +82,14 @@ class Config
     /**
      * 合并附加数组到源数组
      *
-     * @param array $append_config
+     * @param array $appendConfig
      * @param bool $cover 是否覆盖已有值
      * @return $this
      */
-    function combine(array $append_config = [], bool $cover = true): self
+    function combine(array $appendConfig = [], bool $cover = true): self
     {
-        if (!empty($append_config)) {
-            foreach ($append_config as $key => $value) {
+        if (!empty($appendConfig)) {
+            foreach ($appendConfig as $key => $value) {
                 if ($cover) {
                     $configValue = &$this->configData[$key];
                     if (is_array($value) && is_array($configValue)) {

@@ -26,13 +26,13 @@ class PDOOracleDriver extends PDOSqlDriver
      * @param string $table
      * @param string|array $data
      * @param bool $multi 是否批量添加
-     * @param array $insert_data 批量添加的数据
+     * @param array $insertData 批量添加的数据
      * @param bool $openTA 批量添加时是否开启事务
      * @return bool|mixed
      * @throws CoreException
      * @see SQLAssembler::add()
      */
-    public function add(string $table, $data, bool $multi = false, &$insert_data = [], bool $openTA = false)
+    public function add(string $table, $data, bool $multi = false, &$insertData = [], bool $openTA = false)
     {
         if (empty($data) || !is_array($data)) {
             return false;
@@ -51,7 +51,7 @@ class PDOOracleDriver extends PDOSqlDriver
 
         //没有自增主键处理流程不变
         if (null === $apk) {
-            return parent::add($table, $data, $multi, $insert_data, $openTA);
+            return parent::add($table, $data, $multi, $insertData, $openTA);
         }
 
         $fields = [];
@@ -62,8 +62,8 @@ class PDOOracleDriver extends PDOSqlDriver
             $sqlValues[] = ":{$key}";
         }
 
-        $insert_sql_segment = sprintf('(%s) VALUES (%s)', implode(',', $fields), implode(',', $sqlValues));
-        $rawSql = "INSERT INTO {$table} {$insert_sql_segment} RETURNING {$apk} INTO :lastInsertId";
+        $insertSqlSegment = sprintf('(%s) VALUES (%s)', implode(',', $fields), implode(',', $sqlValues));
+        $rawSql = "INSERT INTO {$table} {$insertSqlSegment} RETURNING {$apk} INTO :lastInsertId";
         if ($multi) {
             $count = 0;
             if ($openTA) {
@@ -74,10 +74,10 @@ class PDOOracleDriver extends PDOSqlDriver
                 foreach ($data as $d) {
                     $count++;
                     $d[$apk] = $this->saveRowData($rawSql, $d);
-                    $insert_data[] = $d;
+                    $insertData[] = $d;
                 }
             } catch (Throwable $e) {
-                $insert_data = [];
+                $insertData = [];
                 if ($openTA) {
                     $this->rollBack();
                 }

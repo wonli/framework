@@ -75,27 +75,27 @@ class Loader
      * 读取指定的单一文件
      *
      * @param string $file
-     * @param bool $get_file_content 是否读取文件文本内容
+     * @param bool $getFileContent 是否读取文件文本内容
      * @return mixed
      * @throws CoreException
      */
-    static function read(string $file, bool $get_file_content = false)
+    static function read(string $file, bool $getFileContent = false)
     {
         if (!file_exists($file)) {
             throw new CoreException("{$file} 文件不存在");
         }
 
         static $cache = null;
-        $flag = (int)$get_file_content;
+        $flag = (int)$getFileContent;
         if (isset($cache[$file][$flag])) {
             return $cache[$file][$flag];
         }
 
         if (is_readable($file)) {
-            if ($get_file_content) {
-                $file_content = file_get_contents($file);
-                $cache[$file][$flag] = $file_content;
-                return $file_content;
+            if ($getFileContent) {
+                $fileContent = file_get_contents($file);
+                $cache[$file][$flag] = $fileContent;
+                return $fileContent;
             }
 
             switch (Helper::getExt($file)) {
@@ -138,50 +138,50 @@ class Loader
      * 注册命名空间
      *
      * @param string $prefix 名称
-     * @param string $base_dir 源文件绝对路径
+     * @param string $baseDir 源文件绝对路径
      * @param bool $prepend
      */
-    static function registerNamespace(string $prefix, string $base_dir, bool $prepend = false): void
+    static function registerNamespace(string $prefix, string $baseDir, bool $prepend = false): void
     {
         $prefix = trim($prefix, '\\') . '\\';
-        $base_dir = rtrim($base_dir, DIRECTORY_SEPARATOR) . '/';
+        $baseDir = rtrim($baseDir, DIRECTORY_SEPARATOR) . '/';
         if (isset(self::$namespace[$prefix]) === false) {
             self::$namespace[$prefix] = [];
         }
 
         if ($prepend) {
-            array_unshift(self::$namespace[$prefix], $base_dir);
+            array_unshift(self::$namespace[$prefix], $baseDir);
         } else {
-            array_push(self::$namespace[$prefix], $base_dir);
+            array_push(self::$namespace[$prefix], $baseDir);
         }
     }
 
     /**
      * 自动加载
      *
-     * @param string $class_name
+     * @param string $className
      * @return bool|string
      * @throws CoreException
      */
-    private function loadClass(string $class_name)
+    private function loadClass(string $className)
     {
         $prefix = '';
-        $pos = strpos($class_name, '\\');
+        $pos = strpos($className, '\\');
         if (false !== $pos) {
-            $prefix = substr($class_name, 0, $pos);
-            $class_name = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
+            $prefix = substr($className, 0, $pos);
+            $className = str_replace('\\', DIRECTORY_SEPARATOR, $className);
         }
 
-        $check_file_exists = true;
+        $checkFileExists = true;
         if ('' !== $prefix && 0 === strcasecmp($prefix, 'cross')) {
-            $check_file_exists = false;
-            $class_file = CP_PATH . substr($class_name, $pos + 1) . '.php';
+            $checkFileExists = false;
+            $classFile = CP_PATH . substr($className, $pos + 1) . '.php';
         } else {
-            $class_file = PROJECT_REAL_PATH . $class_name . '.php';
+            $classFile = PROJECT_REAL_PATH . $className . '.php';
         }
 
-        $this->requireFile($class_file, false, $check_file_exists);
-        return $class_file;
+        $this->requireFile($classFile, false, $checkFileExists);
+        return $classFile;
     }
 
     /**
@@ -196,11 +196,11 @@ class Loader
         $prefix = $class;
         while (false !== $pos = strrpos($prefix, '\\')) {
             $prefix = substr($class, 0, $pos + 1);
-            $relative_class = substr($class, $pos + 1);
+            $relativeClass = substr($class, $pos + 1);
 
-            $mapped_file = $this->loadMappedFile($prefix, $relative_class);
-            if ($mapped_file) {
-                return $mapped_file;
+            $mappedFile = $this->loadMappedFile($prefix, $relativeClass);
+            if ($mappedFile) {
+                return $mappedFile;
             }
             $prefix = rtrim($prefix, '\\');
         }
@@ -212,18 +212,18 @@ class Loader
      * 匹配已注册的命名空间,require文件
      *
      * @param string $prefix
-     * @param string $relative_class
+     * @param string $relativeClass
      * @return bool|string
      * @throws CoreException
      */
-    private function loadMappedFile(string $prefix, string $relative_class)
+    private function loadMappedFile(string $prefix, string $relativeClass)
     {
         if (isset(self::$namespace[$prefix]) === false) {
             return false;
         }
 
-        foreach (self::$namespace[$prefix] as $base_dir) {
-            $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        foreach (self::$namespace[$prefix] as $baseDir) {
+            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
             if ($this->requireFile($file)) {
                 return $file;
             }
@@ -236,16 +236,16 @@ class Loader
      * require文件
      *
      * @param string $file
-     * @param bool $throw_exception
-     * @param bool $check_file_exists
+     * @param bool $throwException
+     * @param bool $checkFileExists
      * @return bool
      * @throws CoreException
      */
-    private static function requireFile(string $file, bool $throw_exception = false, bool $check_file_exists = true): bool
+    private static function requireFile(string $file, bool $throwException = false, bool $checkFileExists = true): bool
     {
         if (isset(self::$loaded[$file])) {
             return true;
-        } elseif ($check_file_exists === false) {
+        } elseif ($checkFileExists === false) {
             require $file;
             self::$loaded[$file] = true;
             return true;
@@ -253,7 +253,7 @@ class Loader
             require $file;
             self::$loaded[$file] = true;
             return true;
-        } elseif ($throw_exception) {
+        } elseif ($throwException) {
             throw new CoreException("未找到要载入的文件:{$file}");
         } else {
             return false;

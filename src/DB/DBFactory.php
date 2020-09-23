@@ -97,11 +97,11 @@ class DBFactory
      *
      * @param array $params
      * @param string $type
-     * @param bool|true $use_unix_socket
+     * @param bool|true $useUnixSocket
      * @return string
      * @throws CoreException
      */
-    private static function getDsn(array &$params, string $type = 'mysql', bool $use_unix_socket = true): string
+    private static function getDsn(array &$params, string $type = 'mysql', bool $useUnixSocket = true): string
     {
         if (!empty($params['dsn'])) {
             return $params['dsn'];
@@ -111,7 +111,7 @@ class DBFactory
             throw new CoreException('连接数据库所需参数不足');
         }
 
-        if ($use_unix_socket && !empty($params['unix_socket'])) {
+        if ($useUnixSocket && !empty($params['unix_socket'])) {
             $dsn = "{$type}:unix_socket={$params['unix_socket']};dbname={$params['name']};";
         } else {
             $dsn = "{$type}:host={$params['host']};dbname={$params['name']};";

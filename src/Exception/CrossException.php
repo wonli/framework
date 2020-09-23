@@ -49,8 +49,8 @@ abstract class CrossException extends Exception
      * CrossException constructor.
      *
      * @param string $message
-     * @param int $code
-     * @param Throwable $previous
+     * @param int|null $code
+     * @param Throwable|null $previous
      */
     function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
     {
@@ -77,23 +77,23 @@ abstract class CrossException extends Exception
     function cpExceptionSource(Throwable $e): array
     {
         $file = $e->getFile();
-        $exception_line = $e->getLine();
+        $exceptionLine = $e->getLine();
 
-        $exception_file_source = [];
-        $exception_file_info = new SplFileObject($file);
-        foreach ($exception_file_info as $line => $code) {
+        $exceptionFileSource = [];
+        $exceptionFileInfo = new SplFileObject($file);
+        foreach ($exceptionFileInfo as $line => $code) {
             $line += 1;
-            if ($line <= $exception_line + 6 && $line >= $exception_line - 6) {
-                $exception_file_source[$line] = self::highlightCode($code);
+            if ($line <= $exceptionLine + 6 && $line >= $exceptionLine - 6) {
+                $exceptionFileSource[$line] = self::highlightCode($code);
             }
         }
 
         $result['main'] = [
             'file' => $file,
-            'line' => $exception_line,
+            'line' => $exceptionLine,
             'message' => $this->hiddenFileRealPath($e->getMessage()),
             'show_file' => $this->hiddenFileRealPath($file),
-            'source' => $exception_file_source,
+            'source' => $exceptionFileSource,
         ];
 
         $trace = $e->getTrace();
@@ -112,14 +112,14 @@ abstract class CrossException extends Exception
      */
     function cliErrorHandler(Throwable $e): void
     {
-        $trace_table = [];
+        $traceTable = [];
         $trace = $e->getTrace();
-        $this->getCliTraceInfo($trace, $trace_table);
+        $this->getCliTraceInfo($trace, $traceTable);
 
-        $previous_trace = [];
+        $previousTrace = [];
         if ($e->getPrevious()) {
-            $previous_trace = $e->getPrevious()->getTrace();
-            $this->getCliTraceInfo($previous_trace, $trace_table);
+            $previousTrace = $e->getPrevious()->getTrace();
+            $this->getCliTraceInfo($previousTrace, $traceTable);
         }
 
         $result['line'] = $e->getLine();
@@ -127,8 +127,8 @@ abstract class CrossException extends Exception
         $result['message'] = $e->getMessage();
 
         $result['trace'] = $trace;
-        $result['trace_table'] = $trace_table;
-        $result['previous_trace'] = $previous_trace;
+        $result['trace_table'] = $traceTable;
+        $result['previous_trace'] = $previousTrace;
 
         Response::getInstance()->send($result, __DIR__ . '/tpl/cli_error.tpl.php');
     }
@@ -213,8 +213,8 @@ abstract class CrossException extends Exception
                 }
 
                 $i = 0;
-                $trace_file_info = new SplFileObject($t['file']);
-                foreach ($trace_file_info as $line => $code) {
+                $traceFileInfo = new SplFileObject($t['file']);
+                foreach ($traceFileInfo as $line => $code) {
                     $line += 1;
                     if (($line <= $t['end_line'] && $line >= $t['start_line']) && $i < 16) {
                         $t['source'][$line] = self::highlightCode($code);
@@ -231,31 +231,31 @@ abstract class CrossException extends Exception
      * CLI trace
      *
      * @param array $trace
-     * @param $trace_table
+     * @param $traceTable
      */
-    protected function getCliTraceInfo(&$trace, &$trace_table): void
+    protected function getCliTraceInfo(array &$trace, &$traceTable): void
     {
         if (!empty($trace)) {
             $this->alignmentTraceData($trace);
             foreach ($trace as &$t) {
-                foreach ($t as $type_name => &$trace_content) {
-                    switch ($type_name) {
+                foreach ($t as $typeName => &$traceContent) {
+                    switch ($typeName) {
                         case 'file':
                         case 'line':
                         case 'function':
-                            $line_max_width = max(strlen($type_name), strlen($trace_content));
-                            if (($line_max_width % 2) != 0) {
-                                $line_max_width += 5;
+                            $lineMaxWidth = max(strlen($typeName), strlen($traceContent));
+                            if (($lineMaxWidth % 2) != 0) {
+                                $lineMaxWidth += 5;
                             } else {
-                                $line_max_width += 4;
+                                $lineMaxWidth += 4;
                             }
 
-                            if (!isset($trace_table[$type_name]) || $line_max_width > $trace_table[$type_name]) {
-                                $trace_table[$type_name] = $line_max_width;
+                            if (!isset($traceTable[$typeName]) || $lineMaxWidth > $traceTable[$typeName]) {
+                                $traceTable[$typeName] = $lineMaxWidth;
                             }
                             break;
                         default:
-                            unset($t[$type_name]);
+                            unset($t[$typeName]);
                     }
                 }
             }
@@ -286,8 +286,8 @@ abstract class CrossException extends Exception
             return highlight_string($code, true);
         }
 
-        $highlight_code_fragment = highlight_string("<?php {$code}", true);
-        return str_replace('&lt;?php', '', $highlight_code_fragment);
+        $highlightCodeFragment = highlight_string("<?php {$code}", true);
+        return str_replace('&lt;?php', '', $highlightCodeFragment);
     }
 
     /**

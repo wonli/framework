@@ -229,9 +229,9 @@ class Rest
         } elseif ($this->compatibleModel) {
             $this->delegate->run();
         } else {
-            $closure_container = $this->delegate->getClosureContainer();
-            if ($closure_container->has('mismatching')) {
-                $closure_container->run('mismatching');
+            $closureContainer = $this->delegate->getClosureContainer();
+            if ($closureContainer->has('mismatching')) {
+                $closureContainer->run('mismatching');
             } else {
                 throw new CoreException('Not match uri');
             }

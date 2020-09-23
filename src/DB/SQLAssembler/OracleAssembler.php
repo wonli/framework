@@ -20,7 +20,7 @@ class OracleAssembler extends SQLAssembler
      *
      * @var string
      */
-    protected $field_quote_char = '';
+    protected $fieldQuoteChar = '';
 
     /**
      * 生成分页片段
@@ -38,7 +38,7 @@ class OracleAssembler extends SQLAssembler
 
     /**
      * @param int $start 从第几页开始取
-     * @param int $end 每次取多少条
+     * @param int|null $end 每次取多少条
      * @return string
      */
     public function limit(int $start, int $end = null): string
@@ -47,7 +47,7 @@ class OracleAssembler extends SQLAssembler
             $limit = max(1, (int)$end);
             $offset = $limit * (max(1, (int)$start) - 1);
 
-            $this->offset_is_valid = false;
+            $this->offsetIsValid = false;
             return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
         }
 

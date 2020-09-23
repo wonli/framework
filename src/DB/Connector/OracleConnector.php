@@ -65,16 +65,16 @@ class OracleConnector extends BaseConnector
      * @param string $dsn
      * @param string $user
      * @param string $password
-     * @param array $option
+     * @param array $options
      * @return mixed
      * @throws DBConnectException
      */
-    static function getInstance($dsn, $user, $password, array $option = []): self
+    static function getInstance(string $dsn, string $user, string $password, array $options): self
     {
         //同时建立多个连接时候已dsn的md5值为key
         $key = md5($dsn);
         if (!isset(self::$instance[$key])) {
-            self::$instance [$key] = new self($dsn, $user, $password, $option);
+            self::$instance [$key] = new self($dsn, $user, $password, $options);
         }
 
         return self::$instance [$key];
@@ -145,10 +145,10 @@ class OracleConnector extends BaseConnector
      * 获取表的字段信息
      *
      * @param string $table
-     * @param bool $fields_map
+     * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fields_map = true): array
+    function getMetaData(string $table, bool $fieldsMap = true): array
     {
         //获取所有字段
         $table = strtoupper($table);
@@ -159,8 +159,8 @@ class OracleConnector extends BaseConnector
             and t.column_name = c.column_name 
             and t.table_name = '{$table}'");
 
-        $table_fields = $q->fetchAll(PDO::FETCH_ASSOC);
-        if (empty($table_fields)) {
+        $tableFields = $q->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($tableFields)) {
             return [];
         }
 
@@ -181,7 +181,7 @@ class OracleConnector extends BaseConnector
         });
 
         $result = [];
-        array_map(function ($d) use ($indexInfo, &$result, $fields_map) {
+        array_map(function ($d) use ($indexInfo, &$result, $fieldsMap) {
             $autoIncrement = false;
             $isPk = $indexInfo[$d['COLUMN_NAME']]['pk'] ?? false;
             if ($isPk) {
@@ -200,13 +200,13 @@ class OracleConnector extends BaseConnector
                 'comment' => $d['COMMENTS']
             ];
 
-            if ($fields_map) {
+            if ($fieldsMap) {
                 $result[$d['COLUMN_NAME']] = $data;
             } else {
                 $data['field'] = $d['COLUMN_NAME'];
                 $result[] = $data;
             }
-        }, $table_fields);
+        }, $tableFields);
 
         return $result;
     }

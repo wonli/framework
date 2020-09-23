@@ -44,30 +44,30 @@ class SQLAssembler
      *
      * @var string
      */
-    protected $table_prefix;
+    protected $tablePrefix;
 
     /**
      * offset()在limit()中已经传递了第二个参数时不再生效
      *
      * @var bool
      */
-    protected $offset_is_valid = true;
+    protected $offsetIsValid = true;
 
     /**
      * 包裹过字段名的字符
      *
      * @var string
      */
-    protected $field_quote_char = '';
+    protected $fieldQuoteChar = '';
 
     /**
      * 初始化时可以指定表前缀
      *
-     * @param string $table_prefix
+     * @param string $tablePrefix
      */
-    function __construct(string $table_prefix = '')
+    function __construct(string $tablePrefix = '')
     {
-        $this->table_prefix = $table_prefix;
+        $this->tablePrefix = $tablePrefix;
     }
 
     /**
@@ -81,14 +81,14 @@ class SQLAssembler
     {
         $params = [];
         if (true === $multi) {
-            $into_fields = $this->insertDataToSQLSegment(current($data), false, $_notUse, $sequenceKey);
+            $intoFields = $this->insertDataToSQLSegment(current($data), false, $_notUse, $sequenceKey);
             $data = $this->arrayToMultiAddFormat($data, $sequenceKey);
             $params = $data['values'];
         } else {
-            $into_fields = $this->insertDataToSQLSegment($data, true, $params);
+            $intoFields = $this->insertDataToSQLSegment($data, true, $params);
         }
 
-        $this->setSQL("INSERT INTO {$this->getTable($table)} {$into_fields}");
+        $this->setSQL("INSERT INTO {$this->getTable($table)} {$intoFields}");
         $this->setParams($params);
     }
 
@@ -97,28 +97,28 @@ class SQLAssembler
      *
      * @param string $table 表名称, 复杂情况下, 以LEFT JOIN为例: table_a a LEFT JOIN table_b b ON a.id=b.aid
      * @param string $fields 要查询的字段 所有字段的时候为'*'
-     * @param string $where 查询条件
+     * @param mixed $where 查询条件
      * @param array $page 分页参数 默认返回50条记录
-     * @param int|string $order 排序
-     * @param int|string $group_by
+     * @param mixed $order 排序
+     * @param mixed $groupBy
      * @return mixed|void
      * @throws CoreException
      */
-    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 50], $order = null, $group_by = null)
+    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 50], $order = null, $groupBy = null)
     {
         $params = [];
-        $field_str = $this->parseFields($fields);
-        $where_str = $this->parseWhere($where, $params);
+        $fieldStr = $this->parseFields($fields);
+        $whereStr = $this->parseWhere($where, $params);
 
-        $sql = "SELECT {$field_str} FROM {$this->getTable($table)} WHERE {$where_str}";
-        if (null !== $group_by) {
-            $group_str = $this->parseGroup($group_by);
-            $sql .= " GROUP BY {$group_str}";
+        $sql = "SELECT {$fieldStr} FROM {$this->getTable($table)} WHERE {$whereStr}";
+        if (null !== $groupBy) {
+            $groupStr = $this->parseGroup($groupBy);
+            $sql .= " GROUP BY {$groupStr}";
         }
 
         if (null !== $order) {
-            $order_str = $this->parseOrder($order);
-            $sql .= " ORDER BY {$order_str}";
+            $orderStr = $this->parseOrder($order);
+            $sql .= " ORDER BY {$orderStr}";
         }
 
         $sql .= ' ' . $this->getLimitSQLSegment($page['p'], $page['limit']);
@@ -130,8 +130,8 @@ class SQLAssembler
      * 更新
      *
      * @param string $table
-     * @param string $data
-     * @param string $where
+     * @param mixed $data
+     * @param mixed $where
      * @return mixed|void
      * @throws CoreException
      */
@@ -139,10 +139,10 @@ class SQLAssembler
     {
         $params = [];
         $fields = $this->parseData($data, $params);
-        $where_str = $this->parseWhere($where, $params);
+        $whereStr = $this->parseWhere($where, $params);
 
         $fields = trim($fields, ',');
-        $this->setSQL("UPDATE {$this->getTable($table)} SET {$fields} WHERE {$where_str}");
+        $this->setSQL("UPDATE {$this->getTable($table)} SET {$fields} WHERE {$whereStr}");
         $this->setParams($params);
     }
 
@@ -157,8 +157,8 @@ class SQLAssembler
     public function del(string $table, $where)
     {
         $params = [];
-        $where_str = $this->parseWhere($where, $params);
-        $this->setSQL("DELETE FROM {$this->getTable($table)} WHERE {$where_str}");
+        $whereStr = $this->parseWhere($where, $params);
+        $this->setSQL("DELETE FROM {$this->getTable($table)} WHERE {$whereStr}");
         $this->setParams($params);
     }
 
@@ -215,21 +215,21 @@ class SQLAssembler
      * @return string
      * @throws CoreException
      */
-    public function where($where, &$params): string
+    public function where($where, array &$params): string
     {
         return "WHERE {$this->parseWhere($where, $params)} ";
     }
 
     /**
      * @param int $start 从第几页开始
-     * @param int $end 取多少条
+     * @param int|null $end 取多少条
      * @return string
      */
     public function limit(int $start, int $end = null): string
     {
         if (null !== $end) {
             $end = (int)$end;
-            $this->offset_is_valid = false;
+            $this->offsetIsValid = false;
             return "LIMIT {$start}, {$end} ";
         }
 
@@ -243,7 +243,7 @@ class SQLAssembler
      */
     public function offset(int $offset): string
     {
-        if ($this->offset_is_valid) {
+        if ($this->offsetIsValid) {
             return "OFFSET {$offset} ";
         }
 
@@ -287,12 +287,12 @@ class SQLAssembler
     }
 
     /**
-     * @param string $var_name
+     * @param string $varName
      * @return string
      */
-    public function into(string $var_name): string
+    public function into(string $varName): string
     {
-        return "INTO {$var_name} ";
+        return "INTO {$varName} ";
     }
 
     /**
@@ -323,16 +323,16 @@ class SQLAssembler
     public function parseFields($fields): string
     {
         if (empty($fields)) {
-            $field_str = '*';
+            $fieldStr = '*';
         } else {
             if (is_array($fields)) {
-                $field_str = implode(',', $fields);
+                $fieldStr = implode(',', $fields);
             } else {
-                $field_str = $fields;
+                $fieldStr = $fields;
             }
         }
 
-        return $field_str;
+        return $fieldStr;
     }
 
     /**
@@ -348,7 +348,7 @@ class SQLAssembler
         if (!empty($where)) {
             if (is_array($where)) {
                 if (isset($where[1])) {
-                    $where_str = $where[0];
+                    $whereStr = $where[0];
                     if (!is_array($where[1])) {
                         $params[] = $where[1];
                     } else {
@@ -358,15 +358,15 @@ class SQLAssembler
                     }
                 } else {
                     $this->beforeParseData($where);
-                    $where_str = $this->parseWhereFromHashMap($where, $params);
+                    $whereStr = $this->parseWhereFromHashMap($where, $params);
                 }
             } else {
-                $where_str = $where;
+                $whereStr = $where;
             }
         } else {
-            $where_str = '1=1';
+            $whereStr = '1=1';
         }
-        return $where_str;
+        return $whereStr;
     }
 
     /**
@@ -381,7 +381,7 @@ class SQLAssembler
         if (!empty($data)) {
             if (is_array($data)) {
                 if (isset($data[1])) {
-                    $sql_segment = $data[0];
+                    $sqlSegment = $data[0];
                     if (!is_array($data[1])) {
                         $params[] = $data[1];
                     } else {
@@ -415,15 +415,15 @@ class SQLAssembler
                             $params[] = $value;
                         }
                     }
-                    $sql_segment = trim($segment, ',');
+                    $sqlSegment = trim($segment, ',');
                 }
             } else {
-                $sql_segment = $data;
+                $sqlSegment = $data;
             }
         } else {
-            $sql_segment = '';
+            $sqlSegment = '';
         }
-        return $sql_segment;
+        return $sqlSegment;
     }
 
     /**
@@ -436,32 +436,32 @@ class SQLAssembler
     {
         if (!empty($order)) {
             if (is_array($order)) {
-                $order_str = implode(',', $order);
+                $orderStr = implode(',', $order);
             } else {
-                $order_str = $order;
+                $orderStr = $order;
             }
         } else {
-            $order_str = 1;
+            $orderStr = 1;
         }
 
-        return $order_str;
+        return $orderStr;
     }
 
     /**
      * 解析group by
      *
-     * @param mixed $group_by
+     * @param mixed $groupBy
      * @return int|string
      */
-    public function parseGroup($group_by)
+    public function parseGroup($groupBy)
     {
-        if (!empty($group_by)) {
-            $group_str = $group_by;
+        if (!empty($groupBy)) {
+            $groupStr = $groupBy;
         } else {
-            $group_str = 1;
+            $groupStr = 1;
         }
 
-        return $group_str;
+        return $groupStr;
     }
 
     /**
@@ -495,7 +495,7 @@ class SQLAssembler
      */
     public function getPrefix(): string
     {
-        return $this->table_prefix;
+        return $this->tablePrefix;
     }
 
     /**
@@ -523,56 +523,56 @@ class SQLAssembler
      *
      * @param string $operator 字段和值之间的操作符
      * @param string $field 字段名
-     * @param string|array $field_config 字段值配置
-     * @param bool $is_mixed_field 区别默认字段和复合字段(带括号的字段)
-     * @param string $condition_connector 每个条件之间的连接符
+     * @param string|array $fieldConfig 字段值配置
+     * @param bool $isMixedField 区别默认字段和复合字段(带括号的字段)
+     * @param string $conditionConnector 每个条件之间的连接符
      * @param string $connector 每个字段之间的连接符
      * @param array $params 包含字段值的数组(prepare之后传递的参数)
      * @return array
      * @throws CoreException
      */
-    protected function parseCondition(string $operator, string $field, $field_config, bool $is_mixed_field, string $condition_connector, string $connector, array &$params): array
+    protected function parseCondition(string $operator, string $field, $fieldConfig, bool $isMixedField, string $conditionConnector, string $connector, array &$params): array
     {
         $condition = [];
         switch ($connector) {
             case 'OR':
-                if (!is_array($field_config)) {
-                    $field_config = array($field_config);
+                if (!is_array($fieldConfig)) {
+                    $fieldConfig = array($fieldConfig);
                 }
-                foreach ($field_config as $field_single_config) {
-                    if (is_array($field_single_config)) {
-                        list($operator, $single_field_value) = $field_single_config;
-                        $params [] = $single_field_value;
+                foreach ($fieldConfig as $fieldSingleConfig) {
+                    if (is_array($fieldSingleConfig)) {
+                        list($operator, $singleFieldValue) = $fieldSingleConfig;
+                        $params [] = $singleFieldValue;
                     } else {
-                        $params [] = $field_single_config;
+                        $params [] = $fieldSingleConfig;
                     }
                     $condition[' OR '][] = "{$field} {$operator} ?";
                 }
                 break;
 
             case 'AND':
-                if ($is_mixed_field) {
-                    $condition[" {$condition_connector} "][] = $field;
-                    if (is_array($field_config)) {
-                        foreach ($field_config as $f) {
+                if ($isMixedField) {
+                    $condition[" {$conditionConnector} "][] = $field;
+                    if (is_array($fieldConfig)) {
+                        foreach ($fieldConfig as $f) {
                             $params [] = $f;
                         }
                     } else {
-                        $params[] = $field_config;
+                        $params[] = $fieldConfig;
                     }
                 } else {
-                    if (is_array($field_config)) {
-                        foreach ($field_config as $and_exp_val) {
-                            $ex_operator = '=';
-                            if (is_array($and_exp_val)) {
-                                list($ex_operator, $n_value) = $and_exp_val;
-                                $and_exp_val = $n_value;
+                    if (is_array($fieldConfig)) {
+                        foreach ($fieldConfig as $andExpVal) {
+                            $exOperator = '=';
+                            if (is_array($andExpVal)) {
+                                list($exOperator, $nValue) = $andExpVal;
+                                $andExpVal = $nValue;
                             }
-                            $condition[' AND '][] = "{$field} {$ex_operator} ?";
-                            $params [] = $and_exp_val;
+                            $condition[' AND '][] = "{$field} {$exOperator} ?";
+                            $params [] = $andExpVal;
                         }
                     } else {
-                        $params [] = $field_config;
+                        $params [] = $fieldConfig;
                         $condition[' AND '][] = "{$field} {$operator} ?";
                     }
                 }
@@ -580,63 +580,63 @@ class SQLAssembler
 
             case 'IN':
             case 'NOT IN':
-                if (!is_array($field_config)) {
+                if (!is_array($fieldConfig)) {
                     throw new CoreException('IN or NOT IN need a array parameter');
                 }
 
-                $in_where_condition = [];
-                foreach ($field_config as $in_field_val) {
-                    $params[] = $in_field_val;
-                    $in_where_condition [] = '?';
+                $inWhereCondition = [];
+                foreach ($fieldConfig as $inFieldVal) {
+                    $params[] = $inFieldVal;
+                    $inWhereCondition [] = '?';
                 }
 
-                $in_where_condition_string = implode(',', $in_where_condition);
-                $condition[" {$condition_connector} "][] = "{$field} {$connector} ($in_where_condition_string)";
+                $inWhereConditionString = implode(',', $inWhereCondition);
+                $condition[" {$conditionConnector} "][] = "{$field} {$connector} ($inWhereConditionString)";
                 break;
 
             case 'BETWEEN':
             case 'NOT BETWEEN':
-                if (!is_array($field_config)) {
+                if (!is_array($fieldConfig)) {
                     throw new CoreException('BETWEEN need a array parameter');
                 }
 
-                if (!isset($field_config[0]) || !isset($field_config[1])) {
+                if (!isset($fieldConfig[0]) || !isset($fieldConfig[1])) {
                     throw new CoreException('BETWEEN parameter error!');
                 }
 
-                $condition[" {$condition_connector} "][] = "{$field} {$connector} ? AND ?";
-                $params[] = $field_config[0];
-                $params[] = $field_config[1];
+                $condition[" {$conditionConnector} "][] = "{$field} {$connector} ? AND ?";
+                $params[] = $fieldConfig[0];
+                $params[] = $fieldConfig[1];
                 break;
 
             case '#SQL#':
-                if (is_array($field_config)) {
-                    list($operator, $sql_segment) = $field_config;
+                if (is_array($fieldConfig)) {
+                    list($operator, $sqlSegment) = $fieldConfig;
                 } else {
-                    $sql_segment = $field_config;
+                    $sqlSegment = $fieldConfig;
                 }
 
-                $condition[" {$condition_connector} "][] = "{$field} {$operator} {$sql_segment}";
+                $condition[" {$conditionConnector} "][] = "{$field} {$operator} {$sqlSegment}";
                 break;
 
             case '#RAW#':
-                if (is_array($field_config)) {
-                    $sql_segment = array_shift($field_config);
-                    if (!empty($field_config)) {
-                        foreach ($field_config as $f) {
+                if (is_array($fieldConfig)) {
+                    $sqlSegment = array_shift($fieldConfig);
+                    if (!empty($fieldConfig)) {
+                        foreach ($fieldConfig as $f) {
                             $params[] = $f;
                         }
                     }
                 } else {
-                    $sql_segment = $field_config;
+                    $sqlSegment = $fieldConfig;
                 }
-                $condition[" {$condition_connector} "][] = " ({$sql_segment}) ";
+                $condition[" {$conditionConnector} "][] = " ({$sqlSegment}) ";
                 break;
 
             default:
                 $operator = $connector;
-                $condition[" {$condition_connector} "][] = "{$field} {$operator} ?";
-                $params [] = $field_config;
+                $condition[" {$conditionConnector} "][] = "{$field} {$operator} ?";
+                $params [] = $fieldConfig;
         }
 
         return $condition;
@@ -676,7 +676,7 @@ class SQLAssembler
                 $params[] = $value;
             }
 
-            $fields[] = sprintf('%s%s%s', $this->field_quote_char, $key, $this->field_quote_char);
+            $fields[] = sprintf('%s%s%s', $this->fieldQuoteChar, $key, $this->fieldQuoteChar);
             $values[] = $sqlValue;
         }
 
@@ -719,7 +719,7 @@ class SQLAssembler
      *
      * @param array $data
      */
-    protected function beforeParseData(&$data)
+    protected function beforeParseData(array &$data)
     {
 
     }
@@ -734,59 +734,59 @@ class SQLAssembler
      */
     private function parseWhereFromHashMap(array $where, array &$params): string
     {
-        $all_condition = [];
-        foreach ($where as $field => $field_config) {
+        $allCondition = [];
+        foreach ($where as $field => $fieldConfig) {
             $operator = '=';
             $field = trim($field);
-            $is_mixed_field = false;
-            $condition_connector = $connector = 'AND';
+            $isMixedField = false;
+            $conditionConnector = $connector = 'AND';
 
             if ($field[0] == '(' && $field[strlen($field) - 1] == ')') {
-                $is_mixed_field = true;
+                $isMixedField = true;
             }
 
-            if ($is_mixed_field === false && is_array($field_config)) {
-                if (count($field_config) == 3) {
-                    list($connector, $field_true_value, $condition_connector) = $field_config;
+            if ($isMixedField === false && is_array($fieldConfig)) {
+                if (count($fieldConfig) == 3) {
+                    list($connector, $fieldTrueValue, $conditionConnector) = $fieldConfig;
                 } else {
-                    list($connector, $field_true_value) = $field_config;
+                    list($connector, $fieldTrueValue) = $fieldConfig;
                 }
 
-                $condition_connector = strtoupper(trim($condition_connector));
+                $conditionConnector = strtoupper(trim($conditionConnector));
                 $connector = strtoupper(trim($connector));
-                $field_config = $field_true_value;
+                $fieldConfig = $fieldTrueValue;
             }
 
-            $condition = $this->parseCondition($operator, $field, $field_config, $is_mixed_field, $condition_connector, $connector, $params);
-            $all_condition[] = $condition;
+            $condition = $this->parseCondition($operator, $field, $fieldConfig, $isMixedField, $conditionConnector, $connector, $params);
+            $allCondition[] = $condition;
         }
 
-        return $this->combineWhereCondition($all_condition);
+        return $this->combineWhereCondition($allCondition);
     }
 
     /**
      * 组合where条件
      *
-     * @param array $where_condition
+     * @param array $whereCondition
      * @return string
      */
-    private function combineWhereCondition(array $where_condition): string
+    private function combineWhereCondition(array $whereCondition): string
     {
         $where = '';
-        foreach ($where_condition as $condition) {
-            foreach ($condition as $where_connector => $where_condition) {
-                if (isset($where_condition[1])) {
-                    $where_snippet_string = implode($where_connector, $where_condition);
-                    $where_snippet = "($where_snippet_string)";
-                    $where_connector = ' AND ';
+        foreach ($whereCondition as $condition) {
+            foreach ($condition as $whereConnector => $whereCondition) {
+                if (isset($whereCondition[1])) {
+                    $whereSnippetString = implode($whereConnector, $whereCondition);
+                    $whereSnippet = "($whereSnippetString)";
+                    $whereConnector = ' AND ';
                 } else {
-                    $where_snippet = $where_condition[0];
+                    $whereSnippet = $whereCondition[0];
                 }
 
                 if ('' === $where) {
-                    $where = $where_snippet;
+                    $where = $whereSnippet;
                 } else {
-                    $where .= $where_connector . $where_snippet;
+                    $where .= $whereConnector . $whereSnippet;
                 }
             }
         }
@@ -797,7 +797,7 @@ class SQLAssembler
      * 将数组格式化成批量添加的格式
      *
      * @param array $data
-     * @param string $ignoreKey 忽略指定键
+     * @param string|null $ignoreKey 忽略指定键
      * @return array
      */
     private function arrayToMultiAddFormat(array $data, string $ignoreKey = null): array

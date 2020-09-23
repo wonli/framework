@@ -56,15 +56,15 @@ class Helper
      * 处理HTML字符串，清除未闭合的HTML标签等
      *
      * @param string $str HTML字符串
-     * @param bool $removing_doctype
+     * @param bool $removingDoctype
      * @return string
      */
-    public static function formatHTMLString(string $str, bool $removing_doctype = true): string
+    public static function formatHTMLString(string $str, bool $removingDoctype = true): string
     {
         $DOCUMENT = new DOMDocument();
         @$DOCUMENT->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
         $content = $DOCUMENT->saveHTML($DOCUMENT->documentElement);
-        if ($removing_doctype) {
+        if ($removingDoctype) {
             return preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $content);
         }
 
@@ -97,7 +97,7 @@ class Helper
         }
 
         $result = [];
-        for ($i = 0, $str_len = mb_strlen($str, 'utf-8'); $i < $str_len; $i++) {
+        for ($i = 0, $strLen = mb_strlen($str, 'utf-8'); $i < $strLen; $i++) {
             $result[] = mb_substr($str, $i, 1, 'utf-8');
         }
 
@@ -146,21 +146,21 @@ class Helper
     /**
      * 根据文件名创建文件
      *
-     * @param string $file_name
+     * @param string $fileName
      * @param int $mode
-     * @param int $dir_mode
+     * @param int $dirMode
      * @return bool
      */
-    static function mkfile(string $file_name, int $mode = 0644, int $dir_mode = 0755): bool
+    static function mkfile(string $fileName, int $mode = 0644, int $dirMode = 0755): bool
     {
-        if (!file_exists($file_name)) {
-            $file_path = dirname($file_name);
-            $createFolder = self::createFolders($file_path, $dir_mode, true);
+        if (!file_exists($fileName)) {
+            $filePath = dirname($fileName);
+            $createFolder = self::createFolders($filePath, $dirMode, true);
             if ($createFolder) {
-                $fp = fopen($file_name, 'w+');
+                $fp = fopen($fileName, 'w+');
                 if ($fp) {
                     fclose($fp);
-                    chmod($file_name, $mode);
+                    chmod($fileName, $mode);
                     return true;
                 }
             }
@@ -174,16 +174,16 @@ class Helper
      * 验证电子邮件格式
      *
      * @param string $email
-     * @param string $add_valid_expr
+     * @param string $addValidExpr
      * @return bool
      */
-    static function validEmail(string $email, string $add_valid_expr = "/^[a-zA-Z0-9]([\w\-\.]?)+/"): bool
+    static function validEmail(string $email, string $addValidExpr = "/^[a-zA-Z0-9]([\w\-\.]?)+/"): bool
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-            if ($add_valid_expr) {
-                list($valid_string,) = explode('@', $email);
-                if (!preg_match($add_valid_expr, $valid_string)) {
+            if ($addValidExpr) {
+                list($validString,) = explode('@', $email);
+                if (!preg_match($addValidExpr, $validString)) {
                     return false;
                 }
             }
@@ -270,40 +270,40 @@ class Helper
      */
     static function authCode(string $string, string $operation = 'DECODE', string $key = 'crossphp', int $expiry = 0): string
     {
-        $c_key_length = 4;
+        $cKeyLength = 4;
         $key = md5($key);
 
         $key_a = md5(substr($key, 0, 16));
         $key_b = md5(substr($key, 16, 16));
-        $key_c = $c_key_length ? ($operation == 'DECODE' ? substr($string, 0, $c_key_length) :
-            substr(md5(microtime()), -$c_key_length)) : '';
+        $key_c = $cKeyLength ? ($operation == 'DECODE' ? substr($string, 0, $cKeyLength) :
+            substr(md5(microtime()), -$cKeyLength)) : '';
 
-        $crypt_key = $key_a . md5($key_a . $key_c);
-        $key_length = strlen($crypt_key);
+        $cryptKey = $key_a . md5($key_a . $key_c);
+        $keyLength = strlen($cryptKey);
 
         $string = $operation == 'DECODE' ?
-            base64_decode(substr($string, $c_key_length)) :
+            base64_decode(substr($string, $cKeyLength)) :
             sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
         $result = [];
         $box = range(0, 255);
-        $string_length = strlen($string);
+        $stringLength = strlen($string);
 
-        $rnd_key = [];
+        $rndKey = [];
         for ($i = 0; $i <= 255; $i++) {
-            $rnd_key[$i] = $crypt_key[$i % $key_length];
+            $rndKey[$i] = $cryptKey[$i % $keyLength];
         }
-        $rnd_key = array_map('ord', $rnd_key);
+        $rndKey = array_map('ord', $rndKey);
 
         for ($j = $i = 0; $i < 256; $i++) {
-            $j = ($j + $box[$i] + $rnd_key[$i]) % 256;
+            $j = ($j + $box[$i] + $rndKey[$i]) % 256;
             $tmp = $box[$i];
             $box[$i] = $box[$j];
             $box[$j] = $tmp;
         }
 
         $p1 = $p2 = [];
-        for ($a = $j = $i = 0; $i < $string_length; $i++) {
+        for ($a = $j = $i = 0; $i < $stringLength; $i++) {
             $a = ($a + 1) % 256;
             $j = ($j + $box[$a]) % 256;
             $tmp = $box[$a];
@@ -319,7 +319,7 @@ class Helper
                 $result[] = $pv ^ $p2[$k];
             }
 
-            unset($p1, $p2, $box, $tmp, $rnd_key);
+            unset($p1, $p2, $box, $tmp, $rndKey);
             $result = implode('', array_map('chr', $result));
         }
 
@@ -347,20 +347,20 @@ class Helper
     static function encodeParams(string $str, string $key, string $operation = 'encode'): string
     {
         $result = '';
-        static $key_cache;
-        if (!isset($key_cache[$key])) {
-            $key_cache[$key] = md5($key);
+        static $keyCache;
+        if (!isset($keyCache[$key])) {
+            $keyCache[$key] = md5($key);
         }
 
-        $key = $key_cache[$key];
+        $key = $keyCache[$key];
         if ($operation == 'encode') {
             $str = (string)$str;
         } else {
             //校验数据完整性
             //省略校验要解密的参数是否是一个16进制的字符串
-            $str_head = substr($str, 0, 5);
+            $strHead = substr($str, 0, 5);
             $str = substr($str, 5);
-            if ($str_head != substr(md5($str . $key), 9, 5)) {
+            if ($strHead != substr(md5($str . $key), 9, 5)) {
                 return $result;
             }
 
@@ -371,7 +371,7 @@ class Helper
             return $result;
         }
 
-        for ($str_len = strlen($str), $i = 0; $i < $str_len; $i++) {
+        for ($strLen = strlen($str), $i = 0; $i < $strLen; $i++) {
             $result .= chr(ord($str[$i]) ^ ord($key[$i % 32]));
         }
 
@@ -391,10 +391,10 @@ class Helper
      * </pre>
      *
      * @param int $id
-     * @param string $path_name
+     * @param string $pathName
      * @return string
      */
-    static function getPath(int $id, string $path_name = ''): string
+    static function getPath(int $id, string $pathName = ''): string
     {
         $id = (string)abs($id);
         $id = str_pad($id, 9, '0', STR_PAD_LEFT);
@@ -402,7 +402,7 @@ class Helper
         $dir2 = substr($id, 3, 2);
         $dir3 = substr($id, 5, 2);
 
-        return $path_name . '/' . $dir1 . '/' . $dir2 . '/' . $dir3 . '/' . substr($id, -2) . '/';
+        return $pathName . '/' . $dir1 . '/' . $dir2 . '/' . $dir3 . '/' . substr($id, -2) . '/';
     }
 
     /**
@@ -420,7 +420,7 @@ class Helper
     static function curlRequest(string $url, $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
     {
         $method = strtoupper($method);
-        $SSL = substr($url, 0, 8) == "https://" ? true : false;
+        $SSL = substr($url, 0, 8) == 'https://';
         if ($method == 'GET' && !empty($vars)) {
             $params = is_array($vars) ? http_build_query($vars) : $vars;
             $url = rtrim($url, '?');
@@ -468,12 +468,12 @@ class Helper
      * htmlspecialchars 函数包装
      *
      * @param string $str
-     * @param int $quote_style
+     * @param int $quoteStyle
      * @return string
      */
-    static function escape(string $str, int $quote_style = ENT_COMPAT): string
+    static function escape(string $str, int $quoteStyle = ENT_COMPAT): string
     {
-        return htmlspecialchars($str, $quote_style);
+        return htmlspecialchars($str, $quoteStyle);
     }
 
     /**
@@ -494,13 +494,13 @@ class Helper
     {
         asort($array);
         $max = array_sum($array);
-        foreach ($array as $a_key => $a_value) {
+        foreach ($array as $aKey => $aValue) {
             $rand = random_int(0, $max);
 
-            if ($rand <= $a_value) {
-                return $a_key;
+            if ($rand <= $aValue) {
+                return $aKey;
             } else {
-                $max -= $a_value;
+                $max -= $aValue;
             }
         }
 
@@ -540,24 +540,24 @@ class Helper
     /**
      * 校验身份证号码
      *
-     * @param string $id_card
-     * @param bool|true $just_check_length 是否只校验长度
+     * @param string $idCard
+     * @param bool|true $justCheckLength 是否只校验长度
      * @return bool
      * @throws Exception
      */
-    static function checkIDCard(string $id_card, bool $just_check_length = true): bool
+    static function checkIDCard(string $idCard, bool $justCheckLength = true): bool
     {
         //长度校验
-        $length_validate = preg_match('/^([\d]{17}[xX\d]|[\d]{15})$/', $id_card) === 1;
-        if ($just_check_length) {
-            return $length_validate;
+        $lengthValidate = preg_match('/^([\d]{17}[xX\d]|[\d]{15})$/', $idCard) === 1;
+        if ($justCheckLength) {
+            return $lengthValidate;
         }
 
-        if (!$length_validate) {
+        if (!$lengthValidate) {
             return false;
         }
 
-        $city_code = [
+        $cityCode = [
             11 => true, 12 => true, 13 => true, 14 => true, 15 => true,
             21 => true, 22 => true, 23 => true,
             31 => true, 32 => true, 33 => true, 34 => true, 35 => true, 36 => true, 37 => true,
@@ -570,48 +570,48 @@ class Helper
         ];
 
         //地区校验
-        if (!isset($city_code[$id_card[0] . $id_card[1]])) {
+        if (!isset($cityCode[$idCard[0] . $idCard[1]])) {
             return false;
         }
 
         //生成校验码
-        $make_verify_bit = function ($id_card) {
-            if (strlen($id_card) != 17) {
+        $makeVerifyBit = function ($idCard) {
+            if (strlen($idCard) != 17) {
                 return null;
             }
 
             $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
             //校验码对应值
-            $verify_number_list = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+            $verifyNumberList = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
             $checksum = 0;
             for ($i = 0; $i < 17; $i++) {
-                $checksum += $id_card[$i] * $factor[$i];
+                $checksum += $idCard[$i] * $factor[$i];
             }
 
             $mod = $checksum % 11;
-            return $verify_number_list[$mod];
+            return $verifyNumberList[$mod];
         };
 
-        $id_card_length = strlen($id_card);
-        if ($id_card_length == 15) {
+        $idCardLength = strlen($idCard);
+        if ($idCardLength == 15) {
             //超出百岁特殊编码
-            if (array_search(substr($id_card, 12, 3), ['996', '997', '998', '999']) !== false) {
-                $id_card = substr($id_card, 0, 6) . '18' . substr($id_card, 6, 9);
+            if (array_search(substr($idCard, 12, 3), ['996', '997', '998', '999']) !== false) {
+                $idCard = substr($idCard, 0, 6) . '18' . substr($idCard, 6, 9);
             } else {
-                $id_card = substr($id_card, 0, 6) . '19' . substr($id_card, 6, 9);
+                $idCard = substr($idCard, 0, 6) . '19' . substr($idCard, 6, 9);
             }
 
-            $id_card .= $make_verify_bit($id_card);
+            $idCard .= $makeVerifyBit($idCard);
         } else {
             //校验最后一位
-            if (strcasecmp($id_card[17], $make_verify_bit(substr($id_card, 0, 17))) != 0) {
+            if (strcasecmp($idCard[17], $makeVerifyBit(substr($idCard, 0, 17))) != 0) {
                 return false;
             }
         }
 
         //校验出生日期
-        $birth_day = substr($id_card, 6, 8);
-        $d = new DateTime($birth_day);
+        $birthDay = substr($idCard, 6, 8);
+        $d = new DateTime($birthDay);
         if ($d->format('Y') > date('Y') || $d->format('m') > 12 || $d->format('d') > 31) {
             return false;
         }
@@ -630,15 +630,15 @@ class Helper
      */
     static function encrypt($data, string $op = 'DECODE', string $key = '!@#%c*r&o*s^s%p$h~p&', string $method = 'AES-256-CBC')
     {
-        $encrypt_key = md5($key);
+        $encryptKey = md5($key);
         if ($op == 'ENCODE') {
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-            $encrypted = openssl_encrypt($data, $method, $encrypt_key, 0, $iv);
+            $encrypted = openssl_encrypt($data, $method, $encryptKey, 0, $iv);
             $result = str_replace(['=', '/', '+'], ['', '-', '_'], base64_encode($encrypted . '::' . $iv));
         } else {
             $data = base64_decode(str_replace(['-', '_'], ['/', '+'], $data));
             list($encrypted, $iv) = explode('::', $data);
-            $result = openssl_decrypt($encrypted, $method, $encrypt_key, 0, $iv);
+            $result = openssl_decrypt($encrypted, $method, $encryptKey, 0, $iv);
         }
 
         return $result;
@@ -660,17 +660,17 @@ class Helper
      *
      * @param int $time 时间戳
      * @param string $format
-     * @param int $start_time
+     * @param int $startTime
      * @param string $suffix
      * @return string
      */
-    static function ftime(int $time, string $format = 'Y-m-d H:i:s', int $start_time = 0, string $suffix = '前'): string
+    static function ftime(int $time, string $format = 'Y-m-d H:i:s', int $startTime = 0, string $suffix = '前'): string
     {
-        if ($start_time == 0) {
-            $start_time = time();
+        if ($startTime == 0) {
+            $startTime = time();
         }
 
-        $t = $start_time - $time;
+        $t = $startTime - $time;
         if ($t < 63072000) {
             $f = [
                 '31536000' => '年',

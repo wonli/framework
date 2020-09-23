@@ -56,26 +56,26 @@ class FrameBase
      *
      * @var string
      */
-    protected $view_controller;
+    protected $viewController;
 
     /**
      * 当前方法的注释配置
      *
      * @var array
      */
-    protected $action_annotate;
+    protected $actionAnnotate;
 
     /**
      * @var Delegate
      */
-    public static $app_delegate;
+    public static $appDelegate;
 
     /**
      * FrameBase constructor.
      */
     public function __construct()
     {
-        $this->delegate = self::$app_delegate;
+        $this->delegate = self::$appDelegate;
 
         $router = $this->delegate->getRouter();
         $this->controller = $router->getController();
@@ -83,8 +83,8 @@ class FrameBase
         $this->params = $router->getParams();
 
         $app = $this->delegate->getApplication();
-        $this->action_annotate = $app->getAnnotateConfig();
-        $this->view_controller = $app->getViewControllerNameSpace($this->controller);
+        $this->actionAnnotate = $app->getAnnotateConfig();
+        $this->viewController = $app->getViewControllerNameSpace($this->controller);
     }
 
     /**
@@ -121,27 +121,27 @@ class FrameBase
     /**
      * 读取配置文件
      *
-     * @param string $config_file
+     * @param string $configFile
      * @return Config
      * @throws CoreException
      */
-    function loadConfig($config_file): Config
+    function loadConfig(string $configFile): Config
     {
-        return Config::load($this->delegate->getConfig()->get('path', 'config') . $config_file);
+        return Config::load($this->delegate->getConfig()->get('path', 'config') . $configFile);
     }
 
     /**
      * 获取文件路径
      *
      * @param string $name
-     * @param bool $get_file_content
+     * @param bool $getFileContent
      * @return mixed
      * @throws CoreException
      * @see Loader::read()
      */
-    function parseGetFile(string $name, bool $get_file_content = false)
+    function parseGetFile(string $name, bool $getFileContent = false)
     {
-        return Loader::read($this->getFilePath($name), $get_file_content);
+        return Loader::read($this->getFilePath($name), $getFileContent);
     }
 
     /**
@@ -160,39 +160,39 @@ class FrameBase
      */
     function getFilePath(string $name): string
     {
-        $prefix_name = 'project';
+        $prefixName = 'project';
         if (false !== strpos($name, '::')) {
-            list($prefix_name, $file_name) = explode('::', $name);
-            if (!empty($prefix_name)) {
-                $prefix_name = strtolower(trim($prefix_name));
+            list($prefixName, $fileName) = explode('::', $name);
+            if (!empty($prefixName)) {
+                $prefixName = strtolower(trim($prefixName));
             }
         } else {
-            $file_name = $name;
+            $fileName = $name;
         }
 
         static $cache = null;
-        if (!isset($cache[$prefix_name])) {
-            switch ($prefix_name) {
+        if (!isset($cache[$prefixName])) {
+            switch ($prefixName) {
                 case 'app':
-                    $prefix_path = $this->delegate->getConfig()->get('app', 'path');
+                    $prefixPath = $this->delegate->getConfig()->get('app', 'path');
                     break;
 
                 case 'cache':
                 case 'config':
-                    $prefix_path = $this->delegate->getConfig()->get('path', $prefix_name);
+                    $prefixPath = $this->delegate->getConfig()->get('path', $prefixName);
                     break;
 
                 case 'static':
-                    $prefix_path = $this->delegate->getConfig()->get('static', 'path');
+                    $prefixPath = $this->delegate->getConfig()->get('static', 'path');
                     break;
 
                 default:
-                    $prefix_path = PROJECT_REAL_PATH;
+                    $prefixPath = PROJECT_REAL_PATH;
             }
-            $cache[$prefix_name] = rtrim($prefix_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $cache[$prefixName] = rtrim($prefixPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         }
 
-        return $cache[$prefix_name] . str_replace('/', DIRECTORY_SEPARATOR, $file_name);
+        return $cache[$prefixName] . str_replace('/', DIRECTORY_SEPARATOR, $fileName);
     }
 
     /**
@@ -249,83 +249,83 @@ class FrameBase
      */
     protected function getUrlEncryptKey(string $type = 'auth'): string
     {
-        $encrypt_key = $this->getConfig()->get('encrypt', $type);
-        if (empty($encrypt_key)) {
-            $encrypt_key = 'cross.' . $type;
+        $encryptKey = $this->getConfig()->get('encrypt', $type);
+        if (empty($encryptKey)) {
+            $encryptKey = 'cross.' . $type;
         }
 
-        return $encrypt_key;
+        return $encryptKey;
     }
 
     /**
      * 还原加密后的参数
      *
-     * @param bool $use_annotate
-     * @param string $params
+     * @param bool $useAnnotate
+     * @param null|string $params
      * @return array|bool|string
      */
-    protected function sParams(bool $use_annotate = true, $params = null)
+    protected function sParams(bool $useAnnotate = true, $params = null)
     {
         $config = $this->getConfig();
-        $addition_params = $config->get('ori_router', 'addition_params');
-        if (empty($addition_params)) {
-            $addition_params = [];
+        $additionParams = $config->get('ori_router', 'addition_params');
+        if (empty($additionParams)) {
+            $additionParams = [];
         }
 
-        $url_config = $config->get('url');
+        $urlConfig = $config->get('url');
         if (null === $params) {
-            $ori_params = $config->get('ori_router', 'params');
-            if ($url_config['type'] > 2) {
-                $params = current(array_keys($addition_params));
-                array_shift($addition_params);
+            $oriParams = $config->get('ori_router', 'params');
+            if ($urlConfig['type'] > 2) {
+                $params = current(array_keys($additionParams));
+                array_shift($additionParams);
             } else {
-                if (is_array($ori_params)) {
-                    $params = array_shift($ori_params);
+                if (is_array($oriParams)) {
+                    $params = array_shift($oriParams);
                 } else {
-                    $params = $ori_params;
+                    $params = $oriParams;
                 }
             }
         }
 
-        $decode_params_str = false;
+        $decodeParamsStr = false;
         if (is_string($params)) {
-            $decode_params_str = $this->urlEncrypt($params, 'decode');
+            $decodeParamsStr = $this->urlEncrypt($params, 'decode');
         }
 
-        if (false == $decode_params_str) {
+        if (false == $decodeParamsStr) {
             if ($params !== null) return $params;
             return $this->params;
         }
 
-        $op_type = 2;
-        $ori_result = [];
-        if (!empty($url_config['params_dot'])) {
-            $url_dot = &$url_config['params_dot'];
+        $opType = 2;
+        $oriResult = [];
+        if (!empty($urlConfig['params_dot'])) {
+            $urlDot = &$urlConfig['params_dot'];
         } else {
-            $url_dot = &$url_config['dot'];
+            $urlDot = &$urlConfig['dot'];
         }
 
-        switch ($url_config['type']) {
+        switch ($urlConfig['type']) {
             case 1:
-                $op_type = 1;
-                $ori_result = explode($url_dot, $decode_params_str);
+                $opType = 1;
+                $oriResult = explode($urlDot, $decodeParamsStr);
                 break;
             case 2:
-                $ori_result = Application::stringParamsToAssociativeArray($decode_params_str, $url_dot);
+                $oriResult = Application::stringParamsToAssociativeArray($decodeParamsStr, $urlDot);
                 break;
 
             default:
-                parse_str($decode_params_str, $ori_result);
+                parse_str($decodeParamsStr, $oriResult);
         }
 
-        if (!empty($this->action_annotate['params']) && $use_annotate) {
-            $result = Application::combineParamsAnnotateConfig($ori_result, $this->action_annotate['params'], $op_type);
+        if (!empty($this->actionAnnotate['params']) && $useAnnotate) {
+            $result = Application::combineParamsAnnotateConfig($oriResult, $this->actionAnnotate['params'], $opType);
         } else {
-            $result = $ori_result;
+            $result = $oriResult;
         }
 
-        if (!empty($addition_params) && is_array($addition_params)) {
-            $result += $addition_params;
+        if (!empty($additionParams) && is_array($additionParams)) {
+            $result += $additionParams;
         }
 
         return $result;
@@ -338,7 +338,7 @@ class FrameBase
      */
     protected function initView()
     {
-        $view = new $this->view_controller();
+        $view = new $this->viewController();
         $view->config = $this->getConfig();
         $view->params = $this->params;
         return $view;

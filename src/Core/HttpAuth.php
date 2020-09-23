@@ -48,9 +48,9 @@ class HttpAuth
                 if (strcasecmp($type, 'cookie') == 0) {
                     self::$authHandler = new CookieAuth($authKey);
                 } elseif (strcasecmp($type, 'session') == 0) {
-                    self::$authHandler = new SessionAuth($authKey);
+                    self::$authHandler = new SessionAuth();
                 } elseif (strcasecmp($type, 'redis') == 0) {
-                    self::$authHandler = new RedisAuth($authKey);
+                    self::$authHandler = new RedisAuth();
                 } else {
                     try {
                         $object = new ReflectionClass($type);

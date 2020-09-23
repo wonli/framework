@@ -31,19 +31,19 @@ abstract class BaseConnector implements PDOConnector
     /**
      * 合并用户输入的options
      *
-     * @param array $default_options
+     * @param array $defaultOptions
      * @param array $options
      * @return array
      */
-    protected static function getOptions(array $default_options, array $options): array
+    protected static function getOptions(array $defaultOptions, array $options): array
     {
         if (!empty($options)) {
-            foreach ($options as $option_key => $option_val) {
-                $default_options[$option_key] = $option_val;
+            foreach ($options as $optionKey => $optionVal) {
+                $defaultOptions[$optionKey] = $optionVal;
             }
         }
 
-        return $default_options;
+        return $defaultOptions;
     }
 
     /**

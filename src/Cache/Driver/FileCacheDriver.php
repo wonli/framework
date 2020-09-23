@@ -23,12 +23,12 @@ class FileCacheDriver implements CacheInterface
      *
      * @var string
      */
-    private $cache_path;
+    private $cachePath;
 
-    function __construct(string $cache_path)
+    function __construct(string $cachePath)
     {
-        $cache_path = rtrim($cache_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        $this->cache_path = $cache_path;
+        $cachePath = rtrim($cachePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->cachePath = $cachePath;
     }
 
     /**
@@ -39,25 +39,25 @@ class FileCacheDriver implements CacheInterface
      */
     function get(string $key = '')
     {
-        $cache_file = $this->cache_path . $key;
-        if (!file_exists($cache_file)) {
+        $cacheFile = $this->cachePath . $key;
+        if (!file_exists($cacheFile)) {
             return false;
         }
 
-        return file_get_contents($cache_file);
+        return file_get_contents($cacheFile);
     }
 
     /**
      * 保存缓存
      *
      * @param string $key
-     * @param string $value
+     * @param mixed $value
      * @return mixed|void
      * @throws CoreException
      */
     function set(string $key, $value)
     {
-        $cacheFile = $this->cache_path . $key;
+        $cacheFile = $this->cachePath . $key;
         if (!file_exists($cacheFile)) {
             $filePath = dirname($cacheFile);
             if (!is_dir($filePath)) {
@@ -79,7 +79,7 @@ class FileCacheDriver implements CacheInterface
      */
     function del(string $key)
     {
-        $cacheFile = $this->cache_path . $key;
+        $cacheFile = $this->cachePath . $key;
         if (file_exists($cacheFile)) {
             unlink($cacheFile);
         }

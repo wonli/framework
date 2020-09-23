@@ -36,7 +36,7 @@ class Application
      *
      * @var string
      */
-    private $action_annotate;
+    private $actionAnnotate;
 
     /**
      * @var Delegate
@@ -58,28 +58,28 @@ class Application
      *
      * @param object|string $router
      * @param array|string $args 指定参数
-     * @param bool $return_response_content 是否输出执行结果
+     * @param bool $returnResponseContent 是否输出执行结果
      * @return array|mixed|string
      * @throws CoreException
      */
-    public function dispatcher($router, $args = [], bool $return_response_content = false)
+    public function dispatcher($router, $args = [], bool $returnResponseContent = false)
     {
-        $init_prams = true;
-        $router = $this->parseRouter($router, $args, $init_prams);
+        $initPrams = true;
+        $router = $this->parseRouter($router, $args, $initPrams);
         $cr = $this->initController($router['controller'], $router['action']);
 
         $closureContainer = $this->delegate->getClosureContainer();
-        $annotate_config = $this->getAnnotateConfig();
+        $annotateConfig = $this->getAnnotateConfig();
 
-        $action_params = [];
-        if (isset($annotate_config['params'])) {
-            $action_params = &$annotate_config['params'];
+        $actionParams = [];
+        if (isset($annotateConfig['params'])) {
+            $actionParams = &$annotateConfig['params'];
         }
 
-        if ($init_prams) {
-            $this->initParams($router['params'], $action_params);
+        if ($initPrams) {
+            $this->initParams($router['params'], $actionParams);
         } elseif (is_array($router['params'])) {
-            $params = $router['params'] + $action_params;
+            $params = $router['params'] + $actionParams;
             $this->updateRouterParams($params);
         } else {
             $this->updateRouterParams($router['params']);
@@ -89,29 +89,29 @@ class Application
 
         $Request = $this->delegate->getRequest();
         $Response = $this->delegate->getResponse();
-        if (!empty($annotate_config['basicAuth'])) {
-            $Response->basicAuth($annotate_config['basicAuth'], $Request->SERVER('PHP_AUTH_USER'), $Request->SERVER('PHP_AUTH_PW'));
+        if (!empty($annotateConfig['basicAuth'])) {
+            $Response->basicAuth($annotateConfig['basicAuth'], $Request->SERVER('PHP_AUTH_USER'), $Request->SERVER('PHP_AUTH_PW'));
         }
 
         $cache = false;
-        if (isset($annotate_config['cache'])) {
-            $cache = $this->initRequestCache($annotate_config['cache'], $action_params);
+        if (isset($annotateConfig['cache'])) {
+            $cache = $this->initRequestCache($annotateConfig['cache'], $actionParams);
         }
 
         $hasResponse = false;
         $Response->setEndFlush(false);
         if ($cache && $cache->isValid()) {
-            $response_content = $cache->get();
+            $responseContent = $cache->get();
         } else {
             try {
-                $cr->setStaticPropertyValue('app_delegate', $this->delegate);
+                $cr->setStaticPropertyValue('appDelegate', $this->delegate);
             } catch (Exception $e) {
                 throw new CoreException($e->getMessage());
             }
 
             $controller = $cr->newInstance();
-            if (isset($annotate_config['before'])) {
-                $this->callReliesControllerClosure($annotate_config['before'], $controller);
+            if (isset($annotateConfig['before'])) {
+                $this->callReliesControllerClosure($annotateConfig['before'], $controller);
             }
 
             $hasResponse = $Response->isEndFlush();
@@ -123,24 +123,24 @@ class Application
                 }
             }
 
-            $response_content = $Response->getContent();
+            $responseContent = $Response->getContent();
             if ($cache && $cache->isValid()) {
-                $cache->set($response_content);
+                $cache->set($responseContent);
             }
         }
 
-        if (!empty($annotate_config['response'])) {
-            $this->setResponseConfig($annotate_config['response']);
+        if (!empty($annotateConfig['response'])) {
+            $this->setResponseConfig($annotateConfig['response']);
         }
 
-        if ($return_response_content) {
-            return $response_content;
+        if ($returnResponseContent) {
+            return $responseContent;
         } elseif (false === $hasResponse) {
-            $Response->send($response_content);
+            $Response->send($responseContent);
         }
 
-        if (isset($annotate_config['after']) && isset($controller)) {
-            $this->callReliesControllerClosure($annotate_config['after'], $controller);
+        if (isset($annotateConfig['after']) && isset($controller)) {
+            $this->callReliesControllerClosure($annotateConfig['after'], $controller);
         }
 
         return true;
@@ -170,29 +170,29 @@ class Application
      */
     function getAnnotateConfig()
     {
-        return $this->action_annotate;
+        return $this->actionAnnotate;
     }
 
     /**
      * 获取控制器的命名空间
      *
-     * @param string $controller_name
+     * @param string $controllerName
      * @return string
      */
-    function getControllerNamespace(string $controller_name): string
+    function getControllerNamespace(string $controllerName): string
     {
-        return $this->delegate->getAppNamespace() . '\\controllers\\' . $controller_name;
+        return $this->delegate->getAppNamespace() . '\\controllers\\' . $controllerName;
     }
 
     /**
      * 默认的视图控制器命名空间
      *
-     * @param string $controller_name
+     * @param string $controllerName
      * @return string
      */
-    function getViewControllerNameSpace(string $controller_name): string
+    function getViewControllerNameSpace(string $controllerName): string
     {
-        return $this->delegate->getAppNamespace() . '\\views\\' . $controller_name . 'View';
+        return $this->delegate->getAppNamespace() . '\\views\\' . $controllerName . 'View';
     }
 
     /**
@@ -234,36 +234,36 @@ class Application
      * 合并参数注释配置
      *
      * @param array $params
-     * @param array $annotate_params
-     * @param int $op_mode 处理参数的方式
+     * @param array $annotateParams
+     * @param int $opMode 处理参数的方式
      * @return array
      */
-    public static function combineParamsAnnotateConfig(array $params = [], array $annotate_params = [], int $op_mode = 1): array
+    public static function combineParamsAnnotateConfig(array $params = [], array $annotateParams = [], int $opMode = 1): array
     {
         if (empty($params)) {
-            return $annotate_params;
+            return $annotateParams;
         }
 
-        if (!empty($annotate_params)) {
-            $params_set = [];
-            foreach ($annotate_params as $params_name => $default_value) {
-                if ($op_mode == 1) {
-                    $params_value = array_shift($params);
+        if (!empty($annotateParams)) {
+            $paramsSet = [];
+            foreach ($annotateParams as $paramsName => $defaultValue) {
+                if ($opMode == 1) {
+                    $paramsValue = array_shift($params);
                 } else {
-                    if (isset($params[$params_name])) {
-                        $params_value = $params[$params_name];
+                    if (isset($params[$paramsName])) {
+                        $paramsValue = $params[$paramsName];
                     } else {
-                        $params_value = $default_value;
+                        $paramsValue = $defaultValue;
                     }
                 }
 
-                if ($params_value != '') {
-                    $params_set[$params_name] = $params_value;
+                if ($paramsValue != '') {
+                    $paramsSet[$paramsName] = $paramsValue;
                 } else {
-                    $params_set[$params_name] = $default_value;
+                    $paramsSet[$paramsName] = $defaultValue;
                 }
             }
-            return $params_set;
+            return $paramsSet;
         }
 
         return $params;
@@ -306,21 +306,21 @@ class Application
      *
      * @param RouterInterface|string $router
      * @param array $params
-     * @param bool $init_params
+     * @param bool $initParams
      * @return array
      */
-    private function parseRouter($router, array $params = [], &$init_params = true): array
+    private function parseRouter($router, array $params = [], &$initParams = true): array
     {
         if ($router instanceof RouterInterface) {
             $controller = $router->getController();
             $action = $router->getAction();
             $params = $router->getParams();
         } elseif (is_array($router)) {
-            $init_params = false;
+            $initParams = false;
             $controller = $router['controller'];
             $action = $router['action'];
         } else {
-            $init_params = false;
+            $initParams = false;
             if (strpos($router, ':')) {
                 list($controller, $action) = explode(':', $router);
             } else {
@@ -336,18 +336,18 @@ class Application
      * 初始化控制器
      *
      * @param string $controller 控制器
-     * @param string $action 动作
+     * @param mixed $action 动作
      * @return ReflectionClass
      * @throws CoreException
      */
     private function initController(string $controller, $action = null): ReflectionClass
     {
-        $controller_namespace = $this->getControllerNamespace($controller);
+        $controllerNamespace = $this->getControllerNamespace($controller);
 
         try {
-            $class_reflection = new ReflectionClass($controller_namespace);
-            if ($class_reflection->isAbstract()) {
-                throw new CoreException("{$controller_namespace} 不允许访问的控制器");
+            $classReflection = new ReflectionClass($controllerNamespace);
+            if ($classReflection->isAbstract()) {
+                throw new CoreException("{$controllerNamespace} 不允许访问的控制器");
             }
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
@@ -355,65 +355,65 @@ class Application
 
         $this->delegate->getRouter()->setController($controller);
         //控制器类注释(不检测父类注释)
-        $controller_annotate = [];
-        $class_annotate_content = $class_reflection->getDocComment();
-        if ($class_annotate_content) {
-            $controller_annotate = Annotate::getInstance($this->delegate)->parse($class_annotate_content);
+        $controllerAnnotate = [];
+        $classAnnotateContent = $classReflection->getDocComment();
+        if ($classAnnotateContent) {
+            $controllerAnnotate = Annotate::getInstance($this->delegate)->parse($classAnnotateContent);
         }
 
         if ($action) {
             try {
-                $is_callable = new ReflectionMethod($controller_namespace, $action);
+                $isCallable = new ReflectionMethod($controllerNamespace, $action);
             } catch (Exception $e) {
                 try {
-                    $is_callable = new ReflectionMethod($controller_namespace, '__call');
+                    $isCallable = new ReflectionMethod($controllerNamespace, '__call');
                 } catch (Exception $e) {
-                    throw new CoreException("{$controller_namespace}->{$action} 不能解析的请求");
+                    throw new CoreException("{$controllerNamespace}->{$action} 不能解析的请求");
                 }
             }
 
-            if (isset($is_callable) && $is_callable->isPublic() && true !== $is_callable->isAbstract()) {
+            if (isset($isCallable) && $isCallable->isPublic() && true !== $isCallable->isAbstract()) {
                 $this->delegate->getRouter()->setAction($action);
                 //获取Action的注释配置
-                $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($is_callable->getDocComment()), $controller_annotate);
+                $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($isCallable->getDocComment()), $controllerAnnotate);
             } else {
-                throw new CoreException("{$controller_namespace}->{$action} 不允许访问的方法");
+                throw new CoreException("{$controllerNamespace}->{$action} 不允许访问的方法");
             }
         }
 
-        return $class_reflection;
+        return $classReflection;
     }
 
     /**
      * 初始化参数
      *
-     * @param array|string $url_params
-     * @param array $annotate_params
+     * @param array|string $urlParams
+     * @param array $annotateParams
      */
-    private function initParams($url_params, array $annotate_params = []): void
+    private function initParams($urlParams, array $annotateParams = []): void
     {
-        $url_type = $this->delegate->getConfig()->get('url', 'type');
-        switch ($url_type) {
+        $urlType = $this->delegate->getConfig()->get('url', 'type');
+        switch ($urlType) {
             case 1:
-                $params = self::combineParamsAnnotateConfig($url_params, $annotate_params);
+                $params = self::combineParamsAnnotateConfig($urlParams, $annotateParams);
                 break;
 
             case 2:
-                $url_params = self::oneDimensionalToAssociativeArray($url_params);
-                if (!empty($annotate_params)) {
-                    $params = self::combineParamsAnnotateConfig($url_params, $annotate_params, 2);
+                $urlParams = self::oneDimensionalToAssociativeArray($urlParams);
+                if (!empty($annotateParams)) {
+                    $params = self::combineParamsAnnotateConfig($urlParams, $annotateParams, 2);
                 } else {
-                    $params = $url_params;
+                    $params = $urlParams;
                 }
                 break;
 
             default:
-                if (empty($url_params)) {
-                    $params = $annotate_params;
-                } elseif (is_array($url_params) && !empty($annotate_params)) {
-                    $params = array_merge($annotate_params, $url_params);
+                if (empty($urlParams)) {
+                    $params = $annotateParams;
+                } elseif (is_array($urlParams) && !empty($annotateParams)) {
+                    $params = array_merge($annotateParams, $urlParams);
                 } else {
-                    $params = $url_params;
+                    $params = $urlParams;
                 }
         }
 
@@ -432,29 +432,29 @@ class Application
      * 注册匿名函数cpCache可以更灵活的控制请求缓存
      * </pre>
      *
-     * @param array $request_cache_config
-     * @param array $annotate_params
+     * @param array $requestCacheConfig
+     * @param array $annotateParams
      * @return bool|FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
      * @throws CoreException
      */
-    private function initRequestCache(array $request_cache_config, array $annotate_params)
+    private function initRequestCache(array $requestCacheConfig, array $annotateParams)
     {
-        if (empty($request_cache_config[0])) {
+        if (empty($requestCacheConfig[0])) {
             return false;
         }
 
-        if (!isset($request_cache_config[1]) || !is_array($request_cache_config[1])) {
+        if (!isset($requestCacheConfig[1]) || !is_array($requestCacheConfig[1])) {
             throw new CoreException('请求缓存配置格式不正确');
         }
 
-        if (empty($request_cache_config[2]) && !$this->delegate->getRequest()->isGetRequest()) {
+        if (empty($requestCacheConfig[2]) && !$this->delegate->getRequest()->isGetRequest()) {
             return false;
         }
 
-        $display_type = $this->delegate->getConfig()->get('sys', 'display');
-        $this->delegate->getResponse()->setContentType($display_type);
+        $displayType = $this->delegate->getConfig()->get('sys', 'display');
+        $this->delegate->getResponse()->setContentType($displayType);
 
-        $default_cache_config = [
+        $defaultCacheConfig = [
             'type' => 1,
             'expire_time' => 3600,
             'ignore_params' => false,
@@ -462,55 +462,55 @@ class Application
             'key_dot' => DIRECTORY_SEPARATOR
         ];
 
-        $cache_config = &$request_cache_config[1];
-        foreach ($default_cache_config as $default_config_key => $default_value) {
-            if (!isset($cache_config[$default_config_key])) {
-                $cache_config[$default_config_key] = $default_value;
+        $cacheConfig = &$requestCacheConfig[1];
+        foreach ($defaultCacheConfig as $defaultConfigKey => $defaultValue) {
+            if (!isset($cacheConfig[$defaultConfigKey])) {
+                $cacheConfig[$defaultConfigKey] = $defaultValue;
             }
         }
 
-        $params_cache_key = '';
+        $paramsCacheKey = '';
         $params = $this->delegate->getRouter()->getParams();
-        if (!$cache_config['ignore_params'] && !empty($params)) {
-            $params_member = &$params;
-            if (!empty($annotate_params)) {
-                foreach ($annotate_params as $k => &$v) {
+        if (!$cacheConfig['ignore_params'] && !empty($params)) {
+            $paramsMember = &$params;
+            if (!empty($annotateParams)) {
+                foreach ($annotateParams as $k => &$v) {
                     if (isset($params[$k])) {
                         $v = $params[$k];
                     }
                 }
-                $params_member = $annotate_params;
+                $paramsMember = $annotateParams;
             }
 
-            $params_cache_key = md5(json_encode($params_member));
+            $paramsCacheKey = md5(json_encode($paramsMember));
         }
 
-        $cache_key = [
+        $cacheKey = [
             'app_name' => $this->delegate->getAppName(),
             'tpl_dir_name' => $this->delegate->getConfig()->get('sys', 'default_tpl_dir'),
             'controller' => lcfirst($this->delegate->getRouter()->getController()),
             'action' => $this->delegate->getRouter()->getAction()
         ];
 
-        $cache_config['key'] = implode($cache_config['key_dot'], $cache_key);
-        if ($params_cache_key) {
-            $cache_config['key'] .= '@' . $params_cache_key;
+        $cacheConfig['key'] = implode($cacheConfig['key_dot'], $cacheKey);
+        if ($paramsCacheKey) {
+            $cacheConfig['key'] .= '@' . $paramsCacheKey;
         }
 
         $closureContainer = $this->delegate->getClosureContainer();
-        $has_cache_closure = $closureContainer->has('cpCache');
-        if ($has_cache_closure) {
-            $cache_config['params'] = $params;
-            $cache_config['cache_key'] = $cache_key;
-            $cache_config['annotate_params'] = $annotate_params;
-            $enable_cache = $closureContainer->run('cpCache', [&$cache_config]);
-            unset($cache_config['cache_key_config'], $cache_config['params'], $cache_config['annotate_params']);
+        $hasCacheClosure = $closureContainer->has('cpCache');
+        if ($hasCacheClosure) {
+            $cacheConfig['params'] = $params;
+            $cacheConfig['cache_key'] = $cacheKey;
+            $cacheConfig['annotate_params'] = $annotateParams;
+            $enableCache = $closureContainer->run('cpCache', [&$cacheConfig]);
+            unset($cacheConfig['cache_key_config'], $cacheConfig['params'], $cacheConfig['annotate_params']);
         } else {
-            $enable_cache = $request_cache_config[0];
+            $enableCache = $requestCacheConfig[0];
         }
 
-        if ($enable_cache) {
-            return RequestCache::factory($cache_config['type'], $cache_config);
+        if ($enableCache) {
+            return RequestCache::factory($cacheConfig['type'], $cacheConfig);
         }
 
         return false;
@@ -547,14 +547,14 @@ class Application
      * 设置action注释
      *
      * @param array $annotate
-     * @param array $controller_annotate
+     * @param array $controllerAnnotate
      */
-    private function setAnnotateConfig(array $annotate, array $controller_annotate): void
+    private function setAnnotateConfig(array $annotate, array $controllerAnnotate): void
     {
-        if (empty($controller_annotate)) {
-            $this->action_annotate = $annotate;
+        if (empty($controllerAnnotate)) {
+            $this->actionAnnotate = $annotate;
         } else {
-            $this->action_annotate = array_merge($controller_annotate, $annotate);
+            $this->actionAnnotate = array_merge($controllerAnnotate, $annotate);
         }
     }
 }

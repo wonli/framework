@@ -33,21 +33,21 @@ class CallTree
     /**
      * 保存调用关系
      *
-     * @param string $node_name
-     * @param mixed $node_arguments
+     * @param string $nodeName
+     * @param mixed $nodeArguments
      */
-    function saveNode(string $node_name, $node_arguments): void
+    function saveNode(string $nodeName, $nodeArguments): void
     {
-        $this->node = [$node_name => $node_arguments];
+        $this->node = [$nodeName => $nodeArguments];
     }
 
     /**
      * 输出HTML标签
-     * @param bool $html_decode
+     * @param bool $htmlDecode
      */
-    function html(bool $html_decode = true): void
+    function html(bool $htmlDecode = true): void
     {
-        echo $this->nodeToHTML($html_decode);
+        echo $this->nodeToHTML($htmlDecode);
     }
 
     /**
@@ -83,11 +83,11 @@ class CallTree
     /**
      * 把node转换为html
      *
-     * @param bool $html_decode
+     * @param bool $htmlDecode
      * @return string
      */
-    private function nodeToHTML(bool $html_decode = true): string
+    private function nodeToHTML(bool $htmlDecode = true): string
     {
-        return CallTreeToHTML::getInstance()->getHTML($this->getNode(), $html_decode);
+        return CallTreeToHTML::getInstance()->getHTML($this->getNode(), $htmlDecode);
     }
 }

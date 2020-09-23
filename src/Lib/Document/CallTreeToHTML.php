@@ -59,15 +59,15 @@ class CallTreeToHTML
      * DOM转HTML
      *
      * @param $node
-     * @param bool $html_decode
+     * @param bool $htmlDecode
      * @return string
      */
-    function getHTML($node, bool $html_decode = true): string
+    function getHTML($node, bool $htmlDecode = true): string
     {
         $dom = $this->getDom($node);
         $dom->encoding = 'utf-8';
         $html = $dom->saveHTML($dom->firstChild);
-        if ($html_decode) {
+        if ($htmlDecode) {
             $html = html_entity_decode($html);
         }
 
@@ -83,11 +83,11 @@ class CallTreeToHTML
     function makeNode($node, DOMNode $parentElement = null)
     {
         $content = null;
-        $attr_set = [];
+        $attrSet = [];
 
         //构造根节点
         if (null === $parentElement) {
-            $root_element_name = current(array_keys($node));
+            $rootElementName = current(array_keys($node));
 
             $node = current($node);
             if (isset($node[0]) && !$node[0] instanceof CallTree) {
@@ -96,17 +96,17 @@ class CallTreeToHTML
                         $content = $node[0]['@content'];
                         unset($node[0]['@content']);
                     }
-                    $attr_set = $node[0];
+                    $attrSet = $node[0];
                 } else {
                     $content = $node[0];
                     unset($node[0]);
                 }
             }
 
-            $this->element = $this->dom->createElement($root_element_name, htmlentities($content));
-            if (!empty($attr_set)) {
-                foreach ($attr_set as $attr_set_name => $attr_set_value) {
-                    $this->element->setAttribute($attr_set_name, $attr_set_value);
+            $this->element = $this->dom->createElement($rootElementName, htmlentities($content));
+            if (!empty($attrSet)) {
+                foreach ($attrSet as $attrSetName => $attrSetValue) {
+                    $this->element->setAttribute($attrSetName, $attrSetValue);
                 }
             }
         }
@@ -114,42 +114,42 @@ class CallTreeToHTML
         //为parentElement设置属性
         if ($parentElement && isset($node[0]) && !$node[0] instanceof CallTree) {
             if (!empty($node[0])) {
-                foreach ($node[0] as $attr_set_name => $attr_set_value) {
-                    if ($attr_set_value instanceof Closure) {
-                        $attr_set_value = call_user_func($attr_set_value);
+                foreach ($node[0] as $attrSetName => $attrSetValue) {
+                    if ($attrSetValue instanceof Closure) {
+                        $attrSetValue = call_user_func($attrSetValue);
                     }
-                    $parentElement->setAttribute($attr_set_name, $attr_set_value);
+                    $parentElement->setAttribute($attrSetName, $attrSetValue);
                 }
             }
         }
 
         foreach ($node as $n) {
             if (!empty($n) && $n instanceof CallTree) {
-                $node_detail = $n->getNode();
-                foreach ($node_detail as $element_name => $child_node) {
+                $nodeDetail = $n->getNode();
+                foreach ($nodeDetail as $elementName => $childNode) {
 
                     //获取当前element中的文本内容
-                    if (isset($child_node[0]) && !$child_node[0] instanceof CallTree) {
-                        if (is_array($child_node[0])) {
-                            if (isset($child_node[0]['@content'])) {
-                                $content = $child_node[0]['@content'];
-                                unset($child_node[0]['@content']);
+                    if (isset($childNode[0]) && !$childNode[0] instanceof CallTree) {
+                        if (is_array($childNode[0])) {
+                            if (isset($childNode[0]['@content'])) {
+                                $content = $childNode[0]['@content'];
+                                unset($childNode[0]['@content']);
                             }
                         } else {
-                            $content = $child_node[0];
-                            unset($child_node[0]);
+                            $content = $childNode[0];
+                            unset($childNode[0]);
                         }
                     }
 
-                    $element = $this->dom->createElement($element_name, htmlentities($content));
+                    $element = $this->dom->createElement($elementName, htmlentities($content));
                     if ($parentElement instanceof DOMElement) {
-                        $current_element = $parentElement->appendChild($element);
+                        $currentElement = $parentElement->appendChild($element);
                     } else {
-                        $current_element = $this->element->appendChild($element);
+                        $currentElement = $this->element->appendChild($element);
                     }
 
-                    if (!empty($child_node)) {
-                        $this->makeNode($child_node, $current_element);
+                    if (!empty($childNode)) {
+                        $this->makeNode($childNode, $currentElement);
                     }
                 }
             }
