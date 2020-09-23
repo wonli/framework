@@ -78,7 +78,7 @@ class CallTreeToHTML
      * 把node转换为dom
      *
      * @param $node
-     * @param DOMNode $parentElement
+     * @param DOMNode|null $parentElement
      */
     function makeNode($node, DOMNode $parentElement = null)
     {
