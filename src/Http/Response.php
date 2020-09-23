@@ -304,16 +304,8 @@ class Response
             return;
         }
 
-        $realm = &$options['realm'];
-        if (null === $realm) {
-            $realm = 'CP Login Required';
-        }
-
-        $message = &$options['fail_msg'];
-        if (null === $message) {
-            $message = self::$statusDescriptions[401];
-        }
-
+        $realm = $options['realm'] ?? 'CP login required';
+        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
         $this->setResponseStatus(401)
             ->setHeader('WWW-Authenticate: Basic realm="' . $realm . '"')
             ->end($message);
@@ -329,11 +321,7 @@ class Response
      */
     function digestAuth(array $users, string $digest, string $requestMethod, array $options = []): void
     {
-        $realm = &$options['realm'];
-        if (null === $realm) {
-            $realm = 'CP Login Required';
-        }
-
+        $realm = $options['realm'] ?? 'CP login required';
         $data = $this->httpDigestParse($digest);
         if (isset($data['username']) && isset($users[$data['username']])) {
             $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
@@ -344,16 +332,8 @@ class Response
             }
         }
 
-        $message = &$options['fail_msg'];
-        if (null === $message) {
-            $message = self::$statusDescriptions[401];
-        }
-
-        $nonce = &$options['nonce'];
-        if (null === $nonce) {
-            $nonce = uniqid();
-        }
-
+        $nonce = $options['nonce'] ?? uniqid();
+        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
         $this->setResponseStatus(401)
             ->setHeader('WWW-Authenticate: Digest realm="' . $realm .
                 '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
@@ -416,7 +396,7 @@ class Response
     {
         if (!empty($this->cookie)) {
             foreach ($this->cookie as $cookie) {
-                $ret = call_user_func_array('setcookie', $cookie);
+                call_user_func_array('setcookie', $cookie);
             }
         }
     }
@@ -424,7 +404,7 @@ class Response
     /**
      * 输出内容
      *
-     * @param string $message
+     * @param mixed $message
      * @param string $tpl
      */
     private function makeResponseContent($message, string $tpl = ''): void
