@@ -17,10 +17,6 @@ use Cross\Exception\FrontException;
  */
 class Request
 {
-    protected $baseUrl;
-    protected $hostInfo;
-    protected $scriptUrl;
-
     protected $getData = [];
     protected $postData = [];
     protected $fileData = [];
@@ -28,19 +24,19 @@ class Request
     protected $requestData = [];
 
     /**
+     * @var string
+     */
+    protected $scriptUrl;
+
+    /**
      * @var self
      */
     protected static $instance;
 
     /**
-     * @var string
-     */
-    protected $requestMethod;
-
-    /**
      * Request constructor.
      */
-    function __construct()
+    private function __construct()
     {
         $this->getData = &$_GET;
         $this->postData = &$_POST;
@@ -50,7 +46,7 @@ class Request
     }
 
     /**
-     * 实例化类
+     * 单例模式
      *
      * @return Request
      */
@@ -64,116 +60,11 @@ class Request
     }
 
     /**
-     * script url
-     *
-     * @return string
-     * @throws FrontException
-     */
-    function getScriptUrl(): string
-    {
-        if (!$this->scriptUrl) {
-            $this->initScriptUrl();
-        }
-
-        return $this->scriptUrl;
-    }
-
-    /**
-     * 设置基础路径
-     *
-     * @param string $url 设置基础路径
-     */
-    function setBaseUrl(string $url): void
-    {
-        $this->baseUrl = $url;
-    }
-
-    /**
-     * 返回当前URL绝对路径
-     *
-     * @param boolean $absolute 是否返回带HOST的绝对路径
-     * @return string 当前请求的url
-     * @throws FrontException
-     */
-    function getBaseUrl(bool $absolute = false): string
-    {
-        if ($this->baseUrl === null) {
-            $this->baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
-        }
-        return $absolute ? $this->getHostInfo() . $this->baseUrl : $this->baseUrl;
-    }
-
-    /**
-     * 当前执行的脚本名
-     *
-     * @return string
-     */
-    function getIndexName(): string
-    {
-        return basename($this->getScriptName());
-    }
-
-    /**
-     * get host
-     *
-     * @param bool $without_protocol
-     * @return mixed
-     */
-    function getHostInfo(bool $without_protocol = false): string
-    {
-        if (!$this->hostInfo) {
-            $this->initHostInfo($without_protocol);
-        }
-
-        return $this->hostInfo;
-    }
-
-    /**
-     * 获取当前页面URL
-     *
-     * @param bool $absolute
-     * @return string
-     */
-    function getCurrentUrl(bool $absolute = true): string
-    {
-        if ($absolute) {
-            return $this->getHostInfo() . $this->SERVER('REQUEST_URI');
-        }
-
-        return $this->SERVER('REQUEST_URI');
-    }
-
-    /**
-     * 取得服务器端口
-     *
-     * @return int 当前服务器端口号
-     */
-    function getServerPort(): int
-    {
-        return $this->SERVER('SERVER_PORT');
-    }
-
-    /**
-     * 当前scriptFile的路径
-     *
-     * @return string
-     * @throws FrontException
-     */
-    function getScriptFilePath(): string
-    {
-        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == '') {
-            throw new FrontException('determine the entry script URL failed!!!');
-        }
-
-        return dirname($scriptName);
-    }
-
-    /**
      * @return string
      */
     function getUserHost(): string
     {
-        return $this->SERVER('REMOTE_HOST');
+        return $this->server('REMOTE_HOST');
     }
 
     /**
@@ -181,7 +72,7 @@ class Request
      */
     function getRequestURI(): string
     {
-        return $this->SERVER('REQUEST_URI');
+        return $this->server('REQUEST_URI');
     }
 
     /**
@@ -189,7 +80,7 @@ class Request
      */
     function getRequestType(): string
     {
-        return $this->SERVER('REQUEST_METHOD');
+        return $this->server('REQUEST_METHOD');
     }
 
     /**
@@ -197,7 +88,7 @@ class Request
      */
     function getPathInfo(): string
     {
-        return $this->SERVER('ORIG_PATH_INFO') ?: $this->SERVER('PATH_INFO');
+        return $this->server('ORIG_PATH_INFO') ?: $this->server('PATH_INFO');
     }
 
     /**
@@ -205,15 +96,7 @@ class Request
      */
     function getQueryString(): string
     {
-        return $this->SERVER('QUERY_STRING');
-    }
-
-    /**
-     * @return string
-     */
-    function getScriptName(): string
-    {
-        return $this->SERVER('ORIG_SCRIPT_NAME') ?: $this->SERVER('SCRIPT_NAME');
+        return $this->server('QUERY_STRING');
     }
 
     /**
@@ -223,7 +106,7 @@ class Request
      */
     function getUrlReferrer(): string
     {
-        return $this->SERVER('HTTP_REFERER');
+        return $this->server('HTTP_REFERER');
     }
 
     /**
@@ -231,7 +114,7 @@ class Request
      */
     function getUserAgent(): string
     {
-        return $this->SERVER('HTTP_USER_AGENT');
+        return $this->server('HTTP_USER_AGENT');
     }
 
     /**
@@ -239,19 +122,9 @@ class Request
      */
     function getAcceptTypes(): string
     {
-        return $this->SERVER('HTTP_ACCEPT');
+        return $this->server('HTTP_ACCEPT');
     }
 
-    /**
-     * 是否是PUT请求
-     *
-     * @return bool
-     */
-    function isPutRequest(): bool
-    {
-        $requestMethod = $this->getRequestMethod();
-        return $requestMethod && 0 === strcasecmp($requestMethod, 'PUT');
-    }
 
     /**
      * 判断一个链接是否为post请求
@@ -260,8 +133,7 @@ class Request
      */
     function isPostRequest(): bool
     {
-        $requestMethod = $this->getRequestMethod();
-        return $requestMethod && 0 === strcasecmp($requestMethod, 'POST');
+        return $this->isRequestMethod('post');
     }
 
     /**
@@ -271,8 +143,17 @@ class Request
      */
     function isGetRequest(): bool
     {
-        $requestMethod = $this->getRequestMethod();
-        return $requestMethod && 0 === strcasecmp($requestMethod, 'GET');
+        return $this->isRequestMethod('GET');
+    }
+
+    /**
+     * 是否是PUT请求
+     *
+     * @return bool
+     */
+    function isPutRequest(): bool
+    {
+        return $this->isRequestMethod('PUT');
     }
 
     /**
@@ -282,8 +163,7 @@ class Request
      */
     function isDeleteRequest(): bool
     {
-        $requestMethod = $this->getRequestMethod();
-        return $requestMethod && 0 === strcasecmp($requestMethod, 'DELETE');
+        return $this->isRequestMethod('DELETE');
     }
 
     /**
@@ -293,7 +173,7 @@ class Request
      */
     function isAjaxRequest(): bool
     {
-        return 0 === strcasecmp($this->SERVER('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
+        return 0 === strcasecmp($this->server('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
     }
 
     /**
@@ -303,8 +183,33 @@ class Request
      */
     function isFlashRequest(): bool
     {
-        return stripos($this->SERVER('HTTP_USER_AGENT'), 'Shockwave') !== false
-            || stripos($this->SERVER('HTTP_USER_AGENT'), 'Flash') !== false;
+        return stripos($this->server('HTTP_USER_AGENT'), 'Shockwave') !== false
+            || stripos($this->server('HTTP_USER_AGENT'), 'Flash') !== false;
+    }
+
+    /**
+     * 取得服务器端口
+     *
+     * @return int 当前服务器端口号
+     */
+    function getServerPort(): int
+    {
+        return $this->server('SERVER_PORT');
+    }
+
+    /**
+     * 当前脚本路径
+     *
+     * @return string
+     * @throws FrontException
+     */
+    function getScriptFilePath(): string
+    {
+        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == '') {
+            throw new FrontException('Determine the entry script URL failed!!!');
+        }
+
+        return dirname($scriptName);
     }
 
     /**
@@ -315,9 +220,9 @@ class Request
     function isSecure(): bool
     {
         $isSecure = false;
-        if ('on' == $this->SERVER('HTTPS') || 443 == $this->SERVER('SERVER_PORT')) {
+        if ('on' == $this->server('HTTPS') || 443 == $this->server('SERVER_PORT')) {
             $isSecure = true;
-        } elseif ('https' == $this->SERVER('HTTP_X_FORWARDED_PROTO') || 'on' == $this->SERVER('HTTP_X_FORWARDED_SSL')) {
+        } elseif ('https' == $this->server('HTTP_X_FORWARDED_PROTO') || 'on' == $this->server('HTTP_X_FORWARDED_SSL')) {
             $isSecure = true;
         }
 
@@ -325,17 +230,147 @@ class Request
     }
 
     /**
-     * 获取客户端IP地址
+     * 设置入口URL
      *
-     * @param array $env_keys
+     * @param string $scriptUrl
+     */
+    function setScriptUrl(string $scriptUrl): void
+    {
+        $this->scriptUrl = $scriptUrl;
+    }
+
+    /**
+     * 入口URL
+     *
+     * @return string
+     * @throws FrontException
+     */
+    function getScriptUrl(): string
+    {
+        if (!$this->scriptUrl) {
+            $envKeys = [
+                'SCRIPT_NAME', 'PHP_SELF', 'ORIG_SCRIPT_NAME'
+            ];
+
+            foreach ($envKeys as $env) {
+                $scriptUrl = $this->server($env);
+                if (!empty($scriptUrl)) {
+                    break;
+                }
+            }
+
+            $scriptFile = $this->server('SCRIPT_FILENAME');
+            if (empty($scriptUrl) || empty($scriptFile) || basename($scriptUrl) !== basename($scriptFile)) {
+                throw new FrontException('Determine the entry script URL failed!!!');
+            }
+
+            $this->scriptUrl = $scriptUrl;
+        }
+
+        return $this->scriptUrl;
+    }
+
+    /**
+     * 返回当前URL绝对路径
+     *
+     * @param boolean $absolute 是否返回带HOST的绝对路径
+     * @param bool $withoutIndex
+     * @return string 当前请求的url
+     * @throws FrontException
+     */
+    function getBaseUrl(bool $absolute = false, $withoutIndex = true): string
+    {
+        if ($withoutIndex) {
+            $baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
+        } else {
+            $baseUrl = $this->getScriptUrl();
+        }
+
+        if ($absolute) {
+            $baseUrl = $this->getHostInfo() . $baseUrl;
+        }
+
+        return $baseUrl;
+    }
+
+    /**
+     * 当前执行的脚本名
+     *
+     * @return string
+     * @throws FrontException
+     */
+    function getIndexName(): string
+    {
+        return basename($this->getScriptUrl());
+    }
+
+    /**
+     * 获取HOST信息
+     *
+     * @param bool $withoutProtocol 是否返回协议类型
+     * @return mixed
+     */
+    function getHostInfo(bool $withoutProtocol = false): string
+    {
+        $hostInfo = '';
+        if (PHP_SAPI === 'cli') {
+            return $hostInfo;
+        }
+
+        $protocol = 'http';
+        if ($this->isSecure()) {
+            $protocol = 'https';
+        }
+
+        if (($host = $this->server('HTTP_HOST')) != '') {
+            $httpHost = &$host;
+        } elseif (($host = $this->server('SERVER_NAME')) != '') {
+            $httpHost = &$host;
+            $port = $this->getServerPort();
+            if (($protocol == 'http' && $port != 80) || ($protocol == 'https' && $port != 443)) {
+                $httpHost .= ':' . $port;
+            }
+        }
+
+        if (isset($httpHost)) {
+            if ($withoutProtocol) {
+                $hostInfo = '//' . $httpHost;
+            } else {
+                $hostInfo = $protocol . '://' . $httpHost;
+            }
+        }
+
+        return $hostInfo;
+    }
+
+    /**
+     * 获取当前页面URL
+     *
+     * @param bool $absolute
      * @return string
      */
-    function getClientIPAddress(array $env_keys = []): string
+    function getCurrentUrl(bool $absolute = true): string
+    {
+        $uri = $this->server('REQUEST_URI');
+        if ($absolute) {
+            return $this->getHostInfo() . $uri;
+        }
+
+        return $uri;
+    }
+
+    /**
+     * 获取客户端IP地址
+     *
+     * @param array $envKeys
+     * @return string
+     */
+    function getClientIPAddress(array $envKeys = []): string
     {
         static $ip = null;
         if (null === $ip) {
-            if (empty($env_keys)) {
-                $env_keys = [
+            if (empty($envKeys)) {
+                $envKeys = [
                     'HTTP_CLIENT_IP',
                     'HTTP_CF_CONNECTING_IP',
                     'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED',
@@ -345,10 +380,10 @@ class Request
             }
 
             $ip = '0.0.0.0';
-            foreach ($env_keys as $env) {
-                $env_info = $this->SERVER($env);
-                if (!empty($env_info) && 0 !== strcasecmp($env_info, 'unknown')) {
-                    $ips = explode(',', $env_info);
+            foreach ($envKeys as $env) {
+                $envInfo = $this->server($env);
+                if (!empty($envInfo) && 0 !== strcasecmp($envInfo, 'unknown')) {
+                    $ips = explode(',', $envInfo);
                     foreach ($ips as $ip) {
                         $ip = trim($ip);
                         if (false !== ip2long($ip)) {
@@ -368,7 +403,7 @@ class Request
      * @param string $name
      * @return string
      */
-    function SERVER(string $name): string
+    function server(string $name): string
     {
         return $this->serverData[$name] ?? '';
     }
@@ -404,8 +439,7 @@ class Request
      */
     function setRequestMethod(string $method): void
     {
-        $this->requestMethod = strtoupper($method);
-        $this->serverData['REQUEST_METHOD'] = $this->requestMethod;
+        $this->serverData['REQUEST_METHOD'] = strtoupper($method);
     }
 
     /**
@@ -415,11 +449,19 @@ class Request
      */
     function getRequestMethod(): string
     {
-        if (!$this->requestMethod) {
-            $this->requestMethod = $this->SERVER('REQUEST_METHOD');
-        }
+        return $this->server('REQUEST_METHOD');
+    }
 
-        return $this->requestMethod;
+    /**
+     * 验证请求类型
+     *
+     * @param string $method
+     * @return bool
+     */
+    function isRequestMethod(string $method): bool
+    {
+        $requestMethod = $this->getRequestMethod();
+        return $requestMethod && 0 === strcasecmp($requestMethod, $method);
     }
 
     /**
@@ -520,78 +562,6 @@ class Request
     function getRequestData(): array
     {
         return $this->requestData;
-    }
-
-    /**
-     * 初始化URL
-     *
-     * @throws FrontException
-     */
-    private function initScriptUrl(): void
-    {
-        if (($scriptName = $this->SERVER('SCRIPT_FILENAME')) == null) {
-            throw new FrontException('Determine the entry script URL failed!!!');
-        }
-
-        $scriptName = basename($scriptName);
-        if (($_scriptName = $this->SERVER('SCRIPT_NAME')) != null
-            && basename($_scriptName) === $scriptName
-        ) {
-            $this->scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->SERVER('PHP_SELF')) != null &&
-            basename($_scriptName) === $scriptName
-        ) {
-            $this->scriptUrl = $_scriptName;
-        } elseif (($_scriptName = $this->SERVER('ORIG_SCRIPT_NAME')) != null &&
-            basename($_scriptName) === $scriptName
-        ) {
-            $this->scriptUrl = $_scriptName;
-        } elseif (($pos = strpos($this->SERVER('PHP_SELF'), '/' . $scriptName)) !== false) {
-            $this->scriptUrl = substr($this->SERVER('SCRIPT_NAME'), 0, $pos) . '/' . $scriptName;
-        } elseif (($_documentRoot = $this->SERVER('DOCUMENT_ROOT')) != null &&
-            ($_scriptName = $this->SERVER('SCRIPT_FILENAME')) != null &&
-            strpos($_scriptName, $_documentRoot) === 0
-        ) {
-            $this->scriptUrl = str_replace('\\', '/', str_replace($_documentRoot, '', $_scriptName));
-        } else {
-            throw new FrontException('Determine the entry script URL failed!!');
-        }
-    }
-
-    /**
-     * 设置Host信息
-     *
-     * @param bool $without_protocol 协议类型
-     */
-    private function initHostInfo(bool $without_protocol = false): void
-    {
-        if (PHP_SAPI === 'cli') {
-            $this->hostInfo = '';
-            return;
-        }
-
-        $protocol = 'http';
-        if ($this->isSecure()) {
-            $protocol = 'https';
-        }
-
-        if (($host = $this->SERVER('HTTP_HOST')) != null) {
-            $httpHost = &$host;
-        } elseif (($host = $this->SERVER('SERVER_NAME')) != null) {
-            $httpHost = &$host;
-            $port = $this->getServerPort();
-            if (($protocol == 'http' && $port != 80) || ($protocol == 'https' && $port != 443)) {
-                $httpHost .= ':' . $port;
-            }
-        }
-
-        if (isset($httpHost)) {
-            if ($without_protocol) {
-                $this->hostInfo = '//' . $httpHost;
-            } else {
-                $this->hostInfo = $protocol . '://' . $httpHost;
-            }
-        }
     }
 }
 
