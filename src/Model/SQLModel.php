@@ -164,6 +164,7 @@ class SQLModel
      */
     function get($where = null, string $fields = null)
     {
+        $this->autoJoin();
         if (null === $where) {
             $where = $this->getDefaultCondition();
         }
@@ -181,7 +182,12 @@ class SQLModel
             $query->where($where);
         }
 
-        return $query->stmt()->fetch(PDO::FETCH_ASSOC);
+        $data = $query->stmt()->fetch(PDO::FETCH_ASSOC);
+        if (!empty($data) && is_array($data)) {
+            $this->processDataHandler($data, false);
+        }
+
+        return $data;
     }
 
     /**
@@ -194,6 +200,7 @@ class SQLModel
      */
     function latest($where = null, string $fields = null)
     {
+        $this->autoJoin();
         if (null === $where) {
             $where = $this->getDefaultCondition();
         }
@@ -212,8 +219,12 @@ class SQLModel
         }
 
         $query->orderBy("{$this->pk} DESC")->limit(1);
+        $data = $query->stmt()->fetch(PDO::FETCH_ASSOC);
+        if (!empty($data) && is_array($data)) {
+            $this->processDataHandler($data, false);
+        }
 
-        return $query->stmt()->fetch(PDO::FETCH_ASSOC);
+        return $data;
     }
 
     /**
@@ -334,6 +345,7 @@ class SQLModel
      */
     function getAll($where = null, string $fields = null, $order = null, $groupBy = null, $limit = null)
     {
+        $this->autoJoin();
         if (null === $where) {
             $where = $this->getDefaultCondition();
         }
@@ -342,7 +354,12 @@ class SQLModel
             $fields = $this->queryFields;
         }
 
-        return $this->db()->getAll($this->getTable(), $fields, $where, $order, $groupBy, $limit);
+        $data = $this->db()->getAll($this->getTable(), $fields, $where, $order, $groupBy, $limit);
+        if (!empty($data) && is_array($data)) {
+            $this->processDataHandler($data, true);
+        }
+
+        return $data;
     }
 
     /**
@@ -358,6 +375,7 @@ class SQLModel
      */
     function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = null, $order = null, $groupBy = null)
     {
+        $this->autoJoin();
         if (null === $where) {
             $where = $this->getDefaultCondition();
         }
@@ -366,7 +384,12 @@ class SQLModel
             $fields = $this->queryFields;
         }
 
-        return $this->db()->find($this->getTable(), $fields, $where, $page, $order, $groupBy);
+        $data = $this->db()->find($this->getTable(), $fields, $where, $page, $order, $groupBy);
+        if (!empty($data) && is_array($data)) {
+            $this->processDataHandler($data, true);
+        }
+
+        return $data;
     }
 
     /**
@@ -891,6 +914,44 @@ class SQLModel
         }
 
         return $this->index;
+    }
+
+    /**
+     * 自动连表
+     *
+     * 调用 $this->join() 添加表
+     * 调用 $this->fields() 设置返回字段
+     * 当调用 get, last, getAll, find等方法时自动连表
+     */
+    protected function autoJoin()
+    {
+
+    }
+
+    /**
+     * 用户处理返回数据格式
+     *
+     * 如处理图片CDN地址，JSON序列化等
+     * @param array $data
+     */
+    protected function autoProcessData(array &$data)
+    {
+
+    }
+
+    /**
+     * 处理数据
+     *
+     * @param array $data
+     * @param bool $multi
+     */
+    protected function processDataHandler(array &$data, bool $multi = false)
+    {
+        if ($multi) {
+            array_walk($data, [$this, 'autoProcessData']);
+        } else {
+            $this->autoProcessData($data);
+        }
     }
 
     /**
