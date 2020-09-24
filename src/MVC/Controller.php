@@ -12,6 +12,7 @@ namespace Cross\MVC;
 use Cross\Exception\LogicStatusException;
 use Cross\Interactive\ResponseData;
 use Cross\Exception\CoreException;
+use Cross\Interactive\DataFilter;
 use Cross\Core\FrameBase;
 
 /**
@@ -90,6 +91,28 @@ class Controller extends FrameBase
     protected function returnReferer(): void
     {
         $this->redirect($this->delegate->getRequest()->getUrlReferrer());
+    }
+
+    /**
+     * 获取输入数据
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return DataFilter
+     */
+    function input(string $key, $default = null): DataFilter
+    {
+        $val = '';
+        $dataContainer = array_merge($this->params, $this->request->getRequestData());
+        if (is_array($dataContainer)) {
+            $val = $dataContainer[$key] ?? null;
+        }
+
+        if (empty($val) && null !== $default) {
+            $val = $default;
+        }
+
+        return new DataFilter($val);
     }
 
     /**
