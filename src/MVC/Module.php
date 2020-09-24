@@ -257,7 +257,7 @@ class Module extends FrameBase
     /**
      * 访问link属性时才实例化model
      *
-     * @param string $property
+     * @param mixed $property
      * @return RedisDriver|Config|CouchDriver|MongoDriver|PDOSqlDriver|Request|Response|View|mixed|null
      * @throws CoreException
      * @throws DBConnectException

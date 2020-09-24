@@ -593,7 +593,7 @@ class PDOSqlDriver implements SqlInterface
      * @return $this
      * @throws CoreException
      */
-    public function prepare($statement, $params = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): self
+    public function prepare(string $statement, $params = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): self
     {
         try {
             $this->stmt = $this->pdo->prepare($statement, $params);
@@ -747,7 +747,7 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 解析group
      *
-     * @param string $group_by
+     * @param mixed $group_by
      * @return int|string
      */
     public function parseGroup($group_by)

@@ -50,7 +50,7 @@ class OracleConnector extends BaseConnector
      * @param array $options
      * @throws DBConnectException
      */
-    private function __construct(string $dsn, string $user, $password, array $options = [])
+    private function __construct(string $dsn, string $user, string $password, array $options = [])
     {
         try {
             $this->pdo = new PDO($dsn, $user, $password, parent::getOptions(self::$options, $options));

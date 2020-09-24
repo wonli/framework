@@ -347,7 +347,7 @@ class FrameBase
     /**
      * request response view
      *
-     * @param string $property
+     * @param mixed $property
      * @return Response|Request|View|Config|null
      */
     function __get($property)

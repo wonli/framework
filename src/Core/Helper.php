@@ -236,14 +236,14 @@ class Helper
      * 过滤非法标签
      *
      * @param string $str
-     * @param string $disallowable
+     * @param string $disable
      * @return mixed
      */
-    static function stripSelectedTags(string $str, string $disallowable = '<script><iframe><style><link>'): string
+    static function stripSelectedTags(string $str, string $disable = '<script><iframe><style><link>'): string
     {
-        $disallowable = trim(str_replace(['>', '<'], ['', '|'], $disallowable), '|');
+        $disable = trim(str_replace(['>', '<'], ['', '|'], $disable), '|');
         $str = str_replace(['&lt;', '&gt;'], ['<', '>'], $str);
-        $str = preg_replace("~<({$disallowable})[^>]*>(.*?<\s*\/(\\1)[^>]*>)?~is", '$2', $str);
+        $str = preg_replace("~<({$disable})[^>]*>(.*?<\s*\/(\\1)[^>]*>)?~is", '$2', $str);
 
         return $str;
     }
