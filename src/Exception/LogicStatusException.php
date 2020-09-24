@@ -9,6 +9,7 @@
 namespace Cross\Exception;
 
 
+use Cross\Interactive\ResponseData;
 use Cross\Core\Delegate;
 use Cross\Core\Loader;
 use Throwable;
@@ -46,9 +47,14 @@ class LogicStatusException extends CrossException
                     $message = $msg;
                 }
 
+                $rpd = ResponseData::builder();
+                $rpd->setStatus($code);
+                $rpd->setMessage($message);
+                parent::addResponseData($rpd);
+
                 parent::__construct($message, $code);
             } catch (Throwable $e) {
-                parent::__construct($e->getMessage(), 0);
+                parent::__construct($e->getMessage(), $code);
             }
         }
     }
