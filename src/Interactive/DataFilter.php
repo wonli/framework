@@ -276,6 +276,26 @@ class DataFilter
     }
 
     /**
+     * json
+     *
+     * @param bool $array
+     * @param int $depth
+     * @param int $options
+     * @return array|mixed|string
+     * @throws LogicStatusException
+     */
+    function json(bool $array = true, int $depth = 128, int $options = 0)
+    {
+        $ctx = $this->filter(FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+        $json = json_decode($ctx, true, $depth, $options);
+        if (false === $json || null === $json) {
+            $this->throwMsg('参数必须是一个json: %s(%d)', json_last_error_msg(), json_last_error());
+        }
+
+        return $array ? $json : $ctx;
+    }
+
+    /**
      * 正则匹配
      *
      * @param string $pattern
