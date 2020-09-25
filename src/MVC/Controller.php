@@ -103,7 +103,7 @@ class Controller extends FrameBase
     function input(string $key, $default = null): DataFilter
     {
         $val = '';
-        $dataContainer = array_merge($this->params, $this->request->getRequestData());
+        $dataContainer = array_merge($this->params, $this->request->getRequestData(), $this->request->getPostData());
         if (is_array($dataContainer)) {
             $val = $dataContainer[$key] ?? null;
         }
@@ -139,12 +139,7 @@ class Controller extends FrameBase
      */
     protected function redirect(string $url, int $httpResponseStatus = 302): void
     {
-        $has = $this->delegate->getClosureContainer()->has('redirect', $closure);
-        if ($has) {
-            $closure($url, $httpResponseStatus);
-        } else {
-            $this->delegate->getResponse()->redirect($url, $httpResponseStatus);
-        }
+        $this->delegate->getResponse()->redirect($url, $httpResponseStatus);
     }
 
     /**
@@ -244,41 +239,6 @@ class Controller extends FrameBase
         }
 
         return $statusConfig[$status];
-    }
-
-    /**
-     * 发送一个包含文件名的下载头
-     *
-     * @param string|null $fileName
-     * @param array $addHeader
-     * @param bool $onlyAddHeader
-     */
-    protected function sendDownloadHeader(string $fileName = null, array $addHeader = [], bool $onlyAddHeader = false): void
-    {
-        if (null === $fileName) {
-            $fileName = $this->controller . '_' . $this->action;
-        }
-
-        $downloadHeader = [
-            "Pragma: public",
-            "Expires: 0",
-            "Cache-Control: must-revalidate, post-check=0, pre-check=0",
-            "Content-Type: application/force-download",
-            "Content-Type: application/octet-stream",
-            "Content-Type: application/download",
-            "Content-Disposition:attachment;filename={$fileName}",
-            "Content-Transfer-Encoding:binary"
-        ];
-
-        if (!empty($addHeader)) {
-            if (true === $onlyAddHeader) {
-                $downloadHeader = $addHeader;
-            } else {
-                $downloadHeader = array_merge($downloadHeader, $addHeader);
-            }
-        }
-
-        $this->delegate->getResponse()->setHeader($downloadHeader);
     }
 
     /**
