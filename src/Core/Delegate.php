@@ -127,7 +127,7 @@ class Delegate
         }
 
         $this->registerNamespace();
-        $this->actionContainer = new ClosureContainer();
+        $this->actionContainer = ClosureContainer::getInstance();
         $this->router = new Router($this);
         $this->app = new Application($this);
     }

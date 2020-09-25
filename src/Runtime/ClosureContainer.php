@@ -23,9 +23,29 @@ class ClosureContainer
      */
     protected $actions = [];
 
-    function __construct()
+    /**
+     * @var static
+     */
+    private static $instance;
+
+    /**
+     * ClosureContainer constructor.
+     */
+    private function __construct()
     {
 
+    }
+
+    /**
+     * @return static
+     */
+    static function getInstance(): self
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
     }
 
     /**
@@ -50,7 +70,7 @@ class ClosureContainer
     {
         if (isset($this->actions[$name])) {
             if (!is_array($params)) {
-                $params = array($params);
+                $params = [$params];
             }
             return call_user_func_array($this->actions[$name], $params);
         }
