@@ -90,7 +90,7 @@ class Application
         $Request = $this->delegate->getRequest();
         $Response = $this->delegate->getResponse();
         if (!empty($annotateConfig['basicAuth'])) {
-            $Response->basicAuth($annotateConfig['basicAuth'], $Request->SERVER('PHP_AUTH_USER'), $Request->SERVER('PHP_AUTH_PW'));
+            $Response->basicAuth($annotateConfig['basicAuth'], $Request->server('PHP_AUTH_USER'), $Request->server('PHP_AUTH_PW'));
         }
 
         $cache = false;
@@ -99,7 +99,6 @@ class Application
         }
 
         $hasResponse = false;
-        $Response->setEndFlush(false);
         if ($cache && $cache->isValid()) {
             $responseContent = $cache->get();
         } else {
@@ -117,9 +116,13 @@ class Application
             $hasResponse = $Response->isEndFlush();
             if (!$hasResponse) {
                 $action = $this->delegate->getRouter()->getAction();
-                $controllerContext = $controller->$action();
-                if (!empty($controllerContext)) {
-                    $Response->setContent($controllerContext);
+                ob_start();
+                $ctx = call_user_func([$controller, $action]);
+                $obContent = ob_get_clean();
+                if (!empty($ctx)) {
+                    $Response->setContent($ctx);
+                } elseif (empty($ctx) && !empty($obContent)) {
+                    $Response->setContent($obContent);
                 }
             }
 
