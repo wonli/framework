@@ -110,16 +110,14 @@ class View extends FrameBase
     function display($data = null, string $method = null): void
     {
         $this->data = &$data;
-        $contentType = $this->config->get('sys', 'content_type');
-        $this->delegate->getResponse()->setContentType($contentType ?: 'html');
-
         if ($method === null) {
             $method = $this->action ?: Router::DEFAULT_ACTION;
         }
 
-        ob_start();
-        $this->obRenderAction($data, $method);
-        $this->delegate->getResponse()->setContent(ob_get_clean());
+        $content = $this->obRenderAction($data, $method);
+        if (false !== $content) {
+            $this->delegate->getResponse()->setContent($content);
+        }
     }
 
     /**
@@ -1001,17 +999,20 @@ class View extends FrameBase
      *
      * @param string $content
      * @param string $layerExt
+     * @return false|string
      * @throws CoreException
      */
-    protected function loadLayer(string $content, string $layerExt = '.layer.php'): void
+    protected function loadLayer(string $content, string $layerExt = '.layer.php')
     {
+        ob_start();
         $layerFile = $this->getTplPath() . $this->set['layer'] . $layerExt;
         if (!is_file($layerFile)) {
-            throw new CoreException($layerFile . ' layer Not found!');
+            throw new CoreException($layerFile . ' layer not found!');
         }
 
         extract($this->set, EXTR_PREFIX_SAME, 'USER_DEFINED');
         include $layerFile;
+        return ob_get_clean();
     }
 
     /**
@@ -1019,20 +1020,20 @@ class View extends FrameBase
      *
      * @param mixed $data
      * @param string $method
-     * @return string|void
+     * @return string|false
      * @throws CoreException
      */
-    private function obRenderAction($data, string $method): void
+    private function obRenderAction($data, string $method)
     {
         ob_start();
-        $this->$method($data);
+        call_user_func([$this, $method], $data);
         $content = ob_get_clean();
 
         if ($this->set['load_layer']) {
-            $this->loadLayer($content);
-        } else {
-            echo $content;
+            $content = $this->loadLayer($content);
         }
+
+        return $content;
     }
 
     /**
