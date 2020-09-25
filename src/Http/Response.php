@@ -8,6 +8,7 @@
 
 namespace Cross\Http;
 
+use Cross\Runtime\ClosureContainer;
 use Cross\Core\Delegate;
 
 /**
@@ -50,7 +51,12 @@ class Response
      *
      * @var int
      */
-    protected $responseStatus;
+    protected $responseStatus = 200;
+
+    /**
+     * @var string
+     */
+    protected $responseStatusReason;
 
     /**
      * 停止发送标识
@@ -86,50 +92,23 @@ class Response
     static function getInstance(): self
     {
         if (!self::$instance) {
-            self::$instance = new Response();
+            self::$instance = new self();
         }
 
         return self::$instance;
     }
 
     /**
-     * @param int $status
-     * @return self
-     */
-    function setResponseStatus(int $status = 200): self
-    {
-        $this->responseStatus = $status;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    function getResponseStatus(): int
-    {
-        if (!$this->responseStatus) {
-            $this->setResponseStatus();
-        }
-
-        return $this->responseStatus;
-    }
-
-    /**
-     * 设置header信息
+     * 添加header
      *
-     * @param mixed $header
-     * @return self
+     * @param string $key
+     * @param string $value
+     * @return Response
      */
-    function setHeader($header): self
+    function addHeader(string $key, string $value): self
     {
-        if (is_array($header)) {
-            foreach ($header as $key => $value) {
-                $this->header[] = "{$key}: {$value}";
-            }
-        } else {
-            $this->header[] = $header;
-        }
-
+        $this->header[$key] = $value;
+        ClosureContainer::getInstance()->run('response.header', [$key, $value]);
         return $this;
     }
 
@@ -144,42 +123,48 @@ class Response
     }
 
     /**
-     * 添加cookie
+     * 添加Cookie
      *
      * @param string $name
-     * @param string $value
+     * @param mixed $value
      * @param int $expire
      * @return self
      */
     function setCookie(string $name, $value = '', int $expire = 0): self
     {
-        $this->cookie[$name] = [
-            $name, $value, $expire,
-            $this->getCookieConfig('path'),
-            $this->getCookieConfig('domain'),
-            Request::getInstance()->isSecure(),
-            true
-        ];
-
-        return $this;
+        return $this->setRawCookie($name, $value, $expire, $this->getCookieConfig('path'), $this->getCookieConfig('domain'));
     }
 
     /**
-     * 发送一个原生cookie
+     * 删除cookie
      *
      * @param string $name
-     * @param string $value
+     * @return self
+     */
+    function deleteCookie(string $name): self
+    {
+        return $this->setRawCookie($name, null, -1);
+    }
+
+    /**
+     * 添加PHP原生Cookie
+     *
+     * @param string $name
+     * @param mixed $value
      * @param int $expire
      * @param string $path
      * @param string $domain
      * @return $this
      */
-    function setRawCookie(string $name, $value = '', int $expire = 0, $path = '', $domain = '')
+    function setRawCookie(string $name, $value = '', int $expire = 0, string $path = '', string $domain = ''): self
     {
-        $this->cookie[$name] = [
-            $name, $value, $expire, $path, $domain, Request::getInstance()->isSecure(), true
+        $rawCookie = [
+            $name, $value, $expire,
+            $path, $domain, Request::getInstance()->isSecure(), true
         ];
 
+        $this->cookie[$name] = $rawCookie;
+        ClosureContainer::getInstance()->run('response.cookie', [$rawCookie]);
         return $this;
     }
 
@@ -191,18 +176,6 @@ class Response
     function getCookie(): array
     {
         return $this->cookie;
-    }
-
-    /**
-     * 删除cookie
-     *
-     * @param string $name
-     * @return self
-     */
-    function deleteCookie(string $name): self
-    {
-        $this->setCookie($name, null, -1);
-        return $this;
     }
 
     /**
@@ -226,33 +199,19 @@ class Response
     }
 
     /**
-     * 获取cookie参数默认值
-     *
-     * @param string $key
-     * @return mixed
-     */
-    function getCookieConfig(string $key)
-    {
-        static $cookieConfig = null;
-        if (null === $cookieConfig) {
-            $cookieConfig = ['path' => Delegate::env('cookie.path') ?? '/', 'domain' => Delegate::env('cookie.domain') ?? ''];
-            if (!empty($this->cookieConfig)) {
-                $cookieConfig = array_merge($cookieConfig, $this->cookieConfig);
-            }
-        }
-
-        return $cookieConfig[$key] ?? null;
-    }
-
-    /**
      * 设置返回头类型
      *
-     * @param string $contentType
+     * @param string $type
      * @return self
      */
-    function setContentType(string $contentType = 'html'): self
+    function setContentType(string $type): self
     {
-        $this->contentType = strtolower($contentType);
+        $t = strtolower($type);
+        $this->contentType = isset(self::$mimeTypes[$t]) ? $t : 'html';
+
+        $mimeType = self::$mimeTypes[$this->contentType];
+        $this->addHeader('content-Type', "{$mimeType}; charset=utf-8");
+        ClosureContainer::getInstance()->run('response.contentType', [$this->contentType, $mimeType]);
         return $this;
     }
 
@@ -264,7 +223,7 @@ class Response
     function getContentType(): string
     {
         if (!$this->contentType) {
-            $this->setContentType();
+            $this->setContentType('html');
         }
 
         return $this->contentType;
@@ -288,137 +247,6 @@ class Response
     function getContent(): string
     {
         return $this->content;
-    }
-
-    /**
-     * basic authentication
-     *
-     * @param array $users ['user' => 'password']
-     * @param string $user PHP_AUTH_USER
-     * @param string $password PHP_AUTH_PW
-     * @param array $options
-     */
-    function basicAuth(array $users, string $user, string $password, array $options = []): void
-    {
-        if (isset($users[$user]) && (0 === strcmp($password, $users[$user]))) {
-            return;
-        }
-
-        $realm = $options['realm'] ?? 'CP login required';
-        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
-        $this->setResponseStatus(401)
-            ->setHeader('WWW-Authenticate: Basic realm="' . $realm . '"')
-            ->end($message);
-    }
-
-    /**
-     * digest authentication
-     *
-     * @param array $users ['user' => 'password']
-     * @param string $digest PHP_AUTH_DIGEST
-     * @param string $requestMethod REQUEST_METHOD
-     * @param array $options
-     */
-    function digestAuth(array $users, string $digest, string $requestMethod, array $options = []): void
-    {
-        $realm = $options['realm'] ?? 'CP login required';
-        $data = $this->httpDigestParse($digest);
-        if (isset($data['username']) && isset($users[$data['username']])) {
-            $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
-            $A2 = md5($requestMethod . ':' . $data['uri']);
-            $validResponse = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
-            if (0 === strcmp($validResponse, $data['response'])) {
-                return;
-            }
-        }
-
-        $nonce = $options['nonce'] ?? uniqid();
-        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
-        $this->setResponseStatus(401)
-            ->setHeader('WWW-Authenticate: Digest realm="' . $realm .
-                '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
-            ->end($message);
-    }
-
-    /**
-     * 发送http 状态码
-     *
-     * @param int $code
-     * @param string $descriptions
-     */
-    function sendResponseStatus(int $code = 0, string $descriptions = ''): void
-    {
-        if (0 === $code) {
-            $code = $this->getResponseStatus();
-        }
-
-        if ($descriptions == '' && isset(self::$statusDescriptions[$code])) {
-            $descriptions = self::$statusDescriptions[$code];
-        }
-
-        header("HTTP/1.1 {$code} {$descriptions}");
-    }
-
-    /**
-     * 发送ContentType
-     */
-    function sendContentType(): void
-    {
-        $contentTypeName = $this->getContentType();
-        if (isset(self::$mimeTypes [$contentTypeName])) {
-            $contentType = self::$mimeTypes [$contentTypeName];
-        } elseif ($contentTypeName) {
-            $contentType = $contentTypeName;
-        } else {
-            $contentType = self::$mimeTypes ['html'];
-        }
-
-        header("Content-Type: {$contentType}; charset=utf-8");
-    }
-
-    /**
-     * 发送header
-     */
-    private function sendHeader(): void
-    {
-        $contents = $this->getHeader();
-        if (!empty($contents)) {
-            foreach ($contents as $content) {
-                header($content);
-            }
-        }
-    }
-
-    /**
-     * 发送cookie
-     */
-    private function sendCookie(): void
-    {
-        if (!empty($this->cookie)) {
-            foreach ($this->cookie as $cookie) {
-                call_user_func_array('setcookie', $cookie);
-            }
-        }
-    }
-
-    /**
-     * 输出内容
-     *
-     * @param mixed $message
-     * @param string $tpl
-     */
-    private function makeResponseContent($message, string $tpl = ''): void
-    {
-        ob_start();
-        if (null !== $tpl && is_file($tpl)) {
-            require $tpl;
-        } elseif (is_array($message)) {
-            var_export($message);
-        } else {
-            echo $message;
-        }
-
-        $this->content = ob_get_clean();
     }
 
     /**
@@ -448,10 +276,36 @@ class Response
      *
      * @param string $url
      * @param int $status
+     * @param bool $replace
      */
-    function redirect(string $url, int $status = 302): void
+    function redirect(string $url, int $status = 302, $replace = true): void
     {
-        $this->setResponseStatus($status)->setHeader("Location: {$url}")->end();
+        $has = ClosureContainer::getInstance()->has('response.redirect', $closure);
+        if ($has) {
+            $closure($url, $status);
+        } else {
+            header("Location: {$url}", $replace, $status);
+            $this->setEndFlush(true);
+        }
+    }
+
+    /**
+     * 设置response状态
+     *
+     * @param int $status
+     * @param string $reason
+     * @return self
+     */
+    function setResponseStatus(int $status, string $reason = null): self
+    {
+        if (null === $reason && isset(self::$statusDescriptions[$status])) {
+            $reason = self::$statusDescriptions[$status];
+        }
+
+        $this->responseStatus = $status;
+        $this->responseStatusReason = $reason;
+        ClosureContainer::getInstance()->run('response.status', [$status, $reason]);
+        return $this;
     }
 
     /**
@@ -487,6 +341,144 @@ class Response
     {
         $this->send($content, $tpl);
         $this->setEndFlush(true);
+    }
+
+    /**
+     * basic authentication
+     *
+     * @param array $users ['user' => 'password']
+     * @param string $user PHP_AUTH_USER
+     * @param string $password PHP_AUTH_PW
+     * @param array $options
+     */
+    function basicAuth(array $users, string $user, string $password, array $options = []): void
+    {
+        if (isset($users[$user]) && (0 === strcmp($password, $users[$user]))) {
+            $this->setEndFlush(false);
+            return;
+        }
+
+        $realm = $options['realm'] ?? 'CP login required';
+        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
+        $this->setResponseStatus(401)
+            ->addHeader('WWW-Authenticate', 'Basic realm="' . $realm . '"')
+            ->end($message);
+    }
+
+    /**
+     * digest authentication
+     *
+     * @param array $users ['user' => 'password']
+     * @param string $digest PHP_AUTH_DIGEST
+     * @param string $requestMethod REQUEST_METHOD
+     * @param array $options
+     */
+    function digestAuth(array $users, string $digest, string $requestMethod, array $options = []): void
+    {
+        $realm = $options['realm'] ?? 'CP login required';
+        $data = $this->httpDigestParse($digest);
+        if (isset($data['username']) && isset($users[$data['username']])) {
+            $A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
+            $A2 = md5($requestMethod . ':' . $data['uri']);
+            $validResponse = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
+            if (0 === strcmp($validResponse, $data['response'])) {
+                $this->setEndFlush(false);
+                return;
+            }
+        }
+
+        $nonce = $options['nonce'] ?? uniqid();
+        $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
+        $this->setResponseStatus(401)
+            ->addHeader('WWW-Authenticate', 'Digest realm="' . $realm .
+                '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
+            ->end($message);
+    }
+
+    /**
+     * 获取cookie参数默认值
+     *
+     * @param string $key
+     * @return mixed
+     */
+    protected function getCookieConfig(string $key)
+    {
+        static $cookieConfig = null;
+        if (null === $cookieConfig) {
+            $cookieConfig = ['path' => Delegate::env('cookie.path') ?? '/', 'domain' => Delegate::env('cookie.domain') ?? ''];
+            if (!empty($this->cookieConfig)) {
+                $cookieConfig = array_merge($cookieConfig, $this->cookieConfig);
+            }
+        }
+
+        return $cookieConfig[$key] ?? null;
+    }
+
+    /**
+     * 发送http 状态码
+     */
+    private function sendResponseStatus(): void
+    {
+        if (null === $this->responseStatusReason) {
+            $this->responseStatusReason = self::$statusDescriptions[$this->responseStatus] ?? '';
+        }
+
+        header("HTTP/1.1 {$this->responseStatus} {$this->responseStatusReason}");
+    }
+
+    /**
+     * 发送ContentType
+     */
+    private function sendContentType(): void
+    {
+        if (!$this->contentType) {
+            $this->setContentType('html');
+        }
+    }
+
+    /**
+     * 发送header
+     */
+    private function sendHeader(): void
+    {
+        $headers = $this->getHeader();
+        if (!empty($headers)) {
+            foreach ($headers as $key => $value) {
+                header("{$key}: {$value}");
+            }
+        }
+    }
+
+    /**
+     * 发送cookie
+     */
+    private function sendCookie(): void
+    {
+        if (!empty($this->cookie)) {
+            foreach ($this->cookie as $cookie) {
+                call_user_func_array('setcookie', $cookie);
+            }
+        }
+    }
+
+    /**
+     * 输出内容
+     *
+     * @param mixed $message
+     * @param string $tpl
+     */
+    private function makeResponseContent($message, string $tpl = ''): void
+    {
+        ob_start();
+        if (null !== $tpl && is_file($tpl)) {
+            require $tpl;
+        } elseif (is_array($message)) {
+            var_export($message);
+        } else {
+            echo $message;
+        }
+
+        $this->content = ob_get_clean();
     }
 
     /**
