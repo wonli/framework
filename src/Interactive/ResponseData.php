@@ -9,6 +9,10 @@
 namespace Cross\Interactive;
 
 
+use Cross\Exception\CoreException;
+use Cross\Core\Delegate;
+use Cross\Core\Loader;
+
 /**
  * 响应数据类
  *
@@ -186,6 +190,19 @@ class ResponseData
      */
     public function getMessage(): string
     {
+        if ($this->status != 1 && empty($this->message)) {
+            try {
+                $statusConfigFile = Delegate::env('sys.status') ?? 'status.config.php';
+                if (!file_exists($statusConfigFile) && defined('PROJECT_REAL_PATH')) {
+                    $statusConfigFile = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . $statusConfigFile;
+                }
+                $statusMsg = Loader::read($statusConfigFile);
+                $this->message = $statusMsg[$this->status] ?? sprintf('unknown error(%s)', $this->status);
+            } catch (CoreException $e) {
+                $this->message = sprintf('exception(%s)', $e->getMessage());
+            }
+        }
+
         return $this->message;
     }
 

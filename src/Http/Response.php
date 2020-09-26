@@ -8,6 +8,8 @@
 
 namespace Cross\Http;
 
+use Cross\Interactive\DataFilter;
+use Cross\Interactive\ResponseData;
 use Cross\Runtime\ClosureContainer;
 use Cross\Core\Delegate;
 
@@ -230,13 +232,64 @@ class Response
     }
 
     /**
-     * 输出内容
+     * 设置输出内容
      *
      * @param string $content
+     * @return self
      */
-    function setContent(string $content): void
+    function setContent(string $content): self
     {
         $this->content = $content;
+        return $this;
+    }
+
+    /**
+     * 设置输出内容(不限制类型，带模板)
+     *
+     * @param mixed $content
+     * @param string|null $tpl
+     * @return self
+     */
+    function setRawContent($content, string $tpl = null): self
+    {
+        $contentType = Response::getInstance()->getContentType();
+        if (0 === strcasecmp($contentType, 'JSON')) {
+            if ($content instanceof ResponseData) {
+                $data = $content->getData();
+            } else {
+                try {
+                    $data = (new DataFilter($content))->json();
+                } catch (\Exception $e) {
+                    $rdb = ResponseData::builder();
+                    if (is_array($content)) {
+                        $rdb->setData($content);
+                    } elseif (is_numeric($content)) {
+                        $rdb->setStatus($content);
+                    } else {
+                        $rdb->setMessage(strval($content));
+                    }
+                    $data = $rdb->getData();
+                }
+            }
+
+            $data = json_encode($data, JSON_UNESCAPED_UNICODE);
+        } else {
+            if (null !== $tpl && is_file($tpl)) {
+                ob_start();
+                $message = $content;
+                require $tpl;
+                $data = ob_get_clean();
+            } elseif ($content instanceof ResponseData) {
+                $data = json_encode($content->getData());
+            } elseif (is_array($content)) {
+                $data = json_encode($content);
+            } else {
+                $data = $content;
+            }
+        }
+
+        $this->setEndFlush(false)->setContent($data);
+        return $this;
     }
 
     /**
@@ -276,16 +329,15 @@ class Response
      *
      * @param string $url
      * @param int $status
-     * @param bool $replace
      */
-    function redirect(string $url, int $status = 302, $replace = true): void
+    function redirect(string $url, int $status = 302): void
     {
         $has = ClosureContainer::getInstance()->has('response.redirect', $closure);
         if ($has) {
             $closure($url, $status);
         } else {
-            header("Location: {$url}", $replace, $status);
-            $this->setEndFlush(true);
+            $this->addHeader('Location', $url);
+            $this->setResponseStatus($status);
         }
     }
 
@@ -309,12 +361,9 @@ class Response
     }
 
     /**
-     * 调用模板输出信息
-     *
-     * @param string $content
-     * @param string $tpl
+     * 输出内容
      */
-    function send($content = '', string $tpl = ''): void
+    function send(): void
     {
         if ($this->isEndFlush()) {
             return;
@@ -327,19 +376,17 @@ class Response
             $this->sendHeader();
         }
 
-        $this->makeResponseContent($content, $tpl);
-        echo $this->content;
+        if (!empty($this->content)) {
+            echo $this->content;
+        }
     }
 
     /**
      * 输出内容并添加停止标识
-     *
-     * @param string $content
-     * @param string $tpl
      */
-    function end(string $content = '', string $tpl = ''): void
+    function end(): void
     {
-        $this->send($content, $tpl);
+        $this->send();
         $this->setEndFlush(true);
     }
 
@@ -362,7 +409,8 @@ class Response
         $message = $options['fail_msg'] ?? self::$statusDescriptions[401];
         $this->setResponseStatus(401)
             ->addHeader('WWW-Authenticate', 'Basic realm="' . $realm . '"')
-            ->end($message);
+            ->setContent($message)
+            ->end();
     }
 
     /**
@@ -392,7 +440,8 @@ class Response
         $this->setResponseStatus(401)
             ->addHeader('WWW-Authenticate', 'Digest realm="' . $realm .
                 '",qop="auth",nonce="' . $nonce . '",opaque="' . md5($realm) . '"')
-            ->end($message);
+            ->setContent($message)
+            ->end();
     }
 
     /**
@@ -459,26 +508,6 @@ class Response
                 call_user_func_array('setcookie', $cookie);
             }
         }
-    }
-
-    /**
-     * 输出内容
-     *
-     * @param mixed $message
-     * @param string $tpl
-     */
-    private function makeResponseContent($message, string $tpl = ''): void
-    {
-        ob_start();
-        if (null !== $tpl && is_file($tpl)) {
-            require $tpl;
-        } elseif (is_array($message)) {
-            var_export($message);
-        } else {
-            echo $message;
-        }
-
-        $this->content = ob_get_clean();
     }
 
     /**

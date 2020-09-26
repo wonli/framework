@@ -264,7 +264,7 @@ class Rest
 
             $content = call_user_func_array($handle, $closureParams);
             if (null != $content) {
-                $this->delegate->getResponse()->send($content);
+                $this->delegate->getResponse()->setRawContent($content)->send();
             }
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());

@@ -33,29 +33,17 @@ class LogicStatusException extends CrossException
      */
     function __construct(int $code = null, string $msg = null)
     {
-        if (1 !== $code) {
-            try {
-                if (null === $msg) {
-                    $statusConfigFile = Delegate::env('sys.status') ?? 'status.config.php';
-                    if (!file_exists($statusConfigFile) && defined('PROJECT_REAL_PATH')) {
-                        $statusConfigFile = PROJECT_REAL_PATH . 'config' . DIRECTORY_SEPARATOR . $statusConfigFile;
-                    }
-
-                    $statusMsg = Loader::read($statusConfigFile);
-                    $message = $statusMsg[$code] ?? $code;
-                } else {
-                    $message = $msg;
-                }
-
+        try {
+            if (null === $this->ResponseData) {
                 $rpd = ResponseData::builder();
                 $rpd->setStatus($code);
-                $rpd->setMessage($message);
+                $rpd->setMessage($msg ?? '');
                 parent::addResponseData($rpd);
-
-                parent::__construct($message, $code);
-            } catch (Throwable $e) {
-                parent::__construct($e->getMessage(), $code);
             }
+
+            parent::__construct($this->getResponseData()->getMessage(), $code);
+        } catch (Throwable $e) {
+            parent::__construct($e->getMessage(), $code);
         }
     }
 }

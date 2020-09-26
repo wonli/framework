@@ -119,10 +119,12 @@ class Application
                 ob_start();
                 $ctx = call_user_func([$controller, $action]);
                 $obContent = ob_get_clean();
-                if (!empty($ctx)) {
-                    $Response->setContent($ctx);
-                } elseif (empty($ctx) && !empty($obContent)) {
-                    $Response->setContent($obContent);
+                if (empty($Response->getContent())) {
+                    if (null !== $ctx) {
+                        $Response->setRawContent($ctx);
+                    } elseif (!empty($obContent)) {
+                        $Response->setRawContent($obContent);
+                    }
                 }
             }
 
@@ -139,7 +141,7 @@ class Application
         if ($returnResponseContent) {
             return $responseContent;
         } elseif (false === $hasResponse) {
-            $Response->send($responseContent);
+            $Response->setEndFlush(false)->end();
         }
 
         if (isset($annotateConfig['after']) && isset($controller)) {
