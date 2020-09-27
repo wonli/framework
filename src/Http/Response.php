@@ -338,6 +338,7 @@ class Response
         } else {
             $this->addHeader('Location', $url);
             $this->setResponseStatus($status);
+            $this->end();
         }
     }
 
