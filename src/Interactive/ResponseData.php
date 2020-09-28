@@ -26,14 +26,14 @@ class ResponseData
      *
      * @var int
      */
-    protected $status = 1;
+    protected $status;
 
     /**
      * 消息
      *
      * @var string
      */
-    protected $message = '';
+    protected $message;
 
     /**
      * 数据
@@ -73,7 +73,7 @@ class ResponseData
      */
     private function __construct()
     {
-        $this->data = [];
+
     }
 
     /**
@@ -84,7 +84,8 @@ class ResponseData
         if (null === self::$instance) {
             self::$instance = new self();
         }
-        return self::$instance;
+
+        return self::$instance->resetData();
     }
 
     /**
@@ -258,5 +259,18 @@ class ResponseData
     {
         $this->dataName = $dataName;
         return $dataName;
+    }
+
+    /**
+     * 重置数据
+     *
+     * @return $this
+     */
+    protected function resetData(): self
+    {
+        $this->status = 1;
+        $this->message = '';
+        $this->data = [];
+        return $this;
     }
 }
