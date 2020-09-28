@@ -159,6 +159,18 @@ class Controller extends FrameBase
     }
 
     /**
+     * 发送JSON数据
+     *
+     * @param mixed $data
+     */
+    protected function json($data)
+    {
+        $this->delegate->getResponse()
+            ->setContentType('json')
+            ->setRawContent($data);
+    }
+
+    /**
      * 视图渲染
      *
      * @param mixed $data
