@@ -5,11 +5,11 @@
  * 根据message中的trace_table 输出一个trace信息的文字表格
  * 内容为message['trace']
  */
-if (!empty($message)) {
+if (!empty($data)) {
 
-    $trace = &$message['trace'];
-    $table = &$message['trace_table'];
-    $previous_trace = &$message['previous_trace'];
+    $trace = &$data['trace'];
+    $table = &$data['trace_table'];
+    $previous_trace = &$data['previous_trace'];
 
     /**
      * 输出ASC logo
@@ -157,7 +157,7 @@ ASC_LOGO;
     echo PHP_EOL;
     ascLogo($table);
     line($table, '--  Exception Start  --');
-    printf("\n Message: %s \n File: %s   Line: %s \n\n", $message['message'], $message['file'], $message['line']);
+    printf("\n Message: %s \n File: %s   Line: %s \n\n", $data['message'], $data['file'], $data['line']);
 
     th($table);
     thead($table);

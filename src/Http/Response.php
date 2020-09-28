@@ -13,6 +13,8 @@ use Cross\Interactive\ResponseData;
 use Cross\Runtime\ClosureContainer;
 use Cross\Core\Delegate;
 
+use Exception;
+
 /**
  * @author wonli <wonli@live.com>
  * Class Response
@@ -256,10 +258,14 @@ class Response
         if (0 === strcasecmp($contentType, 'JSON')) {
             if ($content instanceof ResponseData) {
                 $data = $content->getData();
+            } elseif (is_array($content)) {
+                $rdb = ResponseData::builder();
+                $rdb->setData($content);
+                $data = $rdb->getData();
             } else {
                 try {
                     $data = (new DataFilter($content))->json();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $rdb = ResponseData::builder();
                     if (is_array($content)) {
                         $rdb->setData($content);
@@ -276,20 +282,24 @@ class Response
         } else {
             if (null !== $tpl && is_file($tpl)) {
                 ob_start();
-                $message = $content;
+                $data = $content;
                 require $tpl;
                 $data = ob_get_clean();
             } elseif ($content instanceof ResponseData) {
-                $data = json_encode($content->getData());
+                $data = json_encode($content->getData(), JSON_UNESCAPED_UNICODE);
             } elseif (is_array($content)) {
-                $data = json_encode($content);
+                $data = json_encode($content, JSON_UNESCAPED_UNICODE);
             } else {
                 $data = $content;
             }
+
+            $userData = ClosureContainer::getInstance()->run('response.dataFormat', [$data]);
+            if ($userData) {
+                $data = $userData;
+            }
         }
 
-        $this->setEndFlush(false)->setContent($data);
-        return $this;
+        return $this->setEndFlush(false)->setContent($data);
     }
 
     /**

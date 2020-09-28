@@ -45,15 +45,15 @@
     <div class="stack-container">
         <div class="header padding">
             <h3 class="title">
-                <?php printf('File: %s Line: %s', $message['main']['show_file'], $message['main']['line']); ?>
+                <?php printf('File: %s Line: %s', $data['main']['show_file'] ?? '', $data['main']['line'] ?? ''); ?>
             </h3>
             <div class="message">
-                <?php echo $message['main']['message'] ?>
+                <?php echo $data['main']['message'] ?? '' ?>
             </div>
         </div>
         <div class="code-container">
-            <?php if (!empty($message['trace'])) : ?>
-                <?php foreach ($message['trace'] as $k => $m) : ?>
+            <?php if (!empty($data['trace'])) : ?>
+                <?php foreach ($data['trace'] as $k => $m) : ?>
                     <div id="trace_info_<?php echo $k ?>" class="trace-info">
                         <div class="code-segment">
                             <?php
@@ -69,8 +69,8 @@
                     </div>
                 <?php endforeach ?>
             <?php endif ?>
-            <?php if (!empty($message['previous_trace'])) : ?>
-                <?php foreach ($message['previous_trace'] as $pk => $pm) : ?>
+            <?php if (!empty($data['previous_trace'])) : ?>
+                <?php foreach ($data['previous_trace'] as $pk => $pm) : ?>
                     <div id="previous_trace_info_<?php echo $pk ?>" class="trace-info">
                         <div class="code-segment">
                             <?php
@@ -90,8 +90,8 @@
             <div id="main_info" style="display:block">
                 <div class="code-segment">
                     <?php
-                    foreach ($message['main']['source'] as $s_line => $s_source) {
-                        if ($message['main']['line'] == $s_line) {
+                    foreach ($data['main']['source'] as $s_line => $s_source) {
+                        if ($data['main']['line'] == $s_line) {
                             printf('<div class="code-line active"><span class="line">%s</span>&nbsp;&nbsp;%s</div>', $s_line, $s_source);
                         } else {
                             printf('<div class="code-line"><span class="line">%s</span>&nbsp;&nbsp;%s</div>', $s_line, $s_source);
@@ -105,19 +105,19 @@
             <h1 class="padding">Exception File</h1>
             <div class="frame active" id="frame_active"
                  onclick="cp_exception.main(null)">
-                <?php echo $message["main"]["show_file"] ?>
+                <?php echo $data["main"]["show_file"] ?>
             </div>
-            <?php if (!empty($message['trace'])) : ?>
+            <?php if (!empty($data['trace'])) : ?>
                 <h1 class="padding">Trace</h1>
-                <?php foreach ($message['trace'] as $kf => $mf) : ?>
+                <?php foreach ($data['trace'] as $kf => $mf) : ?>
                     <div class="frame" onclick="cp_exception.track(<?php echo $kf ?>, this, '')">
                         <?php printf('%s (line: %s)', $mf['show_file'], $mf['line']) ?>
                     </div>
                 <?php endforeach ?>
             <?php endif ?>
-            <?php if (!empty($message['previous_trace'])) : ?>
+            <?php if (!empty($data['previous_trace'])) : ?>
                 <h1 class="padding">Previous Trace</h1>
-                <?php foreach ($message['previous_trace'] as $pkf => $pmf) : ?>
+                <?php foreach ($data['previous_trace'] as $pkf => $pmf) : ?>
                     <div class="frame" onclick="cp_exception.track(<?php echo $pkf ?>, this, 'previous')">
                         <?php printf('%s (line: %s)', $pmf['show_file'], $pmf['line']) ?>
                     </div>
