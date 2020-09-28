@@ -161,13 +161,17 @@ class Controller extends FrameBase
     /**
      * 发送JSON数据
      *
-     * @param mixed $data
+     * @param int $status
+     * @param array $data
      */
-    protected function json($data)
+    protected function json(int $status, array $data = [])
     {
+        $rdb = ResponseData::builder();
+        $rdb->setStatus($status);
+        $rdb->setData($data);
+
         $this->delegate->getResponse()
-            ->setContentType('json')
-            ->setRawContent($data);
+            ->setContentType('json')->setRawContent($rdb)->end();
     }
 
     /**

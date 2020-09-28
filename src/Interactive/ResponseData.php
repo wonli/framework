@@ -96,16 +96,14 @@ class ResponseData
      */
     public function getData(bool $getContent = true): array
     {
-        $data = [
-            $this->statusName => $this->status,
-            $this->messageName => $this->message
-        ];
-
-        if ($getContent && !empty($this->data)) {
-            $data[$this->dataName] = $this->data;
+        if ($getContent) {
+            return [$this->dataName => $this->data];
         }
 
-        return $data;
+        return [
+            $this->statusName => $this->status,
+            $this->messageName => $this->getMessage()
+        ];
     }
 
     /**
