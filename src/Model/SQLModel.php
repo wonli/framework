@@ -534,17 +534,24 @@ class SQLModel
      * 指定索引
      *
      * @param string $indexName
-     * @param $indexValue
+     * @param mixed $indexValue
      * @throws CoreException
      */
-    function useIndex(string $indexName, $indexValue): void
+    function useIndex(string $indexName, $indexValue = null): void
     {
         if (!property_exists($this, $indexName)) {
             throw new CoreException('不支持的索引名称');
         }
 
-        $this->{$indexName} = $indexValue;
-        $this->index[$indexName] = $indexValue;
+        if (null === $this->{$indexName} && null !== $indexValue) {
+            $this->{$indexName} = $indexValue;
+        }
+
+        if (null === $this->{$indexName}) {
+            throw new CoreException('索引值不能空');
+        }
+
+        $this->index[$indexName] = $this->{$indexName};
     }
 
     /**
