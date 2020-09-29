@@ -10,8 +10,6 @@ namespace Cross\Exception;
 
 
 use Cross\Interactive\ResponseData;
-use Cross\Core\Delegate;
-use Cross\Core\Loader;
 use Throwable;
 
 /**
