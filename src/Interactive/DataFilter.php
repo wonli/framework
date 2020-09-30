@@ -288,7 +288,7 @@ class DataFilter
     {
         $ctx = $this->filter(FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
         $json = json_decode($ctx, true, $depth, $options);
-        if (false === $json || null === $json) {
+        if (false === $json || null === $json || !is_array($json)) {
             $this->throwMsg('参数必须是一个json: %s(%d)', json_last_error_msg(), json_last_error());
         }
 
