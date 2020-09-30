@@ -286,6 +286,10 @@ class DataFilter
      */
     function json(bool $array = true, int $depth = 128, int $options = 0)
     {
+        if (is_array($this->ctx)) {
+            return $this->ctx;
+        }
+
         $ctx = $this->filter(FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
         $json = json_decode($ctx, true, $depth, $options);
         if (false === $json || null === $json || !is_array($json)) {
