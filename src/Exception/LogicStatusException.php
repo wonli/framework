@@ -9,6 +9,8 @@
 namespace Cross\Exception;
 
 
+use Cross\Http\Request;
+use Cross\Http\Response;
 use Cross\Interactive\ResponseData;
 use Throwable;
 
@@ -28,8 +30,9 @@ class LogicStatusException extends CrossException
      *
      * @param int|null $code
      * @param string|null $msg
+     * @param string $ajaxCtxType ajax请求按响应类型
      */
-    function __construct(int $code = null, string $msg = null)
+    function __construct(int $code = null, string $msg = null, string $ajaxCtxType = 'json')
     {
         try {
             if (null === $this->ResponseData) {
@@ -37,6 +40,10 @@ class LogicStatusException extends CrossException
                 $rpd->setStatus($code);
                 $rpd->setMessage($msg ?? '');
                 parent::addResponseData($rpd);
+            }
+
+            if (Request::getInstance()->isAjaxRequest()) {
+                Response::getInstance()->setContentType($ajaxCtxType);
             }
 
             parent::__construct($this->getResponseData()->getMessage(), $code);
