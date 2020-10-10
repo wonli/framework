@@ -811,11 +811,12 @@ class SQLModel
                 continue;
             }
 
-            if ($hasValue && null === $this->{$p}) {
+            $value = $this->{$p} ?? null;
+            if ($hasValue && null === $value) {
                 continue;
             }
 
-            $data[$p] = $this->{$p};
+            $data[$p] = $value;
         }
 
         return $data;
@@ -834,7 +835,7 @@ class SQLModel
                 continue;
             }
 
-            $value = $this->{$p};
+            $value = $this->{$p} ?? null;
             if (null !== $value) {
                 $data["{$p}"] = $value;
             }
