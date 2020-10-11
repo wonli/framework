@@ -121,6 +121,27 @@ class SQLModel
     protected $queryFields = '*';
 
     /**
+     * 默认排序
+     *
+     * @var string
+     */
+    protected $orderByFields;
+
+    /**
+     * 默认分组
+     *
+     * @var string
+     */
+    protected $groupByFields;
+
+    /**
+     * 默认条数
+     *
+     * @var string
+     */
+    protected $limit;
+
+    /**
      * 数据库配置
      *
      * @var array
@@ -182,6 +203,15 @@ class SQLModel
             $query->where($where);
         }
 
+        if (null !== $this->orderByFields) {
+            $query->orderBy($this->orderByFields);
+        }
+
+        if (null !== $this->groupByFields) {
+            $query->groupBy($this->groupByFields);
+        }
+
+        $query->limit(1);
         $data = $query->stmt()->fetch(PDO::FETCH_ASSOC);
         if (!empty($data) && is_array($data)) {
             $this->processDataHandler($data, false);
@@ -200,31 +230,12 @@ class SQLModel
      */
     function latest($where = null, string $fields = null)
     {
-        $this->autoJoin();
-        if (null === $where) {
-            $where = $this->getDefaultCondition();
+        $this->orderBy("{$this->pk} DESC");
+        if (null !== $fields) {
+            $this->fields($fields);
         }
 
-        if (null === $fields) {
-            $fields = $this->queryFields;
-        }
-
-        $query = $this->db()->select($fields)->from($this->getTable());
-        if ($this->useLock) {
-            $params = [];
-            $where = $this->db()->getSQLAssembler()->parseWhere($where, $params);
-            $query->where([$where . ' for UPDATE', $params]);
-        } else {
-            $query->where($where);
-        }
-
-        $query->orderBy("{$this->pk} DESC")->limit(1);
-        $data = $query->stmt()->fetch(PDO::FETCH_ASSOC);
-        if (!empty($data) && is_array($data)) {
-            $this->processDataHandler($data, false);
-        }
-
-        return $data;
+        return $this->property($where);
     }
 
     /**
@@ -350,8 +361,20 @@ class SQLModel
             $where = $this->getDefaultCondition();
         }
 
+        if (null === $limit) {
+            $limit = $this->limit;
+        }
+
         if (null === $fields) {
             $fields = $this->queryFields;
+        }
+
+        if (null === $order) {
+            $order = $this->orderByFields;
+        }
+
+        if (null === $groupBy) {
+            $groupBy = $this->groupByFields;
         }
 
         $data = $this->db()->getAll($this->getTable(), $fields, $where, $order, $groupBy, $limit);
@@ -382,6 +405,14 @@ class SQLModel
 
         if (null === $fields) {
             $fields = $this->queryFields;
+        }
+
+        if (null === $order) {
+            $order = $this->orderByFields;
+        }
+
+        if (null === $groupBy) {
+            $groupBy = $this->groupByFields;
         }
 
         $data = $this->db()->find($this->getTable(), $fields, $where, $page, $order, $groupBy);
@@ -509,6 +540,36 @@ class SQLModel
     function fields(string $fields): void
     {
         $this->queryFields = $fields;
+    }
+
+    /**
+     * 设置默认排序字段
+     *
+     * @param mixed $orderBy
+     */
+    function orderBy($orderBy): void
+    {
+        $this->orderByFields = $orderBy;
+    }
+
+    /**
+     * 默认分组字段
+     *
+     * @param mixed $groupBy
+     */
+    function groupBy($groupBy): void
+    {
+        $this->groupByFields = $groupBy;
+    }
+
+    /**
+     * 默认条数
+     *
+     * @param mixed $limit
+     */
+    function limit($limit)
+    {
+        $this->limit = $limit;
     }
 
     /**
