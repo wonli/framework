@@ -242,7 +242,7 @@ class SQLModel
      * 判断记录是否存在
      *
      * @param mixed $where
-     * @return mixed
+     * @return bool
      * @throws CoreException|DBConnectException
      */
     function has($where = null): bool
