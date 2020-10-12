@@ -504,6 +504,16 @@ class SQLModel
     }
 
     /**
+     * 当前类实例
+     *
+     * @return static
+     */
+    static function dbs(): self
+    {
+        return new static;
+    }
+
+    /**
      * 自定义表名(包含前缀的完整名称)
      *
      * @param string $table
