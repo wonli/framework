@@ -239,6 +239,20 @@ class SQLModel
     }
 
     /**
+     * 按主键查询
+     *
+     * @param mixed $id
+     * @return array|mixed
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function id($id)
+    {
+        $this->{$this->pk} = $id;
+        return $this->get();
+    }
+
+    /**
      * 判断记录是否存在
      *
      * @param mixed $where
