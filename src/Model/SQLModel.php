@@ -424,6 +424,25 @@ class SQLModel
     }
 
     /**
+     * 链式查询
+     *
+     * @param string $fields
+     * @param bool $autoTable
+     * @return PDOSqlDriver
+     * @throws CoreException
+     * @throws DBConnectException
+     */
+    function select(string $fields = '*', $autoTable = true): PDOSqlDriver
+    {
+        $query = $this->db()->select($fields);
+        if ($autoTable) {
+            return $query->from($this->getTable());
+        }
+
+        return $query;
+    }
+
+    /**
      * 原生SQL
      *
      * @param string $sql
