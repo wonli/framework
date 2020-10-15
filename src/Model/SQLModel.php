@@ -678,7 +678,7 @@ class SQLModel
      */
     function getTable(bool $userJoinTable = true): string
     {
-        if (null !== $this->table) {
+        if ($userJoinTable && null !== $this->table) {
             return $this->table;
         }
 
