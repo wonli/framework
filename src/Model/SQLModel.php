@@ -579,40 +579,48 @@ class SQLModel
      * 设置查询字段, 多用于连表查询
      *
      * @param string $fields
+     * @return SQLModel
      */
-    function fields(string $fields): void
+    function fields(string $fields): self
     {
         $this->queryFields = $fields;
+        return $this;
     }
 
     /**
      * 设置默认排序字段
      *
      * @param mixed $orderBy
+     * @return SQLModel
      */
-    function orderBy($orderBy): void
+    function orderBy($orderBy): self
     {
         $this->orderByFields = $orderBy;
+        return $this;
     }
 
     /**
      * 默认分组字段
      *
      * @param mixed $groupBy
+     * @return SQLModel
      */
-    function groupBy($groupBy): void
+    function groupBy($groupBy): self
     {
         $this->groupByFields = $groupBy;
+        return $this;
     }
 
     /**
      * 默认条数
      *
      * @param mixed $limit
+     * @return SQLModel
      */
-    function limit($limit)
+    function limit($limit): self
     {
         $this->limit = $limit;
+        return $this;
     }
 
     /**
