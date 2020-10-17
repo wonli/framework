@@ -156,22 +156,16 @@ class SQLModel
      */
     function __construct(IModelInfo $modeClass)
     {
-        $this->pk = $modeClass->getPK();
         $this->modelInfo = $modeClass->getModelInfo();
-        $this->fieldsInfo = $modeClass->getFieldInfo();
-        $this->splitConfig = $modeClass->getSplitConfig();
-
-        $config = Config::load($modeClass->getConfigFile())->getAll();
-        if (empty($config)) {
+        $this->dbConfig = Config::load($modeClass->getConfigFile())
+            ->get($this->modelInfo['type'] ?? '', $this->modelInfo['n'] ?? '');
+        if (empty($this->dbConfig)) {
             throw new CoreException('获取数据库配置信息失败');
         }
 
-        $type = &$this->modelInfo['type'];
-        if (empty($type)) {
-            throw new CoreException('获取Model类似失败');
-        }
-
-        $this->dbConfig = $config[$type][$this->modelInfo['n']] ?? [];
+        $this->pk = $modeClass->getPK();
+        $this->fieldsInfo = $modeClass->getFieldInfo();
+        $this->splitConfig = $modeClass->getSplitConfig();
         $this->modelClass = $modeClass;
     }
 
@@ -539,6 +533,7 @@ class SQLModel
      * 当前类实例
      *
      * @return static
+     * @throws CoreException
      */
     static function dbs(): self
     {
