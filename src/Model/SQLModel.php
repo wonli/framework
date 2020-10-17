@@ -211,7 +211,6 @@ class SQLModel
             $query->groupBy($this->groupByFields);
         }
 
-        $query->limit(1);
         $data = $query->stmt()->fetch(PDO::FETCH_ASSOC);
         if (!empty($data) && is_array($data)) {
             $this->processDataHandler($data, false);
