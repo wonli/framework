@@ -1,1 +1,1 @@
-<?php echo empty($content) ? '' : $content;
+<?= empty($content) ? '' : $content;
