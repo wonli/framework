@@ -123,16 +123,17 @@ class PgSQLConnector extends BaseConnector
      */
     function getMetaData(string $table, bool $fieldsMap = true): array
     {
-        $sql = "select a.column_name, a.is_nullable, a.column_default, p.contype from (
-                    select i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
-                    from information_schema.columns i left join pg_class c on c.relname=i.table_name
-                    where i.table_name='{$table}'
-                ) a left join pg_constraint p on p.conrelid=a.oid and a.ordinal_position = ANY (p.conkey)";
+        $sql = "SELECT a.column_name, a.is_nullable, a.column_default, p.contype FROM (
+                    SELECT i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
+                    FROM information_schema.columns i LEFT JOIN pg_class c ON c.relname=i.table_name
+                    WHERE i.table_name= ?
+                ) a LEFT JOIN pg_constraint p ON p.conrelid=a.oid AND a.ordinal_position = ANY (p.conkey)";
 
         try {
-            $data = $this->pdo->query($sql);
+            $data = $this->pdo->prepare($sql);
             if ($fieldsMap) {
                 $result = [];
+                $data->execute([$table]);
                 $data->fetchAll(PDO::FETCH_FUNC, function ($columnName, $isNull, $columnDefault, $conType) use (&$result) {
                     $autoIncrement = preg_match("/nextval\((.*)\)/", $columnDefault);
                     $result[$columnName] = [

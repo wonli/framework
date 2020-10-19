@@ -99,12 +99,11 @@ class OracleConnector extends BaseConnector
     public function getPK(string $table): string
     {
         $table = strtoupper($table);
-        $q = $this->pdo->query("select cu.* from all_cons_columns cu, all_constraints au 
-                where cu.constraint_name = au.constraint_name 
-                and au.constraint_type = 'P' 
-                and au.table_name = '{$table}'");
+        $q = $this->pdo->prepare("SELECT cu.* FROM all_cons_columns cu, all_constraints au 
+                WHERE cu.constraint_name = au.constraint_name AND au.constraint_type = 'P' AND au.table_name = ?");
 
         $pk = '';
+        $q->execute([$table]);
         $tablePKList = $q->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($tablePKList)) {
             array_walk($tablePKList, function ($d) use (&$pk) {
@@ -152,26 +151,23 @@ class OracleConnector extends BaseConnector
     {
         //获取所有字段
         $table = strtoupper($table);
-        $q = $this->pdo->query("select 
-            t.COLUMN_NAME, t.DATA_TYPE, t.NULLABLE, t.DATA_DEFAULT, c.COMMENTS 
-            from all_tab_columns t,all_col_comments c 
-            where t.table_name = c.table_name 
-            and t.column_name = c.column_name 
-            and t.table_name = '{$table}'");
+        $q = $this->pdo->prepare("SELECT t.COLUMN_NAME, t.DATA_TYPE, t.NULLABLE, t.DATA_DEFAULT, c.COMMENTS 
+            FROM all_tab_columns t,all_col_comments c 
+            WHERE t.table_name = c.table_name AND t.column_name = c.column_name AND t.table_name = ?");
 
+        $q->execute([$table]);
         $tableFields = $q->fetchAll(PDO::FETCH_ASSOC);
         if (empty($tableFields)) {
             return [];
         }
 
         $pk = $this->getPK($table);
-        $qIndex = $this->pdo->query("select 
-            t.column_name,t.index_name,i.index_type 
-            from all_ind_columns t,all_indexes i 
-            where t.index_name = i.index_name 
-            and t.table_name = i.table_name and t.table_name = '{$table}'");
+        $qIndex = $this->pdo->prepare("SELECT t.column_name,t.index_name,i.index_type 
+            FROM all_ind_columns t,all_indexes i 
+            WHERE t.index_name = i.index_name AND t.table_name = i.table_name AND t.table_name = ?");
 
         $indexInfo = [];
+        $qIndex->execute([$table]);
         $qIndex->fetchAll(PDO::FETCH_FUNC, function ($name, $indexName, $indexType) use (&$indexInfo, $pk) {
             $indexInfo[$name] = [
                 'pk' => $pk == $name,
