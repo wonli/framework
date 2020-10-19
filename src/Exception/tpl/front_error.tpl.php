@@ -48,13 +48,13 @@
                 <?php printf('File: %s Line: %s', $data['main']['show_file'] ?? '', $data['main']['line'] ?? ''); ?>
             </h3>
             <div class="message">
-                <?php echo $data['main']['message'] ?? '' ?>
+                <?= $data['main']['message'] ?? '' ?>
             </div>
         </div>
         <div class="code-container">
             <?php if (!empty($data['trace'])) : ?>
                 <?php foreach ($data['trace'] as $k => $m) : ?>
-                    <div id="trace_info_<?php echo $k ?>" class="trace-info">
+                    <div id="trace_info_<?= $k ?>" class="trace-info">
                         <div class="code-segment">
                             <?php
                             foreach ($m['source'] as $s_line => $s_source) {
@@ -71,7 +71,7 @@
             <?php endif ?>
             <?php if (!empty($data['previous_trace'])) : ?>
                 <?php foreach ($data['previous_trace'] as $pk => $pm) : ?>
-                    <div id="previous_trace_info_<?php echo $pk ?>" class="trace-info">
+                    <div id="previous_trace_info_<?= $pk ?>" class="trace-info">
                         <div class="code-segment">
                             <?php
                             foreach ($pm['source'] as $s_line => $s_source) {
@@ -90,8 +90,8 @@
             <div id="main_info" style="display:block">
                 <div class="code-segment">
                     <?php
-                    foreach ($data['main']['source'] as $s_line => $s_source) {
-                        if ($data['main']['line'] == $s_line) {
+                    foreach ($data['main']['source'] ?? [] as $s_line => $s_source) {
+                        if (!empty($data['main']['line']) && ($data['main']['line'] == $s_line)) {
                             printf('<div class="code-line active"><span class="line">%s</span>&nbsp;&nbsp;%s</div>', $s_line, $s_source);
                         } else {
                             printf('<div class="code-line"><span class="line">%s</span>&nbsp;&nbsp;%s</div>', $s_line, $s_source);
@@ -105,12 +105,12 @@
             <h1 class="padding">Exception File</h1>
             <div class="frame active" id="frame_active"
                  onclick="cp_exception.main(null)">
-                <?php echo $data["main"]["show_file"] ?>
+                <?= $data["main"]["show_file"] ?? '' ?>
             </div>
             <?php if (!empty($data['trace'])) : ?>
                 <h1 class="padding">Trace</h1>
                 <?php foreach ($data['trace'] as $kf => $mf) : ?>
-                    <div class="frame" onclick="cp_exception.track(<?php echo $kf ?>, this, '')">
+                    <div class="frame" onclick="cp_exception.track(<?= $kf ?>, this, '')">
                         <?php printf('%s (line: %s)', $mf['show_file'], $mf['line']) ?>
                     </div>
                 <?php endforeach ?>
@@ -118,7 +118,7 @@
             <?php if (!empty($data['previous_trace'])) : ?>
                 <h1 class="padding">Previous Trace</h1>
                 <?php foreach ($data['previous_trace'] as $pkf => $pmf) : ?>
-                    <div class="frame" onclick="cp_exception.track(<?php echo $pkf ?>, this, 'previous')">
+                    <div class="frame" onclick="cp_exception.track(<?= $pkf ?>, this, 'previous')">
                         <?php printf('%s (line: %s)', $pmf['show_file'], $pmf['line']) ?>
                     </div>
                 <?php endforeach ?>
@@ -136,10 +136,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($_GET as $g_key => $g_value) : ?>
+                        <?php foreach ($_GET as $gKey => $gValue) : ?>
                             <tr>
-                                <td><?php echo $g_key ?></td>
-                                <td><?php echo print_r($g_value, true) ?></td>
+                                <td><?= (new \Cross\Interactive\DataFilter($gKey))->val()  ?></td>
+                                <td><?= print_r($gValue, true) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>
@@ -160,10 +160,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($_POST as $p_key => $p_value) : ?>
+                        <?php foreach ($_POST as $pKey => $pValue) : ?>
                             <tr>
-                                <td><?php echo $p_key ?></td>
-                                <td><?php echo print_r($p_value, true) ?></td>
+                                <td><?= (new \Cross\Interactive\DataFilter($pKey))->val() ?></td>
+                                <td><?= print_r($pValue, true) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>
@@ -184,10 +184,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($_FILES as $f_key => $f_value) : ?>
+                        <?php foreach ($_FILES as $fKey => $fValue) : ?>
                             <tr>
-                                <td><?php echo $f_key ?></td>
-                                <td><?php echo print_r($f_value, true) ?></td>
+                                <td><?= (new \Cross\Interactive\DataFilter($fKey))->val() ?></td>
+                                <td><?= print_r($fValue, true) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>
@@ -208,10 +208,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($_COOKIE as $c_key => $c_value) : ?>
+                        <?php foreach ($_COOKIE as $cKey => $cValue) : ?>
                             <tr>
-                                <td><?php echo $c_key ?></td>
-                                <td><?php echo print_r($c_value, true) ?></td>
+                                <td><?= (new \Cross\Interactive\DataFilter($cKey))->val() ?></td>
+                                <td><?= print_r($cValue, true) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>
@@ -232,10 +232,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($_SESSION as $s_key => $s_value) : ?>
+                        <?php foreach ($_SESSION as $sKey => $sValue) : ?>
                             <tr>
-                                <td><?php echo $s_key ?></td>
-                                <td><?php echo print_r($s_value, true) ?></td>
+                                <td><?= (new \Cross\Interactive\DataFilter($sKey))->val() ?></td>
+                                <td><?= print_r($sValue, true) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>
