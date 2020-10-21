@@ -59,7 +59,7 @@ class DataFilter
     function __construct($ctx)
     {
         $this->msg = null;
-        $this->ctx = !is_array($ctx) ? trim($ctx) : $ctx;
+        $this->ctx = is_string($ctx) ? trim($ctx) : $ctx;
     }
 
     /**
@@ -138,6 +138,22 @@ class DataFilter
     {
         if (!in_array($this->ctx, $val)) {
             $this->throwMsg('参数必须是指定值中的一个');
+        }
+
+        return $this->ctx;
+    }
+
+    /**
+     * 限定值中的一个或者第一个值
+     *
+     * 宽松版的fixed, 类似switch语法
+     * @param mixed ...$values
+     * @return mixed
+     */
+    function switch(...$values)
+    {
+        if (!in_array($this->ctx, $values)) {
+            return $values[0];
         }
 
         return $this->ctx;
