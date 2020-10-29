@@ -385,7 +385,7 @@ class Router implements RouterInterface
             $routerParams[] = $endParams;
         }
 
-        return array_filter($routerParams);
+        return $routerParams;
     }
 
     /**
