@@ -10,7 +10,7 @@ namespace Cross\Model;
 
 use cross\exception\CoreException;
 use Cross\Cache\Driver\RedisDriver;
-use Cross\Core\Loader;
+use Cross\Core\Config;
 use Redis;
 
 /**
@@ -294,8 +294,7 @@ class RedisModel extends RedisDriver
     {
         static $redisConfig = null;
         if (null === $redisConfig) {
-            $configFile = Loader::read(static::getConfigFilePath(static::$configFile));
-            $redisConfig = $configFile['redis'] ?? [];
+            $redisConfig = Config::load(static::getConfigFilePath(static::$configFile))->get('redis');
             if (empty($redisConfig)) {
                 throw new CoreException('请先配置redis');
             }
