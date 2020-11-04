@@ -288,7 +288,8 @@ class DataFilter
             $this->throwMsg('参数必须是一个数组');
         }
 
-        return array_map('trim', $ctx);
+        array_walk_recursive($ctx, 'trim');
+        return $ctx;
     }
 
     /**
