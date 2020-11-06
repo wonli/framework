@@ -47,14 +47,14 @@ class ResponseData
      *
      * @var string
      */
-    private $statusName = 'status';
+    private $statusName = 'code';
 
     /**
      * 消息名称
      *
      * @var string
      */
-    private $messageName = 'message';
+    private $messageName = 'msg';
 
     /**
      * 数据名称
