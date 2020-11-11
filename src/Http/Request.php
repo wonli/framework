@@ -563,5 +563,16 @@ class Request
     {
         return $this->requestData;
     }
+
+    /**
+     * 从输入流获取数据
+     *
+     * @return mixed
+     */
+    function getPHPData()
+    {
+        return filter_var(file_get_contents("php://input"), FILTER_SANITIZE_STRING,
+            FILTER_FLAG_NO_ENCODE_QUOTES);
+    }
 }
 
