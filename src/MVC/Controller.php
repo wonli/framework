@@ -103,7 +103,8 @@ class Controller extends FrameBase
     function input(string $key, $default = null): DataFilter
     {
         $val = '';
-        $dataContainer = array_merge($this->params, $this->request->getRequestData(), $this->request->getPostData());
+        $dataContainer = array_merge($this->params,
+            $this->request->getRequestData(), $this->request->getPostData(), $this->request->getFileData());
         if (is_array($dataContainer)) {
             $val = $dataContainer[$key] ?? null;
         }
