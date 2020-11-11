@@ -101,6 +101,7 @@ class Application
         $hasResponse = false;
         if ($cache && $cache->isValid()) {
             $responseContent = $cache->get();
+            $Response->setContent($responseContent);
         } else {
             try {
                 $cr->setStaticPropertyValue('appDelegate', $this->delegate);
@@ -129,7 +130,7 @@ class Application
             }
 
             $responseContent = $Response->getContent();
-            if ($cache && $cache->isValid()) {
+            if ($cache) {
                 $cache->set($responseContent);
             }
         }
