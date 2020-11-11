@@ -158,7 +158,7 @@ class Uploader
      *
      * @param int $mode
      */
-    function setMode($mode)
+    function setMode(int $mode)
     {
         $this->mode = $mode;
     }
@@ -168,7 +168,7 @@ class Uploader
      *
      * @param string $extension 竖线分隔，如：gif|jpg|jpeg|png|doc
      */
-    function setAllowExtension($extension)
+    function setAllowExtension(string $extension)
     {
         $this->allowExtension = explode('|', strtolower($extension));
     }
@@ -178,7 +178,7 @@ class Uploader
      *
      * @param int $size
      */
-    function setAllowSize($size)
+    function setAllowSize(int $size)
     {
         $this->allowSize = $size;
     }
@@ -224,7 +224,7 @@ class Uploader
      *
      * @param string $server
      */
-    function withFileCdn($server)
+    function withFileCdn(string $server)
     {
         $this->fileCdn = rtrim($server, '/');
     }
@@ -235,7 +235,7 @@ class Uploader
      * @param string $path
      * @throws Exception
      */
-    function setSavePath($path)
+    function setSavePath(string $path)
     {
         $this->savePath = rtrim($path, '/') . '/';
         if (!is_dir($this->savePath)) {
@@ -402,7 +402,7 @@ class Uploader
      * @param string $type
      * @return bool
      */
-    private function isAllowExtension($type)
+    private function isAllowExtension(string $type)
     {
         if (empty($this->allowExtension)) {
             return true;
@@ -417,7 +417,7 @@ class Uploader
      * @param int $size
      * @return bool
      */
-    private function isAllowSize($size)
+    private function isAllowSize(int $size)
     {
         if (!$this->allowSize) {
             return true;
@@ -432,7 +432,7 @@ class Uploader
      * @param string $filename
      * @param string $error
      */
-    private function addFailFile($filename, $error)
+    private function addFailFile(string $filename, string $error)
     {
         $this->failCount++;
         $this->failFiles[] = [
