@@ -553,7 +553,6 @@ class PDOSqlDriver implements SqlInterface
                 $stmt->execute($executeParams);
             }
 
-            unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
             return $stmt;
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
