@@ -279,12 +279,18 @@ class SQLModel
     /**
      * 添加
      *
+     * @param array $data
      * @return mixed
-     * @throws CoreException|DBConnectException
+     * @throws CoreException
+     * @throws DBConnectException
      */
-    function add()
+    function add(array $data = [])
     {
-        $insertId = $this->db()->add($this->getTable(false), $this->makeInsertData());
+        if (empty($data)) {
+            $data = $this->makeInsertData();
+        }
+
+        $insertId = $this->db()->add($this->getTable(false), $data);
         if (false !== $insertId) {
             $this->{$this->pk} = $insertId;
         }
