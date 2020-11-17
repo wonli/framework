@@ -11,6 +11,7 @@ namespace Cross\Model;
 use cross\exception\CoreException;
 use Cross\Cache\Driver\RedisDriver;
 use Cross\Core\Config;
+use RedisCluster;
 use Redis;
 
 /**
@@ -50,6 +51,7 @@ use Redis;
  * @method static lPush($key, ...$value1)
  * @method static rPush($key, ...$value1)
  * @method static lPushx($key, $value)
+ * @method static rPushx($key, $value)
  * @method static lPop($key)
  * @method static rPop($key)
  * @method static blPop($keys, $timeout)
@@ -224,7 +226,7 @@ class RedisModel extends RedisDriver
     /**
      * redis实例
      *
-     * @var Redis
+     * @var Redis|RedisCluster
      */
     static protected $redisConn;
 
@@ -246,10 +248,10 @@ class RedisModel extends RedisDriver
      * 切换设置
      *
      * @param string $sessionOptionName
-     * @return Redis
+     * @return Redis|RedisCluster
      * @throws CoreException
      */
-    static function use(string $sessionOptionName): Redis
+    static function use(string $sessionOptionName)
     {
         static $currentSession = null;
         if (null === $currentSession || $sessionOptionName != $currentSession) {
