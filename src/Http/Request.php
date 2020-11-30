@@ -9,6 +9,7 @@
 namespace Cross\Http;
 
 use Cross\Exception\FrontException;
+use Cross\Interactive\DataFilter;
 
 /**
  * @author wonli <wonli@live.com>
@@ -27,6 +28,11 @@ class Request
      * @var string
      */
     protected $scriptUrl;
+
+    /**
+     * @var array
+     */
+    protected $inputData = [];
 
     /**
      * @var self
@@ -465,6 +471,51 @@ class Request
     }
 
     /**
+     * 获取输入数据
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return DataFilter
+     */
+    function inputData(string $key, $default = null)
+    {
+        $this->initInputData();
+        $val = $this->inputData[$key] ?? null;
+        if (null === $val && null !== $default) {
+            $val = $default;
+        }
+
+        return new DataFilter($val);
+    }
+
+    /**
+     * 输入数据
+     *
+     * @param callable|null $phpDataHandler
+     * @return self
+     */
+    function initInputData(callable $phpDataHandler = null): self
+    {
+        static $init = null;
+        if (null === $init) {
+            $phpData = [];
+            if (null !== $phpDataHandler) {
+                $phpInputData = $this->getPHPData(false);
+                $phpData = call_user_func_array($phpDataHandler, [$phpInputData, $this]);
+                if (!is_array($phpData)) {
+                    $phpData = [$phpData];
+                }
+            }
+
+            $init = true;
+            $this->inputData = array_merge($this->getData, $this->postData, $this->requestData,
+                $this->fileData, $phpData);
+        }
+
+        return $this;
+    }
+
+    /**
      * 设置URI参数
      *
      * @param array $data
@@ -567,12 +618,17 @@ class Request
     /**
      * 从输入流获取数据
      *
+     * @param bool $filter
      * @return mixed
      */
-    function getPHPData()
+    function getPHPData(bool $filter = true)
     {
-        return filter_var(file_get_contents("php://input"), FILTER_SANITIZE_STRING,
-            FILTER_FLAG_NO_ENCODE_QUOTES);
+        $data = file_get_contents('php://input');
+        if ($filter) {
+            $data = filter_var($data, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+        }
+
+        return $data;
     }
 }
 
