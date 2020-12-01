@@ -333,6 +333,7 @@ class Application
      */
     private function parseRouter($router, array $params = [], &$initParams = true): array
     {
+        $afu = true;
         if ($router instanceof RouterInterface) {
             $controller = $router->getController();
             $action = $router->getAction();
@@ -349,9 +350,17 @@ class Application
                 $controller = $router;
                 $action = Router::DEFAULT_ACTION;
             }
+
+            if (false !== strpos($controller, '\\')) {
+                $afu = false;
+            }
         }
 
-        return ['controller' => ucfirst($controller), 'action' => $action, 'params' => $params];
+        return [
+            'controller' => $afu ? ucfirst($controller) : $controller,
+            'action' => $action,
+            'params' => $params
+        ];
     }
 
     /**
