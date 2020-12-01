@@ -19,6 +19,7 @@ use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
 
 use ReflectionException;
+use ReflectionProperty;
 use ReflectionMethod;
 use ReflectionClass;
 use Exception;
@@ -110,6 +111,21 @@ class Application
             }
 
             $controller = $cr->newInstance();
+            $dii = $this->delegate->dii();
+            if (!empty($dii)) {
+                try {
+                    $properties = $cr->getProperties(ReflectionProperty::IS_PUBLIC);
+                    foreach ($properties as $p) {
+                        if (isset($dii[$p->name])) {
+                            $cr->getProperty($p->name)
+                                ->setValue($controller, $dii[$p->name]);
+                        }
+                    }
+                } catch (ReflectionException $e) {
+                    throw new CoreException($e->getMessage());
+                }
+            }
+
             if (isset($annotateConfig['before'])) {
                 $this->callReliesControllerClosure($annotateConfig['before'], $controller);
             }

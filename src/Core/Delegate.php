@@ -86,6 +86,13 @@ class Delegate
     private $useNamespace;
 
     /**
+     * 注入对象
+     *
+     * @var []
+     */
+    private $dii = [];
+
+    /**
      * Delegate的实例
      *
      * @var Delegate
@@ -271,6 +278,18 @@ class Delegate
     }
 
     /**
+     * DI
+     *
+     * @param string $name
+     * @param mixed $obj
+     * @return mixed
+     */
+    function di(string $name, $obj)
+    {
+        return $this->dii[$name] = $obj;
+    }
+
+    /**
      * 注册运行时匿名函数
      *
      * @param string $name
@@ -301,6 +320,21 @@ class Delegate
     function getConfig(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * DII
+     *
+     * @param string|null $name
+     * @return array
+     */
+    function dii(string $name = null)
+    {
+        if (null !== $name) {
+            return $this->dii[$name] ?? null;
+        }
+
+        return $this->dii;
     }
 
     /**
