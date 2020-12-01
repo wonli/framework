@@ -61,6 +61,13 @@ class Router implements RouterInterface
     private $defaultRouter = [];
 
     /**
+     * 虚拟路径
+     *
+     * @var string
+     */
+    private $virtualPath;
+
+    /**
      * 默认Action名称
      */
     const DEFAULT_ACTION = 'index';
@@ -243,14 +250,15 @@ class Router implements RouterInterface
      *
      * @param array $request
      * @param array $urlConfig
-     * @internal param $router
+     * @throws CoreException
      */
     function parseRouter(array $request, array $urlConfig): void
     {
         $virtualPath = '';
         $setVirtualPath = &$urlConfig['virtual_path'];
-        if (!empty($setVirtualPath) && $setVirtualPath == $request[0]) {
+        if (!empty($setVirtualPath) && ($setVirtualPath == $request[0] || $setVirtualPath == '*')) {
             $virtualPath = array_shift($request);
+            $this->setVirtualPath($virtualPath);
         }
 
         $group = '';
@@ -287,6 +295,11 @@ class Router implements RouterInterface
 
         if ($group) {
             $controller = "{$group}\\{$controller}";
+        }
+
+        if (empty($controller)) {
+            $defaultRouter = $this->getDefaultRouter();
+            $controller = $defaultRouter[0];
         }
 
         $oriAction = '';
@@ -329,6 +342,22 @@ class Router implements RouterInterface
         }
 
         return $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVirtualPath(): string
+    {
+        return $this->virtualPath;
+    }
+
+    /**
+     * @param string $virtualPath
+     */
+    public function setVirtualPath(string $virtualPath): void
+    {
+        $this->virtualPath = $virtualPath;
     }
 
     /**
