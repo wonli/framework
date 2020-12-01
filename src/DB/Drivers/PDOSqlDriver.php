@@ -83,6 +83,11 @@ class PDOSqlDriver implements SqlInterface
     protected $connectOptions;
 
     /**
+     * @var int
+     */
+    protected $maxQueryHistoryCount = 255;
+
+    /**
      * 创建数据库连接
      *
      * @param PDOConnector $connector
@@ -577,7 +582,6 @@ class PDOSqlDriver implements SqlInterface
             $stmt = $this->pdo->prepare($this->sql, $prepareParams);
             $executeParams = $this->queryParams[$this->qid];
 
-            unset($this->querySQL[$this->qid], $this->queryParams[$this->qid]);
             return $stmt->execute($executeParams);
         } catch (Exception $e) {
             throw new CoreException($e->getMessage());
@@ -818,17 +822,16 @@ class PDOSqlDriver implements SqlInterface
      */
     private function generateQueryID(): void
     {
-        do {
-            try {
-                $qid = random_int(1, 99999);
-            } catch (Exception $e) {
-                $qid = microtime(true);
-            }
+        static $i = 1;
+        $this->qid = $i++;
 
-            if (!isset($this->querySQL[$qid])) {
-                $this->qid = $qid;
-                break;
-            }
-        } while (true);
+        if ($this->qid > $this->maxQueryHistoryCount) {
+            array_shift($this->querySQL);
+            array_shift($this->queryParams);
+        }
+
+        if ($this->qid > PHP_INT_MAX) {
+            $i = 1;
+        }
     }
 }
