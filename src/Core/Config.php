@@ -151,6 +151,10 @@ class Config
     {
         $val = null;
         $data = $this->configData;
+        if (isset($data[$path])) {
+            return $data[$path];
+        }
+
         $keys = explode('.', $path);
         while ($i = array_shift($keys)) {
             if (!isset($data[$i])) {
