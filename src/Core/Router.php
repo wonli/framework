@@ -253,6 +253,15 @@ class Router implements RouterInterface
             $virtualPath = array_shift($request);
         }
 
+        $group = '';
+        $ctlGroups = &$urlConfig['group'];
+        if (!empty($ctlGroups)) {
+            $ctlGroups = array_map('trim', explode(',', $ctlGroups));
+            if (in_array($request[0], $ctlGroups)) {
+                $group = array_shift($request);
+            }
+        }
+
         $combineAliasKey = '';
         $oriController = $controller = array_shift($request);
         if (isset($request[0])) {
@@ -276,6 +285,10 @@ class Router implements RouterInterface
             }
         }
 
+        if ($group) {
+            $controller = "{$group}\\{$controller}";
+        }
+
         $oriAction = '';
         if (!isset($action)) {
             if (isset($request[0]) && !empty($request[0])) {
@@ -288,9 +301,10 @@ class Router implements RouterInterface
         $additionParams = [];
         $params = $this->parseParams($request, $urlConfig, $additionParams);
         $this->delegate->getConfig()->set('ori_router', [
+            'group' => $group,
             'request' => $this->originUriRequest,
-            'addition_params' => $additionParams,
             'virtual_path' => $virtualPath,
+            'addition_params' => $additionParams,
             'controller' => $oriController,
             'action' => $oriAction,
             'params' => $request,
