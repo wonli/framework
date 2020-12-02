@@ -471,7 +471,7 @@ class Request
     }
 
     /**
-     * 获取输入数据
+     * 获取指定输入数据
      *
      * @param string $key
      * @param mixed $default
@@ -489,12 +489,23 @@ class Request
     }
 
     /**
+     * 获取全局输入
+     *
+     * @param callable|null $phpDataHandler
+     * @return array
+     */
+    function allInputData(?callable $phpDataHandler = null): array
+    {
+        return $this->initInputData($phpDataHandler)->inputData;
+    }
+
+    /**
      * 输入数据
      *
      * @param callable|null $phpDataHandler
      * @return self
      */
-    function initInputData(callable $phpDataHandler = null): self
+    function initInputData(?callable $phpDataHandler = null): self
     {
         static $init = null;
         if (null === $init) {
