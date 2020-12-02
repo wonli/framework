@@ -88,7 +88,7 @@ class Router implements RouterInterface
      * @throws CoreException
      * @throws FrontException
      */
-    public function getRouter(): self
+    public function parseUrl(): self
     {
         $request = [];
         $rs = $this->getUriRequest('', $urlConfig);

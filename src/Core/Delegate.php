@@ -199,7 +199,7 @@ class Delegate
      */
     public function run()
     {
-        $this->app->dispatcher($this->router->getRouter());
+        $this->app->dispatcher($this->router->parseUrl());
     }
 
     /**
