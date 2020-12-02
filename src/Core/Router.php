@@ -65,7 +65,7 @@ class Router implements RouterInterface
      *
      * @var string
      */
-    private $virtualPath;
+    private $virtual = '';
 
     /**
      * 默认Action名称
@@ -254,11 +254,15 @@ class Router implements RouterInterface
      */
     function parseRouter(array $request, array $urlConfig): void
     {
-        $virtualPath = '';
-        $setVirtualPath = &$urlConfig['virtual_path'];
-        if (!empty($setVirtualPath) && ($setVirtualPath == $request[0] || $setVirtualPath == '*')) {
-            $virtualPath = array_shift($request);
-            $this->setVirtualPath($virtualPath);
+        $virtual = '';
+        $setVirtual = &$urlConfig['virtual'];
+        if ($setVirtual == '*') {
+            $virtual = array_shift($request);
+        } elseif (!empty($setVirtual)) {
+            $virtualConfigs = array_map('trim', explode(',', $setVirtual));
+            if (in_array($request[0], $virtualConfigs)) {
+                $virtual = array_shift($request);
+            }
         }
 
         $group = '';
@@ -316,13 +320,14 @@ class Router implements RouterInterface
         $this->delegate->getConfig()->set('ori_router', [
             'group' => $group,
             'request' => $this->originUriRequest,
-            'virtual_path' => $virtualPath,
+            'virtual' => $virtual,
             'addition_params' => $additionParams,
             'controller' => $oriController,
             'action' => $oriAction,
             'params' => $request,
         ]);
 
+        $this->setVirtual($virtual);
         $this->setController($controller);
         $this->setAction($action);
         $this->setParams($params);
@@ -347,17 +352,17 @@ class Router implements RouterInterface
     /**
      * @return string
      */
-    public function getVirtualPath(): string
+    public function getVirtual(): string
     {
-        return $this->virtualPath;
+        return $this->virtual;
     }
 
     /**
-     * @param string $virtualPath
+     * @param string $virtual
      */
-    public function setVirtualPath(string $virtualPath): void
+    public function setVirtual(string $virtual): void
     {
-        $this->virtualPath = $virtualPath;
+        $this->virtual = $virtual;
     }
 
     /**
