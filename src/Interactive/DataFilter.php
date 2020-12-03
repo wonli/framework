@@ -469,6 +469,30 @@ class DataFilter
     }
 
     /**
+     * 验证上传文件
+     *
+     * @return mixed
+     * @throws LogicStatusException
+     */
+    function uploadFile()
+    {
+        if (empty($this->ctx['tmp_name'])) {
+            $this->throwMsg('验证上传文件失败');
+        }
+
+        $tmpFiles = is_array($this->ctx['tmp_name']) ?
+            $this->ctx['tmp_name'] : [$this->ctx['tmp_name']];
+
+        foreach ($tmpFiles as $f) {
+            if (!is_uploaded_file($f)) {
+                $this->throwMsg('不是一个有效的上传文件');
+            }
+        }
+
+        return $this->ctx;
+    }
+
+    /**
      * 上传验证
      *
      * @param Uploader $uploader
