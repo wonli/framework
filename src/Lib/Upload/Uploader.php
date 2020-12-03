@@ -112,6 +112,13 @@ class Uploader
     protected $withFilePath = false;
 
     /**
+     * 返回文件详情
+     *
+     * @var bool
+     */
+    protected $withFileInfo = false;
+
+    /**
      * 文件cdn服务器地址
      *
      * @var string
@@ -220,6 +227,14 @@ class Uploader
     }
 
     /**
+     * 返回上传文件详情
+     */
+    function withFileInfo()
+    {
+        $this->withFileInfo = true;
+    }
+
+    /**
      * 文件CDN服务器地址
      *
      * @param string $server
@@ -283,7 +298,7 @@ class Uploader
         ];
 
         if ($this->fileDir) {
-            $this->setSavePath($this->savePath . $this->fileDir);
+            $this->setSavePath(rtrim($this->savePath, DIRECTORY_SEPARATOR) . $this->fileDir);
         }
 
         $files = $this->verifyUploadFile();
@@ -312,6 +327,15 @@ class Uploader
 
                     if ($this->withFilePath) {
                         $data['uploadedFilePath'][] = $destination;
+                    }
+
+                    if ($this->withFileInfo) {
+                        $data['uploadedFileInfo'][] = [
+                            'url' => $fileUrl,
+                            'path' => $destination,
+                            'size' => $f['size'] ?? null,
+                            'type' => $f['type'] ?? null
+                        ];
                     }
                 } else {
                     $this->addFailFile($f['name'], '移动文件至目录失败: ' . $fileUrl);
