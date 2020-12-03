@@ -234,6 +234,21 @@ class Response
     }
 
     /**
+     * MIMEType名称
+     *
+     * @param string|null $name
+     * @return string
+     */
+    function contentTypeName(?string $name = null): string
+    {
+        if (null === $name) {
+            $name = $this->contentType;
+        }
+
+        return array_search($name, self::$mimeTypes) ?? '';
+    }
+
+    /**
      * 设置输出内容
      *
      * @param string $content
