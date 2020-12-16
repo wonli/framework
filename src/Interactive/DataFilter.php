@@ -387,6 +387,10 @@ class DataFilter
      */
     function date(&$unixTime = null)
     {
+        if (empty($this->ctx)) {
+            return false;
+        }
+
         $unixTime = strtotime($this->ctx);
         if (!$unixTime) {
             $this->throwMsg('请输入正确的日期');
@@ -462,7 +466,7 @@ class DataFilter
      * @param bool $stripTags
      * @return string
      */
-    function val($stripTags = true)
+    function val($stripTags = true): string
     {
         $ctx = $stripTags ? strip_tags($this->ctx) : $this->ctx;
         return htmlentities($ctx, ENT_COMPAT, 'utf-8');
