@@ -789,7 +789,7 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 返回最后操作的id
      *
-     * @return string
+     * @return mixed
      */
     public function insertId()
     {
