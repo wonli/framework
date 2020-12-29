@@ -282,7 +282,7 @@ class Helper
         $keyLength = strlen($cryptKey);
 
         $string = $operation == 'DECODE' ?
-            base64_decode(substr($string, $cKeyLength)) :
+            hex2bin(substr($string, $cKeyLength)) :
             sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
 
         $result = [];
@@ -332,7 +332,7 @@ class Helper
                 return '';
             }
         } else {
-            return $key_c . str_replace('=', '', base64_encode($result));
+            return $key_c . bin2hex( $result);
         }
     }
 
