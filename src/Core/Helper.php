@@ -270,31 +270,30 @@ class Helper
      */
     static function authCode(string $string, string $operation = 'DECODE', string $key = 'crossphp', int $expiry = 0): string
     {
-        $cKeyLength = 4;
         $key = md5($key);
+        $cryKey = substr($key, 0, 16);
+        $ctxKey = substr($key, 16, 16);
 
-        $key_a = md5(substr($key, 0, 16));
-        $key_b = md5(substr($key, 16, 16));
-        $key_c = $cKeyLength ? ($operation == 'DECODE' ? substr($string, 0, $cKeyLength) :
-            substr(md5(microtime()), -$cKeyLength)) : '';
-
-        $cryptKey = $key_a . md5($key_a . $key_c);
-        $keyLength = strlen($cryptKey);
-
-        $string = $operation == 'DECODE' ?
-            hex2bin(substr($string, $cKeyLength)) :
-            sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $key_b), 0, 16) . $string;
-
-        $result = [];
-        $box = range(0, 255);
-        $stringLength = strlen($string);
+        $cLen = 6;
+        if ($operation == 'DECODE') {
+            $crc = substr($string, 0, $cLen);
+            $string = base64_decode(strtr(substr($string, $cLen), '-_', '+/'));
+        } else {
+            $crc = substr(md5(microtime()), -$cLen);
+            $string = sprintf('%010d', $expiry ? $expiry + time() : 0)
+                . substr(md5($string . $ctxKey), 0, 16)
+                . $string;
+        }
 
         $rndKey = [];
+        $cryptKey = $cryKey . md5($cryKey . $crc);
+        $keyLength = strlen($cryptKey);
         for ($i = 0; $i <= 255; $i++) {
             $rndKey[$i] = $cryptKey[$i % $keyLength];
         }
-        $rndKey = array_map('ord', $rndKey);
 
+        $box = range(0, 255);
+        $rndKey = array_map('ord', $rndKey);
         for ($j = $i = 0; $i < 256; $i++) {
             $j = ($j + $box[$i] + $rndKey[$i]) % 256;
             $tmp = $box[$i];
@@ -303,7 +302,8 @@ class Helper
         }
 
         $p1 = $p2 = [];
-        for ($a = $j = $i = 0; $i < $stringLength; $i++) {
+        $sLen = strlen($string);
+        for ($a = $j = $i = 0; $i < $sLen; $i++) {
             $a = ($a + 1) % 256;
             $j = ($j + $box[$a]) % 256;
             $tmp = $box[$a];
@@ -313,6 +313,7 @@ class Helper
             $p2[] = $box[($box[$a] + $box[$j]) % 256];
         }
 
+        $result = [];
         if (!empty($p1)) {
             $p1 = array_map('ord', $p1);
             foreach ($p1 as $k => $pv) {
@@ -325,14 +326,14 @@ class Helper
 
         if ($operation == 'DECODE') {
             if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) &&
-                substr($result, 10, 16) == substr(md5(substr($result, 26) . $key_b), 0, 16)
+                substr($result, 10, 16) == substr(md5(substr($result, 26) . $ctxKey), 0, 16)
             ) {
                 return substr($result, 26);
             } else {
                 return '';
             }
         } else {
-            return $key_c . bin2hex($result);
+            return $crc . strtr(str_replace('=', '', base64_encode($result)), '+/', '-_');
         }
     }
 
