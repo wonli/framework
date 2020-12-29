@@ -332,7 +332,7 @@ class Helper
                 return '';
             }
         } else {
-            return $key_c . bin2hex( $result);
+            return $key_c . bin2hex($result);
         }
     }
 
