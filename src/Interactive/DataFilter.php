@@ -160,6 +160,23 @@ class DataFilter
     }
 
     /**
+     * 返回限定对象对应的值
+     *
+     * @param array $map 关联数组
+     * @return mixed
+     * @throws LogicStatusException
+     */
+    function map(array $map)
+    {
+        $val = $map[$this->ctx] ?? null;
+        if (null === $val) {
+            $this->throwMsg('参数必须是指定值中的一个');
+        }
+
+        return $val;
+    }
+
+    /**
      * 限定范围
      *
      * @param int $min
