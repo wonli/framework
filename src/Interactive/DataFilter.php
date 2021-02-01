@@ -68,7 +68,7 @@ class DataFilter
      * @return int
      * @throws LogicStatusException
      */
-    function id()
+    function id(): int
     {
         $ctx = $this->uInt();
         if ($ctx == 0) {
@@ -84,7 +84,7 @@ class DataFilter
      * @return int
      * @throws LogicStatusException
      */
-    function int()
+    function int(): int
     {
         if (!is_numeric($this->ctx)) {
             $this->throwMsg('参数必须是一个数字');
@@ -102,7 +102,7 @@ class DataFilter
      *
      * @throws LogicStatusException
      */
-    function uInt()
+    function uInt(): int
     {
         $ctx = $this->int();
         if ($ctx < 0) {
@@ -181,10 +181,10 @@ class DataFilter
      *
      * @param int $min
      * @param int $max
-     * @return int|null
+     * @return int
      * @throws LogicStatusException
      */
-    function range(int $min, int $max)
+    function range(int $min, int $max): int
     {
         $ctx = $this->int();
         if ($ctx < $min || $ctx > $max) {
@@ -202,7 +202,7 @@ class DataFilter
      * @return string
      * @throws LogicStatusException
      */
-    function length(int $min, int $max)
+    function length(int $min, int $max): string
     {
         $ctx = $this->val();
         $len = Helper::strLen($ctx);
@@ -228,10 +228,10 @@ class DataFilter
      *
      * @param int $min 最小长度
      * @param int $max 最大长度
-     * @return array|mixed
+     * @return string
      * @throws LogicStatusException
      */
-    function account(int $min = 2, int $max = 12)
+    function account(int $min = 2, int $max = 12): string
     {
         $pattern = sprintf("/^(?!_)[a-zA-Z_0-9]{%d,%d}$/u", $min, $max);
         return $this->regx($pattern, sprintf('参数只能是 %d~%d 位字母数字或下划线（且不能以下划线开头）', $min, $max));
@@ -243,7 +243,7 @@ class DataFilter
      * @return string|void
      * @throws LogicStatusException
      */
-    function url()
+    function url(): string
     {
         $ctx = $this->val();
         $defines = ['http://' => 7, 'https://' => 8, '//' => 2];
@@ -294,7 +294,7 @@ class DataFilter
      * @return array|mixed
      * @throws LogicStatusException
      */
-    function array($delimiter = null)
+    function array($delimiter = null): array
     {
         $ctx = $this->ctx;
         if (null !== $delimiter) {
@@ -357,7 +357,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function closure(Closure $handler)
+    function closure(Closure $handler): bool
     {
         try {
             $v = $handler($this->ctx, $this);
@@ -625,7 +625,7 @@ class DataFilter
      * @param string|null $msg
      * @return $this
      */
-    function msg(int $code, string $msg = null)
+    function msg(int $code, string $msg = null): DataFilter
     {
         $this->code = $code;
         $this->msg = $msg;
@@ -655,9 +655,10 @@ class DataFilter
 
     /**
      * toString
+     *
      * @return mixed
      */
-    function __toString()
+    function __toString(): string
     {
         return $this->val();
     }
