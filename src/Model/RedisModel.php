@@ -8,7 +8,7 @@
 
 namespace Cross\Model;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 use Cross\Cache\Driver\RedisDriver;
 use Cross\Core\Config;
 use RedisCluster;

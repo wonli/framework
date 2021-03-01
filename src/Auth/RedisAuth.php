@@ -8,7 +8,7 @@
 
 namespace Cross\Auth;
 
-use cross\exception\CoreException;
+use Cross\Exception\CoreException;
 use Cross\I\HttpAuthInterface;
 use Cross\Model\RedisModel;
 
