@@ -786,7 +786,7 @@ class View extends FrameBase
             }
 
             if ($checkAppName && $appName != $thisAppName) {
-                $appPath = PROJECT_REAL_PATH . str_replace('/', DIRECTORY_SEPARATOR, $appName);
+                $appPath = PROJECT_REAL_PATH . 'app' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $appName);
                 $config = Config::load($appPath . DIRECTORY_SEPARATOR . 'init.php');
             } else {
                 $config = $this->config;
