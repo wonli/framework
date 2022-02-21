@@ -41,6 +41,8 @@ use Redis;
  * @method static delete($key1, $key2 = null, $key3 = null)
  * @method static subscribe($channels, $callback)
  * @method static pubsub($keyword, $argument)
+ * @method static psubscribe($patterns, $callback)
+ * @method static publish($channel, $message)
  * @method static unsubscribe($channels = null)
  * @method static exists($key)
  * @method static incr($key)
