@@ -24,48 +24,48 @@ class Router implements RouterInterface
      *
      * @var string
      */
-    private $action;
+    private string $action;
 
     /**
      * 控制器名称
      *
      * @var string
      */
-    private $controller;
+    private string $controller;
 
     /**
      * url参数
      *
      * @var array
      */
-    private $params = [];
+    private array $params = [];
 
     /**
      * @var string
      */
-    private $uriRequest;
+    private string $uriRequest;
 
     /**
      * @var string
      */
-    private $originUriRequest;
+    private string $originUriRequest;
 
     /**
      * @var Delegate
      */
-    private $delegate;
+    private Delegate $delegate;
 
     /**
      * @var array
      */
-    private $defaultRouter = [];
+    private array $defaultRouter = [];
 
     /**
      * 虚拟路径
      *
      * @var string
      */
-    private $virtual = '';
+    private string $virtual = '';
 
     /**
      * 默认Action名称
@@ -91,6 +91,7 @@ class Router implements RouterInterface
     public function parseUrl(): self
     {
         $request = [];
+        $urlConfig = [];
         $rs = $this->getUriRequest('', $urlConfig);
         if (!empty($rs)) {
             $request = $this->parseRequestString($rs, $urlConfig);
@@ -212,7 +213,7 @@ class Router implements RouterInterface
      * @param bool $convertHtmlEntities
      * @return string
      */
-    public function getUriRequest(string $prefix = '/', &$urlConfig = [], bool $convertHtmlEntities = true): string
+    public function getUriRequest(string $prefix = '/', array &$urlConfig = [], bool $convertHtmlEntities = true): string
     {
         $urlConfig = $this->delegate->getConfig()->get('url');
         if (!empty($this->uriRequest)) {
@@ -368,7 +369,8 @@ class Router implements RouterInterface
     /**
      * 设置controller
      *
-     * @param $controller
+     * @param string $controller
+     * @return void
      */
     function setController(string $controller): void
     {
@@ -378,7 +380,8 @@ class Router implements RouterInterface
     /**
      * 设置Action
      *
-     * @param $action
+     * @param string $action
+     * @return void
      */
     function setAction(string $action): void
     {
@@ -388,7 +391,7 @@ class Router implements RouterInterface
     /**
      * 设置参数
      *
-     * @param $params
+     * @param array $params
      */
     function setParams(array $params): void
     {
@@ -450,7 +453,7 @@ class Router implements RouterInterface
         }
 
         if (empty($this->defaultRouter)) {
-            if (false !== strpos($defaultRouter, ':')) {
+            if (str_contains($defaultRouter, ':')) {
                 list($controller, $action) = explode(':', $defaultRouter);
             } else {
                 $controller = $defaultRouter;
@@ -476,7 +479,7 @@ class Router implements RouterInterface
         $additionParams = $this->delegate->getRequest()->getGetData();
         if (empty($params)) {
             $params = $additionParams;
-        } elseif (is_array($params) && !empty($additionParams)) {
+        } elseif (!empty($additionParams)) {
             if ($urlConfig['type'] > 2) {
                 $params = array_merge($params, $additionParams);
             } else {

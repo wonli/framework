@@ -22,12 +22,12 @@ class MongoDriver
     /**
      * @var Manager
      */
-    public $manager;
+    public Manager $manager;
 
     /**
      * 创建MongoDB实例
      *
-     * @param $params
+     * @param array $params
      * @throws CoreException
      */
     function __construct(array $params)

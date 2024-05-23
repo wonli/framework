@@ -16,6 +16,7 @@ use Memcache;
  * @author wonli <wonli@live.com>
  * Class MemcacheDriver
  * @package Cross\Cache\Driver
+ * @method set(string $cacheKey, string $value, int $flag, int $expireTime)
  */
 class MemcacheDriver
 {
@@ -29,7 +30,7 @@ class MemcacheDriver
      *
      * @var array
      */
-    protected $defaultOptions = [
+    protected array $defaultOptions = [
         'persistent' => true,
         'weight' => 1,
         'timeout' => 1,
@@ -65,7 +66,7 @@ class MemcacheDriver
         try {
             $mc = new Memcache();
             //集群服务器IP用|分隔
-            if (false !== strpos($option['host'], '|')) {
+            if (str_contains($option['host'], '|')) {
                 $opt = &$this->defaultOptions;
                 foreach ($opt as $k => &$v) {
                     if (isset($option[$k])) {
@@ -77,7 +78,7 @@ class MemcacheDriver
                 foreach ($serverList as $server) {
                     $host = $server;
                     $port = $option['port'];
-                    if (false !== strpos($server, ':')) {
+                    if (str_contains($server, ':')) {
                         list($host, $port) = explode(':', $server);
                     }
 
@@ -103,7 +104,7 @@ class MemcacheDriver
      * @param int|array $flag
      * @return array|string
      */
-    function get(string $key, &$flag = 0)
+    function get(string $key, int|array &$flag = 0): array|string
     {
         return $this->link->get($key, $flag);
     }

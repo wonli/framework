@@ -8,11 +8,11 @@
 
 namespace Cross\MVC;
 
+use Cross\Cache\Driver\MemcacheDriver;
 use Cross\Core\FrameBase;
 use Cross\Core\Config;
 
-use Cross\Http\Response;
-use Cross\Http\Request;
+use Cross\DB\Drivers\PDOOracleDriver;
 
 use Cross\Exception\DBConnectException;
 use Cross\Exception\CoreException;
@@ -37,21 +37,21 @@ class Module extends FrameBase
      *
      * @var string
      */
-    private $linkName;
+    private string $linkName;
 
     /**
      * 数据库连接model类型
      *
      * @var string
      */
-    private $linkType;
+    private string $linkType;
 
     /**
      * 数据库连接的model配置
      *
      * @var array
      */
-    private $linkConfig;
+    private array $linkConfig;
 
     /**
      * 连接配置文件名
@@ -59,16 +59,20 @@ class Module extends FrameBase
      * 默认为项目目录下的config/db.config.php
      * 可以在app目录下init.php文件中通过'sys' => 'db_config'指定
      * </pre>
-     *
-     * @var string
      */
-    protected $dbConfigFile;
+    protected string $dbConfigFile = '';
+
+    /**
+     * @var mixed|MemcacheDriver|RedisDriver|CouchDriver|MongoDriver|PDOOracleDriver|PDOSqlDriver|object
+     */
+    protected mixed $link;
 
     /**
      * 解析要连接model的参数
      *
      * @param string $params 指定要连接的数据库和配置项的key, 如mysql['db']这里的params应该为mysql:db
      * @throws CoreException
+     * @throws DBConnectException
      */
     function __construct(string $params = '')
     {
@@ -78,6 +82,8 @@ class Module extends FrameBase
         $this->linkName = &$config['model_name'];
         $this->linkType = &$config['model_type'];
         $this->linkConfig = &$config['model_config'];
+
+        $this->link = $this->getLink();
     }
 
     /**
@@ -85,11 +91,11 @@ class Module extends FrameBase
      *
      * @param string $params
      * @param array $config
-     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
+     * @return object
      * @throws CoreException
      * @throws DBConnectException
      */
-    function getModel(string $params = '', &$config = []): object
+    function getModel(string $params = '', array &$config = []): object
     {
         static $cache = [];
         if (!isset($cache[$params])) {
@@ -195,7 +201,7 @@ class Module extends FrameBase
         }
 
         if ($dbConfigParams) {
-            if (strpos($dbConfigParams, ':') === false) {
+            if (!str_contains($dbConfigParams, ':')) {
                 throw new CoreException("数据库参数配置格式不正确: {$dbConfigParams}");
             }
 
@@ -226,7 +232,7 @@ class Module extends FrameBase
     /**
      * 获取默认model的实例
      *
-     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
+     * @return object
      * @throws CoreException
      * @throws DBConnectException
      */
@@ -252,24 +258,5 @@ class Module extends FrameBase
         }
 
         return $this->dbConfigFile;
-    }
-
-    /**
-     * 访问link属性时才实例化model
-     *
-     * @param mixed $property
-     * @return RedisDriver|Config|CouchDriver|MongoDriver|PDOSqlDriver|Request|Response|View|mixed|null
-     * @throws CoreException
-     * @throws DBConnectException
-     */
-    function __get($property)
-    {
-        switch ($property) {
-            case 'link' :
-                return $this->link = $this->getLink();
-
-            default :
-                return parent::__get($property);
-        }
     }
 }

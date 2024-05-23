@@ -8,6 +8,7 @@
 
 namespace Cross\Core;
 
+use Cross\Cache\Request\FileCache;
 use Cross\I\RequestCacheInterface;
 use Cross\I\RouterInterface;
 
@@ -18,6 +19,8 @@ use Cross\Cache\Request\Memcache;
 use Cross\Cache\Request\RedisCache;
 use Cross\Cache\RequestCache;
 
+use RedisClusterException;
+use RedisException;
 use ReflectionException;
 use ReflectionProperty;
 use ReflectionMethod;
@@ -35,14 +38,14 @@ class Application
     /**
      * action 注释
      *
-     * @var string
+     * @var mixed
      */
-    private $actionAnnotate;
+    private mixed $actionAnnotate;
 
     /**
      * @var Delegate
      */
-    private $delegate;
+    private Delegate $delegate;
 
     /**
      * 实例化Application
@@ -58,12 +61,13 @@ class Application
      * 运行框架
      *
      * @param object|string $router
-     * @param array|string $args 指定参数
+     * @param array $args 指定参数
      * @param bool $returnResponseContent 是否输出执行结果
      * @return array|mixed|string
      * @throws CoreException
+     * @throws ReflectionException
      */
-    public function dispatcher($router, $args = [], bool $returnResponseContent = false)
+    public function dispatcher(object|string $router, array $args = [], bool $returnResponseContent = false): mixed
     {
         $initPrams = true;
         $router = $this->parseRouter($router, $args, $initPrams);
@@ -173,7 +177,7 @@ class Application
      *
      * @param array|string $params
      */
-    function updateRouterParams($params): void
+    function updateRouterParams(array|string $params): void
     {
         $paramsChecker = $this->delegate->getClosureContainer()->has('setParams', $closure);
         if ($paramsChecker && is_array($params)) {
@@ -188,9 +192,9 @@ class Application
     /**
      * 获取action注释配置
      *
-     * @return array|bool
+     * @return mixed
      */
-    function getAnnotateConfig()
+    function getAnnotateConfig(): mixed
     {
         return $this->actionAnnotate;
     }
@@ -229,7 +233,7 @@ class Application
      * @param array $args
      * @return object|bool
      */
-    public function instanceClass(string $class, $args = [])
+    public function instanceClass(string $class, array $args = []): object|bool
     {
         try {
             $rc = new ReflectionClass($class);
@@ -325,13 +329,12 @@ class Application
      * router类型为字符串时, 第二个参数生效
      * 当router类型为数组或字符串时,dispatcher中不再调用initParams()
      * </pre>
-     *
-     * @param RouterInterface|string $router
+     * @param RouterInterface|array|string $router
      * @param array $params
      * @param bool $initParams
      * @return array
      */
-    private function parseRouter($router, array $params = [], &$initParams = true): array
+    private function parseRouter(RouterInterface|array|string $router, array $params = [], bool &$initParams = true): array
     {
         $afu = true;
         if ($router instanceof RouterInterface) {
@@ -351,7 +354,7 @@ class Application
                 $action = Router::DEFAULT_ACTION;
             }
 
-            if (false !== strpos($controller, '\\')) {
+            if (str_contains($controller, '\\')) {
                 $afu = false;
             }
         }
@@ -367,11 +370,11 @@ class Application
      * 初始化控制器
      *
      * @param string $controller 控制器
-     * @param mixed $action 动作
+     * @param mixed|null $action 动作
      * @return ReflectionClass
      * @throws CoreException
      */
-    private function initController(string $controller, $action = null): ReflectionClass
+    private function initController(string $controller, mixed $action = null): ReflectionClass
     {
         $controllerNamespace = $this->getControllerNamespace($controller);
 
@@ -403,7 +406,7 @@ class Application
                 }
             }
 
-            if (isset($isCallable) && $isCallable->isPublic() && true !== $isCallable->isAbstract()) {
+            if ($isCallable->isPublic() && true !== $isCallable->isAbstract()) {
                 $this->delegate->getRouter()->setAction($action);
                 //获取Action的注释配置
                 $this->setAnnotateConfig(Annotate::getInstance($this->delegate)->parse($isCallable->getDocComment()), $controllerAnnotate);
@@ -418,10 +421,10 @@ class Application
     /**
      * 初始化参数
      *
-     * @param array|string $urlParams
+     * @param mixed $urlParams
      * @param array $annotateParams
      */
-    private function initParams($urlParams, array $annotateParams = []): void
+    private function initParams(mixed $urlParams, array $annotateParams = []): void
     {
         $urlType = $this->delegate->getConfig()->get('url', 'type');
         switch ($urlType) {
@@ -465,10 +468,12 @@ class Application
      *
      * @param array $requestCacheConfig
      * @param array $annotateParams
-     * @return bool|FileCacheDriver|Memcache|RedisCache|RequestCacheInterface|object
+     * @return bool|RequestCacheInterface
      * @throws CoreException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
-    private function initRequestCache(array $requestCacheConfig, array $annotateParams)
+    private function initRequestCache(array $requestCacheConfig, array $annotateParams): bool|RequestCacheInterface
     {
         if (empty($requestCacheConfig[0])) {
             return false;

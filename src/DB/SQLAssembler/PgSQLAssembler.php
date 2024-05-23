@@ -20,7 +20,7 @@ class PgSQLAssembler extends SQLAssembler
      *
      * @var string
      */
-    protected $fieldQuoteChar = '';
+    protected string $fieldQuoteChar = '';
 
     /**
      * 生成分页SQL片段

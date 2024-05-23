@@ -110,7 +110,7 @@ class Helper
      * @param string $str
      * @return string
      */
-    static function md10($str = ''): string
+    static function md10(string $str = ''): string
     {
         return substr(md5($str), 10, 10);
     }
@@ -418,14 +418,14 @@ class Helper
      * @return string
      * @throws CoreException
      */
-    static function curlRequest(string $url, $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
+    static function curlRequest(string $url, array|string $vars = [], string $method = 'POST', int $timeout = 10, bool $CA = false, string $cacert = ''): string
     {
         $method = strtoupper($method);
-        $SSL = substr($url, 0, 8) == 'https://';
+        $SSL = str_starts_with($url, 'https://');
         if ($method == 'GET' && !empty($vars)) {
             $params = is_array($vars) ? http_build_query($vars) : $vars;
             $url = rtrim($url, '?');
-            if (false === strpos($url . $params, '?')) {
+            if (!str_contains($url . $params, '?')) {
                 $url = $url . '?' . ltrim($params, '&');
             } else {
                 $url = $url . $params;
@@ -491,7 +491,7 @@ class Helper
      * @return int|bool
      * @throws Exception
      */
-    static function arrayRandomRate(array $array)
+    static function arrayRandomRate(array $array): bool|int
     {
         asort($array);
         $max = array_sum($array);
@@ -529,7 +529,7 @@ class Helper
      * @param string $mobile
      * @return bool
      */
-    static function isMobile($mobile): bool
+    static function isMobile(string $mobile): bool
     {
         if (preg_match("/^1[3456789]\\d{9}$/", $mobile)) {
             return true;
@@ -596,7 +596,7 @@ class Helper
         $idCardLength = strlen($idCard);
         if ($idCardLength == 15) {
             //超出百岁特殊编码
-            if (array_search(substr($idCard, 12, 3), ['996', '997', '998', '999']) !== false) {
+            if (in_array(substr($idCard, 12, 3), ['996', '997', '998', '999'])) {
                 $idCard = substr($idCard, 0, 6) . '18' . substr($idCard, 6, 9);
             } else {
                 $idCard = substr($idCard, 0, 6) . '19' . substr($idCard, 6, 9);
@@ -629,7 +629,7 @@ class Helper
      * @param string $method
      * @return bool|string
      */
-    static function encrypt($data, string $op = 'DECODE', string $key = '!@#%c*r&o*s^s%p$h~p&', string $method = 'AES-256-CBC')
+    static function encrypt(string $data, string $op = 'DECODE', string $key = '!@#%c*r&o*s^s%p$h~p&', string $method = 'AES-256-CBC'): bool|string
     {
         $encryptKey = md5($key);
         if ($op == 'ENCODE') {

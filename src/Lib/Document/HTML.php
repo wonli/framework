@@ -157,7 +157,7 @@ class HTML
      * @param mixed $arguments
      * @return CallTree
      */
-    static function __callStatic(string $name, $arguments): CallTree
+    static function __callStatic(string $name, mixed $arguments): CallTree
     {
         $callTree = CallTree::getInstance();
         $callTree->saveNode($name, $arguments);

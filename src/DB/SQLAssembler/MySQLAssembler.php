@@ -20,7 +20,7 @@ class MySQLAssembler extends SQLAssembler
     /**
      * @param string $operator
      * @param string $field
-     * @param mixed $fieldConfig
+     * @param array|string $fieldConfig
      * @param bool $isMixedField
      * @param string $conditionConnector
      * @param string $connector
@@ -30,7 +30,7 @@ class MySQLAssembler extends SQLAssembler
      * @see SQLAssembler::parseCondition()
      *
      */
-    function parseCondition(string $operator, string $field, $fieldConfig, bool $isMixedField, string $conditionConnector, string $connector, array &$params): array
+    function parseCondition(string $operator, string $field, array|string $fieldConfig, bool $isMixedField, string $conditionConnector, string $connector, array &$params): array
     {
         $condition = [];
         switch ($connector) {

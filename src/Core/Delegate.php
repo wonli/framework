@@ -16,6 +16,7 @@ use Cross\I\RouterInterface;
 use Cross\Http\Response;
 use Cross\Http\Request;
 use Closure;
+use ReflectionException;
 
 
 /**
@@ -28,76 +29,76 @@ class Delegate
     /**
      * @var string
      */
-    private $appName;
+    private string $appName;
 
     /**
      * @var Application
      */
-    private $app;
+    private Application $app;
 
     /**
      * @var Router
      */
-    private $router;
+    private Router $router;
 
     /**
      * @var Config
      */
-    private $config;
+    private Config $config;
 
     /**
      * @var Loader
      */
-    private $loader;
+    private Loader $loader;
 
     /**
      * 运行时配置 (高于配置文件)
      *
      * @var array
      */
-    private $runtimeConfig;
+    private array $runtimeConfig;
 
     /**
      * 是否多app模式
      *
      * @var bool
      */
-    private $multiAppMode;
+    private bool $multiAppMode;
 
     /**
      * 运行时匿名函数容器
      *
      * @var ClosureContainer
      */
-    private $actionContainer;
+    private ClosureContainer $actionContainer;
 
     /**
      * app命名空间
      *
      * @var string
      */
-    private $appNamespace;
+    private string $appNamespace;
 
     /**
      * app名称是否命名空间
      *
      * @var bool
      */
-    private $useNamespace;
+    private bool $useNamespace;
 
     /**
      * 注入对象
      *
-     * @var []
+     * @var array
      */
-    private $dii = [];
+    private array $dii = [];
 
     /**
      * Delegate的实例
      *
-     * @var Delegate
+     * @var array
      */
-    private static $instance;
+    private static array $instance;
 
     /**
      * 环境变量
@@ -105,9 +106,9 @@ class Delegate
      * <pre>
      * 以入口第一个加载的app的配置为准
      * </pre>
-     * @var Config
+     * @var Config|null
      */
-    private static $env;
+    private static ?Config $env = null;
 
     /**
      * 初始化框架
@@ -181,12 +182,13 @@ class Delegate
      * 直接调用控制器类中的方法
      *
      * @param string $controller "控制器:方法"
-     * @param mixed $args 参数
+     * @param mixed|array $args 参数
      * @param bool $returnContent 是输出还是直接返回结果
      * @return mixed
      * @throws CoreException
+     * @throws ReflectionException
      */
-    public function get(string $controller, $args = [], bool $returnContent = false)
+    public function get(string $controller, mixed $args = [], bool $returnContent = false): mixed
     {
         return $this->app->dispatcher($controller, $args, $returnContent);
     }
@@ -196,8 +198,9 @@ class Delegate
      *
      * @throws CoreException
      * @throws FrontException
+     * @throws ReflectionException
      */
-    public function run()
+    public function run(): void
     {
         $this->app->dispatcher($this->router->parseUrl());
     }
@@ -207,8 +210,9 @@ class Delegate
      *
      * @param RouterInterface $router
      * @throws CoreException
+     * @throws ReflectionException
      */
-    public function rRun(RouterInterface $router)
+    public function rRun(RouterInterface $router): void
     {
         $this->app->dispatcher($router);
     }
@@ -246,8 +250,9 @@ class Delegate
      * </pre>
      *
      * @throws CoreException
+     * @throws ReflectionException
      */
-    public function cliRun()
+    public function cliRun(): void
     {
         if (PHP_SAPI !== 'cli') {
             die('This is a CLI app');
@@ -266,7 +271,7 @@ class Delegate
             //处理参数和控制别名
             $args = $argv;
             array_shift($args);
-            if ($args[0][0] == '-' || false !== strpos($args[0], '=')) {
+            if ($args[0][0] == '-' || str_contains($args[0], '=')) {
                 $controller = $defaultController;
             } else {
                 $controller = array_shift($args);
@@ -284,7 +289,7 @@ class Delegate
      * @param mixed $obj
      * @return mixed
      */
-    function di(string $name, $obj)
+    function di(string $name, mixed $obj): mixed
     {
         return $this->dii[$name] = $obj;
     }
@@ -326,9 +331,9 @@ class Delegate
      * DII
      *
      * @param string|null $name
-     * @return array
+     * @return array|null
      */
-    function dii(string $name = null)
+    function dii(string $name = null): ?array
     {
         if (null !== $name) {
             return $this->dii[$name] ?? null;
@@ -341,10 +346,10 @@ class Delegate
      * 运行时环境变量
      *
      * @param string $key
-     * @param mixed $newVal
+     * @param mixed|null $newVal
      * @return array|string
      */
-    static function env(string $key, $newVal = null)
+    static function env(string $key, mixed $newVal = null): array|string
     {
         if (null !== $newVal) {
             self::$env->update($key, $newVal);
@@ -559,7 +564,7 @@ class Delegate
     /**
      * 设置运行所需常量
      */
-    private function initConstant()
+    private function initConstant(): void
     {
         defined('PROJECT_PATH') or die('Requires PROJECT_PATH');
 

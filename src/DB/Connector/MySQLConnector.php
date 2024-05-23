@@ -21,10 +21,8 @@ class MySQLConnector extends BaseConnector
 {
     /**
      * 数据库连接实例
-     *
-     * @var object
      */
-    private static $instance;
+    private static array $instance;
 
     /**
      * 默认连接参数
@@ -39,7 +37,7 @@ class MySQLConnector extends BaseConnector
      *
      * @var array
      */
-    private static $options = [
+    private static array $options = [
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
@@ -99,12 +97,12 @@ class MySQLConnector extends BaseConnector
     /**
      * 获取表的主键名
      *
-     * @param string $table
+     * @param string $tableName
      * @return string
      */
-    public function getPK(string $table): string
+    public function getPK(string $tableName): string
     {
-        $tableInfo = $this->getMetaData($table, false);
+        $tableInfo = $this->getMetaData($tableName, false);
         foreach ($tableInfo as $ti) {
             if ($ti['Extra'] == 'auto_increment') {
                 return $ti['Field'];
@@ -117,9 +115,9 @@ class MySQLConnector extends BaseConnector
     /**
      * 最后插入时的id
      *
-     * @return string
+     * @return string|bool
      */
-    function lastInsertId()
+    function lastInsertId(): string|bool
     {
         return $this->pdo->lastInsertId();
     }
@@ -127,13 +125,13 @@ class MySQLConnector extends BaseConnector
     /**
      * 获取表的字段信息
      *
-     * @param string $table
+     * @param string $tableName
      * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fieldsMap = true): array
+    function getMetaData(string $tableName, bool $fieldsMap = true): array
     {
-        $data = $this->pdo->query("SHOW FULL FIELDS FROM {$table}");
+        $data = $this->pdo->query("SHOW FULL FIELDS FROM {$tableName}");
         try {
             if ($fieldsMap) {
                 $result = [];

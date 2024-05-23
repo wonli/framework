@@ -25,23 +25,23 @@ use Exception;
 class HttpAuth
 {
     /**
-     * @var HttpAuthInterface|object
+     * @var mixed
      */
-    static $authHandler;
+    static mixed $authHandler = null;
 
     /**
      * 创建用于会话管理的对象
      *
-     * @param string|object $type
+     * @param string $type
      * <pre>
      *  type 默认为字符串(COOKIE|SESSION|REDIS|包含命名空间的类的路径)
      *  也可以是一个实现了HttpAuthInterface接口的对象
      * </pre>
      * @param string $authKey 加解密密钥
-     * @return HttpAuthInterface|object
+     * @return object
      * @throws CoreException
      */
-    public static function factory($type = 'cookie', string $authKey = ''): object
+    public static function factory(string $type = 'cookie', string $authKey = ''): object
     {
         if (!self::$authHandler) {
             if (is_string($type)) {

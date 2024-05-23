@@ -22,31 +22,31 @@ class Memcache implements RequestCacheInterface
     /**
      * @var array
      */
-    protected $config;
+    protected array $config;
 
     /**
      * 缓存key
      *
      * @var string
      */
-    protected $cacheKey;
+    protected string $cacheKey;
 
     /**
      * 有效时间
      *
      * @var int
      */
-    protected $expireTime = 3600;
+    protected int $expireTime = 3600;
 
     /**
      * @var int
      */
-    protected $flag = 0;
+    protected int $flag = 0;
 
     /**
      * @var MemcacheDriver
      */
-    protected $driver;
+    protected MemcacheDriver $driver;
 
     /**
      * Memcache constructor.
@@ -86,9 +86,9 @@ class Memcache implements RequestCacheInterface
      * 获取request缓存
      *
      * @param int $flag
-     * @return array|string
+     * @return string
      */
-    function get(&$flag = 0): string
+    function get(int &$flag = 0): string
     {
         return $this->driver->get($this->cacheKey, $flag);
     }
@@ -112,7 +112,7 @@ class Memcache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = [])
+    function setConfig(array $config = []): void
     {
         $this->config = $config;
     }
@@ -122,7 +122,7 @@ class Memcache implements RequestCacheInterface
      *
      * @return mixed
      */
-    function getConfig()
+    function getConfig(): array
     {
         return $this->config;
     }

@@ -30,33 +30,33 @@ class DataFilter
      *
      * @var mixed
      */
-    protected $ctx;
+    protected mixed $ctx;
 
     /**
      * 验证失败时返回的code
      *
      * @var int
      */
-    protected $code = 0;
+    protected int $code = 0;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $msg;
+    protected ?string $msg;
 
     /**
      * 用户指定状态
      *
      * @var bool
      */
-    protected $userState = false;
+    protected bool $userState = false;
 
     /**
      * InputFilter constructor.
      *
      * @param mixed $ctx
      */
-    function __construct($ctx)
+    function __construct(mixed $ctx)
     {
         $this->msg = null;
         $this->ctx = is_string($ctx) ? trim($ctx) : $ctx;
@@ -115,10 +115,10 @@ class DataFilter
     /**
      * 浮点数
      *
-     * @return mixed
+     * @return float
      * @throws LogicStatusException
      */
-    function float()
+    function float(): float
     {
         if (!is_numeric($this->ctx)) {
             $this->throwMsg('参数必须是一个数字');
@@ -134,7 +134,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function fixed(...$val)
+    function fixed(...$val): mixed
     {
         if (!in_array($this->ctx, $val)) {
             $this->throwMsg('参数必须是指定值中的一个');
@@ -150,7 +150,7 @@ class DataFilter
      * @param mixed ...$values
      * @return mixed
      */
-    function switch(...$values)
+    function switch(...$values): mixed
     {
         if (!in_array($this->ctx, $values)) {
             return $values[0];
@@ -166,7 +166,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function map(array $map)
+    function map(array $map): mixed
     {
         $val = $map[$this->ctx] ?? null;
         if (null === $val) {
@@ -240,7 +240,7 @@ class DataFilter
     /**
      * 是否是一个绝对路径
      *
-     * @return string|void
+     * @return string
      * @throws LogicStatusException
      */
     function url(): string
@@ -263,7 +263,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function chinese()
+    function chinese(): mixed
     {
         if (!Helper::isChinese($this->ctx)) {
             $this->throwMsg('参数必须是中文');
@@ -278,7 +278,7 @@ class DataFilter
      * @return array|mixed|string
      * @throws LogicStatusException
      */
-    function mobile()
+    function mobile(): mixed
     {
         if (!Helper::isMobile($this->ctx)) {
             $this->throwMsg('参数不是一个正确的手机号码');
@@ -290,11 +290,11 @@ class DataFilter
     /**
      * 数组
      *
-     * @param mixed $delimiter 分隔符
-     * @return array|mixed
+     * @param string|null $delimiter
+     * @return array
      * @throws LogicStatusException
      */
-    function array($delimiter = null): array
+    function array(?string $delimiter = null): array
     {
         $ctx = $this->ctx;
         if (null !== $delimiter) {
@@ -318,13 +318,13 @@ class DataFilter
      * @return array|mixed|string
      * @throws LogicStatusException
      */
-    function json(bool $array = true, int $depth = 128, int $options = 0)
+    function json(bool $array = true, int $depth = 128, int $options = 0): mixed
     {
         if (is_array($this->ctx)) {
             return $this->ctx;
         }
 
-        $ctx = $this->filter(FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+        $ctx = $this->filter(FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
         $json = json_decode($ctx, true, $depth, $options);
         if (false === $json || null === $json || !is_array($json)) {
             $this->throwMsg('参数必须是一个json: %s(%d)', json_last_error_msg(), json_last_error());
@@ -341,7 +341,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function regx(string $pattern, string $msg = null)
+    function regx(string $pattern, string $msg = null): mixed
     {
         if (!preg_match($pattern, $this->ctx)) {
             $this->throwMsg($msg ?: '参数正则验证失败');
@@ -368,7 +368,6 @@ class DataFilter
             return $v;
         } catch (Throwable $e) {
             $this->throwMsg('参数用户验证异常：%s', $e->getMessage());
-            return false;
         }
     }
 
@@ -376,11 +375,11 @@ class DataFilter
      * 规则验证
      *
      * @param string $name
-     * @param mixed $val
+     * @param mixed|null $val
      * @return mixed
      * @throws LogicStatusException
      */
-    function rule(string $name, &$val = null)
+    function rule(string $name, mixed &$val = null): mixed
     {
         try {
             $val = Rules::match($name, $this->ctx);
@@ -391,7 +390,6 @@ class DataFilter
             return $val;
         } catch (Exception $e) {
             $this->throwMsg('规则验证异常: %s', $e->getMessage());
-            return false;
         }
     }
 
@@ -402,7 +400,7 @@ class DataFilter
      * @return false|string
      * @throws LogicStatusException
      */
-    function date(&$unixTime = null)
+    function date(&$unixTime = null): bool|string
     {
         if (empty($this->ctx)) {
             return false;
@@ -423,7 +421,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function email($addValidExpr = "/^[a-zA-Z0-9]([\w\-\.]?)+/")
+    function email(string $addValidExpr = "/^[a-zA-Z0-9]([\w\-\.]?)+/"): mixed
     {
         if (!Helper::validEmail($this->ctx, $addValidExpr)) {
             $this->throwMsg('电子邮件地址验证失败');
@@ -439,7 +437,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function idCard($justCheckLength = false)
+    function idCard(bool $justCheckLength = false): mixed
     {
         try {
             if (!Helper::checkIDCard($this->ctx, $justCheckLength)) {
@@ -458,7 +456,7 @@ class DataFilter
      * @param mixed $val
      * @return mixed
      */
-    function default($val)
+    function default(mixed $val): mixed
     {
         if (null === $this->ctx) {
             return $val;
@@ -472,7 +470,7 @@ class DataFilter
      *
      * @return mixed
      */
-    function raw()
+    function raw(): mixed
     {
         return $this->ctx;
     }
@@ -483,7 +481,7 @@ class DataFilter
      * @param bool $stripTags
      * @return string
      */
-    function val($stripTags = true): string
+    function val(bool $stripTags = true): string
     {
         $ctx = $stripTags ? strip_tags($this->ctx) : $this->ctx;
         return htmlentities($ctx, ENT_COMPAT, 'utf-8');
@@ -495,7 +493,7 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function uploadFile()
+    function uploadFile(): mixed
     {
         if (empty($this->ctx['tmp_name'])) {
             $this->throwMsg('验证上传文件失败');
@@ -522,14 +520,12 @@ class DataFilter
      */
     function uploader(Uploader $uploader): array
     {
-        $uploader->addFile($this->ctx);
         try {
+            $uploader->addFile($this->ctx);
             return $uploader->save();
         } catch (Exception $e) {
             $this->throwMsg('上传出错: %s', $e->getMessage());
         }
-
-        return [];
     }
 
     /**
@@ -538,7 +534,7 @@ class DataFilter
      * @return mixed
      * @see filter_var
      */
-    function filter($filter = FILTER_DEFAULT, $options = null)
+    function filter(int $filter = FILTER_DEFAULT, $options = null): mixed
     {
         return filter_var($this->ctx, $filter, $options);
     }
@@ -550,10 +546,10 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function all(...$handler)
+    function all(...$handler): mixed
     {
         foreach ($handler as $act) {
-            if (false !== strpos($act, ':')) {
+            if (str_contains($act, ':')) {
                 list($act, $actParamsSet) = explode(':', $act);
                 if (!empty($actParamsSet)) {
                     $params = array_map('trim', explode(',', $actParamsSet));
@@ -585,11 +581,11 @@ class DataFilter
      * @return mixed
      * @throws LogicStatusException
      */
-    function any(...$handler)
+    function any(...$handler): mixed
     {
         $acts = [];
         foreach ($handler as $act) {
-            if (false !== strpos($act, ':')) {
+            if (str_contains($act, ':')) {
                 list($act, $actParamsSet) = explode(':', $act);
                 if (!empty($actParamsSet)) {
                     $params = array_map('trim', explode(',', $actParamsSet));
@@ -615,7 +611,6 @@ class DataFilter
         }
 
         $this->throwMsg('验证失败: %s', implode(',', $acts));
-        return false;
     }
 
     /**

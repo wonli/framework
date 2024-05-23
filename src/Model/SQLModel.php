@@ -18,6 +18,8 @@ use Cross\I\IModelInfo;
 use PDOStatement;
 use Closure;
 use PDO;
+use RedisClusterException;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -31,35 +33,35 @@ class SQLModel
      *
      * @var string
      */
-    protected $pk;
+    protected string $pk;
 
     /**
      * 表名
      *
-     * @var string
+     * @var string|null
      */
-    protected $table;
+    protected ?string $table;
 
     /**
      * 连表数组
      *
      * @var array
      */
-    protected $joinTables = [];
+    protected array $joinTables = [];
 
     /**
      * 自定义索引
      *
      * @var array
      */
-    protected $index = [];
+    protected array $index = [];
 
     /**
      * 在事务中获取单条数据时是否加锁
      *
      * @var bool
      */
-    protected $useLock = false;
+    protected bool $useLock = false;
 
     /**
      * 模型信息
@@ -72,7 +74,7 @@ class SQLModel
      * </pre>
      * @var array
      */
-    protected $modelInfo = [
+    protected array $modelInfo = [
         'n' => null,
         'type' => null,
         'table' => null,
@@ -84,7 +86,7 @@ class SQLModel
      *
      * @var IModelInfo
      */
-    protected $modelClass;
+    protected IModelInfo $modelClass;
 
     /**
      * 分表配置
@@ -98,7 +100,7 @@ class SQLModel
      *
      * @var array
      */
-    protected $splitConfig = [
+    protected array $splitConfig = [
         'number' => 32,
         'method' => 'hash',
         'field' => null,
@@ -111,42 +113,42 @@ class SQLModel
      *
      * @var array
      */
-    protected $fieldsInfo = [];
+    protected array $fieldsInfo = [];
 
     /**
      * 查询字段
      *
      * @var string
      */
-    protected $queryFields = '*';
+    protected string $queryFields = '*';
 
     /**
      * 默认排序
      *
-     * @var string
+     * @var string|null
      */
-    protected $orderByFields;
+    protected ?string $orderByFields;
 
     /**
      * 默认分组
      *
-     * @var string
+     * @var string|null
      */
-    protected $groupByFields;
+    protected ?string $groupByFields;
 
     /**
      * 默认条数
      *
-     * @var string
+     * @var int
      */
-    protected $limit;
+    protected int $limit;
 
     /**
      * 数据库配置
      *
      * @var array
      */
-    protected $dbConfig = [];
+    protected array $dbConfig = [];
 
     /**
      * SQLModel constructor.
@@ -172,12 +174,12 @@ class SQLModel
     /**
      * 获取单条数据
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @param string|null $fields
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function get($where = null, string $fields = null)
+    function get(mixed $where = null, string $fields = null): mixed
     {
         $this->autoJoin();
         if (null === $where) {
@@ -188,7 +190,7 @@ class SQLModel
             $fields = $this->queryFields;
         }
 
-        $query = $data = $this->db()->select($fields)->from($this->getTable());
+        $query = $this->db()->select($fields)->from($this->getTable());
         if ($this->useLock) {
             $params = [];
             $where = $this->db()->getSQLAssembler()->parseWhere($where, $params);
@@ -216,12 +218,13 @@ class SQLModel
     /**
      * 最新
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @param string|null $fields
-     * @return mixed
-     * @throws CoreException|DBConnectException
+     * @return SQLModel
+     * @throws CoreException
+     * @throws DBConnectException
      */
-    function latest($where = null, string $fields = null)
+    function latest(mixed $where = null, string $fields = null): SQLModel
     {
         $this->orderBy("{$this->pk} DESC");
         if (null !== $fields) {
@@ -239,7 +242,7 @@ class SQLModel
      * @throws CoreException
      * @throws DBConnectException
      */
-    function id($id)
+    function id(mixed $id): mixed
     {
         $this->{$this->pk} = $id;
         return $this->get();
@@ -248,11 +251,11 @@ class SQLModel
     /**
      * 判断记录是否存在
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @return bool
      * @throws CoreException|DBConnectException
      */
-    function has($where = null): bool
+    function has(mixed $where = null): bool
     {
         return $this->count($where) > 0;
     }
@@ -260,11 +263,11 @@ class SQLModel
     /**
      * 获取记录条数
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function count($where = null): int
+    function count(mixed $where = null): int
     {
         if (null === $where) {
             $where = $this->getDefaultCondition();
@@ -284,7 +287,7 @@ class SQLModel
      * @throws CoreException
      * @throws DBConnectException
      */
-    function add(array $data = [])
+    function add(array $data = []): mixed
     {
         if (empty($data)) {
             $data = $this->makeInsertData();
@@ -303,10 +306,10 @@ class SQLModel
      *
      * @param array|string $condition
      * @param array|string $data
-     * @return bool
+     * @return int|PDOSqlDriver
      * @throws CoreException|DBConnectException
      */
-    function update($condition = [], $data = [])
+    function update(array|string $condition = [], array|string $data = []): PDOSqlDriver|int
     {
         if (empty($data)) {
             $data = $this->getModifiedData();
@@ -322,11 +325,12 @@ class SQLModel
     /**
      * 更新或添加
      *
-     * @param mixed $condition
-     * @return bool
-     * @throws CoreException|DBConnectException
+     * @param mixed|null $condition
+     * @return PDOSqlDriver|bool|int
+     * @throws CoreException
+     * @throws DBConnectException
      */
-    function updateOrAdd($condition = null)
+    function updateOrAdd(mixed $condition = null): PDOSqlDriver|bool|int
     {
         if (null === $condition) {
             $condition = $this->getDefaultCondition(true);
@@ -347,7 +351,7 @@ class SQLModel
      * @return bool
      * @throws CoreException|DBConnectException
      */
-    function del($condition = [])
+    function del(array|string $condition = []): bool
     {
         if (empty($condition)) {
             $condition = $this->getDefaultCondition(true, false);
@@ -359,15 +363,15 @@ class SQLModel
     /**
      * 获取数据
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @param string|null $fields
-     * @param mixed $order
-     * @param mixed $groupBy
+     * @param mixed|null $order
+     * @param mixed|null $groupBy
      * @param int|null $limit
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function getAll($where = null, string $fields = null, $order = null, $groupBy = null, $limit = null)
+    function getAll(mixed $where = null, string $fields = null, mixed $order = null, mixed $groupBy = null, int $limit = null): mixed
     {
         $this->autoJoin();
         if (null === $where) {
@@ -402,14 +406,15 @@ class SQLModel
      * 按分页获取数据
      *
      * @param array $page
-     * @param mixed $where
+     * @param mixed|null $where
      * @param string|null $fields
-     * @param mixed $order
-     * @param mixed $groupBy
+     * @param mixed|null $order
+     * @param mixed|null $groupBy
      * @return mixed
      * @throws CoreException|DBConnectException
      */
-    function find(array &$page = ['p' => 1, 'limit' => 50], $where = null, string $fields = null, $order = null, $groupBy = null)
+    function find(array &$page = ['p' => 1, 'limit' => 50], mixed $where = null, string $fields = null,
+                  mixed $order = null, mixed $groupBy = null): mixed
     {
         $this->autoJoin();
         if (null === $where) {
@@ -445,7 +450,7 @@ class SQLModel
      * @throws CoreException
      * @throws DBConnectException
      */
-    function select(string $fields = '*', $autoTable = true): PDOSqlDriver
+    function select(string $fields = '*', bool $autoTable = true): PDOSqlDriver
     {
         $query = $this->db()->select($fields);
         if ($autoTable) {
@@ -476,7 +481,7 @@ class SQLModel
      * @return PDOStatement
      * @throws CoreException|DBConnectException
      */
-    function rawPrepare(string $sql, $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): PDOStatement
+    function rawPrepare(string $sql, array $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): PDOStatement
     {
         return $this->db()->rawSql($sql)->stmt(false, $prepareParams);
     }
@@ -497,11 +502,11 @@ class SQLModel
     /**
      * 查询数据, 并更新本类属性
      *
-     * @param mixed $where
+     * @param mixed|null $where
      * @return $this
      * @throws CoreException|DBConnectException
      */
-    function property($where = null): self
+    function property(mixed $where = null): self
     {
         $data = $this->get($where);
         if (!empty($data)) {
@@ -515,11 +520,11 @@ class SQLModel
      * 事务
      *
      * @param Closure $handle
-     * @param mixed $result
+     * @param mixed|null $result
      * @return bool
      * @throws CoreException|DBConnectException
      */
-    function transaction(Closure $handle, &$result = null): bool
+    function transaction(Closure $handle, mixed &$result = null): bool
     {
         return $this->db()->transaction($handle, $result);
     }
@@ -539,7 +544,6 @@ class SQLModel
      * 当前类实例
      *
      * @return static
-     * @throws CoreException
      */
     static function dbs(): self
     {
@@ -593,7 +597,7 @@ class SQLModel
      * @param mixed $orderBy
      * @return SQLModel
      */
-    function orderBy($orderBy): self
+    function orderBy(mixed $orderBy): self
     {
         $this->orderByFields = $orderBy;
         return $this;
@@ -605,7 +609,7 @@ class SQLModel
      * @param mixed $groupBy
      * @return SQLModel
      */
-    function groupBy($groupBy): self
+    function groupBy(mixed $groupBy): self
     {
         $this->groupByFields = $groupBy;
         return $this;
@@ -614,10 +618,10 @@ class SQLModel
     /**
      * 默认条数
      *
-     * @param mixed $limit
+     * @param int $limit
      * @return SQLModel
      */
-    function limit($limit): self
+    function limit(int $limit): self
     {
         $this->limit = $limit;
         return $this;
@@ -646,10 +650,10 @@ class SQLModel
      * 指定索引
      *
      * @param string $indexName
-     * @param mixed $indexValue
+     * @param mixed|null $indexValue
      * @throws CoreException
      */
-    function useIndex(string $indexName, $indexValue = null): void
+    function useIndex(string $indexName, mixed $indexValue = null): void
     {
         if (!property_exists($this, $indexName)) {
             throw new CoreException('不支持的索引名称');
@@ -732,7 +736,7 @@ class SQLModel
      * @param string|null $key
      * @return mixed
      */
-    function getModelInfo($key = null)
+    function getModelInfo(?string $key = null): mixed
     {
         if (null === $key) {
             return $this->modelInfo;
@@ -798,7 +802,7 @@ class SQLModel
      * @param string|null $property
      * @return bool|mixed
      */
-    function getPropertyInfo($property = null)
+    function getPropertyInfo(?string $property = null): mixed
     {
         if (null === $property) {
             return $this->fieldsInfo;
@@ -999,7 +1003,7 @@ class SQLModel
      * @param bool $onlyName 默认返回表达式
      * @return string|array
      */
-    function getDefaultSequence($onlyName = false)
+    function getDefaultSequence(bool $onlyName = false): array|string
     {
         $sequence = &$this->modelInfo['sequence'];
         if (!empty($sequence) && $onlyName) {
@@ -1065,7 +1069,7 @@ class SQLModel
      * @param array $data
      * @param bool $multi
      */
-    protected function processDataHandler(array &$data, bool $multi = false)
+    protected function processDataHandler(array &$data, bool $multi = false): void
     {
         if ($multi) {
             array_walk($data, [$this, 'autoProcessData']);
@@ -1111,7 +1115,10 @@ class SQLModel
      * 连接数据库
      *
      * @return PDOSqlDriver
-     * @throws CoreException|DBConnectException
+     * @throws CoreException
+     * @throws DBConnectException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
     protected function getPDOInstance(): PDOSqlDriver
     {

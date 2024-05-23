@@ -28,11 +28,11 @@ class SessionAuth implements HttpAuthInterface
      * 设置session的值
      *
      * @param string $key
-     * @param string|array $value
+     * @param array|string $value
      * @param int $expire
-     * @return bool|mixed
+     * @return bool
      */
-    function set(string $key, $value, int $expire = 0): bool
+    function set(string $key, array|string $value, int $expire = 0): bool
     {
         if (is_array($value)) {
             $value = json_encode($value, JSON_UNESCAPED_UNICODE);
@@ -49,9 +49,9 @@ class SessionAuth implements HttpAuthInterface
      * @param bool $deCode
      * @return bool|mixed
      */
-    function get(string $key, bool $deCode = false)
+    function get(string $key, bool $deCode = false): mixed
     {
-        if (false !== strpos($key, ':') && $deCode) {
+        if (str_contains($key, ':') && $deCode) {
             list($key, $arrKey) = explode(':', $key);
         }
 

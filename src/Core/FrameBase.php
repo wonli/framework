@@ -30,45 +30,60 @@ class FrameBase
      *
      * @var string
      */
-    protected $action;
+    protected string $action;
 
     /**
      * 参数列表
      *
      * @var array
      */
-    protected $params;
+    protected mixed $params;
 
     /**
      * 控制器名称
      *
      * @var string
      */
-    protected $controller;
+    protected string $controller;
 
     /**
      * @var Delegate
      */
-    protected $delegate;
+    protected Delegate $delegate;
 
     /**
      * 视图控制器命名空间
      *
      * @var string
      */
-    protected $viewController;
+    protected string $viewController;
 
     /**
      * 当前方法的注释配置
      *
-     * @var array
+     * @var string|array|bool
      */
-    protected $actionAnnotate;
+    protected string|array|bool $actionAnnotate;
 
     /**
      * @var Delegate
      */
-    public static $appDelegate;
+    public static Delegate $appDelegate;
+
+    /**
+     * @var Config
+     */
+    public Config $config;
+
+    /**
+     * @var Request
+     */
+    public Request $request;
+
+    /**
+     * @var Response
+     */
+    public Response $response;
 
     /**
      * FrameBase constructor.
@@ -85,6 +100,10 @@ class FrameBase
         $app = $this->delegate->getApplication();
         $this->actionAnnotate = $app->getAnnotateConfig();
         $this->viewController = $app->getViewControllerNameSpace($this->controller);
+
+        $this->config = $this->delegate->getConfig();
+        $this->request = $this->delegate->getRequest();
+        $this->response = $this->delegate->getResponse();
     }
 
     /**
@@ -139,7 +158,7 @@ class FrameBase
      * @throws CoreException
      * @see Loader::read()
      */
-    function parseGetFile(string $name, bool $getFileContent = false)
+    function parseGetFile(string $name, bool $getFileContent = false): mixed
     {
         return Loader::read($this->getFilePath($name), $getFileContent);
     }
@@ -161,7 +180,7 @@ class FrameBase
     function getFilePath(string $name): string
     {
         $prefixName = 'project';
-        if (false !== strpos($name, '::')) {
+        if (str_contains($name, '::')) {
             list($prefixName, $fileName) = explode('::', $name);
             if (!empty($prefixName)) {
                 $prefixName = strtolower(trim($prefixName));
@@ -172,23 +191,12 @@ class FrameBase
 
         static $cache = null;
         if (!isset($cache[$prefixName])) {
-            switch ($prefixName) {
-                case 'app':
-                    $prefixPath = $this->delegate->getConfig()->get('app', 'path');
-                    break;
-
-                case 'cache':
-                case 'config':
-                    $prefixPath = $this->delegate->getConfig()->get('path', $prefixName);
-                    break;
-
-                case 'static':
-                    $prefixPath = $this->delegate->getConfig()->get('static', 'path');
-                    break;
-
-                default:
-                    $prefixPath = PROJECT_REAL_PATH;
-            }
+            $prefixPath = match ($prefixName) {
+                'app' => $this->delegate->getConfig()->get('app', 'path'),
+                'cache', 'config' => $this->delegate->getConfig()->get('path', $prefixName),
+                'static' => $this->delegate->getConfig()->get('static', 'path'),
+                default => PROJECT_REAL_PATH,
+            };
             $cache[$prefixName] = rtrim($prefixPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         }
 
@@ -202,12 +210,12 @@ class FrameBase
      * </pre>
      *
      * @param string $key key
-     * @param string|array $value 值
+     * @param array|string $value 值
      * @param int $expire 过期时间(默认一天过期)
      * @return bool
      * @throws CoreException
      */
-    protected function setAuth(string $key, $value, int $expire = 86400)
+    protected function setAuth(string $key, array|string $value, int $expire = 86400): bool
     {
         $authKey = $this->getUrlEncryptKey('auth');
         $authMethod = $this->getConfig()->get('sys', 'auth');
@@ -222,7 +230,7 @@ class FrameBase
      * @return bool|mixed|string
      * @throws CoreException
      */
-    protected function getAuth(string $key, bool $deCode = false)
+    protected function getAuth(string $key, bool $deCode = false): mixed
     {
         $authKey = $this->getUrlEncryptKey('auth');
         $authMethod = $this->getConfig()->get('sys', 'auth');
@@ -234,7 +242,7 @@ class FrameBase
      *
      * @param string $params
      * @param string $type
-     * @return bool|string
+     * @return string
      */
     protected function urlEncrypt(string $params, string $type = 'encode'): string
     {
@@ -261,10 +269,10 @@ class FrameBase
      * 还原加密后的参数
      *
      * @param bool $useAnnotate
-     * @param null|string $params
+     * @param string|null $params
      * @return array|bool|string
      */
-    protected function sParams(bool $useAnnotate = true, $params = null)
+    protected function sParams(bool $useAnnotate = true, string $params = null): bool|array|string
     {
         $config = $this->getConfig();
         $additionParams = $config->get('ori_router', 'addition_params');
@@ -292,7 +300,7 @@ class FrameBase
             $decodeParamsStr = $this->urlEncrypt($params, 'decode');
         }
 
-        if (false == $decodeParamsStr) {
+        if (!$decodeParamsStr) {
             if ($params !== null) return $params;
             return $this->params;
         }
@@ -332,40 +340,15 @@ class FrameBase
     }
 
     /**
-     * 初始化视图控制器
+     * 视图控制器
      *
      * @return mixed
      */
-    protected function initView()
+    protected function useView(): mixed
     {
         $view = new $this->viewController();
         $view->config = $this->getConfig();
         $view->params = $this->params;
         return $view;
-    }
-
-    /**
-     * request response view
-     *
-     * @param mixed $property
-     * @return Response|Request|View|Config|null
-     */
-    function __get($property)
-    {
-        switch ($property) {
-            case 'config':
-                return $this->config = $this->delegate->getConfig();
-
-            case 'request' :
-                return $this->request = $this->delegate->getRequest();
-
-            case 'response' :
-                return $this->response = $this->delegate->getResponse();
-
-            case 'view' :
-                return $this->view = $this->initView();
-        }
-
-        return null;
     }
 }

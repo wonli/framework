@@ -25,112 +25,112 @@ class Uploader
      *
      * @var array
      */
-    protected $files;
+    protected array $files;
 
     /**
      * 目录权限
      *
      * @var int
      */
-    protected $mode = 0755;
+    protected int $mode = 0755;
 
     /**
      * 使用文件原名
      *
      * @var bool
      */
-    protected $useOriginalName = false;
+    protected bool $useOriginalName = false;
 
     /**
      * 失败文件数
      *
      * @var int
      */
-    protected $failCount = 0;
+    protected int $failCount = 0;
 
     /**
      * 校验没通过和上传失败的文件
      *
      * @var array
      */
-    protected $failFiles = [];
+    protected array $failFiles = [];
 
     /**
      * 自定义校验过滤方法
      *
-     * @var Closure
+     * @var Closure|null
      */
-    protected $filterHandle;
+    protected ?Closure $filterHandle = null;
 
     /**
      * 过滤数组
      *
      * @var IFilter[]
      */
-    protected $filters;
+    protected array $filters;
 
     /**
      * 允许的文件扩展名
      *
      * @var array
      */
-    protected $allowExtension = [];
+    protected array $allowExtension = [];
 
     /**
      * 允许的文件大小(默认19.22mb)
      *
      * @var int
      */
-    protected $allowSize = 20150627;
+    protected int $allowSize = 20150627;
 
     /**
      * 文件储存路径
      *
      * @var string
      */
-    protected $savePath;
+    protected string $savePath;
 
     /**
      * 文件路径(附加到返回路径前)
      *
      * @var string
      */
-    protected $fileDir;
+    protected string $fileDir;
 
     /**
      * 文件前缀
      *
      * @var string
      */
-    protected $fileNamePrefix;
+    protected string $fileNamePrefix;
 
     /**
      * 是否返回已上传文件真实地址
      *
      * @var bool
      */
-    protected $withFilePath = false;
+    protected bool $withFilePath = false;
 
     /**
      * 返回文件详情
      *
      * @var bool
      */
-    protected $withFileInfo = false;
+    protected bool $withFileInfo = false;
 
     /**
      * 文件cdn服务器地址
      *
      * @var string
      */
-    protected $fileCdn = '';
+    protected string $fileCdn = '';
 
     /**
      * 表单文件数组
      *
      * @param array $file 表单上传文件数组
      */
-    function addFile(array $file)
+    function addFile(array $file): void
     {
         if (empty($file['tmp_name'])) {
             return;
@@ -155,7 +155,7 @@ class Uploader
      *
      * @return array
      */
-    function getFiles()
+    function getFiles(): array
     {
         return $this->verifyUploadFile();
     }
@@ -165,7 +165,7 @@ class Uploader
      *
      * @param int $mode
      */
-    function setMode(int $mode)
+    function setMode(int $mode): void
     {
         $this->mode = $mode;
     }
@@ -175,7 +175,7 @@ class Uploader
      *
      * @param string $extension 竖线分隔，如：gif|jpg|jpeg|png|doc
      */
-    function setAllowExtension(string $extension)
+    function setAllowExtension(string $extension): void
     {
         $this->allowExtension = explode('|', strtolower($extension));
     }
@@ -185,7 +185,7 @@ class Uploader
      *
      * @param int $size
      */
-    function setAllowSize(int $size)
+    function setAllowSize(int $size): void
     {
         $this->allowSize = $size;
     }
@@ -195,7 +195,7 @@ class Uploader
      *
      * @param Closure $handle 验证通过返回true，失败false
      */
-    function setFilterHandle(Closure $handle)
+    function setFilterHandle(Closure $handle): void
     {
         $this->filterHandle = $handle;
     }
@@ -205,7 +205,7 @@ class Uploader
      *
      * @param IFilter $filter
      */
-    function addFilter(IFilter $filter)
+    function addFilter(IFilter $filter): void
     {
         $this->filters[] = $filter;
     }
@@ -213,7 +213,7 @@ class Uploader
     /**
      * 保存文件时使用原名
      */
-    function useOriginalName()
+    function useOriginalName(): void
     {
         $this->useOriginalName = true;
     }
@@ -221,7 +221,7 @@ class Uploader
     /**
      * 返回上传文件真实地址
      */
-    function withFilePath()
+    function withFilePath(): void
     {
         $this->withFilePath = true;
     }
@@ -229,7 +229,7 @@ class Uploader
     /**
      * 返回上传文件详情
      */
-    function withFileInfo()
+    function withFileInfo(): void
     {
         $this->withFileInfo = true;
     }
@@ -239,7 +239,7 @@ class Uploader
      *
      * @param string $server
      */
-    function withFileCdn(string $server)
+    function withFileCdn(string $server): void
     {
         $this->fileCdn = rtrim($server, '/');
     }
@@ -250,7 +250,7 @@ class Uploader
      * @param string $path
      * @throws Exception
      */
-    function setSavePath(string $path)
+    function setSavePath(string $path): void
     {
         $this->savePath = rtrim($path, '/') . '/';
         if (!is_dir($this->savePath)) {
@@ -266,7 +266,7 @@ class Uploader
      * @param string $dir
      * @param string $namePrefix 文件名前缀
      */
-    function setFireDir(string $dir, string $namePrefix = '')
+    function setFireDir(string $dir, string $namePrefix = ''): void
     {
         $this->fileDir = '/' . trim(trim($dir, '\\'), '/') . '/';
         if (!empty($namePrefix)) {
@@ -279,7 +279,7 @@ class Uploader
      *
      * @return string
      */
-    function getSavePath()
+    function getSavePath(): string
     {
         return $this->savePath;
     }
@@ -290,7 +290,7 @@ class Uploader
      * @return array
      * @throws Exception
      */
-    function save()
+    function save(): array
     {
         $data = [
             'files' => [],
@@ -356,7 +356,7 @@ class Uploader
      *
      * @return array
      */
-    private function verifyUploadFile()
+    private function verifyUploadFile(): array
     {
         $verifyFiles = [];
         if (empty($this->files)) {
@@ -426,7 +426,7 @@ class Uploader
      * @param string $type
      * @return bool
      */
-    private function isAllowExtension(string $type)
+    private function isAllowExtension(string $type): bool
     {
         if (empty($this->allowExtension)) {
             return true;
@@ -441,7 +441,7 @@ class Uploader
      * @param int $size
      * @return bool
      */
-    private function isAllowSize(int $size)
+    private function isAllowSize(int $size): bool
     {
         if (!$this->allowSize) {
             return true;
@@ -456,7 +456,7 @@ class Uploader
      * @param string $filename
      * @param string $error
      */
-    private function addFailFile(string $filename, string $error)
+    private function addFailFile(string $filename, string $error): void
     {
         $this->failCount++;
         $this->failFiles[] = [

@@ -23,16 +23,16 @@ class OracleConnector extends BaseConnector
     /**
      * 数据库连接实例
      *
-     * @var object
+     * @var array
      */
-    private static $instance;
+    private static array $instance;
 
     /**
      * 默认连接参数
      *
      * @var array
      */
-    private static $options = [
+    private static array $options = [
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
@@ -93,12 +93,12 @@ class OracleConnector extends BaseConnector
     /**
      * 获取表的主键名
      *
-     * @param string $table
+     * @param string $tableName
      * @return string
      */
-    public function getPK(string $table): string
+    public function getPK(string $tableName): string
     {
-        $table = strtoupper($table);
+        $table = strtoupper($tableName);
         $q = $this->pdo->prepare("SELECT cu.* FROM all_cons_columns cu, all_constraints au 
                 WHERE cu.constraint_name = au.constraint_name AND au.constraint_type = 'P' AND au.table_name = ?");
 
@@ -121,9 +121,9 @@ class OracleConnector extends BaseConnector
     /**
      * 最后插入时的id
      *
-     * @return string
+     * @return mixed
      */
-    function lastInsertId()
+    function lastInsertId(): mixed
     {
         if (!empty($this->sequence)) {
             try {
@@ -143,14 +143,14 @@ class OracleConnector extends BaseConnector
     /**
      * 获取表的字段信息
      *
-     * @param string $table
+     * @param string $tableName
      * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fieldsMap = true): array
+    function getMetaData(string $tableName, bool $fieldsMap = true): array
     {
         //获取所有字段
-        $table = strtoupper($table);
+        $table = strtoupper($tableName);
         $q = $this->pdo->prepare("SELECT t.COLUMN_NAME, t.DATA_TYPE, t.NULLABLE, t.DATA_DEFAULT, c.COMMENTS 
             FROM all_tab_columns t,all_col_comments c 
             WHERE t.table_name = c.table_name AND t.column_name = c.column_name AND t.table_name = ?");

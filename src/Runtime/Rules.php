@@ -19,8 +19,8 @@ use Closure;
  */
 class Rules
 {
-    protected $rules = [];
-    protected static $instance;
+    protected array $rules = [];
+    protected static ?Rules $instance = null;
 
     /**
      * Rules constructor.
@@ -38,7 +38,7 @@ class Rules
      * @return mixed
      * @throws CoreException
      */
-    static function match(string $name, $content)
+    static function match(string $name, mixed $content): mixed
     {
         $handler = self::instance()->has($name);
         if (null === $handler) {
@@ -63,7 +63,7 @@ class Rules
      * @param string $name
      * @return mixed
      */
-    static function has(string $name)
+    static function has(string $name): mixed
     {
         return self::instance()->rules[$name] ?? null;
     }
@@ -85,16 +85,16 @@ class Rules
      * @param mixed $rule
      * @return string
      */
-    static function addRule(string $name, $rule)
+    static function addRule(string $name, mixed $rule): string
     {
         self::instance()->rules[$name] = $rule;
         return $rule;
     }
 
     /**
-     * @return Rules
+     * @return Rules|null
      */
-    protected static function instance()
+    protected static function instance(): ?Rules
     {
         if (null === self::$instance) {
             self::$instance = new self();

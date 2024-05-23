@@ -24,15 +24,13 @@ class PDOOracleDriver extends PDOSqlDriver
      * 插入数据
      *
      * @param string $table
-     * @param string|array $data
+     * @param mixed $data
      * @param bool $multi 是否批量添加
-     * @param array $insertData 批量添加的数据
-     * @param bool $openTA 批量添加时是否开启事务
      * @return bool|mixed
      * @throws CoreException
      * @see SQLAssembler::add()
      */
-    public function add(string $table, $data, bool $multi = false, &$insertData = [], bool $openTA = false)
+    public function add(string $table, mixed $data, bool $multi = false): mixed
     {
         if (empty($data) || !is_array($data)) {
             return false;

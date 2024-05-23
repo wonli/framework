@@ -25,7 +25,7 @@ class CookieAuth implements HttpAuthInterface
      *
      * @var string
      */
-    private $authKey = '!wl<@>c(r#%o*s&s';
+    private string $authKey = '!wl<@>c(r#%o*s&s';
 
     function __construct(string $authKey = '')
     {
@@ -37,44 +37,44 @@ class CookieAuth implements HttpAuthInterface
     /**
      * 生成加密cookie
      *
-     * @param string $name
-     * @param string|array $params
+     * @param string $key
+     * @param array|string $value
      * @param int $expire
      * @return bool
      */
-    function set(string $name, $params, int $expire = 0): bool
+    function set(string $key, array|string $value, int $expire = 0): bool
     {
-        if ($params === '' || $params === null) {
+        if ($value === '' || $value === null) {
             $expire = time() - 3600;
-            $value = null;
+            $val = null;
         } else {
-            $encryptKey = $this->getEncryptKey($name);
-            if (is_array($params)) {
-                $params = json_encode($params, JSON_UNESCAPED_UNICODE);
+            $encryptKey = $this->getEncryptKey($key);
+            if (is_array($value)) {
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE);
             }
-            $value = Helper::authCode($params, 'ENCODE', $encryptKey);
+            $val = Helper::authCode($value, 'ENCODE', $encryptKey);
             if ($expire > 0) {
                 $expire = time() + $expire;
             }
         }
 
-        Response::getInstance()->setRawCookie($name, $value, $expire, '/', Delegate::env('cookie.domain') ?? '');
+        Response::getInstance()->setRawCookie($key, $val, $expire, '/', Delegate::env('cookie.domain') ?? '');
         return true;
     }
 
     /**
      * 从已加密的cookie中取出值
      *
-     * @param string $params cookie的key
+     * @param string $key cookie的key
      * @param bool $deCode
      * @return bool|string
      */
-    function get(string $params, bool $deCode = false)
+    function get(string $key, bool $deCode = false): bool|string
     {
-        if (false !== strpos($params, ':') && $deCode) {
-            list($name, $arrKey) = explode(':', $params);
+        if (str_contains($key, ':') && $deCode) {
+            list($name, $arrKey) = explode(':', $key);
         } else {
-            $name = $params;
+            $name = $key;
         }
 
         if (!isset($_COOKIE[$name])) {

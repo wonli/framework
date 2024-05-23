@@ -11,6 +11,7 @@ namespace Cross\Lib\Document;
 use Closure;
 use DOMDocument;
 use DOMElement;
+use DOMException;
 use DOMNode;
 
 /**
@@ -25,12 +26,12 @@ class CallTreeToHTML
     /**
      * @var DOMDocument
      */
-    private $dom;
+    private DOMDocument $dom;
 
     /**
      * @var DOMNode
      */
-    private $element;
+    private DOMNode $element;
 
     private function __construct()
     {
@@ -47,6 +48,7 @@ class CallTreeToHTML
      *
      * @param $node
      * @return DOMDocument
+     * @throws DOMException
      */
     function getDom($node): DOMDocument
     {
@@ -61,6 +63,7 @@ class CallTreeToHTML
      * @param $node
      * @param bool $htmlDecode
      * @return string
+     * @throws DOMException
      */
     function getHTML($node, bool $htmlDecode = true): string
     {
@@ -76,11 +79,12 @@ class CallTreeToHTML
 
     /**
      * 把node转换为dom
-     *
      * @param $node
      * @param DOMNode|null $parentElement
+     * @return void
+     * @throws DOMException
      */
-    function makeNode($node, DOMNode $parentElement = null)
+    function makeNode($node, DOMNode $parentElement = null): void
     {
         $content = null;
         $attrSet = [];
@@ -103,7 +107,7 @@ class CallTreeToHTML
                 }
             }
 
-            $this->element = $this->dom->createElement($rootElementName, htmlentities($content));
+            $this->element = $this->dom->createElement($rootElementName, htmlentities($content ?? ''));
             if (!empty($attrSet)) {
                 foreach ($attrSet as $attrSetName => $attrSetValue) {
                     $this->element->setAttribute($attrSetName, $attrSetValue);
@@ -141,7 +145,7 @@ class CallTreeToHTML
                         }
                     }
 
-                    $element = $this->dom->createElement($elementName, htmlentities($content));
+                    $element = $this->dom->createElement($elementName, htmlentities($content ?? ''));
                     if ($parentElement instanceof DOMElement) {
                         $currentElement = $parentElement->appendChild($element);
                     } else {

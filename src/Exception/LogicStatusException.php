@@ -23,7 +23,7 @@ use Throwable;
  */
 class LogicStatusException extends CrossException
 {
-    protected $httpStatusCode = 200;
+    protected int $httpStatusCode = 200;
 
     /**
      * LogicStatusException constructor.

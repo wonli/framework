@@ -27,14 +27,14 @@ class Controller extends FrameBase
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * 状态配置文件
      *
      * @var string
      */
-    protected $statusConfigFile = 'config::status.config.php';
+    protected string $statusConfigFile = 'config::status.config.php';
 
     /**
      * Controller constructor.
@@ -97,18 +97,14 @@ class Controller extends FrameBase
      * 获取输入数据
      *
      * @param string $key
-     * @param mixed $default
+     * @param mixed|null $default
      * @return DataFilter
      */
-    function input(string $key, $default = null): DataFilter
+    function input(string $key, mixed $default = null): DataFilter
     {
-        $val = '';
         $dataContainer = array_merge($this->params,
             $this->request->getRequestData(), $this->request->getPostData(), $this->request->getFileData());
-        if (is_array($dataContainer)) {
-            $val = $dataContainer[$key] ?? null;
-        }
-
+        $val = $dataContainer[$key] ?? null;
         if (empty($val) && null !== $default) {
             $val = $default;
         }
@@ -120,11 +116,11 @@ class Controller extends FrameBase
      * 重定向到指定的控制器
      *
      * @param string|null $controller controller:action
-     * @param string|array|null $params
+     * @param array|string|null $params
      * @param bool $sec
      * @throws CoreException
      */
-    protected function to(string $controller = null, $params = null, bool $sec = false): void
+    protected function to(string $controller = null, array|string $params = null, bool $sec = false): void
     {
         $url = $this->view->url($controller, $params, $sec);
         $this->redirect($url);
@@ -165,7 +161,7 @@ class Controller extends FrameBase
      * @param int $status
      * @param array $data
      */
-    protected function json(int $status, array $data = [])
+    protected function json(int $status, array $data = []): void
     {
         $rdb = ResponseData::builder();
         $rdb->setStatus($status);
@@ -178,13 +174,13 @@ class Controller extends FrameBase
     /**
      * 视图渲染
      *
-     * @param mixed $data
+     * @param mixed|null $data
      * @param string|null $method
      * @param int $httpResponseStatus
      * @throws CoreException
      * @see View::display()
      */
-    protected function display($data = null, string $method = null, int $httpResponseStatus = 200): void
+    protected function display(mixed $data = null, string $method = null, int $httpResponseStatus = 200): void
     {
         $this->delegate->getResponse()->setResponseStatus($httpResponseStatus);
         $this->view->display($data, $method);
@@ -197,7 +193,7 @@ class Controller extends FrameBase
      * @return ResponseData
      * @throws CoreException
      */
-    protected function getResponseData($data): ResponseData
+    protected function getResponseData(mixed $data): ResponseData
     {
         if ($data instanceof ResponseData) {
             $responseData = $data;
@@ -224,7 +220,7 @@ class Controller extends FrameBase
                 if (!empty($data)) {
                     $responseData->setData($data);
                 }
-            } elseif (null !== $data && is_scalar($data)) {
+            } elseif (is_scalar($data)) {
                 $responseData->setMessage((string)$data);
             }
         }

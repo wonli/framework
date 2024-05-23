@@ -25,14 +25,14 @@ class MimeType implements IFilter
      *
      * @var array
      */
-    protected $allowedFileType = [];
+    protected array $allowedFileType = [];
 
     /**
      * 对应关系
      *
      * @var array
      */
-    protected $allowMimeContentType = [
+    protected array $allowMimeContentType = [
         'txt' => 'text/plain',
         'htm' => 'text/html',
         'html' => 'text/html',
@@ -95,7 +95,7 @@ class MimeType implements IFilter
      * @param string $error 失败信息
      * @return bool 成功返回true
      */
-    function filter($file, &$error = '')
+    function filter(mixed $file, string &$error = ''): bool
     {
         $m = mime_content_type($file['tmp_name']);
         foreach ($this->allowedFileType as $suffix) {
@@ -117,10 +117,10 @@ class MimeType implements IFilter
     /**
      * 设定允许上传的文件类型
      *
-     * @param string|array $type 竖线分隔, gif|jpg|jpeg|png|doc
+     * @param string $type 竖线分隔, gif|jpg|jpeg|png|doc
      * @return $this
      */
-    function setAllowedType($type)
+    function setAllowedType(string $type): static
     {
         $this->allowedFileType = explode('|', strtolower($type));
         return $this;
@@ -133,7 +133,7 @@ class MimeType implements IFilter
      * @param string $mimeContentType
      * @return $this
      */
-    function addMimeContentType($fileSuffix, $mimeContentType)
+    function addMimeContentType(string $fileSuffix, string $mimeContentType): static
     {
         $this->allowMimeContentType[$fileSuffix] = $mimeContentType;
         return $this;

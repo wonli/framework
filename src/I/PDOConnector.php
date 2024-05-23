@@ -27,7 +27,7 @@ interface PDOConnector
      * @param array $options
      * @return mixed
      */
-    static function getInstance(string $dsn, string $user, string $password, array $options);
+    static function getInstance(string $dsn, string $user, string $password, array $options): mixed;
 
     /**
      * 获取表的主键名
@@ -56,7 +56,7 @@ interface PDOConnector
     /**
      * 返回一个PDO连接对象的实例
      *
-     * @return mixed
+     * @return PDO
      */
     function getPDO(): PDO;
 
@@ -65,5 +65,5 @@ interface PDOConnector
      *
      * @return mixed
      */
-    function lastInsertId();
+    function lastInsertId(): mixed;
 }

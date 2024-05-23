@@ -18,12 +18,12 @@ class CrossArray
     /**
      * @var array 数据
      */
-    protected $data;
+    protected array $data;
 
     /**
-     * @var self
+     * @var array
      */
-    protected static $instance;
+    protected static array $instance;
 
     /**
      * CrossArray
@@ -57,10 +57,10 @@ class CrossArray
      * 获取配置参数
      *
      * @param string $config
-     * @param string|array $name
+     * @param array|string $name
      * @return bool|string|array
      */
-    function get(string $config, $name = '')
+    function get(string $config, array|string $name = ''): bool|array|string
     {
         if (isset($this->data[$config])) {
             if ($name) {
@@ -88,9 +88,9 @@ class CrossArray
      * 更新成员或赋值
      *
      * @param string $index
-     * @param string|array $values
+     * @param array|string $values
      */
-    function set(string $index, $values = ''): void
+    function set(string $index, array|string $values = ''): void
     {
         if (is_array($values)) {
             if (isset($this->data[$index])) {
@@ -106,10 +106,10 @@ class CrossArray
     /**
      * 返回全部数据
      *
-     * @param bool $obj 是否返回对象
-     * @return array|object
+     * @param bool $obj
+     * @return object|array|string
      */
-    function getAll(bool $obj = false)
+    function getAll(bool $obj = false): object|array|string
     {
         if ($obj) {
             return self::arrayToObject($this->data);
@@ -124,7 +124,7 @@ class CrossArray
      * @param $data
      * @return object|string
      */
-    static function arrayToObject($data)
+    static function arrayToObject($data): object|string
     {
         if (is_array($data)) {
             return (object)array_map('self::arrayToObject', $data);

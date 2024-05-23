@@ -24,42 +24,42 @@ class Image implements IFilter
      *
      * @var int
      */
-    protected $width;
+    protected int $width;
 
     /**
      * 最小高度
      *
      * @var int
      */
-    protected $height;
+    protected int $height;
 
     /**
      * 限定最大还是最小高宽 默认最小高宽
      *
      * @var string
      */
-    protected $minOrMax = 'min';
+    protected string $minOrMax = 'min';
 
     /**
      * 图片宽度使用绝对值
      *
      * @var bool
      */
-    protected $absoluteWidth = false;
+    protected bool $absoluteWidth = false;
 
     /**
      * 图片高度使用绝对值
      *
      * @var bool
      */
-    protected $absoluteHeight = false;
+    protected bool $absoluteHeight = false;
 
     /**
      * 允许上传的文件类型
      *
      * @var array
      */
-    protected $imageType = ['jpg', 'png', 'jpeg', 'gif'];
+    protected array $imageType = ['jpg', 'png', 'jpeg', 'gif'];
 
     /**
      * 上传文件过滤
@@ -68,7 +68,7 @@ class Image implements IFilter
      * @param string $error
      * @return bool 成功返回true
      */
-    function filter($file, &$error = '')
+    function filter(mixed $file, string &$error = ''): bool
     {
         $tmpFile = &$file['tmp_name'];
         if (empty($tmpFile)) {
@@ -132,7 +132,7 @@ class Image implements IFilter
      * @param string $fileType
      * @return $this
      */
-    function fileType($fileType)
+    function fileType(string $fileType): static
     {
         $this->imageType = explode('|', strtolower($fileType));
         return $this;
@@ -143,7 +143,7 @@ class Image implements IFilter
      *
      * @return $this
      */
-    function useAbsoluteWidth()
+    function useAbsoluteWidth(): static
     {
         $this->absoluteWidth = true;
         return $this;
@@ -154,7 +154,7 @@ class Image implements IFilter
      *
      * @return $this
      */
-    function useAbsoluteHeight()
+    function useAbsoluteHeight(): static
     {
         $this->absoluteHeight = true;
         return $this;
@@ -168,7 +168,7 @@ class Image implements IFilter
      * @param string $minOrMax 限定最小还是最大宽度
      * @return Image
      */
-    function setWidthHeight($width, $height, $minOrMax = 'min')
+    function setWidthHeight(int $width, int $height, string $minOrMax = 'min'): static
     {
         $this->width = (int)$width;
         $this->height = (int)$height;

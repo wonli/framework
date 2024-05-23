@@ -20,22 +20,22 @@ class RequestMapping
     /**
      * @var array
      */
-    protected $rules = [];
+    protected array $rules = [];
 
     /**
      * @var array
      */
-    protected $mapping = [];
+    protected array $mapping = [];
 
     /**
      * @var string
      */
-    protected $matchString;
+    protected string $matchString;
 
     /**
-     * @var self
+     * @var self|null
      */
-    static protected $instance;
+    static protected ?RequestMapping $instance = null;
 
     /**
      * RequestMapping constructor.
@@ -59,19 +59,19 @@ class RequestMapping
 
     /**
      * @param string $request
-     * @param mixed $handle
+     * @param mixed|null $handle
      * @param array $params
      * @return bool
      */
-    function match(string $request, &$handle = null, &$params = []): bool
+    function match(string $request, mixed &$handle = null, array &$params = []): bool
     {
-        $match = false;
         $this->matchString = $request;
         $routers = $this->mapping[Request::getInstance()->getRequestType()] ?? [];
         if (empty($routers)) {
-            return $match;
+            return false;
         }
 
+        $match = false;
         if (!empty($routers['high']) && isset($routers['high'][$request])) {
             $handle = $routers['high'][$request];
             if (is_array($handle)) {
@@ -109,7 +109,7 @@ class RequestMapping
      * @param string $pattern
      * @return static
      */
-    function addRule($params, $pattern): self
+    function addRule(string $params, string $pattern): self
     {
         $this->rules[$params] = $pattern;
         return $this;
@@ -119,11 +119,11 @@ class RequestMapping
      * 添加路由（按当前请求类型分组，等同于Any）
      *
      * @param mixed $router
-     * @param mixed $handler
+     * @param mixed|null $handler
      * @return bool
      * @throws CoreException
      */
-    static function addRouter($router, $handler = null): bool
+    static function addRouter(mixed $router, mixed $handler = null): bool
     {
         return self::getInstance()->addToMapping(Request::getInstance()->getRequestType(), $router, $handler);
     }
@@ -133,11 +133,11 @@ class RequestMapping
      *
      * @param string $requestType
      * @param string $router
-     * @param mixed $handler
+     * @param mixed|null $handler
      * @return bool
      * @throws CoreException
      */
-    function addRequestRouter(string $requestType, string $router, $handler = null): bool
+    function addRequestRouter(string $requestType, string $router, mixed $handler = null): bool
     {
         return $this->addToMapping($requestType, $router, $handler);
     }
@@ -150,7 +150,7 @@ class RequestMapping
      * @param array $params
      * @return bool
      */
-    private function matchProcess(array $routers, &$handle, array &$params): bool
+    private function matchProcess(array $routers, mixed &$handle, array &$params): bool
     {
         foreach ($routers as $r => &$rr) {
             if (isset($r[1]) && isset($this->matchString[1]) && 0 === strcasecmp($r[1], $this->matchString[1])) {

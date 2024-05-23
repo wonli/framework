@@ -20,29 +20,29 @@ class Config
     /**
      * @var string
      */
-    private $file;
+    private string $file;
 
     /**
      * @var array
      */
-    private $configData;
+    private mixed $configData;
 
     /**
-     * @var self
+     * @var array
      */
-    private static $instance;
+    private static array $instance = [];
 
     /**
      * @var CrossArray
      */
-    private $ca;
+    private CrossArray $ca;
 
     /**
      * 查询缓存
      *
      * @var array
      */
-    private static $cache;
+    private static array $cache;
 
     /**
      * 读取配置
@@ -70,10 +70,10 @@ class Config
      * @return Config
      * @throws CoreException
      */
-    static function load(string $file): self
+    static function load(string $file): Config
     {
         if (!isset(self::$instance[$file])) {
-            self::$instance[$file] = new self($file);
+            self::$instance[$file] = new Config($file);
         }
 
         return self::$instance[$file];
@@ -119,11 +119,11 @@ class Config
      * 获取指定配置
      *
      * @param string $index
-     * @param string|array $options
+     * @param array|string $options
      * @return string|array
      * @see CrossArray::get()
      */
-    function get(string $index, $options = '')
+    function get(string $index, array|string $options = ''): array|string
     {
         $key = $this->getIndexCacheKey($index);
         if (is_array($options)) {
@@ -147,7 +147,7 @@ class Config
      * @param string $path
      * @return mixed
      */
-    function query(string $path)
+    function query(string $path): mixed
     {
         $val = null;
         $data = $this->configData;
@@ -175,7 +175,7 @@ class Config
      * @param array|string $values
      * @see CrossArray::get()
      */
-    function set(string $index, $values = ''): void
+    function set(string $index, array|string $values = ''): void
     {
         $this->ca->set($index, $values);
         $this->clearIndexCache($index);
@@ -187,7 +187,7 @@ class Config
      * @param string $path
      * @param $value
      */
-    function update(string $path, $value)
+    function update(string $path, $value): void
     {
         $data = &$this->configData;
         $keys = explode('.', $path);
@@ -209,7 +209,7 @@ class Config
      * @return array|object
      * @see CrossArray::getAll()
      */
-    function getAll($obj = false)
+    function getAll(bool $obj = false): object|array
     {
         if ($obj) {
             return CrossArray::arrayToObject($this->configData);

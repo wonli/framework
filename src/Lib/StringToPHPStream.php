@@ -25,19 +25,19 @@ class StringToPHPStream
      *
      * @var array
      */
-    static $content;
+    static array $content;
 
     /**
      * 在$content中的标示
      *
      * @var string
      */
-    protected $key;
+    protected string $key;
 
     /**
      * @var int
      */
-    protected $pos;
+    protected int $pos;
 
     /**
      * @param $path
@@ -46,7 +46,7 @@ class StringToPHPStream
      * @param $opened_path
      * @return bool
      */
-    public function stream_open($path, $mode, $options, $opened_path)
+    public function stream_open($path, $mode, $options, $opened_path): bool
     {
         $this->key = md5($path);
         if (!isset(self::$content[$this->key])) {

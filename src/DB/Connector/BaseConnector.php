@@ -21,12 +21,12 @@ abstract class BaseConnector implements PDOConnector
     /**
      * @var PDO
      */
-    protected $pdo;
+    protected PDO $pdo;
 
     /**
      * @var string
      */
-    protected $sequence;
+    protected string $sequence;
 
     /**
      * 合并用户输入的options

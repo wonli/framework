@@ -11,6 +11,7 @@ namespace Cross\Auth;
 use Cross\Exception\CoreException;
 use Cross\I\HttpAuthInterface;
 use Cross\Model\RedisModel;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -24,7 +25,7 @@ class RedisAuth implements HttpAuthInterface
      *
      * @var string
      */
-    protected $authKeyPrefix;
+    protected string $authKeyPrefix;
 
     /**
      * RedisAuth constructor.
@@ -42,12 +43,13 @@ class RedisAuth implements HttpAuthInterface
      * 设置session的值
      *
      * @param string $key
-     * @param string|array $value
+     * @param array|string $value
      * @param int $expire
-     * @return bool|mixed
+     * @return bool
      * @throws CoreException
+     * @throws RedisException
      */
-    function set(string $key, $value, int $expire = 0): bool
+    function set(string $key, array|string $value, int $expire = 0): bool
     {
         $key = $this->authKeyPrefix . '@' . $key;
         if (is_array($value)) {
@@ -65,11 +67,12 @@ class RedisAuth implements HttpAuthInterface
      * @param bool $deCode
      * @return bool|mixed
      * @throws CoreException
+     * @throws RedisException
      */
-    function get(string $key, bool $deCode = false)
+    function get(string $key, bool $deCode = false): mixed
     {
         $key = $this->authKeyPrefix . '@' . $key;
-        if (false !== strpos($key, ':') && $deCode) {
+        if (str_contains($key, ':') && $deCode) {
             list($key, $arrKey) = explode(':', $key);
         }
 

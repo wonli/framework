@@ -20,10 +20,10 @@ interface ILog
      * 输出日志
      *
      * @param string $e 文件名或日志标签名
-     * @param mixed $log
+     * @param mixed|string $log
      * @return mixed
      */
-    function write(string $e, $log = '');
+    function write(string $e, mixed $log = ''): mixed;
 
     /**
      * 添加到日志
@@ -32,5 +32,5 @@ interface ILog
      * @param mixed $data 日志内容
      * @return $this
      */
-    function addToLog(string $tag, $data = []);
+    function addToLog(string $tag, mixed $data = []): static;
 }

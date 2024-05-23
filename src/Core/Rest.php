@@ -27,34 +27,34 @@ class Rest
     /**
      * @var Request
      */
-    protected $request;
+    protected Request $request;
 
     /**
      * @var Delegate
      */
-    protected $delegate;
+    protected Delegate $delegate;
 
     /**
      * @var string
      */
-    protected $requestType;
+    protected string $requestType;
 
     /**
      * @var string
      */
-    protected $requestString;
+    protected string $requestString;
 
     /**
      * 匹配失败时是否兼容MVC模式
      *
      * @var bool
      */
-    protected $compatibleModel = false;
+    protected bool $compatibleModel = false;
 
     /**
-     * @var Rest
+     * @var Rest|null
      */
-    private static $instance;
+    private static ?Rest $instance = null;
 
     /**
      * 初始化request

@@ -18,26 +18,26 @@ use Cross\Interactive\DataFilter;
  */
 class Request
 {
-    protected $getData = [];
-    protected $postData = [];
-    protected $fileData = [];
-    protected $serverData = [];
-    protected $requestData = [];
+    protected array $getData = [];
+    protected array $postData = [];
+    protected array $fileData = [];
+    protected array $serverData = [];
+    protected array $requestData = [];
 
     /**
      * @var string
      */
-    protected $scriptUrl;
+    protected string $scriptUrl = '';
 
     /**
      * @var array
      */
-    protected $inputData = [];
+    protected array $inputData = [];
 
     /**
-     * @var self
+     * @var Request|null
      */
-    protected static $instance;
+    protected static ?Request $instance = null;
 
     /**
      * Request constructor.
@@ -284,7 +284,7 @@ class Request
      * @return string 当前请求的url
      * @throws FrontException
      */
-    function getBaseUrl(bool $absolute = false, $withoutIndex = true): string
+    function getBaseUrl(bool $absolute = false, bool $withoutIndex = true): string
     {
         if ($withoutIndex) {
             $baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/.');
@@ -419,7 +419,7 @@ class Request
      *
      * @param array $server
      */
-    function setServeData(array $server)
+    function setServeData(array $server): void
     {
         if (!empty($server)) {
             array_walk($server, function ($v, $k) {
@@ -474,10 +474,10 @@ class Request
      * 获取指定输入数据
      *
      * @param string $key
-     * @param mixed $default
+     * @param mixed|null $default
      * @return DataFilter
      */
-    function inputData(string $key, $default = null)
+    function inputData(string $key, mixed $default = null): DataFilter
     {
         $this->initInputData();
         $val = $this->inputData[$key] ?? null;
@@ -534,7 +534,7 @@ class Request
      */
     function setGetData(array $data, bool $merge = false): void
     {
-        if ($merge && is_array($this->getData)) {
+        if ($merge) {
             $this->getData = array_merge($this->getData, $data);
         } else {
             $this->getData = $data;
@@ -559,7 +559,7 @@ class Request
      */
     function setPostData(array $data, bool $merge = false): void
     {
-        if ($merge && is_array($this->postData)) {
+        if ($merge) {
             $this->postData = array_merge($this->postData, $data);
         } else {
             $this->postData = $data;
@@ -584,7 +584,7 @@ class Request
      */
     function setFileData(array $data, bool $merge = false): void
     {
-        if ($merge && is_array($this->fileData)) {
+        if ($merge) {
             $this->fileData = array_merge($this->fileData, $data);
         } else {
             $this->fileData = $data;
@@ -609,7 +609,7 @@ class Request
      */
     function setRequestData(array $data, bool $merge = false): void
     {
-        if ($merge && is_array($this->requestData)) {
+        if ($merge) {
             $this->requestData = array_merge($this->requestData, $data);
         } else {
             $this->requestData = $data;
@@ -632,11 +632,11 @@ class Request
      * @param bool $filter
      * @return mixed
      */
-    function getPHPData(bool $filter = true)
+    function getPHPData(bool $filter = true): mixed
     {
         $data = file_get_contents('php://input');
         if ($filter) {
-            $data = filter_var($data, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+            $data = filter_var($data, FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
         }
 
         return $data;

@@ -20,16 +20,16 @@ use PDO;
 class SQLiteConnector extends BaseConnector
 {
     /**
-     * @var PDO
+     * @var array
      */
-    private static $instance;
+    private static array $instance;
 
     /**
      * 默认连接参数
      *
      * @var array
      */
-    private static $options = [];
+    private static array $options = [];
 
     /**
      * 创建一个SQLite的PDO连接
@@ -52,7 +52,7 @@ class SQLiteConnector extends BaseConnector
      * @param string $user
      * @param string $password
      * @param array $options
-     * @return SQLiteConnector|PDO
+     * @return SQLiteConnector
      * @throws DBConnectException
      */
     static function getInstance(string $dsn, string $user, string $password, array $options): self
@@ -78,12 +78,12 @@ class SQLiteConnector extends BaseConnector
     /**
      * 获取表的主键名
      *
-     * @param string $table
+     * @param string $tableName
      * @return string
      */
-    function getPK(string $table): string
+    function getPK(string $tableName): string
     {
-        $info = $this->getMetaData($table, false);
+        $info = $this->getMetaData($tableName, false);
         if (!empty($info)) {
             foreach ($info as $i) {
                 if ($i['pk'] == 1) {
@@ -98,7 +98,7 @@ class SQLiteConnector extends BaseConnector
     /**
      * 最后插入的id
      */
-    function lastInsertId()
+    function lastInsertId(): string|bool
     {
         return $this->pdo->lastInsertId();
     }
@@ -106,13 +106,13 @@ class SQLiteConnector extends BaseConnector
     /**
      * 获取表的字段信息
      *
-     * @param string $table
+     * @param string $tableName
      * @param bool $fieldsMap
      * @return mixed
      */
-    function getMetaData(string $table, bool $fieldsMap = true): array
+    function getMetaData(string $tableName, bool $fieldsMap = true): array
     {
-        $sql = "PRAGMA table_info('{$table}')";
+        $sql = "PRAGMA table_info('{$tableName}')";
         try {
             $data = $this->pdo->query($sql);
             if ($fieldsMap) {

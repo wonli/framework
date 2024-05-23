@@ -27,61 +27,59 @@ class Response
      *
      * @var array
      */
-    protected $header = [];
+    protected array $header = [];
 
     /**
      * cookie
      *
      * @var array
      */
-    protected $cookie = [];
+    protected array $cookie = [];
 
     /**
      * cookie配置
      *
      * @var array
      */
-    protected $cookieConfig = [];
+    protected array $cookieConfig = [];
 
     /**
      * 返回头http类型
      *
      * @var string
      */
-    protected $contentType;
+    protected string $contentType = '';
 
     /**
      * http 状态代码
      *
      * @var int
      */
-    protected $responseStatus = 200;
+    protected int $responseStatus = 200;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $responseStatusReason;
+    protected ?string $responseStatusReason = null;
 
     /**
      * 停止发送标识
      *
      * @var bool
      */
-    protected $endFlush = false;
+    protected bool $endFlush = false;
 
     /**
      * 输出内容
      *
      * @var string
      */
-    protected $content = '';
+    protected string $content = '';
 
     /**
      * Response instance
-     *
-     * @var object
      */
-    static $instance;
+    static ?Response $instance = null;
 
     private function __construct()
     {
@@ -134,7 +132,7 @@ class Response
      * @param int $expire
      * @return self
      */
-    function setCookie(string $name, $value = '', int $expire = 0): self
+    function setCookie(string $name, mixed $value = '', int $expire = 0): self
     {
         return $this->setRawCookie($name, $value, $expire, $this->getCookieConfig('path'), $this->getCookieConfig('domain'));
     }
@@ -160,7 +158,7 @@ class Response
      * @param string $domain
      * @return $this
      */
-    function setRawCookie(string $name, $value = '', int $expire = 0, string $path = '', string $domain = ''): self
+    function setRawCookie(string $name, mixed $value = '', int $expire = 0, string $path = '', string $domain = ''): self
     {
         $rawCookie = [
             $name, $value, $expire,
@@ -267,7 +265,7 @@ class Response
      * @param string|null $tpl
      * @return self
      */
-    function setRawContent($content, string $tpl = null): self
+    function setRawContent(mixed $content, string $tpl = null): self
     {
         $contentType = Response::getInstance()->getContentType();
         if (0 === strcasecmp($contentType, 'JSON')) {
@@ -371,7 +369,7 @@ class Response
      * 设置response状态
      *
      * @param int $status
-     * @param string $reason
+     * @param string|null $reason
      * @return self
      */
     function setResponseStatus(int $status, string $reason = null): self
@@ -476,7 +474,7 @@ class Response
      * @param string $key
      * @return mixed
      */
-    protected function getCookieConfig(string $key)
+    protected function getCookieConfig(string $key): mixed
     {
         static $cookieConfig = null;
         if (null === $cookieConfig) {
@@ -542,7 +540,7 @@ class Response
      * @param string $txt
      * @return array|bool
      */
-    private function httpDigestParse(string $txt)
+    private function httpDigestParse(string $txt): bool|array
     {
         $data = [];
         $neededParts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
@@ -560,7 +558,7 @@ class Response
     /**
      * @var array $statusDescriptions
      */
-    static public $statusDescriptions = [
+    static public array $statusDescriptions = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
@@ -605,7 +603,7 @@ class Response
     /**
      * @var array $mimeTypes
      */
-    static public $mimeTypes = [
+    static public array $mimeTypes = [
         'ez' => 'application/andrew-inset',
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',

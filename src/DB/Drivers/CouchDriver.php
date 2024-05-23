@@ -26,7 +26,7 @@ class CouchDriver
     /**
      * @var Bucket
      */
-    protected $link;
+    protected Bucket $link;
 
     /**
      * @param array $params

@@ -20,45 +20,45 @@ class SQLAssembler
     /**
      * @var string
      */
-    protected $sql;
+    protected string $sql;
+
+    /**
+     * @var string|array
+     */
+    protected string|array $params;
 
     /**
      * @var string
      */
-    protected $params;
-
-    /**
-     * @var string
-     */
-    protected $table;
+    protected string $table;
 
     /**
      * oracle序号名称
      *
      * @var string
      */
-    protected $sequence = '';
+    protected string $sequence = '';
 
     /**
      * 表前缀
      *
      * @var string
      */
-    protected $tablePrefix;
+    protected string $tablePrefix;
 
     /**
      * offset()在limit()中已经传递了第二个参数时不再生效
      *
      * @var bool
      */
-    protected $offsetIsValid = true;
+    protected bool $offsetIsValid = true;
 
     /**
      * 包裹过字段名的字符
      *
      * @var string
      */
-    protected $fieldQuoteChar = '';
+    protected string $fieldQuoteChar = '';
 
     /**
      * 初始化时可以指定表前缀
@@ -99,12 +99,12 @@ class SQLAssembler
      * @param string $fields 要查询的字段 所有字段的时候为'*'
      * @param mixed $where 查询条件
      * @param array $page 分页参数 默认返回50条记录
-     * @param mixed $order 排序
-     * @param mixed $groupBy
-     * @return mixed|void
+     * @param mixed|null $order 排序
+     * @param mixed|null $groupBy
+     * @return void
      * @throws CoreException
      */
-    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 50], $order = null, $groupBy = null)
+    public function find(string $table, string $fields, mixed $where, array &$page = ['p' => 1, 'limit' => 50], mixed $order = null, mixed $groupBy = null): void
     {
         $params = [];
         $fieldStr = $this->parseFields($fields);
@@ -132,10 +132,10 @@ class SQLAssembler
      * @param string $table
      * @param mixed $data
      * @param mixed $where
-     * @return mixed|void
+     * @return void
      * @throws CoreException
      */
-    public function update(string $table, $data, $where)
+    public function update(string $table, mixed $data, mixed $where): void
     {
         $params = [];
         $fields = $this->parseData($data, $params);
@@ -150,11 +150,11 @@ class SQLAssembler
      * 删除
      *
      * @param string $table
-     * @param string|array $where
-     * @return mixed|void
+     * @param array|string $where
+     * @return void
      * @throws CoreException
      */
-    public function del(string $table, $where)
+    public function del(string $table, array|string $where): void
     {
         $params = [];
         $whereStr = $this->parseWhere($where, $params);
@@ -183,7 +183,7 @@ class SQLAssembler
      * @param array $params
      * @return string
      */
-    public function insert(string $table, $data, string $modifier = '', &$params = []): string
+    public function insert(string $table, array $data, string $modifier = '', array &$params = []): string
     {
         return "INSERT {$modifier} INTO {$this->getTable($table)} {$this->insertDataToSQLSegment($data, true, $params)} ";
     }
@@ -210,12 +210,12 @@ class SQLAssembler
     }
 
     /**
-     * @param string|array $where
+     * @param array|string $where
      * @param array $params
      * @return string
      * @throws CoreException
      */
-    public function where($where, array &$params): string
+    public function where(array|string $where, array &$params): string
     {
         return "WHERE {$this->parseWhere($where, $params)} ";
     }
@@ -254,16 +254,16 @@ class SQLAssembler
      * @param mixed $order
      * @return string
      */
-    public function orderBy($order): string
+    public function orderBy(mixed $order): string
     {
         return "ORDER BY {$this->parseOrder($order)} ";
     }
 
     /**
-     * @param string $group
+     * @param $group
      * @return string
      */
-    public function groupBy(string $group): string
+    public function groupBy(  $group): string
     {
         return "GROUP BY {$this->parseGroup($group)} ";
     }
@@ -317,10 +317,10 @@ class SQLAssembler
     /**
      * 解析字段
      *
-     * @param string|array $fields
+     * @param array|string $fields
      * @return string
      */
-    public function parseFields($fields): string
+    public function parseFields(array|string $fields): string
     {
         if (empty($fields)) {
             $fieldStr = '*';
@@ -338,12 +338,12 @@ class SQLAssembler
     /**
      * 解析where
      *
-     * @param string|array $where
+     * @param array|string $where
      * @param array $params
      * @return string
      * @throws CoreException
      */
-    public function parseWhere($where, array &$params): string
+    public function parseWhere(array|string $where, array &$params): string
     {
         if (!empty($where)) {
             if (is_array($where)) {
@@ -432,7 +432,7 @@ class SQLAssembler
      * @param mixed $order
      * @return int|string
      */
-    public function parseOrder($order)
+    public function parseOrder(mixed $order): int|string
     {
         if (!empty($order)) {
             if (is_array($order)) {
@@ -450,10 +450,10 @@ class SQLAssembler
     /**
      * 解析group by
      *
-     * @param mixed $groupBy
+     * @param string $groupBy
      * @return int|string
      */
-    public function parseGroup($groupBy)
+    public function parseGroup(string $groupBy): int|string
     {
         if (!empty($groupBy)) {
             $groupStr = $groupBy;
@@ -473,7 +473,7 @@ class SQLAssembler
     }
 
     /**
-     * @param $sql
+     * @param string $sql
      */
     protected function setSQL(string $sql): void
     {
@@ -483,7 +483,7 @@ class SQLAssembler
     /**
      * @return string|array
      */
-    public function getParams()
+    public function getParams(): array|string
     {
         return $this->params;
     }
@@ -512,7 +512,7 @@ class SQLAssembler
      * @param string $table
      * @return string
      */
-    protected function getTable(string $table)
+    protected function getTable(string $table): string
     {
         $this->table = $table;
         return $this->table;
@@ -523,7 +523,7 @@ class SQLAssembler
      *
      * @param string $operator 字段和值之间的操作符
      * @param string $field 字段名
-     * @param string|array $fieldConfig 字段值配置
+     * @param array|string $fieldConfig 字段值配置
      * @param bool $isMixedField 区别默认字段和复合字段(带括号的字段)
      * @param string $conditionConnector 每个条件之间的连接符
      * @param string $connector 每个字段之间的连接符
@@ -531,7 +531,7 @@ class SQLAssembler
      * @return array
      * @throws CoreException
      */
-    protected function parseCondition(string $operator, string $field, $fieldConfig, bool $isMixedField, string $conditionConnector, string $connector, array &$params): array
+    protected function parseCondition(string $operator, string $field, array|string $fieldConfig, bool $isMixedField, string $conditionConnector, string $connector, array &$params): array
     {
         $condition = [];
         switch ($connector) {
@@ -651,7 +651,7 @@ class SQLAssembler
      * @param null $sequenceKey
      * @return string
      */
-    protected function insertDataToSQLSegment(array $data, bool $parseParams = true, &$params = [], &$sequenceKey = null): string
+    protected function insertDataToSQLSegment(array $data, bool $parseParams = true, array &$params = [], &$sequenceKey = null): string
     {
         $fields = $values = [];
         foreach ($data as $key => $value) {

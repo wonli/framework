@@ -13,6 +13,8 @@ use Cross\Cache\Driver\RedisDriver;
 use Cross\Core\Config;
 use RedisCluster;
 use Redis;
+use RedisClusterException;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -50,8 +52,6 @@ use Redis;
  * @method static psubscribe($patterns, $callback)
  * @method static publish($channel, $message)
  * @method static pubsub($keyword, $argument)
- * @method static psubscribe($patterns, $callback)
- * @method static publish($channel, $message)
  * @method static unsubscribe($channels = null)
  * @method static punsubscribe($channels = null)
  * @method static exists($key)
@@ -240,30 +240,32 @@ class RedisModel extends RedisDriver
      *
      * @var Redis|RedisCluster
      */
-    static protected $redisConn;
+    static protected Redis|RedisCluster $redisConn;
 
     /**
      * 默认配置项
      *
      * @var string
      */
-    static protected $defaultOptionName = 'cache';
+    static protected string $defaultOptionName = 'cache';
 
     /**
      * 缓存链接项配置
      *
      * @var string
      */
-    static protected $configFile = 'config/db.config.php';
+    static protected string $configFile = 'config/db.config.php';
 
     /**
      * 切换设置
      *
      * @param string $sessionOptionName
      * @return Redis|RedisCluster
+     * @throws RedisClusterException
+     * @throws RedisException
      * @throws CoreException
      */
-    static function use(string $sessionOptionName)
+    static function use(string $sessionOptionName): RedisCluster|Redis
     {
         static $currentSession = null;
         if (null === $currentSession || $sessionOptionName != $currentSession) {
@@ -282,6 +284,8 @@ class RedisModel extends RedisDriver
      * @param $argv
      * @return mixed
      * @throws CoreException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
     static public function __callStatic($method, $argv)
     {
@@ -344,7 +348,7 @@ class RedisModel extends RedisDriver
      *
      * @param string $file
      */
-    static protected function setConfigFile(string $file)
+    static protected function setConfigFile(string $file): void
     {
         static::$configFile = $file;
     }

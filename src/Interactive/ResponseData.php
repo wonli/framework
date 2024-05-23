@@ -26,47 +26,47 @@ class ResponseData
      *
      * @var int
      */
-    protected $status;
+    protected int $status;
 
     /**
      * 消息
      *
      * @var string
      */
-    protected $message;
+    protected string $message;
 
     /**
      * 数据
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * 状态名称
      *
      * @var string
      */
-    private $statusName = 'code';
+    private string $statusName = 'code';
 
     /**
      * 消息名称
      *
      * @var string
      */
-    private $messageName = 'msg';
+    private string $messageName = 'msg';
 
     /**
      * 数据名称
      *
      * @var string
      */
-    private $dataName = 'data';
+    private string $dataName = 'data';
 
     /**
-     * @var static
+     * @var static|null
      */
-    private static $instance;
+    private static ?ResponseData $instance = null;
 
     /**
      * ResponseData constructor.
@@ -142,7 +142,7 @@ class ResponseData
      * @param array $data
      * @param bool $merge 默认不合并数据
      */
-    public function setData(array $data, $merge = false): void
+    public function setData(array $data, bool $merge = false): void
     {
         if ($merge && !empty($this->data)) {
             $this->data = array_merge($this->data, $data);
@@ -157,7 +157,7 @@ class ResponseData
      * @param string $key
      * @param mixed $value
      */
-    public function addData(string $key, $value): void
+    public function addData(string $key, mixed $value): void
     {
         $this->data[$key] = $value;
     }

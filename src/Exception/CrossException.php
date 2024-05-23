@@ -29,30 +29,30 @@ abstract class CrossException extends Exception
      *
      * @var int
      */
-    protected $httpStatusCode = 500;
+    protected int $httpStatusCode = 500;
 
     /**
      * 是否返回JSON格式的异常信息
      *
      * @var bool
      */
-    protected $responseJSONExceptionMsg = false;
+    protected bool $responseJSONExceptionMsg = false;
 
     /**
      * 响应数据
      *
      * @var ResponseData
      */
-    protected $ResponseData;
+    protected ResponseData $ResponseData;
 
     /**
      * CrossException constructor.
      *
      * @param string $message
-     * @param int|null $code
+     * @param int $code
      * @param Throwable|null $previous
      */
-    function __construct(string $message = 'CrossPHP Exception', int $code = null, Throwable $previous = null)
+    function __construct(string $message = 'CrossPHP Exception', int $code = 0, Throwable $previous = null)
     {
         if (PHP_SAPI === 'cli') {
             set_exception_handler(array($this, 'cliErrorHandler'));

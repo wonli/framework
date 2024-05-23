@@ -11,6 +11,8 @@ namespace Cross\Cache\Request;
 use Cross\I\RequestCacheInterface;
 use Cross\Cache\Driver\RedisDriver;
 use Cross\Exception\CoreException;
+use RedisClusterException;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -22,37 +24,39 @@ class RedisCache implements RequestCacheInterface
     /**
      * @var array
      */
-    protected $config;
+    protected array $config;
 
     /**
      * 缓存key
      *
      * @var string
      */
-    protected $cacheKey;
+    protected string $cacheKey;
 
     /**
      * 有效时间
      *
      * @var int
      */
-    protected $expireTime = 3600;
+    protected int $expireTime = 3600;
 
     /**
      * @var bool
      */
-    protected $compress = false;
+    protected bool $compress = false;
 
     /**
      * @var RedisDriver
      */
-    protected $driver;
+    protected RedisDriver $driver;
 
     /**
      * 设置缓存key和缓存有效期
      *
      * @param array $option
      * @throws CoreException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
     function __construct(array $option)
     {
@@ -89,7 +93,7 @@ class RedisCache implements RequestCacheInterface
     /**
      * 返回request的内容
      *
-     * @return bool|mixed|string
+     * @return string
      */
     function get(): string
     {
@@ -116,7 +120,7 @@ class RedisCache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = [])
+    function setConfig(array $config = []): void
     {
         $this->config = $config;
     }
@@ -126,7 +130,7 @@ class RedisCache implements RequestCacheInterface
      *
      * @return mixed
      */
-    function getConfig()
+    function getConfig(): array
     {
         return $this->config;
     }

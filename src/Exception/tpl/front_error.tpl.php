@@ -20,6 +20,7 @@
         .frame:not(.active):hover {background:rgba(236, 236, 236, 0.66)}
         .code-container{min-height:325px}
         .code-segment {min-height:325px;background-color:#fdfdfd;border-bottom:1px solid #f1f1f1}
+        .code-line {display: flex;align-items: center}
         .code-line span, .code-line code {display:inline-block}
         .code-line code {margin-left:-10px}
         .code-line.active {background-color:#ffd2d2}
@@ -33,9 +34,10 @@
         .data-table td:last-child {width:70%;-ms-word-break:break-all;word-break:break-all;-webkit-hyphens:auto;-moz-hyphens:auto;hyphens:auto}
         .data-table .empty {color:rgba(0, 0, 0, .3);font-style:italic}
         .trace-info{display:none}
-        .line{border-right:1px solid #d9d9d9;padding-right:10px;width:50px;text-align:right;line-height:25px}
+        .line{border-right:1px solid #d9d9d9;padding-right:10px;min-width:80px;width:80px;text-align:right;line-height:30px}
         .footer{text-align:center;height:30px;background: #333;color:#808080;line-height:30px;box-sizing:border-box;border-top:2px solid rgba(0, 0, 0, 0.35)}
         .footer>a{color:#565656}@media (max-width: 768px) {h1{font-size:18px} .code-container {display:none} .title{font-size:14px} .message {font-size:24px}}
+        pre {display: inline-flex;align-items: center;margin:0;padding:0}
     </style>
     <!--[if lt IE 9]><style>.container {min-width:1024px}</style><![endif]-->
 </head>

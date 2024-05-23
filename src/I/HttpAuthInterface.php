@@ -19,11 +19,11 @@ interface HttpAuthInterface
      * 设置
      *
      * @param string $key
-     * @param string|array $value
+     * @param array|string $value
      * @param int $expire
      * @return mixed
      */
-    public function set(string $key, $value, int $expire = 0): bool;
+    public function set(string $key, array|string $value, int $expire = 0): bool;
 
     /**
      * 获取
@@ -32,5 +32,5 @@ interface HttpAuthInterface
      * @param bool $deCode
      * @return mixed
      */
-    public function get(string $key, bool $deCode = false);
+    public function get(string $key, bool $deCode = false): mixed;
 }

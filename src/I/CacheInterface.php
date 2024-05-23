@@ -18,18 +18,18 @@ interface CacheInterface
      * @param string $key
      * @return mixed get cache
      */
-    function get(string $key = '');
+    function get(string $key = ''): mixed;
 
     /**
      * @param string $key
      * @param mixed $value
-     * @return mixed set
+     * @return bool
      */
-    function set(string $key, $value);
+    function set(string $key, mixed $value): bool;
 
     /**
      * @param string $key
      * @return mixed
      */
-    function del(string $key);
+    function del(string $key): bool;
 }

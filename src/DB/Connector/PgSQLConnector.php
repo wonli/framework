@@ -22,16 +22,16 @@ class PgSQLConnector extends BaseConnector
     /**
      * 数据库连接实例
      *
-     * @var object
+     * @var array
      */
-    private static $instance;
+    private static array $instance;
 
     /**
      * 默认连接参数
      *
      * @var array
      */
-    private static $options = [];
+    private static array $options = [];
 
     /**
      * 创建PgSQL的PDO连接
@@ -103,7 +103,7 @@ class PgSQLConnector extends BaseConnector
      *
      * @return mixed
      */
-    public function lastInsertId()
+    public function lastInsertId(): mixed
     {
         $sql = "SELECT LASTVAL() as insert_id";
         try {
@@ -117,11 +117,11 @@ class PgSQLConnector extends BaseConnector
     /**
      * 获取表的字段信息
      *
-     * @param string $table
+     * @param string $tableName
      * @param bool $fieldsMap
      * @return array
      */
-    function getMetaData(string $table, bool $fieldsMap = true): array
+    function getMetaData(string $tableName, bool $fieldsMap = true): array
     {
         $sql = "SELECT a.column_name, a.is_nullable, a.column_default, p.contype FROM (
                     SELECT i.column_name, i.is_nullable, i.column_default, i.ordinal_position, c.oid
@@ -133,7 +133,7 @@ class PgSQLConnector extends BaseConnector
             $data = $this->pdo->prepare($sql);
             if ($fieldsMap) {
                 $result = [];
-                $data->execute([$table]);
+                $data->execute([$tableName]);
                 $data->fetchAll(PDO::FETCH_FUNC, function ($columnName, $isNull, $columnDefault, $conType) use (&$result) {
                     $autoIncrement = preg_match("/nextval\((.*)\)/", $columnDefault);
                     $result[$columnName] = [

@@ -40,14 +40,14 @@ interface RequestCacheInterface
      * 缓存配置
      *
      * @param array $config
-     * @return mixed
+     * @return void
      */
-    function setConfig(array $config = []);
+    function setConfig(array $config = []): void;
 
     /**
      * 获取缓存配置
      *
      * @return mixed
      */
-    function getConfig();
+    function getConfig(): array;
 }

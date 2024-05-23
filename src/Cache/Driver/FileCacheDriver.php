@@ -23,7 +23,7 @@ class FileCacheDriver implements CacheInterface
      *
      * @var string
      */
-    private $cachePath;
+    private string $cachePath;
 
     function __construct(string $cachePath)
     {
@@ -35,9 +35,9 @@ class FileCacheDriver implements CacheInterface
      * 返回缓存文件
      *
      * @param string $key
-     * @return mixed
+     * @return string|bool
      */
-    function get(string $key = '')
+    function get(string $key = ''): string|bool
     {
         $cacheFile = $this->cachePath . $key;
         if (!file_exists($cacheFile)) {
@@ -52,10 +52,10 @@ class FileCacheDriver implements CacheInterface
      *
      * @param string $key
      * @param mixed $value
-     * @return mixed|void
+     * @return bool
      * @throws CoreException
      */
-    function set(string $key, $value)
+    function set(string $key, mixed $value): bool
     {
         $cacheFile = $this->cachePath . $key;
         if (!file_exists($cacheFile)) {
@@ -68,20 +68,27 @@ class FileCacheDriver implements CacheInterface
             }
         }
 
-        file_put_contents($cacheFile, $value, LOCK_EX);
+        $n = file_put_contents($cacheFile, $value, LOCK_EX);
+        if ($n === false) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * 删除缓存
      *
      * @param string $key
-     * @return mixed|void
+     * @return bool
      */
-    function del(string $key)
+    function del(string $key): bool
     {
         $cacheFile = $this->cachePath . $key;
         if (file_exists($cacheFile)) {
-            unlink($cacheFile);
+            return unlink($cacheFile);
         }
+
+        return true;
     }
 }

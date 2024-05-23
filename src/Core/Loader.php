@@ -18,23 +18,23 @@ use Cross\Exception\CoreException;
 class Loader
 {
     /**
-     * @var self
+     * @var self|null
      */
-    private static $instance;
+    private static ?Loader $instance = null;
 
     /**
      * 已注册的命名空间
      *
      * @var array
      */
-    private static $namespace = [];
+    private static array $namespace = [];
 
     /**
      * 已加载类的文件列表
      *
      * @var array
      */
-    private static $loaded = [];
+    private static array $loaded = [];
 
     /**
      * 初始化Loader
@@ -63,10 +63,10 @@ class Loader
      * 载入文件
      *
      * @param array|string $file
-     * @return mixed
+     * @return bool
      * @throws CoreException
      */
-    static function import($file)
+    static function import(array|string $file): bool
     {
         return self::requireFile(PROJECT_REAL_PATH . $file, true);
     }
@@ -79,7 +79,7 @@ class Loader
      * @return mixed
      * @throws CoreException
      */
-    static function read(string $file, bool $getFileContent = false)
+    static function read(string $file, bool $getFileContent = false): mixed
     {
         if (!file_exists($file)) {
             throw new CoreException("{$file} 文件不存在");
@@ -152,7 +152,7 @@ class Loader
         if ($prepend) {
             array_unshift(self::$namespace[$prefix], $baseDir);
         } else {
-            array_push(self::$namespace[$prefix], $baseDir);
+            self::$namespace[$prefix][] = $baseDir;
         }
     }
 
@@ -160,10 +160,10 @@ class Loader
      * 自动加载
      *
      * @param string $className
-     * @return bool|string
+     * @return string
      * @throws CoreException
      */
-    private function loadClass(string $className)
+    private function loadClass(string $className): string
     {
         $prefix = '';
         $pos = strpos($className, '\\');
@@ -191,7 +191,7 @@ class Loader
      * @return bool|string
      * @throws CoreException
      */
-    private function loadPSRClass(string $class)
+    private function loadPSRClass(string $class): bool|string
     {
         $prefix = $class;
         while (false !== $pos = strrpos($prefix, '\\')) {
@@ -216,7 +216,7 @@ class Loader
      * @return bool|string
      * @throws CoreException
      */
-    private function loadMappedFile(string $prefix, string $relativeClass)
+    private function loadMappedFile(string $prefix, string $relativeClass): bool|string
     {
         if (isset(self::$namespace[$prefix]) === false) {
             return false;

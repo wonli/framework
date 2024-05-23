@@ -30,6 +30,8 @@ use Cross\DB\Drivers\PDOOracleDriver;
 use Cross\DB\Drivers\PDOSqlDriver;
 use Cross\DB\Drivers\CouchDriver;
 use Cross\DB\Drivers\MongoDriver;
+use RedisClusterException;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -44,11 +46,13 @@ class DBFactory
      * @param string $type
      * @param array|Closure $params
      * @param array $config
-     * @return RedisDriver|CouchDriver|MongoDriver|PDOSqlDriver|mixed
+     * @return object
      * @throws CoreException
      * @throws DBConnectException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
-    static function make(string $type, &$params, array $config = []): object
+    static function make(string $type, array|Closure &$params, array $config = []): object
     {
         //如果params是一个匿名函数, 则调用匿名函数创建数据库连接
         if ($params instanceof Closure) {
@@ -97,7 +101,7 @@ class DBFactory
      *
      * @param array $params
      * @param string $type
-     * @param bool|true $useUnixSocket
+     * @param bool $useUnixSocket
      * @return string
      * @throws CoreException
      */
@@ -134,7 +138,7 @@ class DBFactory
      * @return string
      * @throws CoreException
      */
-    private static function getOracleTns(array &$params)
+    private static function getOracleTns(array &$params): string
     {
         if (!empty($params['tns'])) {
             return $params['tns'];

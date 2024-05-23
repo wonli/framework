@@ -11,6 +11,8 @@ namespace Cross\Cache\Driver;
 use Cross\Exception\CoreException;
 use RedisCluster;
 use Redis;
+use RedisClusterException;
+use RedisException;
 
 /**
  * @author wonli <wonli@live.com>
@@ -27,19 +29,19 @@ class RedisDriver
     /**
      * @var Redis|RedisCluster
      */
-    protected $link;
+    protected mixed $link;
 
     /**
      * 是否集群模式
      *
      * @var bool
      */
-    protected $clusterMode = false;
+    protected bool $clusterMode = false;
 
     /**
      * @var array
      */
-    protected $option;
+    protected array $option;
 
     /**
      * 连接redis
@@ -49,8 +51,10 @@ class RedisDriver
      * unixsocketperm 777
      * </pre>
      *
-     * @param $option
-     * @throws
+     * @param array $option
+     * @throws CoreException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
     function __construct(array $option)
     {
@@ -131,7 +135,7 @@ class RedisDriver
      *
      * @return array
      */
-    function getLinkOption()
+    function getLinkOption(): array
     {
         return $this->option;
     }
@@ -161,8 +165,9 @@ class RedisDriver
      * 选择当前数据库
      *
      * @throws CoreException
+     * @throws RedisException
      */
-    protected function selectCurrentDatabase()
+    protected function selectCurrentDatabase(): void
     {
         if ($this->clusterMode) {
             return;

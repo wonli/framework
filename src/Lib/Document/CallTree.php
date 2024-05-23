@@ -20,7 +20,7 @@ use DOMDocument;
 class CallTree
 {
 
-    private $node = [];
+    private array $node = [];
 
     /**
      * @return static
@@ -36,7 +36,7 @@ class CallTree
      * @param string $nodeName
      * @param mixed $nodeArguments
      */
-    function saveNode(string $nodeName, $nodeArguments): void
+    function saveNode(string $nodeName, mixed $nodeArguments): void
     {
         $this->node = [$nodeName => $nodeArguments];
     }

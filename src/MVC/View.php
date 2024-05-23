@@ -29,40 +29,40 @@ class View extends FrameBase
      *
      * @var string
      */
-    private $tplDir;
+    private string $tplDir = '';
 
     /**
      * 资源配置
      *
      * @var array
      */
-    private $resList;
+    private array $resList = [];
 
     /**
      * 默认模板路径
      *
      * @var string
      */
-    private $tplBasePath;
+    private string $tplBasePath = '';
 
     /**
      * 默认url
      *
-     * @var string
+     * @var string|null
      */
-    private $linkBase = null;
+    private ?string $linkBase = null;
 
     /**
      * @var array
      */
-    private $wrapStack = [];
+    private array $wrapStack = [];
 
     /**
      * 模板数据
      *
      * @var array
      */
-    protected $data;
+    protected array $data = [];
 
     /**
      * 初始化布局文件中的变量
@@ -77,7 +77,7 @@ class View extends FrameBase
      *
      * @var array
      */
-    protected $set = [
+    protected array $set = [
         'title' => '',
         'keywords' => '',
         'description' => '',
@@ -91,23 +91,24 @@ class View extends FrameBase
      *
      * @var string
      */
-    protected $tplFileSuffix = '.tpl.php';
+    protected string $tplFileSuffix = '.tpl.php';
 
     /**
      * url配置缓存
      *
      * @var array
      */
-    protected static $urlConfigCache = [];
+    protected static array $urlConfigCache = [];
 
     /**
      * 渲染模板
      *
-     * @param null $data
+     * @param mixed|null $data
      * @param string|null $method
+     * @return void
      * @throws CoreException
      */
-    function display($data = null, string $method = null): void
+    function display(mixed $data = null, string $method = null): void
     {
         $this->data = &$data;
         if ($method === null) {
@@ -124,12 +125,12 @@ class View extends FrameBase
      * 生成url
      *
      * @param string|null $controller
-     * @param null|string|array $params
+     * @param array|string|null $params
      * @param bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    function url(string $controller = null, $params = null, bool $encryptParams = false): string
+    function url(string $controller = null, array|string $params = null, bool $encryptParams = false): string
     {
         static $linkBase = null;
         if ($linkBase === null) {
@@ -148,12 +149,12 @@ class View extends FrameBase
      * 生成参数加密的超链接
      *
      * @param string|null $controller
-     * @param null|string|array $params
+     * @param array|string|null $params
      * @return string
      * @throws CoreException
      * @see View::url()
      */
-    function sUrl(string $controller = null, $params = null): string
+    function sUrl(string $controller = null, array|string $params = null): string
     {
         return $this->url($controller, $params, true);
     }
@@ -166,7 +167,7 @@ class View extends FrameBase
      * @param array $elementTags
      * @return mixed|string
      */
-    function a(string $content, string $href = '', array $elementTags = [])
+    function a(string $content, string $href = '', array $elementTags = []): mixed
     {
         $elementTags['href'] = $href;
         $elementTags['@content'] = $content;
@@ -180,7 +181,7 @@ class View extends FrameBase
      * @param array $elementTags
      * @return mixed|string
      */
-    function img(string $src, array $elementTags = [])
+    function img(string $src, array $elementTags = []): mixed
     {
         $elementTags['src'] = $src;
         $elementTags += ['border' => 0, 'alt' => 'image'];
@@ -194,7 +195,7 @@ class View extends FrameBase
      * @param array $elementTags
      * @return mixed|string
      */
-    function input(string $type, array $elementTags = [])
+    function input(string $type, array $elementTags = []): mixed
     {
         $elementTags['type'] = $type;
         return $this->wrapTag('input', $elementTags);
@@ -210,7 +211,7 @@ class View extends FrameBase
      * @return string
      * @see View::buildRadioOrCheckbox
      */
-    function radio(array $data, $defaultValue = '', array $radioTags = [], array $labelTags = [])
+    function radio(array $data, string $defaultValue = '', array $radioTags = [], array $labelTags = []): string
     {
         $defaultValue = [$defaultValue => true];
         return $this->buildRadioOrCheckbox('radio', $data, $defaultValue, $radioTags, $labelTags);
@@ -220,13 +221,13 @@ class View extends FrameBase
      * 多选
      *
      * @param array $data
-     * @param string|array $defaultValue
+     * @param array|string $defaultValue
      * @param array $checkboxTags
      * @param array $labelTags
      * @return string
      * @see View::buildRadioOrCheckbox
      */
-    function checkbox(array $data, $defaultValue = '', array $checkboxTags = [], array $labelTags = [])
+    function checkbox(array $data, array|string $defaultValue = '', array $checkboxTags = [], array $labelTags = []): string
     {
         if (is_array($defaultValue)) {
             $defaultValue = array_flip($defaultValue);
@@ -241,12 +242,12 @@ class View extends FrameBase
      * 输出select
      *
      * @param array $optionsData 二维数组时, 生成optgroup
-     * @param mixed $defaultValue
+     * @param mixed|null $defaultValue
      * @param array $selectParams
      * @param array $userOptionParams
      * @return mixed
      */
-    function select(array $optionsData, $defaultValue = null, array $selectParams = [], array $userOptionParams = [])
+    function select(array $optionsData, mixed $defaultValue = null, array $selectParams = [], array $userOptionParams = []): mixed
     {
         $content = '';
         if (is_array($defaultValue)) {
@@ -303,7 +304,7 @@ class View extends FrameBase
      * @param bool $encode 是否转码
      * @return mixed
      */
-    function html(string $content, bool $encode = true)
+    function html(string $content, bool $encode = true): mixed
     {
         return $this->wrapContent($content, $encode);
     }
@@ -315,7 +316,7 @@ class View extends FrameBase
      * @param array $elementTags
      * @return string
      */
-    static function htmlTag(string $element, array $elementTags = [])
+    static function htmlTag(string $element, array $elementTags = []): string
     {
         return HTML::$element($elementTags);
     }
@@ -324,11 +325,11 @@ class View extends FrameBase
      * HTML标签入栈
      *
      * @param string $element
-     * @param string|array $elementTags
+     * @param array|string $elementTags
      * @param bool $contentRear 自身内容是否放在被包裹内容之后
      * @return $this
      */
-    function wrap(string $element, $elementTags = [], bool $contentRear = false): self
+    function wrap(string $element, array|string $elementTags = [], bool $contentRear = false): self
     {
         if (!is_array($elementTags)) {
             $elementTags = ['@content' => $elementTags];
@@ -346,7 +347,7 @@ class View extends FrameBase
      * @param string $element
      * @return string
      */
-    function block(string $content, array $elementTags = [], string $element = 'div')
+    function block(string $content, array $elementTags = [], string $element = 'div'): string
     {
         $elementTags['@content'] = $content;
         return $this->wrapTag($element, $elementTags);
@@ -361,7 +362,7 @@ class View extends FrameBase
      * @param string $element
      * @return string
      */
-    function section(string $tplName, array $tplData = [], array $elementTags = [], string $element = 'div')
+    function section(string $tplName, array $tplData = [], array $elementTags = [], string $element = 'div'): string
     {
         return $this->block($this->obRenderTpl($tplName, $tplData), $elementTags, $element);
     }
@@ -377,7 +378,7 @@ class View extends FrameBase
      * @param array $tplData 模板数据
      * @return string
      */
-    function buildForm(string $tplName, array $formTags = [], array $tplData = [])
+    function buildForm(string $tplName, array $formTags = [], array $tplData = []): string
     {
         $content = $this->delegate->getClosureContainer()->run('buildForm', [$this]);
         $content .= $this->obRenderTpl($tplName, $tplData);
@@ -418,7 +419,7 @@ class View extends FrameBase
      * @param bool $encode
      * @return string
      */
-    function obRenderTpl(string $tplName, array $data = [], bool $encode = false)
+    function obRenderTpl(string $tplName, array $data = [], bool $encode = false): string
     {
         ob_start();
         $this->renderTpl($tplName, $data);
@@ -433,7 +434,7 @@ class View extends FrameBase
      * @param bool $encode
      * @return string
      */
-    function obRenderFile(string $file, array $data = [], bool $encode = false)
+    function obRenderFile(string $file, array $data = [], bool $encode = false): string
     {
         ob_start();
         $this->renderFile($file, $data);
@@ -492,11 +493,11 @@ class View extends FrameBase
      * 安全的输出数组中的值
      *
      * @param array $data
-     * @param string|int $key
+     * @param int|string $key
      * @param string $defaultValue
      * @return string
      */
-    function e(array $data, $key, $defaultValue = '')
+    function e(array $data, int|string $key, string $defaultValue = ''): string
     {
         if (isset($data[$key])) {
             return $data[$key];
@@ -509,12 +510,12 @@ class View extends FrameBase
      * 判断数组中的值是否为empty,否则返回默认值
      *
      * @param array $data
-     * @param string|int $key
+     * @param int|string $key
      * @param string $defaultValue
      * @return string
      * @see e
      */
-    function ee(array $data, $key, $defaultValue = '')
+    function ee(array $data, int|string $key, string $defaultValue = ''): string
     {
         if (!empty($data[$key])) {
             return $data[$key];
@@ -530,7 +531,7 @@ class View extends FrameBase
      * @param null $value
      * @return $this
      */
-    final public function set($name, $value = null): self
+    final public function set(mixed $name, $value = null): self
     {
         if (is_array($name)) {
             $this->set = array_merge($this->set, $name);
@@ -586,13 +587,13 @@ class View extends FrameBase
      *
      * @param string $baseLink
      * @param string $appName
-     * @param null|string $controller
-     * @param null|string|array $params
+     * @param string|null $controller
+     * @param array|string|null $params
      * @param null|bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    function appUrl(string $baseLink, string $appName, $controller = null, $params = null, bool $encryptParams = false): string
+    function appUrl(string $baseLink, string $appName, string $controller = null, array|string $params = null, bool $encryptParams = false): string
     {
         $baseLink = rtrim($baseLink, '/') . '/';
         if ($controller === null && $params === null) {
@@ -768,13 +769,13 @@ class View extends FrameBase
      *
      * @param string $appName
      * @param bool $checkAppName
-     * @param null|string $controller
-     * @param null|array $params
+     * @param string|null $controller
+     * @param array|null $params
      * @param bool $encryptParams
      * @return string
      * @throws CoreException
      */
-    protected function makeUri(string $appName, bool $checkAppName, $controller = null, $params = null, bool $encryptParams = false): string
+    protected function makeUri(string $appName, bool $checkAppName, string $controller = null, array $params = null, bool $encryptParams = false): string
     {
         $uri = '';
         $enableControllerCache = false;
@@ -855,7 +856,7 @@ class View extends FrameBase
         }
 
         $actionName = null;
-        if (false !== strpos($realController, ':')) {
+        if (str_contains($realController, ':')) {
             list($controllerName, $actionName) = explode(':', $realController);
         } else {
             $controllerName = $realController;
@@ -976,7 +977,7 @@ class View extends FrameBase
      *
      * @param string $resLink
      * @param bool $makeLink
-     * @return null|string
+     * @return string
      */
     protected function outputResLink(string $resLink, bool $makeLink = true): string
     {
@@ -1002,7 +1003,7 @@ class View extends FrameBase
      * @return false|string
      * @throws CoreException
      */
-    protected function loadLayer(string $content, string $layerExt = '.layer.php')
+    protected function loadLayer(string $content, string $layerExt = '.layer.php'): bool|string
     {
         ob_start();
         $layerFile = $this->getTplPath() . $this->set['layer'] . $layerExt;
@@ -1023,7 +1024,7 @@ class View extends FrameBase
      * @return string|false
      * @throws CoreException
      */
-    private function obRenderAction($data, string $method)
+    private function obRenderAction(mixed $data, string $method): bool|string
     {
         ob_start();
         call_user_func([$this, $method], $data);
@@ -1068,7 +1069,7 @@ class View extends FrameBase
      * @param array $labelTags label附加参数
      * @return string
      */
-    private function buildRadioOrCheckbox(string $type, array $data, array $defaultValue = [], array $inputTags = [], array $labelTags = [])
+    private function buildRadioOrCheckbox(string $type, array $data, array $defaultValue = [], array $inputTags = [], array $labelTags = []): string
     {
         $content = '';
         foreach ($data as $value => $labelText) {
@@ -1096,7 +1097,7 @@ class View extends FrameBase
      * @param array $wrapTags
      * @return mixed
      */
-    private function buildWrapTags(array &$wrapTags)
+    private function buildWrapTags(array &$wrapTags): mixed
     {
         $i = 0;
         $content = '';
@@ -1157,9 +1158,9 @@ class View extends FrameBase
      *
      * @param string $element
      * @param array $elementTags
-     * @return mixed|string
+     * @return mixed
      */
-    private function wrapTag(string $element, array $elementTags = [])
+    private function wrapTag(string $element, array $elementTags = []): mixed
     {
         if (!empty($this->wrapStack)) {
             $this->wrap($element, $elementTags);

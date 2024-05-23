@@ -21,12 +21,12 @@ class ClosureContainer
     /**
      * @var array
      */
-    protected $actions = [];
+    protected array $actions = [];
 
     /**
-     * @var static
+     * @var static|null
      */
-    private static $instance;
+    private static ?ClosureContainer $instance = null;
 
     /**
      * ClosureContainer constructor.
@@ -85,7 +85,7 @@ class ClosureContainer
      * @param array $params
      * @return mixed
      */
-    function runOnce(string $name, array $params = [])
+    function runOnce(string $name, array $params = []): mixed
     {
         static $cache = [];
         if (isset($cache[$name])) {
@@ -109,7 +109,7 @@ class ClosureContainer
      * @param Closure|null $closure
      * @return bool
      */
-    function has(string $name, &$closure = null): bool
+    function has(string $name, Closure &$closure = null): bool
     {
         if (isset($this->actions[$name])) {
             $closure = $this->actions[$name];

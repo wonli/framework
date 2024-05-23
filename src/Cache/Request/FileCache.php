@@ -23,29 +23,29 @@ class FileCache implements RequestCacheInterface
     /**
      * @var string
      */
-    private $cacheKey;
+    private string $cacheKey;
 
     /**
      * @var string
      */
-    private $cachePath;
+    private string $cachePath;
 
     /**
-     * @var array
+     * @var mixed
      */
-    private $config;
+    private array $config;
 
     /**
      * 缓存过期时间(秒)
      *
      * @var int
      */
-    private $expireTime = 3600;
+    private int $expireTime = 3600;
 
     /**
      * @var FileCacheDriver
      */
-    private $driver;
+    private FileCacheDriver $driver;
 
     /**
      * FileCache constructor.
@@ -118,7 +118,7 @@ class FileCache implements RequestCacheInterface
      *
      * @param array $config
      */
-    function setConfig(array $config = [])
+    function setConfig(array $config = []): void
     {
         $this->config = $config;
     }
@@ -128,7 +128,7 @@ class FileCache implements RequestCacheInterface
      *
      * @return mixed
      */
-    function getConfig()
+    function getConfig(): array
     {
         return $this->config;
     }

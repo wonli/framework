@@ -18,5 +18,5 @@ namespace Cross\Exception;
  */
 class FrontException extends CrossException
 {
-    protected $httpStatusCode = 400;
+    protected int $httpStatusCode = 400;
 }

@@ -18,21 +18,21 @@ use Closure;
 class Annotate
 {
     /**
-     * @var Delegate
+     * @var Delegate|null
      */
-    private $delegate;
+    private ?Delegate $delegate;
 
     /**
      * 注释参数前缀
      *
      * @var string
      */
-    private $prefix = 'cp_';
+    private string $prefix = 'cp_';
 
     /**
-     * @var Annotate
+     * @var Annotate|null
      */
-    private static $instance;
+    private static ?Annotate $instance = null;
 
     /**
      * 注册一个wrapper
@@ -129,7 +129,7 @@ class Annotate
      * @param string $params
      * @return mixed
      */
-    public function toCode(string $params)
+    public function toCode(string $params): mixed
     {
         return include("annotate://{$params}");
     }
@@ -153,7 +153,7 @@ class Annotate
         $result = [];
         $conf = array_map('trim', explode(',', $params));
         foreach ($conf as $c) {
-            if (false !== strpos($c, '=')) {
+            if (str_contains($c, '=')) {
                 $c = explode('=', $c);
                 $result[trim($c[0])] = isset($c[1]) ? trim($c[1]) : '';
             } else {

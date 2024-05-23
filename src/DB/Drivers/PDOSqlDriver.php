@@ -29,63 +29,63 @@ class PDOSqlDriver implements SqlInterface
     /**
      * @var PDOStatement
      */
-    public $stmt;
+    public PDOStatement $stmt;
 
     /**
      * @var PDO
      */
-    public $pdo;
+    public PDO $pdo;
 
     /**
      * @var string
      */
-    public $sql;
+    public string $sql;
 
     /**
      * 链式查询每条语句的标示符
      *
      * @var int
      */
-    protected $qid;
+    protected int $qid;
 
     /**
      * 以qid为key,存储链式查询生成的sql语句
      *
      * @var array
      */
-    protected $querySQL = [];
+    protected array $querySQL = [];
 
     /**
      * 联系查询生成的参数缓存
      *
      * @var array
      */
-    protected $queryParams;
+    protected array $queryParams;
 
     /**
-     * @var string|array
+     * @var mixed
      */
-    protected $params;
+    protected mixed $params;
 
     /**
      * @var PDOConnector
      */
-    protected $connector;
+    protected PDOConnector $connector;
 
     /**
      * @var SQLAssembler
      */
-    protected $SQLAssembler;
+    protected SQLAssembler $SQLAssembler;
 
     /**
      * @var array
      */
-    protected $connectOptions;
+    protected array $connectOptions;
 
     /**
      * @var int
      */
-    protected $maxQueryHistoryCount = 255;
+    protected int $maxQueryHistoryCount = 255;
 
     /**
      * 创建数据库连接
@@ -106,9 +106,6 @@ class PDOSqlDriver implements SqlInterface
         $this->setSQLAssembler($SQLAssembler);
 
         $this->pdo = $this->connector->getPDO();
-        if (!$this->pdo instanceof PDO) {
-            throw new CoreException("init pdo failed!");
-        }
     }
 
     /**
@@ -116,11 +113,11 @@ class PDOSqlDriver implements SqlInterface
      *
      * @param string $table
      * @param string $fields
-     * @param string|array $where
+     * @param array|string $where
      * @return mixed
      * @throws CoreException
      */
-    public function get(string $table, string $fields, $where)
+    public function get(string $table, string $fields, array|string $where): mixed
     {
         return $this->select($fields)->from($table)->where($where)->stmt()->fetch(PDO::FETCH_ASSOC);
     }
@@ -130,14 +127,14 @@ class PDOSqlDriver implements SqlInterface
      *
      * @param string $table
      * @param string $fields
-     * @param string|array $where
-     * @param mixed $order
-     * @param mixed $groupBy
+     * @param array|string $where
+     * @param mixed|null $order
+     * @param mixed|null $groupBy
      * @param mixed $limit 0 表示无限制
      * @return mixed
      * @throws CoreException
      */
-    public function getAll(string $table, string $fields, $where = [], $order = null, $groupBy = null, $limit = null)
+    public function getAll(string $table, string $fields, array|string $where = [], mixed $order = null, mixed $groupBy = null, $limit = null): mixed
     {
         $data = $this->select($fields)->from($table);
         if ($where) {
@@ -163,15 +160,15 @@ class PDOSqlDriver implements SqlInterface
      * 插入数据
      *
      * @param string $table
-     * @param string|array $data
+     * @param mixed $data
      * @param bool $multi 是否批量添加
-     * @param array $insertData 批量添加的数据
-     * @param bool $openTA 批量添加时是否开启事务
+     * @param array $insertData
+     * @param bool $openTA
      * @return bool|mixed
      * @throws CoreException
      * @see SQLAssembler::add()
      */
-    public function add(string $table, $data, bool $multi = false, &$insertData = [], bool $openTA = false)
+    public function add(string $table, mixed $data, bool $multi = false, array &$insertData = [], bool $openTA = false): mixed
     {
         $this->SQLAssembler->add($table, $data, $multi);
         $this->sql = $this->SQLAssembler->getSQL();
@@ -229,14 +226,15 @@ class PDOSqlDriver implements SqlInterface
      *
      * @param string $table
      * @param string $fields
-     * @param string|array $where
+     * @param array|string $where
      * @param array $page
-     * @param null $order
-     * @param null $groupBy
+     * @param mixed|null $order
+     * @param mixed|null $groupBy
      * @return mixed
      * @throws CoreException
      */
-    public function find(string $table, string $fields, $where, array &$page = ['p' => 1, 'limit' => 10], $order = null, $groupBy = null)
+    public function find(string $table, string $fields, array|string $where,
+                         array  &$page = ['p' => 1, 'limit' => 10], mixed $order = null, mixed $groupBy = null): mixed
     {
         if (!isset($page['result_count'])) {
             $total = $this->get($table, 'COUNT(*) as TOTAL', $where);
@@ -260,12 +258,12 @@ class PDOSqlDriver implements SqlInterface
      * 数据更新
      *
      * @param string $table
-     * @param string|array $data
-     * @param string|array $where
-     * @return bool
+     * @param mixed $data
+     * @param mixed $where
+     * @return PDOSqlDriver|int
      * @throws CoreException
      */
-    public function update(string $table, $data, $where)
+    public function update(string $table, mixed $data, mixed $where): PDOSqlDriver|int
     {
         $this->SQLAssembler->update($table, $data, $where);
         $this->sql = $this->SQLAssembler->getSQL();
@@ -278,12 +276,12 @@ class PDOSqlDriver implements SqlInterface
      * 删除
      *
      * @param string $table
-     * @param string|array $where
-     * @return bool
+     * @param mixed $where
+     * @return PDOSqlDriver|int
      * @throws CoreException
      * @see SQLAssembler::del()
      */
-    public function del(string $table, $where)
+    public function del(string $table, mixed $where): PDOSqlDriver|int
     {
         $this->SQLAssembler->del($table, $where);
         $this->sql = $this->SQLAssembler->getSQL();
@@ -312,10 +310,10 @@ class PDOSqlDriver implements SqlInterface
      * 执行sql 用于无返回值的操作
      *
      * @param string $sql
-     * @return int
+     * @return false|int
      * @throws CoreException
      */
-    public function execute(string $sql)
+    public function execute(string $sql): false|int
     {
         try {
             return $this->pdo->exec($sql);
@@ -571,7 +569,7 @@ class PDOSqlDriver implements SqlInterface
      * @return bool
      * @throws CoreException
      */
-    public function stmtExecute($prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY])
+    public function stmtExecute(array $prepareParams = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): bool
     {
         if ($this->qid == 0) {
             throw new CoreException("无效的执行语句");
@@ -596,7 +594,7 @@ class PDOSqlDriver implements SqlInterface
      * @return $this
      * @throws CoreException
      */
-    public function prepare(string $statement, $params = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): self
+    public function prepare(string $statement, array $params = [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]): self
     {
         try {
             $this->stmt = $this->pdo->prepare($statement, $params);
@@ -615,10 +613,10 @@ class PDOSqlDriver implements SqlInterface
      *
      * @param array $args
      * @param bool $rowCount
-     * @return int|$this
+     * @return int|PDOSqlDriver
      * @throws CoreException
      */
-    public function exec(array $args = [], bool $rowCount = false)
+    public function exec(array $args = [], bool $rowCount = false): int|static
     {
         try {
             $this->stmt->execute($args);
@@ -640,7 +638,7 @@ class PDOSqlDriver implements SqlInterface
      * @return mixed
      * @throws CoreException
      */
-    public function stmtFetch(bool $fetchAll = false, int $fetchStyle = PDO::FETCH_ASSOC)
+    public function stmtFetch(bool $fetchAll = false, int $fetchStyle = PDO::FETCH_ASSOC): mixed
     {
         if (!$this->stmt) {
             throw new CoreException('stmt init failed!');
@@ -660,7 +658,7 @@ class PDOSqlDriver implements SqlInterface
      * @param bool $fieldsMap
      * @return mixed
      */
-    public function getMetaData(string $table, bool $fieldsMap = true)
+    public function getMetaData(string $table, bool $fieldsMap = true): mixed
     {
         return $this->connector->getMetaData($table, $fieldsMap);
     }
@@ -715,10 +713,10 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 解析fields
      *
-     * @param string|array $fields
+     * @param array|string $fields
      * @return string
      */
-    public function parseFields($fields): string
+    public function parseFields(array|string $fields): string
     {
         return $this->SQLAssembler->parseFields($fields);
     }
@@ -726,12 +724,12 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 解析where
      *
-     * @param string|array $where
-     * @param string|array $params
+     * @param array|string $where
+     * @param array|string $params
      * @return string
      * @throws CoreException
      */
-    public function parseWhere($where, &$params): string
+    public function parseWhere(array|string $where, array|string &$params): string
     {
         return $this->SQLAssembler->parseWhere($where, $params);
     }
@@ -739,10 +737,10 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 解析order
      *
-     * @param string|array $order
+     * @param array|string $order
      * @return int|string
      */
-    public function parseOrder($order)
+    public function parseOrder(array|string $order): int|string
     {
         return $this->SQLAssembler->parseOrder($order);
     }
@@ -750,10 +748,10 @@ class PDOSqlDriver implements SqlInterface
     /**
      * 解析group
      *
-     * @param mixed $groupBy
+     * @param string $groupBy
      * @return int|string
      */
-    public function parseGroup($groupBy)
+    public function parseGroup(string $groupBy): int|string
     {
         return $this->SQLAssembler->parseGroup($groupBy);
     }
@@ -791,7 +789,7 @@ class PDOSqlDriver implements SqlInterface
      *
      * @return mixed
      */
-    public function insertId()
+    public function insertId(): mixed
     {
         $sequence = $this->getSQLAssembler()->getSequence();
         if (!empty($sequence)) {
@@ -809,7 +807,7 @@ class PDOSqlDriver implements SqlInterface
      * @return mixed
      * @throws CoreException
      */
-    protected function getPrepareResult(bool $fetchAll = false, int $fetchStyle = PDO::FETCH_ASSOC)
+    protected function getPrepareResult(bool $fetchAll = false, int $fetchStyle = PDO::FETCH_ASSOC): mixed
     {
         $this->sql = $this->SQLAssembler->getSQL();
         $this->params = $this->SQLAssembler->getParams();

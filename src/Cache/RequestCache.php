@@ -15,6 +15,8 @@ use Cross\Cache\Request\RedisCache;
 use Cross\Cache\Request\Memcache;
 
 use Cross\Exception\CoreException;
+use RedisClusterException;
+use RedisException;
 use ReflectionClass;
 use Exception;
 
@@ -34,17 +36,19 @@ class RequestCache
     /**
      * @var FileCache|Memcache|RedisCache|RequestCacheInterface
      */
-    static $instance;
+    static FileCache|RedisCache|RequestCacheInterface|Memcache $instance;
 
     /**
      * RequestCache
      *
-     * @param int|object|string $type
+     * @param object|int|string $type
      * @param array $options
      * @return FileCache|Memcache|RedisCache|RequestCacheInterface
      * @throws CoreException
+     * @throws RedisClusterException
+     * @throws RedisException
      */
-    static function factory($type, array $options)
+    static function factory(object|int|string $type, array $options): Memcache|RequestCacheInterface|RedisCache|FileCache
     {
         switch ($type) {
             case 'file':

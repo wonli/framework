@@ -23,5 +23,5 @@ interface IFilter
      * @param string $error 失败信息
      * @return bool 成功返回true
      */
-    function filter($file, &$error = '');
+    function filter(mixed $file, string &$error = ''): bool;
 }
