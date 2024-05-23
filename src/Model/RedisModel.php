@@ -50,6 +50,8 @@ use Redis;
  * @method static psubscribe($patterns, $callback)
  * @method static publish($channel, $message)
  * @method static pubsub($keyword, $argument)
+ * @method static psubscribe($patterns, $callback)
+ * @method static publish($channel, $message)
  * @method static unsubscribe($channels = null)
  * @method static punsubscribe($channels = null)
  * @method static exists($key)

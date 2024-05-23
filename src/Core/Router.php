@@ -406,7 +406,7 @@ class Router implements RouterInterface
     private static function parseRequestString(string $queryString, array $urlConfig): array
     {
         $urlSuffix = &$urlConfig['ext'];
-        if (isset($urlSuffix[0]) && ($urlSuffixLength = strlen(trim($urlSuffix))) > 0) {
+        if (isset($urlSuffix[0]) && $urlSuffix !== '/' && ($urlSuffixLength = strlen(trim($urlSuffix))) > 0) {
             if (0 === strcasecmp($urlSuffix, substr($queryString, -$urlSuffixLength))) {
                 $queryString = substr($queryString, 0, -$urlSuffixLength);
             } else {
