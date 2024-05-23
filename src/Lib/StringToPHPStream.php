@@ -19,6 +19,11 @@ namespace Cross\Lib;
  */
 class StringToPHPStream
 {
+    /**
+     * PHP8必须
+     * @var mixed
+     */
+    public mixed $context;
 
     /**
      * 代码内容
